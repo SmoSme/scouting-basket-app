@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react';
 import Navbar from './components/Navbar';
 import LiveGame from './pages/LiveGame';
 import Archive from './pages/Archive';
-import { DEFAULT_ROSTER } from './data/roster';
+import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
 import {
   saveToOfflineQueue,
@@ -18,7 +18,34 @@ export default function App() {
     return localStorage.getItem('current_game_session') || '';
   });
   
-  const [roster, setRoster] = useState(DEFAULT_ROSTER);
+  const [masterRoster, setMasterRoster] = useState(() => {
+    try {
+      const saved = localStorage.getItem('master_roster');
+      return saved ? JSON.parse(saved) : DEFAULT_MASTER_ROSTER;
+    } catch (e) {
+      return DEFAULT_MASTER_ROSTER;
+    }
+  });
+
+  const [activeRoster, setActiveRoster] = useState(() => {
+    try {
+      const saved = localStorage.getItem('current_match_roster');
+      return saved ? JSON.parse(saved) : (localStorage.getItem('master_roster') ? JSON.parse(localStorage.getItem('master_roster')) : DEFAULT_MASTER_ROSTER);
+    } catch (e) {
+      return DEFAULT_MASTER_ROSTER;
+    }
+  });
+
+  const updateMasterRoster = (newMaster) => {
+    setMasterRoster(newMaster);
+    localStorage.setItem('master_roster', JSON.stringify(newMaster));
+  };
+
+  const updateActiveRoster = (newActive) => {
+    setActiveRoster(newActive);
+    localStorage.setItem('current_match_roster', JSON.stringify(newActive));
+  };
+
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedZoneKey, setSelectedZoneKey] = useState('PAINT');
   const [currentQuarter, setCurrentQuarter] = useState('Q1');
@@ -271,8 +298,10 @@ export default function App() {
                 setGameSession={setGameSession}
                 events={events}
                 setEvents={setEvents}
-                roster={roster}
-                setRoster={setRoster}
+                masterRoster={masterRoster}
+                setMasterRoster={updateMasterRoster}
+                roster={activeRoster}
+                setRoster={updateActiveRoster}
                 selectedPlayer={selectedPlayer}
                 setSelectedPlayer={setSelectedPlayer}
                 selectedZoneKey={selectedZoneKey}

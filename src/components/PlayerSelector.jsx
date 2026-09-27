@@ -49,9 +49,11 @@ export default function PlayerSelector({
                   )}
                   <span className="font-mono font-black text-xs text-sky-400">#{player.number}</span>
                   <span className="font-bold text-xs text-slate-100 truncate">{player.name}</span>
-                  <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 flex-none">
-                    {player.pos}
-                  </span>
+                  {player.pos && player.pos !== 'N/A' && (
+                    <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 flex-none">
+                      {player.pos}
+                    </span>
+                  )}
                 </div>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded flex-none ml-1 ${
                   isSelected ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' : 'bg-slate-950 text-slate-300 border border-slate-800'

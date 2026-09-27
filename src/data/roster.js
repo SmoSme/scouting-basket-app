@@ -1,17 +1,22 @@
-export const DEFAULT_ROSTER = [
-  { number: "4", name: "M. Teodosic", pos: "PG" },
-  { number: "5", name: "M. Belinelli", pos: "SG" },
-  { number: "7", name: "L. Datome", pos: "SF" },
-  { number: "8", name: "N. Melli", pos: "PF" },
-  { number: "9", name: "D. Gallinari", pos: "PF" },
-  { number: "11", name: "A. Bargnani", pos: "C" },
-  { number: "13", name: "S. Tonut", pos: "SG" },
-  { number: "15", name: "G. Ricci", pos: "PF" },
-  { number: "18", name: "M. Spissu", pos: "PG" },
-  { number: "22", name: "S. Fontecchio", pos: "SF" },
-  { number: "33", name: "A. Polonara", pos: "PF" },
-  { number: "77", name: "L. Doncic", pos: "PG" }
+export const DEFAULT_MASTER_ROSTER = [
+  { number: "1", name: "Toma Makharadze", pos: "N/A" },
+  { number: "3", name: "Mario Giordano", pos: "N/A" },
+  { number: "4", name: "Lorenzo Giordano", pos: "N/A" },
+  { number: "6", name: "Marcello Russo", pos: "N/A" },
+  { number: "7", name: "Valerio Villani", pos: "N/A" },
+  { number: "8", name: "Francesco Gargiulo", pos: "N/A" },
+  { number: "9", name: "Mattia Taurone", pos: "N/A" },
+  { number: "11", name: "Davide Valente", pos: "N/A" },
+  { number: "12", name: "Angelo Davide Del Regno", pos: "N/A" },
+  { number: "13", name: "Maurizio Lepore", pos: "N/A" },
+  { number: "22", name: "Amedeo Decuzzi", pos: "N/A" },
+  { number: "31", name: "Giuseppe Macinante", pos: "N/A" },
+  { number: "32", name: "Armando Oddo Casano", pos: "N/A" },
+  { number: "34", name: "Gerardo Spisso", pos: "N/A" },
+  { number: "43", name: "Antoine Ghanem", pos: "N/A" }
 ];
+
+export const DEFAULT_ROSTER = DEFAULT_MASTER_ROSTER;
 
 export const COURT_ZONES = {
   PAINT: { name: "Paint / Key", type: "2PT", val: 2 },
