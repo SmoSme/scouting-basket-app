@@ -35,11 +35,16 @@ export function clearOfflineQueue() {
 
 export async function syncOfflineQueue(onSyncSuccess) {
   const queue = getOfflineQueue();
-  if (queue.length === 0) return { syncedCount: 0 };
+  if (queue.length === 0) return { syncedCount: 0, queueEmpty: true };
 
   if (!navigator.onLine) {
     console.warn('Network offline. Postponing Supabase queue sync.');
     return { syncedCount: 0, offline: true };
+  }
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl || supabaseUrl.includes('your-supabase-project')) {
+    return { syncedCount: 0, unconfigured: true, message: 'Chiavi Supabase non configurate nel file .env' };
   }
 
   try {
@@ -51,7 +56,7 @@ export async function syncOfflineQueue(onSyncSuccess) {
 
     if (error) {
       console.error('Supabase batch sync error:', error);
-      return { syncedCount: 0, error };
+      return { syncedCount: 0, error: error.message || JSON.stringify(error) };
     }
 
     const syncedCount = queue.length;
@@ -64,7 +69,7 @@ export async function syncOfflineQueue(onSyncSuccess) {
     return { syncedCount, data };
   } catch (err) {
     console.error('Unexpected error during offline queue sync:', err);
-    return { syncedCount: 0, error: err };
+    return { syncedCount: 0, error: err.message || 'Errore di connessione' };
   }
 }
 

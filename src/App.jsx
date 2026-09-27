@@ -29,7 +29,6 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [offlineQueueCount, setOfflineQueueCount] = useState(getOfflineQueue().length);
 
-  // Fetch events for active gameSession & setup offline listeners
   useEffect(() => {
     fetchEvents();
 
@@ -71,7 +70,7 @@ export default function App() {
       console.warn('Supabase fetch failed:', err);
     }
 
-    // Local fallback
+    // Local API fallback
     try {
       const res = await fetch('/api/events');
       if (res.ok) {
@@ -83,7 +82,7 @@ export default function App() {
 
   const showToast = (msg) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
+    setTimeout(() => setToastMsg(null), 3500);
   };
 
   const dispatchAction = async (azione, categoria, zonaName) => {
@@ -112,11 +111,12 @@ export default function App() {
     // 1. Instant local state update (<5ms)
     const localEv = { ...payload, Timestamp: timestamp, Quarto: currentQuarter, Numero: selectedPlayer.number, Giocatore: selectedPlayer.name, Azione: azione, Categoria: categoria, Zona: zonaName };
     setEvents(prev => [...prev, localEv]);
-    showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione}`);
 
-    // 2. Supabase insert
+    // 2. Try Supabase insert
     let cloudSynced = false;
-    if (navigator.onLine && import.meta.env.VITE_SUPABASE_URL) {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
         const { error } = await supabase
           .from('scouting_log')
@@ -124,22 +124,25 @@ export default function App() {
 
         if (!error) {
           cloudSynced = true;
+          showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione} (Supabase Cloud)`);
         } else {
-          console.warn('Supabase insert error, queueing offline:', error);
+          console.warn('Supabase insert error:', error);
+          showToast(`⚠️ Supabase: ${error.message || 'Errore colonna/permessi'}`);
         }
       } catch (err) {
-        console.warn('Supabase network error, queueing offline:', err);
+        console.warn('Supabase network exception:', err);
       }
     }
 
-    // 3. Offline resilience: save to queue if not cloud synced
+    // 3. If cloud insert failed or offline, save to local queue
     if (!cloudSynced) {
       saveToOfflineQueue(payload);
-      setOfflineQueueCount(getOfflineQueue().length);
-      showToast(`📦 Salvato offline (in coda sync)`);
+      const newQueueLength = getOfflineQueue().length;
+      setOfflineQueueCount(newQueueLength);
+      showToast(`📦 Salvato in coda offline (${newQueueLength} in attesa di sync)`);
     }
 
-    // Local API fallback
+    // Local server fallback
     try {
       fetch('/api/events', {
         method: 'POST',
@@ -196,13 +199,18 @@ export default function App() {
 
   const handleManualSync = async () => {
     const res = await syncOfflineQueue();
+    setOfflineQueueCount(getOfflineQueue().length);
+    
     if (res.syncedCount > 0) {
-      showToast(`⚡ Sincronizzati ${res.syncedCount} eventi su Supabase!`);
-      setOfflineQueueCount(getOfflineQueue().length);
+      showToast(`⚡ Sincronizzati con successo ${res.syncedCount} eventi su Supabase!`);
       fetchEvents();
+    } else if (res.unconfigured) {
+      showToast(`⚠️ ${res.message}`);
+    } else if (res.error) {
+      showToast(`❌ Errore Sync Supabase: ${res.error}`);
     } else if (res.offline) {
       showToast('⚠️ Ancora offline. Connettiti al Wi-Fi per il sync.');
-    } else {
+    } else if (res.queueEmpty) {
       showToast('ℹ️ Nessun evento in coda offline.');
     }
   };
