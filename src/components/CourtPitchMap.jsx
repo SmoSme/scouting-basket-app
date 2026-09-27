@@ -16,7 +16,7 @@ export default function CourtPitchMap({
     }
     
     const zoneEvents = filteredEvents.filter(e => (e?.Zona || e?.zona) === zoneName);
-    const made = zoneEvents.filter(e => (e?.Azione || e?.azione || '').includes('Fatto')).length;
+    const made = zoneEvents.filter(e => String(e?.Azione || e?.azione || '').includes('Fatto')).length;
     const attempts = zoneEvents.length;
     
     if (attempts === 0) {

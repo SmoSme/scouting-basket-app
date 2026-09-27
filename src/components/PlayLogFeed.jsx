@@ -23,7 +23,7 @@ export default function PlayLogFeed({ events }) {
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
         {reversedEvents.map((ev, idx) => {
-          const actionStr = ev?.Azione || ev?.azione || '';
+          const actionStr = String(ev?.Azione || ev?.azione || '');
           const isSuccess = actionStr.includes('Fatto');
           const isNegative = actionStr.includes('Sbagliato') || actionStr.includes('Persa');
           const badgeColor = isSuccess ? '#10B981' : (isNegative ? '#EF4444' : '#38BDF8');

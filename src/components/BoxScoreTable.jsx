@@ -18,7 +18,7 @@ export default function BoxScoreTable({ roster, events }) {
     rosterMap[String(p.number)] = p;
   });
 
-  const getAz = (e) => e?.Azione || e?.azione || '';
+  const getAz = (e) => String(e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
   const getZona = (e) => e?.Zona || e?.zona || '';
   const getGiocatore = (e) => e?.Giocatore || e?.giocatore || '';
