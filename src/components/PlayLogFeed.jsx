@@ -23,25 +23,32 @@ export default function PlayLogFeed({ events }) {
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
         {reversedEvents.map((ev, idx) => {
-          const isSuccess = ev.Azione.includes('Fatto');
-          const isNegative = ev.Azione.includes('Sbagliato') || ev.Azione.includes('Persa');
+          const actionStr = ev?.Azione || ev?.azione || '';
+          const isSuccess = actionStr.includes('Fatto');
+          const isNegative = actionStr.includes('Sbagliato') || actionStr.includes('Persa');
           const badgeColor = isSuccess ? '#10B981' : (isNegative ? '#EF4444' : '#38BDF8');
+
+          const timestamp = ev?.Timestamp || ev?.timestamp || '';
+          const quarto = ev?.Quarto || ev?.quarto || '';
+          const zona = ev?.Zona || ev?.zona || '';
+          const numero = ev?.Numero ?? ev?.numero ?? '';
+          const giocatore = ev?.Giocatore || ev?.giocatore || '';
 
           return (
             <div
-              key={idx}
+              key={ev?.id || idx}
               className="bg-slate-900/90 border-l-4 rounded p-1.5 px-2 text-xs"
               style={{ borderLeftColor: badgeColor }}
             >
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                <span>{ev.Timestamp} [{ev.Quarto}]</span>
-                <span className="truncate max-w-[100px]">{ev.Zona}</span>
+                <span>{timestamp} [{quarto}]</span>
+                <span className="truncate max-w-[100px]">{zona}</span>
               </div>
               <div className="font-bold text-slate-100 truncate mt-0.5">
-                #{ev.Numero} {ev.Giocatore}
+                #{numero} {giocatore}
               </div>
               <div className="font-black text-[11px] uppercase tracking-wide" style={{ color: badgeColor }}>
-                {ev.Azione}
+                {actionStr}
               </div>
             </div>
           );

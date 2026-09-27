@@ -49,6 +49,31 @@ export default function App() {
     };
   }, [gameSession]);
 
+  const normalizeEvents = (rawEvents) => {
+    if (!Array.isArray(rawEvents)) return [];
+    return rawEvents.map(ev => {
+      if (!ev) return {};
+      const Azione = ev.Azione || ev.azione || '';
+      const Giocatore = ev.Giocatore || ev.giocatore || '';
+      const Numero = String(ev.Numero ?? ev.numero ?? '');
+      const Quarto = ev.Quarto || ev.quarto || '';
+      const Zona = ev.Zona || ev.zona || '';
+      const Categoria = ev.Categoria || ev.categoria || '';
+      const Timestamp = ev.Timestamp || ev.timestamp || (ev.created_at ? new Date(ev.created_at).toLocaleTimeString('it-IT', { hour12: false }) : '');
+
+      return {
+        ...ev,
+        Azione, azione: Azione,
+        Giocatore, giocatore: Giocatore,
+        Numero, numero: Numero,
+        Quarto, quarto: Quarto,
+        Zona, zona: Zona,
+        Categoria, categoria: Categoria,
+        Timestamp, timestamp: Timestamp
+      };
+    });
+  };
+
   const fetchEvents = async () => {
     if (!gameSession) {
       setEvents([]);
@@ -63,7 +88,7 @@ export default function App() {
         .order('id', { ascending: true });
 
       if (!error && data) {
-        setEvents(data);
+        setEvents(normalizeEvents(data));
         return;
       }
     } catch (err) {
@@ -75,7 +100,7 @@ export default function App() {
       const res = await fetch('/api/events');
       if (res.ok) {
         const data = await res.json();
-        setEvents(data);
+        setEvents(normalizeEvents(data));
       }
     } catch (err) {}
   };

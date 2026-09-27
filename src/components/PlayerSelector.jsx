@@ -22,11 +22,12 @@ export default function PlayerSelector({
         {roster.map((player) => {
           const isSelected = selectedPlayer && selectedPlayer.number === player.number;
           
-          const playerEvents = events.filter(e => String(e.Numero) === String(player.number));
+          const playerEvents = events.filter(e => String(e?.Numero ?? e?.numero ?? '') === String(player.number));
           const pts = playerEvents.reduce((acc, ev) => {
-            if (ev.Azione === '2PT Fatto') return acc + 2;
-            if (ev.Azione === '3PT Fatto') return acc + 3;
-            if (ev.Azione === 'TL Fatto') return acc + 1;
+            const az = ev?.Azione || ev?.azione || '';
+            if (az === '2PT Fatto') return acc + 2;
+            if (az === '3PT Fatto') return acc + 3;
+            if (az === 'TL Fatto') return acc + 1;
             return acc;
           }, 0);
 

@@ -12,11 +12,11 @@ export default function CourtPitchMap({
   const getZoneStats = (zoneName) => {
     let filteredEvents = events;
     if (selectedPlayer) {
-      filteredEvents = events.filter(e => String(e.Numero) === String(selectedPlayer.number));
+      filteredEvents = events.filter(e => String(e?.Numero ?? e?.numero ?? '') === String(selectedPlayer.number));
     }
     
-    const zoneEvents = filteredEvents.filter(e => e.Zona === zoneName);
-    const made = zoneEvents.filter(e => e.Azione && e.Azione.includes('Fatto')).length;
+    const zoneEvents = filteredEvents.filter(e => (e?.Zona || e?.zona) === zoneName);
+    const made = zoneEvents.filter(e => (e?.Azione || e?.azione || '').includes('Fatto')).length;
     const attempts = zoneEvents.length;
     
     if (attempts === 0) {

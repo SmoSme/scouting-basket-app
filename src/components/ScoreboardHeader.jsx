@@ -8,40 +8,44 @@ export default function ScoreboardHeader({
   setCurrentQuarter,
   onUndo
 }) {
+  const getAz = (e) => e?.Azione || e?.azione || '';
+  const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
+
   const teamPts = events.reduce((acc, ev) => {
-    if (ev.Azione === '2PT Fatto') return acc + 2;
-    if (ev.Azione === '3PT Fatto') return acc + 3;
-    if (ev.Azione === 'TL Fatto') return acc + 1;
+    const az = getAz(ev);
+    if (az === '2PT Fatto') return acc + 2;
+    if (az === '3PT Fatto') return acc + 3;
+    if (az === 'TL Fatto') return acc + 1;
     return acc;
   }, 0);
 
   const getPlayerStats = () => {
     if (!selectedPlayer) return null;
-    const pEvents = events.filter(e => String(e.Numero) === String(selectedPlayer.number));
+    const pEvents = events.filter(e => getNum(e) === String(selectedPlayer.number));
     
-    const fg2_m = pEvents.filter(e => e.Azione === '2PT Fatto').length;
-    const fg2_miss = pEvents.filter(e => e.Azione === '2PT Sbagliato').length;
+    const fg2_m = pEvents.filter(e => getAz(e) === '2PT Fatto').length;
+    const fg2_miss = pEvents.filter(e => getAz(e) === '2PT Sbagliato').length;
     const fg2_a = fg2_m + fg2_miss;
     
-    const fg3_m = pEvents.filter(e => e.Azione === '3PT Fatto').length;
-    const fg3_miss = pEvents.filter(e => e.Azione === '3PT Sbagliato').length;
+    const fg3_m = pEvents.filter(e => getAz(e) === '3PT Fatto').length;
+    const fg3_miss = pEvents.filter(e => getAz(e) === '3PT Sbagliato').length;
     const fg3_a = fg3_m + fg3_miss;
     
-    const ft_m = pEvents.filter(e => e.Azione === 'TL Fatto').length;
-    const ft_miss = pEvents.filter(e => e.Azione === 'TL Sbagliato').length;
+    const ft_m = pEvents.filter(e => getAz(e) === 'TL Fatto').length;
+    const ft_miss = pEvents.filter(e => getAz(e) === 'TL Sbagliato').length;
     const ft_a = ft_m + ft_miss;
     
     const pts = (fg2_m * 2) + (fg3_m * 3) + (ft_m * 1);
-    const oreb = pEvents.filter(e => e.Azione === 'Rimb Offensivo').length;
-    const dreb = pEvents.filter(e => e.Azione === 'Rimb Difensivo').length;
+    const oreb = pEvents.filter(e => getAz(e) === 'Rimb Offensivo').length;
+    const dreb = pEvents.filter(e => getAz(e) === 'Rimb Difensivo').length;
     const treb = oreb + dreb;
-    const ast = pEvents.filter(e => e.Azione === 'Assist').length;
-    const stl = pEvents.filter(e => e.Azione === 'Palla Recuperata').length;
-    const tov = pEvents.filter(e => e.Azione === 'Palla Persa').length;
-    const pf = pEvents.filter(e => e.Azione === 'Fallo Fatto').length;
-    const fd = pEvents.filter(e => e.Azione === 'Fallo Subito').length;
-    const blk = pEvents.filter(e => e.Azione === 'Stoppata Data').length;
-    const blka = pEvents.filter(e => e.Azione === 'Stoppata Subita').length;
+    const ast = pEvents.filter(e => getAz(e) === 'Assist').length;
+    const stl = pEvents.filter(e => getAz(e) === 'Palla Recuperata').length;
+    const tov = pEvents.filter(e => getAz(e) === 'Palla Persa').length;
+    const pf = pEvents.filter(e => getAz(e) === 'Fallo Fatto').length;
+    const fd = pEvents.filter(e => getAz(e) === 'Fallo Subito').length;
+    const blk = pEvents.filter(e => getAz(e) === 'Stoppata Data').length;
+    const blka = pEvents.filter(e => getAz(e) === 'Stoppata Subita').length;
     
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
