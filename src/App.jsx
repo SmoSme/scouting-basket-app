@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Trophy, Download, Trash2, LayoutDashboard, BarChart3, Settings, Wifi, WifiOff } from 'lucide-react';
-import ScoreboardHeader from './components/ScoreboardHeader';
-import PlayerSelector from './components/PlayerSelector';
-import CourtPitchMap from './components/CourtPitchMap';
-import ActionClusters from './components/ActionClusters';
-import BoxScoreTable from './components/BoxScoreTable';
-import PlayLogFeed from './components/PlayLogFeed';
-import { DEFAULT_ROSTER, COURT_ZONES } from './data/roster';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Activity } from 'lucide-react';
+import Navbar from './components/Navbar';
+import LiveGame from './pages/LiveGame';
+import Archive from './pages/Archive';
+import { DEFAULT_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
 import {
   saveToOfflineQueue,
@@ -16,7 +14,10 @@ import {
 } from './services/offlineSync';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('LIVE');
+  const [gameSession, setGameSession] = useState(() => {
+    return localStorage.getItem('current_game_session') || '';
+  });
+  
   const [roster, setRoster] = useState(DEFAULT_ROSTER);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedZoneKey, setSelectedZoneKey] = useState('PAINT');
@@ -24,10 +25,11 @@ export default function App() {
   const [events, setEvents] = useState([]);
   const [toastMsg, setToastMsg] = useState(null);
   const [showRosterModal, setShowRosterModal] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(!localStorage.getItem('current_game_session'));
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [offlineQueueCount, setOfflineQueueCount] = useState(getOfflineQueue().length);
 
-  // Fetch events from backend / Supabase & set up offline listeners
+  // Fetch events for active gameSession & setup offline listeners
   useEffect(() => {
     fetchEvents();
 
@@ -35,7 +37,6 @@ export default function App() {
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
 
-    // Setup auto-sync when Wi-Fi returns
     const cleanupSync = setupOnlineSyncListener((syncedCount) => {
       showToast(`⚡ Sincronizzati ${syncedCount} eventi offline su Supabase!`);
       setOfflineQueueCount(getOfflineQueue().length);
@@ -47,34 +48,37 @@ export default function App() {
       window.removeEventListener('offline', handleOnlineStatus);
       cleanupSync();
     };
-  }, []);
+  }, [gameSession]);
 
   const fetchEvents = async () => {
+    if (!gameSession) {
+      setEvents([]);
+      return;
+    }
+
     try {
-      // 1. Try Supabase cloud database first
       const { data, error } = await supabase
         .from('scouting_log')
         .select('*')
+        .eq('nome_partita', gameSession)
         .order('id', { ascending: true });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setEvents(data);
         return;
       }
     } catch (err) {
-      console.warn('Supabase fetch failed, falling back to local API:', err);
+      console.warn('Supabase fetch failed:', err);
     }
 
-    // 2. Fallback to local server API if running locally
+    // Local fallback
     try {
       const res = await fetch('/api/events');
       if (res.ok) {
         const data = await res.json();
         setEvents(data);
       }
-    } catch (err) {
-      console.error('Failed to fetch events from local API:', err);
-    }
+    } catch (err) {}
   };
 
   const showToast = (msg) => {
@@ -82,15 +86,21 @@ export default function App() {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  // Dispatch Action Payload to Supabase with Offline Resilience
   const dispatchAction = async (azione, categoria, zonaName) => {
     if (!selectedPlayer) {
-      showToast('⚠️ Seleziona prima un giocatore a sinistra!');
+      showToast('⚠️ Seleziona prima un giocatore!');
+      return;
+    }
+
+    if (!gameSession) {
+      setShowSessionModal(true);
+      showToast('⚠️ Inserisci prima il nome della partita!');
       return;
     }
 
     const timestamp = new Date().toLocaleTimeString('it-IT', { hour12: false });
     const payload = {
+      nome_partita: gameSession,
       quarto: currentQuarter,
       numero: String(selectedPlayer.number),
       giocatore: selectedPlayer.name,
@@ -99,12 +109,12 @@ export default function App() {
       zona: zonaName
     };
 
-    // 1. Instant local state update (<5ms touch responsiveness)
+    // 1. Instant local state update (<5ms)
     const localEv = { ...payload, Timestamp: timestamp, Quarto: currentQuarter, Numero: selectedPlayer.number, Giocatore: selectedPlayer.name, Azione: azione, Categoria: categoria, Zona: zonaName };
     setEvents(prev => [...prev, localEv]);
-    showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione} (${zonaName})`);
+    showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione}`);
 
-    // 2. Send to Supabase scouting_log table
+    // 2. Supabase insert
     let cloudSynced = false;
     if (navigator.onLine && import.meta.env.VITE_SUPABASE_URL) {
       try {
@@ -122,38 +132,23 @@ export default function App() {
       }
     }
 
-    // 3. Offline Resilience: if not synced to cloud, store in localStorage queue
+    // 3. Offline resilience: save to queue if not cloud synced
     if (!cloudSynced) {
       saveToOfflineQueue(payload);
       setOfflineQueueCount(getOfflineQueue().length);
-      showToast(`📦 Salvato offline (in coda sync Wi-Fi)`);
+      showToast(`📦 Salvato offline (in coda sync)`);
     }
 
-    // 4. Asynchronous fallback sync to local Express server if running locally
+    // Local API fallback
     try {
       fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-    } catch (e) {
-      // Ignored if purely cloud-deployed
-    }
+    } catch (e) {}
 
     setSelectedPlayer(null);
-  };
-
-  const handleRecordShot = (isMade) => {
-    const zoneInfo = COURT_ZONES[selectedZoneKey];
-    const shotType = zoneInfo.type; // "2PT" or "3PT"
-    const outcome = isMade ? 'Fatto' : 'Sbagliato';
-    const azione = `${shotType} ${outcome}`;
-
-    dispatchAction(azione, 'Tiro', zoneInfo.name);
-  };
-
-  const handleRecordAction = (azione, categoria) => {
-    dispatchAction(azione, categoria, 'Generica');
   };
 
   const handleUndo = async () => {
@@ -166,43 +161,36 @@ export default function App() {
     setEvents(prev => prev.slice(0, -1));
     showToast(`↩️ Annullato: #${lastEv.Numero || lastEv.numero} ${lastEv.Azione || lastEv.azione}`);
 
-    // Try Supabase delete by latest ID if online
     if (navigator.onLine && lastEv.id) {
       try {
         await supabase
           .from('scouting_log')
           .delete()
           .eq('id', lastEv.id);
-      } catch (e) {
-        console.warn('Supabase delete failed:', e);
-      }
+      } catch (e) {}
     }
 
     try {
       await fetch('/api/events/last', { method: 'DELETE' });
-    } catch (err) {
-      // Local fallback
-    }
+    } catch (e) {}
   };
 
   const handleResetGame = async () => {
-    if (window.confirm('Sei sicuro di voler resettare tutti i dati della partita?')) {
+    if (window.confirm(`Sei sicuro di voler azzerare i dati della partita "${gameSession}"?`)) {
       setEvents([]);
       setSelectedPlayer(null);
-      
-      if (navigator.onLine) {
+
+      if (navigator.onLine && gameSession) {
         try {
-          await supabase.from('scouting_log').delete().neq('id', 0);
-        } catch (e) {
-          console.warn('Supabase reset failed:', e);
-        }
+          await supabase.from('scouting_log').delete().eq('nome_partita', gameSession);
+        } catch (e) {}
       }
 
       try {
         await fetch('/api/reset', { method: 'POST' });
       } catch (e) {}
 
-      showToast('🗑️ Dati gara azzerati!');
+      showToast('🗑️ Dati partita azzerati!');
     }
   };
 
@@ -220,180 +208,60 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#06090F] p-2 text-slate-100">
-      {/* Toast Banner */}
-      {toastMsg && (
-        <div className="fixed top-3 right-3 z-50 bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-lg shadow-2xl border-2 border-white flex items-center gap-2 animate-pulse text-xs">
-          <Activity className="w-4 h-4 text-slate-950" />
-          {toastMsg}
-        </div>
-      )}
-
-      {/* Top Fixed Navbar */}
-      <header className="glass-card px-3 py-1.5 mb-1.5 flex items-center justify-between border-slate-800 flex-none">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md">
-            <Trophy className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
+    <BrowserRouter>
+      <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#06090F] p-2 text-slate-100">
+        {/* Toast Notification */}
+        {toastMsg && (
+          <div className="fixed top-3 right-3 z-50 bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-lg shadow-2xl border-2 border-white flex items-center gap-2 animate-pulse text-xs">
+            <Activity className="w-4 h-4 text-slate-950" />
+            {toastMsg}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-black text-sm tracking-wider text-slate-100 uppercase">COURTSIDE PRO</span>
-            {isOnline ? (
-              <span className="flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-400 font-extrabold px-2 py-0.5 rounded border border-emerald-500/30">
-                <Wifi className="w-3 h-3" /> ONLINE (SUPABASE)
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-[10px] bg-rose-500/20 text-rose-400 font-extrabold px-2 py-0.5 rounded border border-rose-500/30">
-                <WifiOff className="w-3 h-3" /> OFFLINE (RESILIENT)
-              </span>
-            )}
+        )}
 
-            {offlineQueueCount > 0 && (
-              <button
-                onClick={handleManualSync}
-                className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded animate-bounce shadow"
-              >
-                📦 {offlineQueueCount} IN CODA (SYNC)
-              </button>
-            )}
-          </div>
-        </div>
+        {/* Global Navigation Header */}
+        <Navbar
+          isOnline={isOnline}
+          offlineQueueCount={offlineQueueCount}
+          onManualSync={handleManualSync}
+          gameSession={gameSession}
+          onEditGameSession={() => setShowSessionModal(true)}
+          onToggleRosterModal={() => setShowRosterModal(!showRosterModal)}
+        />
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800">
-          <button
-            onClick={() => setActiveTab('LIVE')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'LIVE'
-                ? 'bg-amber-400 text-slate-950 shadow'
-                : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
-            }`}
-          >
-            <LayoutDashboard className="w-3 h-3" />
-            LIVE DASHBOARD
-          </button>
-          <button
-            onClick={() => setActiveTab('BOXSCORE')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'BOXSCORE'
-                ? 'bg-amber-400 text-slate-950 shadow'
-                : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
-            }`}
-          >
-            <BarChart3 className="w-3 h-3" />
-            FIBA BOX SCORE
-          </button>
-        </div>
-
-        {/* Header Actions */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setShowRosterModal(!showRosterModal)}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all border border-slate-700"
-          >
-            <Settings className="w-3 h-3" />
-            ROSTER
-          </button>
-          <a
-            href="/api/export-csv"
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-sky-600/90 text-white hover:bg-sky-500 transition-all"
-          >
-            <Download className="w-3 h-3" />
-            CSV
-          </a>
-          <button
-            onClick={handleResetGame}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-rose-700/90 text-white hover:bg-rose-600 transition-all"
-          >
-            <Trash2 className="w-3 h-3" />
-            RESET
-          </button>
-        </div>
-      </header>
-
-      {/* Roster Quick Editor Modal */}
-      {showRosterModal && (
-        <div className="glass-card p-2.5 mb-1.5 border-amber-500/40 flex-none">
-          <h3 className="text-[11px] font-black text-amber-400 uppercase tracking-wider mb-2">
-            ROSTER MANAGER — EDIT NUMBERS & NAMES
-          </h3>
-          <div className="grid grid-cols-6 gap-1.5">
-            {roster.map((p, idx) => (
-              <div key={idx} className="flex gap-1 items-center bg-slate-900 p-1 rounded border border-slate-800 text-xs">
-                <input
-                  type="text"
-                  value={p.number}
-                  onChange={(e) => {
-                    const newR = [...roster];
-                    newR[idx].number = e.target.value;
-                    setRoster(newR);
-                  }}
-                  className="w-7 bg-slate-950 text-amber-400 font-black text-xs p-0.5 rounded text-center border border-slate-700"
-                />
-                <input
-                  type="text"
-                  value={p.name}
-                  onChange={(e) => {
-                    const newR = [...roster];
-                    newR[idx].name = e.target.value;
-                    setRoster(newR);
-                  }}
-                  className="w-full bg-slate-950 text-slate-100 font-bold text-xs p-0.5 rounded border border-slate-700 truncate"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Top Scoreboard Status Bar */}
-      <ScoreboardHeader
-        selectedPlayer={selectedPlayer}
-        events={events}
-        currentQuarter={currentQuarter}
-        setCurrentQuarter={setCurrentQuarter}
-        onUndo={handleUndo}
-      />
-
-      {/* MAIN VIEWPORT CONTAINER */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {activeTab === 'LIVE' && (
-          <div className="grid grid-cols-12 gap-2 h-full">
-            <div className="col-span-3 h-full overflow-hidden">
-              <PlayerSelector
+        {/* Routes */}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <LiveGame
+                gameSession={gameSession}
+                setGameSession={setGameSession}
+                events={events}
+                setEvents={setEvents}
                 roster={roster}
+                setRoster={setRoster}
                 selectedPlayer={selectedPlayer}
-                onSelectPlayer={setSelectedPlayer}
-                events={events}
-              />
-            </div>
-
-            <div className="col-span-6 h-full overflow-y-auto space-y-2 pr-0.5">
-              <CourtPitchMap
-                selectedPlayer={selectedPlayer}
+                setSelectedPlayer={setSelectedPlayer}
                 selectedZoneKey={selectedZoneKey}
-                onSelectZone={setSelectedZoneKey}
-                events={events}
+                setSelectedZoneKey={setSelectedZoneKey}
+                currentQuarter={currentQuarter}
+                setCurrentQuarter={setCurrentQuarter}
+                showRosterModal={showRosterModal}
+                setShowRosterModal={setShowRosterModal}
+                showSessionModal={showSessionModal}
+                setShowSessionModal={setShowSessionModal}
+                dispatchAction={dispatchAction}
+                handleUndo={handleUndo}
+                handleResetGame={handleResetGame}
               />
-
-              <ActionClusters
-                selectedZoneKey={selectedZoneKey}
-                onRecordShot={handleRecordShot}
-                onRecordAction={handleRecordAction}
-              />
-            </div>
-
-            <div className="col-span-3 h-full overflow-hidden">
-              <PlayLogFeed events={events} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'BOXSCORE' && (
-          <div className="h-full overflow-y-auto">
-            <BoxScoreTable roster={roster} events={events} />
-          </div>
-        )}
+            }
+          />
+          <Route
+            path="/archive"
+            element={<Archive showToast={showToast} />}
+          />
+        </Routes>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }

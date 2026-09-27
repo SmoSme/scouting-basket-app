@@ -43,7 +43,6 @@ export async function syncOfflineQueue(onSyncSuccess) {
   }
 
   try {
-    // Strip client helper fields before Supabase insert
     const payload = queue.map(({ _queuedAt, ...item }) => item);
     
     const { data, error } = await supabase
@@ -77,7 +76,6 @@ export function setupOnlineSyncListener(onSyncSuccess) {
 
   window.addEventListener('online', handleOnline);
 
-  // Initial sync check on component mount if online
   if (navigator.onLine) {
     syncOfflineQueue(onSyncSuccess);
   }
