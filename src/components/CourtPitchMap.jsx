@@ -200,31 +200,6 @@ export default function CourtPitchMap({
           <circle cx="300" cy="42" r="14" fill="none" stroke="#F59E0B" strokeWidth="3" pointerEvents="none" />
         </svg>
       </div>
-
-      {/* 9 Zone Selector Buttons Grid */}
-      <div className="grid grid-cols-3 gap-1.5 mt-2">
-        {Object.entries(COURT_ZONES).map(([key, zone]) => {
-          const stats = getZoneStats(zone.name);
-          const isSelected = selectedZoneKey === key;
-          
-          return (
-            <button
-              key={key}
-              onClick={() => onSelectZone(key)}
-              className={`py-1.5 px-2 text-[10px] font-bold rounded-md border transition-all truncate flex items-center justify-between ${
-                isSelected
-                  ? 'bg-sky-500 text-slate-950 border-sky-300 font-black shadow-md'
-                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-              }`}
-            >
-              <span className="truncate">{zone.name}</span>
-              <span className={`text-[9px] px-1 rounded ml-1 ${isSelected ? 'bg-black text-sky-300 font-mono' : 'bg-slate-950 text-slate-400 border border-slate-800'}`}>
-                {zone.type}
-              </span>
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

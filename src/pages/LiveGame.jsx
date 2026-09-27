@@ -525,7 +525,32 @@ export default function LiveGame({
               )}
 
               {mobileView === 'COURT' && (
-                <div className="h-full overflow-y-auto space-y-2 pr-0.5">
+                <div className="h-full overflow-y-auto space-y-1.5 pr-0.5">
+                  {/* Compact Mobile Quick On-Court Player Selection Strip */}
+                  <div className="glass-card p-1.5 flex items-center gap-1 overflow-x-auto border-slate-700/80">
+                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider px-1 flex-none flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                      COURT:
+                    </span>
+                    {roster.filter(p => new Set(onCourtPlayerNums.map(n => String(n))).has(String(p.number))).map(p => {
+                      const isSel = selectedPlayer && String(selectedPlayer.number) === String(p.number);
+                      return (
+                        <button
+                          key={p.number}
+                          onClick={() => setSelectedPlayer(isSel ? null : p)}
+                          className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 flex-none transition-all ${
+                            isSel
+                              ? 'bg-sky-500 text-slate-950 font-black shadow-md'
+                              : 'bg-slate-900 text-slate-200 border border-slate-800 hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="font-mono text-sky-400 font-black">#{p.number}</span>
+                          <span className="truncate max-w-[85px]">{p.name.split(' ')[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   <CourtPitchMap
                     selectedPlayer={selectedPlayer}
                     selectedZoneKey={selectedZoneKey}
