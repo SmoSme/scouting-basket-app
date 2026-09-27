@@ -6,7 +6,7 @@ import ActionClusters from '../components/ActionClusters';
 import BoxScoreTable from '../components/BoxScoreTable';
 import PlayLogFeed from '../components/PlayLogFeed';
 import { COURT_ZONES } from '../data/roster';
-import { Play, Edit3 } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 export default function LiveGame({
   gameSession,
@@ -43,14 +43,14 @@ export default function LiveGame({
   const handleRecordShot = (isMade) => {
     const zoneInfo = COURT_ZONES[selectedZoneKey];
     const shotType = zoneInfo.type; // "2PT" or "3PT"
-    const outcome = isMade ? 'Fatto' : 'Sbagliato';
+    const outcome = isMade ? 'Made' : 'Missed';
     const azione = `${shotType} ${outcome}`;
 
-    dispatchAction(azione, 'Tiro', zoneInfo.name);
+    dispatchAction(azione, 'Shot', zoneInfo.name);
   };
 
   const handleRecordAction = (azione, categoria) => {
-    dispatchAction(azione, categoria, 'Generica');
+    dispatchAction(azione, categoria, 'Generic');
   };
 
   return (
@@ -58,47 +58,47 @@ export default function LiveGame({
       {/* Session Modal if no gameSession or user clicks edit */}
       {showSessionModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-card max-w-md w-full p-6 border-amber-500/50 shadow-2xl">
+          <div className="glass-card max-w-md w-full p-6 border-slate-700/80 shadow-2xl">
             <div className="flex items-center gap-2 mb-4">
-              <Play className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-black text-amber-400 uppercase tracking-wider">
-                INIZIA NUOVA SESSIONE PARTITA
+              <Play className="w-5 h-5 text-sky-400" />
+              <h2 className="text-lg font-black text-slate-100 uppercase tracking-wider">
+                START NEW MATCH SESSION
               </h2>
             </div>
             
             <p className="text-xs text-slate-300 font-semibold mb-4">
-              Inserisci il nome identificativo della gara (es. <em>"Olimpia Milano vs Virtus Bologna - 27/09"</em>). Questo nome verrà salvato in ogni riga del log su Supabase e ti permetterà di scaricare il CSV o eliminare la gara dall'Archivio.
+              Enter the match identifier (e.g. <em>"Olimpia vs Virtus - Game 5"</em>). This session name will be attached to cloud records on Supabase and enables CSV export and archiving.
             </p>
 
             <form onSubmit={handleStartSession} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">
-                  Nome Partita / Gara
+                  Match Name / Identifier
                 </label>
                 <input
                   type="text"
                   value={sessionInput}
                   onChange={(e) => setSessionInput(e.target.value)}
-                  placeholder="Es. Olimpia vs Virtus - Giornata 5"
+                  placeholder="e.g. Olimpia vs Virtus - Game 5"
                   required
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold p-3 rounded-lg text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold p-3 rounded-lg text-sm focus:outline-none focus:border-sky-400"
                 />
               </div>
 
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-400 text-slate-950 font-black py-3 rounded-lg text-sm hover:bg-amber-300 transition-all uppercase tracking-wider"
+                  className="flex-1 bg-sky-500 text-slate-950 font-black py-3 rounded-lg text-sm hover:bg-sky-400 transition-all uppercase tracking-wider shadow-md"
                 >
-                  CONFERMA ED INIZIA
+                  CONFIRM & START
                 </button>
                 {gameSession && (
                   <button
                     type="button"
                     onClick={() => setShowSessionModal(false)}
-                    className="bg-slate-800 text-slate-300 font-bold px-4 py-3 rounded-lg text-sm hover:bg-slate-700 transition-all"
+                    className="bg-slate-800 text-slate-300 font-bold px-4 py-3 rounded-lg text-sm hover:bg-slate-700 transition-all border border-slate-700"
                   >
-                    ANNULLA
+                    CANCEL
                   </button>
                 )}
               </div>
@@ -109,13 +109,13 @@ export default function LiveGame({
 
       {/* Roster Quick Editor Modal */}
       {showRosterModal && (
-        <div className="glass-card p-2.5 mb-1.5 border-amber-500/40 flex-none">
-          <h3 className="text-[11px] font-black text-amber-400 uppercase tracking-wider mb-2">
+        <div className="glass-card p-2.5 mb-1.5 border-slate-700/80 flex-none">
+          <h3 className="text-[11px] font-black text-sky-400 uppercase tracking-wider mb-2">
             ROSTER MANAGER — EDIT NUMBERS & NAMES
           </h3>
           <div className="grid grid-cols-6 gap-1.5">
             {roster.map((p, idx) => (
-              <div key={idx} className="flex gap-1 items-center bg-slate-900 p-1 rounded border border-slate-800 text-xs">
+              <div key={idx} className="flex gap-1 items-center bg-slate-900 p-1 rounded-md border border-slate-800 text-xs">
                 <input
                   type="text"
                   value={p.number}
@@ -124,7 +124,7 @@ export default function LiveGame({
                     newR[idx].number = e.target.value;
                     setRoster(newR);
                   }}
-                  className="w-7 bg-slate-950 text-amber-400 font-black text-xs p-0.5 rounded text-center border border-slate-700"
+                  className="w-7 bg-slate-950 text-sky-400 font-mono font-black text-xs p-0.5 rounded text-center border border-slate-700"
                 />
                 <input
                   type="text"
@@ -152,31 +152,31 @@ export default function LiveGame({
       />
 
       {/* Live / Box Score Tab Sub-Nav */}
-      <div className="flex justify-between items-center mb-1 flex-none">
-        <div className="flex gap-2">
+      <div className="flex justify-between items-center mb-1.5 flex-none">
+        <div className="flex gap-2 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
           <button
             onClick={() => setActiveTab('LIVE')}
             className={`px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'LIVE' ? 'bg-amber-400 text-slate-950' : 'bg-slate-900 text-slate-400'
+              activeTab === 'LIVE' ? 'bg-sky-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
             }`}
           >
-            ⚡ CAMPO & AZIONI
+            COURT & ACTIONS
           </button>
           <button
             onClick={() => setActiveTab('BOXSCORE')}
             className={`px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'BOXSCORE' ? 'bg-amber-400 text-slate-950' : 'bg-slate-900 text-slate-400'
+              activeTab === 'BOXSCORE' ? 'bg-sky-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
             }`}
           >
-            📈 BOX SCORE FIBA
+            FIBA BOX SCORE
           </button>
         </div>
 
         <button
           onClick={handleResetGame}
-          className="text-[10px] bg-rose-700/80 hover:bg-rose-600 text-white font-bold px-2 py-1 rounded"
+          className="text-[10px] bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold px-2.5 py-1 rounded-md transition-all"
         >
-          ⚠️ AZZERA PARTITA CORRENTE
+          RESET MATCH DATA
         </button>
       </div>
 

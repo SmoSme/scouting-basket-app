@@ -8,14 +8,14 @@ export default function ScoreboardHeader({
   setCurrentQuarter,
   onUndo
 }) {
-  const getAz = (e) => e?.Azione || e?.azione || '';
+  const getAz = (e) => String(e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
 
   const teamPts = events.reduce((acc, ev) => {
     const az = getAz(ev);
-    if (az === '2PT Fatto') return acc + 2;
-    if (az === '3PT Fatto') return acc + 3;
-    if (az === 'TL Fatto') return acc + 1;
+    if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
+    if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
+    if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
     return acc;
   }, 0);
 
@@ -23,29 +23,29 @@ export default function ScoreboardHeader({
     if (!selectedPlayer) return null;
     const pEvents = events.filter(e => getNum(e) === String(selectedPlayer.number));
     
-    const fg2_m = pEvents.filter(e => getAz(e) === '2PT Fatto').length;
-    const fg2_miss = pEvents.filter(e => getAz(e) === '2PT Sbagliato').length;
+    const fg2_m = pEvents.filter(e => { const az = getAz(e); return az === '2PT Made' || az === '2PT Fatto'; }).length;
+    const fg2_miss = pEvents.filter(e => { const az = getAz(e); return az === '2PT Missed' || az === '2PT Sbagliato'; }).length;
     const fg2_a = fg2_m + fg2_miss;
     
-    const fg3_m = pEvents.filter(e => getAz(e) === '3PT Fatto').length;
-    const fg3_miss = pEvents.filter(e => getAz(e) === '3PT Sbagliato').length;
+    const fg3_m = pEvents.filter(e => { const az = getAz(e); return az === '3PT Made' || az === '3PT Fatto'; }).length;
+    const fg3_miss = pEvents.filter(e => { const az = getAz(e); return az === '3PT Missed' || az === '3PT Sbagliato'; }).length;
     const fg3_a = fg3_m + fg3_miss;
     
-    const ft_m = pEvents.filter(e => getAz(e) === 'TL Fatto').length;
-    const ft_miss = pEvents.filter(e => getAz(e) === 'TL Sbagliato').length;
+    const ft_m = pEvents.filter(e => { const az = getAz(e); return az === 'FT Made' || az === 'TL Fatto'; }).length;
+    const ft_miss = pEvents.filter(e => { const az = getAz(e); return az === 'FT Missed' || az === 'TL Sbagliato'; }).length;
     const ft_a = ft_m + ft_miss;
     
     const pts = (fg2_m * 2) + (fg3_m * 3) + (ft_m * 1);
-    const oreb = pEvents.filter(e => getAz(e) === 'Rimb Offensivo').length;
-    const dreb = pEvents.filter(e => getAz(e) === 'Rimb Difensivo').length;
+    const oreb = pEvents.filter(e => { const az = getAz(e); return az === 'Off Rebound' || az === 'Rimb Offensivo'; }).length;
+    const dreb = pEvents.filter(e => { const az = getAz(e); return az === 'Def Rebound' || az === 'Rimb Difensivo'; }).length;
     const treb = oreb + dreb;
-    const ast = pEvents.filter(e => getAz(e) === 'Assist').length;
-    const stl = pEvents.filter(e => getAz(e) === 'Palla Recuperata').length;
-    const tov = pEvents.filter(e => getAz(e) === 'Palla Persa').length;
-    const pf = pEvents.filter(e => getAz(e) === 'Fallo Fatto').length;
-    const fd = pEvents.filter(e => getAz(e) === 'Fallo Subito').length;
-    const blk = pEvents.filter(e => getAz(e) === 'Stoppata Data').length;
-    const blka = pEvents.filter(e => getAz(e) === 'Stoppata Subita').length;
+    const ast = pEvents.filter(e => { const az = getAz(e); return az === 'Assist'; }).length;
+    const stl = pEvents.filter(e => { const az = getAz(e); return az === 'Steal' || az === 'Palla Recuperata'; }).length;
+    const tov = pEvents.filter(e => { const az = getAz(e); return az === 'Turnover' || az === 'Palla Persa'; }).length;
+    const pf = pEvents.filter(e => { const az = getAz(e); return az === 'Personal Foul' || az === 'Fallo Fatto'; }).length;
+    const fd = pEvents.filter(e => { const az = getAz(e); return az === 'Fallo Subito' || az === 'Foul Drawn'; }).length;
+    const blk = pEvents.filter(e => { const az = getAz(e); return az === 'Block' || az === 'Stoppata Data'; }).length;
+    const blka = pEvents.filter(e => { const az = getAz(e); return az === 'Block Allowed' || az === 'Stoppata Subita'; }).length;
     
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
@@ -63,14 +63,14 @@ export default function ScoreboardHeader({
   const pStats = getPlayerStats();
 
   return (
-    <div className="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-lg p-1.5 px-3 mb-2 flex-none">
+    <div className="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-700/60 rounded-xl p-1.5 px-3 mb-2 flex-none shadow-md">
       {/* Quarter Selector */}
       <div className="flex items-center gap-1.5">
-        <Clock className="w-3.5 h-3.5 text-amber-500" />
+        <Clock className="w-3.5 h-3.5 text-sky-400" />
         <select
           value={currentQuarter}
           onChange={(e) => setCurrentQuarter(e.target.value)}
-          className="bg-slate-950 text-slate-100 font-bold py-0.5 px-2 rounded border border-slate-700 text-xs cursor-pointer focus:outline-none"
+          className="bg-slate-950 text-slate-100 font-bold py-0.5 px-2 rounded border border-slate-700 text-xs cursor-pointer focus:outline-none focus:border-sky-400"
         >
           {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => (
             <option key={q} value={q}>{q}</option>
@@ -83,7 +83,7 @@ export default function ScoreboardHeader({
         {selectedPlayer && pStats ? (
           <>
             <span className="stat-pill-gold-dense">
-              <UserCheck className="w-3.5 h-3.5" />
+              <UserCheck className="w-3.5 h-3.5 text-sky-400" />
               #{selectedPlayer.number} {selectedPlayer.name} ({selectedPlayer.pos})
             </span>
             <span className="stat-pill-dense text-amber-400 border-amber-500/40">

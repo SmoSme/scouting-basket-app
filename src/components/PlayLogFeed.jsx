@@ -4,18 +4,18 @@ import { History } from 'lucide-react';
 export default function PlayLogFeed({ events }) {
   if (!events || events.length === 0) {
     return (
-      <div className="glass-card p-3 text-center text-slate-500 font-semibold text-xs border-slate-800">
+      <div className="glass-card p-4 text-center text-slate-500 font-semibold text-xs border-slate-700/60">
         No play events logged yet.
       </div>
     );
   }
 
-  const reversedEvents = [...events].reverse().slice(0, 8);
+  const reversedEvents = [...events].reverse().slice(0, 10);
 
   return (
-    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5 flex-none">
-        <History className="w-3.5 h-3.5 text-sky-500" />
+    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden border-slate-700/60">
+      <div className="flex items-center gap-1.5 border-b border-slate-800 pb-2 mb-2 flex-none">
+        <History className="w-3.5 h-3.5 text-sky-400" />
         <h2 className="text-[11px] font-black text-slate-300 uppercase tracking-wider">
           LIVE PLAY STREAM AUDIT TRAIL
         </h2>
@@ -24,9 +24,9 @@ export default function PlayLogFeed({ events }) {
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
         {reversedEvents.map((ev, idx) => {
           const actionStr = String(ev?.Azione || ev?.azione || '');
-          const isSuccess = actionStr.includes('Fatto');
-          const isNegative = actionStr.includes('Sbagliato') || actionStr.includes('Persa');
-          const badgeColor = isSuccess ? '#10B981' : (isNegative ? '#EF4444' : '#38BDF8');
+          const isSuccess = actionStr.includes('Made') || actionStr.includes('Fatto') || actionStr.includes('Steal') || actionStr.includes('Assist');
+          const isNegative = actionStr.includes('Missed') || actionStr.includes('Sbagliato') || actionStr.includes('Turnover') || actionStr.includes('Persa');
+          const badgeColor = isSuccess ? '#059669' : (isNegative ? '#BE123C' : '#0284C7');
 
           const timestamp = ev?.Timestamp || ev?.timestamp || '';
           const quarto = ev?.Quarto || ev?.quarto || '';
@@ -37,17 +37,17 @@ export default function PlayLogFeed({ events }) {
           return (
             <div
               key={ev?.id || idx}
-              className="bg-slate-900/90 border-l-4 rounded p-1.5 px-2 text-xs"
+              className="bg-slate-900/90 border-l-4 rounded-md p-2 text-xs border-r border-t border-b border-slate-800/60"
               style={{ borderLeftColor: badgeColor }}
             >
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>{timestamp} [{quarto}]</span>
-                <span className="truncate max-w-[100px]">{zona}</span>
+                <span className="truncate max-w-[110px] text-slate-400">{zona}</span>
               </div>
               <div className="font-bold text-slate-100 truncate mt-0.5">
                 #{numero} {giocatore}
               </div>
-              <div className="font-black text-[11px] uppercase tracking-wide" style={{ color: badgeColor }}>
+              <div className="font-black text-[11px] uppercase tracking-wide mt-0.5" style={{ color: badgeColor }}>
                 {actionStr}
               </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Archive as ArchiveIcon, Download, Trash2, RefreshCw, Trophy, Calendar, Hash, FileSpreadsheet } from 'lucide-react';
+import { Archive as ArchiveIcon, Download, Trash2, RefreshCw, Calendar, Hash, FileSpreadsheet } from 'lucide-react';
 
 export default function Archive({ showToast }) {
   const [matches, setMatches] = useState([]);
@@ -36,12 +36,12 @@ export default function Archive({ showToast }) {
       // Group events by distinct nome_partita
       const grouped = {};
       data.forEach(item => {
-        const gameName = item.nome_partita || item.Nome_Partita || 'Partita Senza Nome';
+        const gameName = item.nome_partita || item.Nome_Partita || 'Unnamed Match';
         if (!grouped[gameName]) {
           grouped[gameName] = {
             name: gameName,
             events: [],
-            createdAt: item.created_at || item.Timestamp || 'Data n.d.'
+            createdAt: item.created_at || item.Timestamp || 'n.a.'
           };
         }
         grouped[gameName].events.push(item);
@@ -50,9 +50,10 @@ export default function Archive({ showToast }) {
       // Convert to array of match summaries
       const matchSummaries = Object.values(grouped).map(m => {
         const teamPts = m.events.reduce((acc, ev) => {
-          if (ev.azione === '2PT Fatto' || ev.Azione === '2PT Fatto') return acc + 2;
-          if (ev.azione === '3PT Fatto' || ev.Azione === '3PT Fatto') return acc + 3;
-          if (ev.azione === 'TL Fatto' || ev.Azione === 'TL Fatto') return acc + 1;
+          const az = ev.azione || ev.Azione || '';
+          if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
+          if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
+          if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
           return acc;
         }, 0);
 
@@ -90,7 +91,7 @@ export default function Archive({ showToast }) {
         rowsToExport = data;
       }
 
-      const headers = ['Timestamp', 'Quarto', 'Numero', 'Giocatore', 'Azione', 'Categoria', 'Zona', 'Nome_Partita'];
+      const headers = ['Timestamp', 'Quarter', 'Number', 'Player', 'Action', 'Category', 'Zone', 'Match_Name'];
       const csvRows = [headers.join(',')];
 
       rowsToExport.forEach(r => {
@@ -117,10 +118,10 @@ export default function Archive({ showToast }) {
       link.click();
       document.body.removeChild(link);
       
-      if (showToast) showToast(`📥 Scaricato CSV per "${matchName}"`);
+      if (showToast) showToast(`📥 Exported CSV for "${matchName}"`);
     } catch (err) {
       console.error('Download CSV error:', err);
-      if (showToast) showToast(`❌ Errore durante il download del CSV`);
+      if (showToast) showToast(`❌ Error exporting CSV file`);
     } finally {
       setActionLoading(null);
     }
@@ -128,7 +129,7 @@ export default function Archive({ showToast }) {
 
   // Action: Delete Specific Game from Supabase
   const handleDeleteGame = async (matchName) => {
-    if (!window.confirm(`Sei sicuro di voler eliminare DEFINITIVAMENTE la partita "${matchName}" e tutti i suoi eventi da Supabase?`)) {
+    if (!window.confirm(`Are you sure you want to PERMANENTLY delete match "${matchName}" and all associated play logs from Supabase?`)) {
       return;
     }
 
@@ -144,11 +145,11 @@ export default function Archive({ showToast }) {
         throw error;
       }
 
-      if (showToast) showToast(`🗑️ Partita "${matchName}" eliminata da Supabase!`);
+      if (showToast) showToast(`🗑️ Match "${matchName}" deleted from Supabase!`);
       fetchArchive();
     } catch (err) {
       console.error('Delete match error:', err);
-      if (showToast) showToast(`❌ Errore durante l'eliminazione della partita`);
+      if (showToast) showToast(`❌ Error deleting match from Supabase`);
     } finally {
       setActionLoading(null);
     }
@@ -157,17 +158,17 @@ export default function Archive({ showToast }) {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-4 max-w-6xl mx-auto w-full">
       {/* Archive Header */}
-      <div className="flex items-center justify-between glass-card p-4 mb-4 border-slate-800">
+      <div className="flex items-center justify-between glass-card p-4 mb-4 border-slate-700/60">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-400/20 border border-amber-400/40 flex items-center justify-center">
-            <ArchiveIcon className="w-5 h-5 text-amber-400" />
+          <div className="w-10 h-10 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center">
+            <ArchiveIcon className="w-5 h-5 text-sky-400" />
           </div>
           <div>
             <h1 className="text-lg font-black text-slate-100 uppercase tracking-wider">
-              ARCHIVIO PARTITE SUPABASE
+              SUPABASE MATCH ARCHIVE
             </h1>
             <p className="text-xs text-slate-400 font-semibold">
-              Gestisci ed esporta le partite passate salvate in cloud
+              Manage and export historical match scouting logs stored in cloud
             </p>
           </div>
         </div>
@@ -175,49 +176,49 @@ export default function Archive({ showToast }) {
         <button
           onClick={fetchArchive}
           disabled={loading}
-          className="flex items-center gap-2 bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold transition-all"
+          className="flex items-center gap-2 bg-slate-900 border border-slate-700 hover:border-sky-400 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold transition-all"
         >
-          <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-          AGGIORNA ARCHIVIO
+          <RefreshCw className={`w-4 h-4 text-sky-400 ${loading ? 'animate-spin' : ''}`} />
+          REFRESH ARCHIVE
         </button>
       </div>
 
       {/* Loading state */}
       {loading ? (
-        <div className="glass-card p-12 text-center border-slate-800">
-          <RefreshCw className="w-8 h-8 text-amber-400 animate-spin mx-auto mb-3" />
-          <p className="text-slate-400 font-bold text-sm">Caricamento archivio partite da Supabase...</p>
+        <div className="glass-card p-12 text-center border-slate-700/60">
+          <RefreshCw className="w-8 h-8 text-sky-400 animate-spin mx-auto mb-3" />
+          <p className="text-slate-400 font-bold text-sm">Fetching match archive from Supabase...</p>
         </div>
       ) : matches.length === 0 ? (
-        <div className="glass-card p-12 text-center border-slate-800">
+        <div className="glass-card p-12 text-center border-slate-700/60">
           <FileSpreadsheet className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-slate-200 font-black text-base uppercase mb-1">Nessuna Partita in Archivio</h3>
+          <h3 className="text-slate-200 font-black text-base uppercase mb-1">No Matches in Archive</h3>
           <p className="text-slate-400 font-semibold text-xs max-w-md mx-auto">
-            Non ci sono ancora gare salvate su Supabase. Avvia una nuova partita dal menu "Partita Live" per registrarti i primi dati!
+            No match scouting logs found in Supabase. Start a new session from "Live Game" to log your first play events!
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {matches.map((m, idx) => (
-            <div key={idx} className="glass-card p-4 border-slate-800 hover:border-amber-500/50 transition-all flex flex-col justify-between">
+            <div key={idx} className="glass-card p-4 border-slate-700/60 hover:border-sky-500/50 transition-all flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-black text-base text-amber-400 uppercase tracking-wider">
+                  <h3 className="font-black text-base text-sky-400 uppercase tracking-wider">
                     {m.name}
                   </h3>
-                  <span className="bg-slate-900 border border-slate-700 text-slate-300 font-extrabold text-xs px-2.5 py-1 rounded">
+                  <span className="bg-slate-950 border border-slate-800 text-slate-300 font-extrabold text-xs px-2.5 py-1 rounded">
                     {m.pts} PTS
                   </span>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-slate-400 mb-4 font-semibold">
                   <span className="flex items-center gap-1">
-                    <Hash className="w-3.5 h-3.5 text-amber-400" />
-                    {m.eventCount} Eventi Registrati
+                    <Hash className="w-3.5 h-3.5 text-sky-400" />
+                    {m.eventCount} Logged Plays
                   </span>
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-sky-400" />
-                    {new Date(m.createdAt).toLocaleDateString('it-IT')}
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    {new Date(m.createdAt).toLocaleDateString('en-GB')}
                   </span>
                 </div>
               </div>
@@ -227,18 +228,18 @@ export default function Archive({ showToast }) {
                 <button
                   onClick={() => handleDownloadCSV(m.name, m.events)}
                   disabled={actionLoading === m.name}
-                  className="flex-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-black py-2.5 px-3 rounded-lg text-xs transition-all shadow"
+                  className="flex-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-black py-2.5 px-3 rounded-lg text-xs transition-all shadow-md"
                 >
                   <Download className="w-4 h-4" />
-                  SCARICA CSV
+                  DOWNLOAD CSV
                 </button>
                 <button
                   onClick={() => handleDeleteGame(m.name)}
                   disabled={actionLoading === m.name}
-                  className="flex items-center justify-center gap-1.5 bg-rose-700/80 hover:bg-rose-600 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition-all"
+                  className="flex items-center justify-center gap-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold py-2.5 px-3 rounded-lg text-xs transition-all"
                 >
                   <Trash2 className="w-4 h-4" />
-                  ELIMINA
+                  DELETE MATCH
                 </button>
               </div>
             </div>

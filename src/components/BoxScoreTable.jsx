@@ -5,9 +5,9 @@ import { COURT_ZONES } from '../data/roster.js';
 export default function BoxScoreTable({ roster, events }) {
   if (!events || events.length === 0) {
     return (
-      <div className="glass-card p-8 text-center border-slate-800">
+      <div className="glass-card p-8 text-center border-slate-700/60">
         <p className="text-slate-400 font-bold text-sm">
-          No events logged in the game yet. Use the Live Tracking Dashboard to record match plays.
+          No play events logged in the match yet. Use the Live Tracking Dashboard to record match plays.
         </p>
       </div>
     );
@@ -20,8 +20,8 @@ export default function BoxScoreTable({ roster, events }) {
 
   const getAz = (e) => String(e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
-  const getZona = (e) => e?.Zona || e?.zona || '';
-  const getGiocatore = (e) => e?.Giocatore || e?.giocatore || '';
+  const getZona = (e) => String(e?.Zona || e?.zona || '');
+  const getGiocatore = (e) => String(e?.Giocatore || e?.giocatore || '');
 
   const logNums = Array.from(new Set(events.map(e => getNum(e)))).filter(Boolean);
   const allNums = Array.from(new Set([...Object.keys(rosterMap), ...logNums]));
@@ -30,29 +30,29 @@ export default function BoxScoreTable({ roster, events }) {
     const pEvents = events.filter(e => getNum(e) === num);
     const pInfo = rosterMap[num] || { name: getGiocatore(pEvents[0]) || `Player #${num}`, pos: '-' };
 
-    const fg2_m = pEvents.filter(e => getAz(e) === '2PT Fatto').length;
-    const fg2_miss = pEvents.filter(e => getAz(e) === '2PT Sbagliato').length;
+    const fg2_m = pEvents.filter(e => { const az = getAz(e); return az === '2PT Made' || az === '2PT Fatto'; }).length;
+    const fg2_miss = pEvents.filter(e => { const az = getAz(e); return az === '2PT Missed' || az === '2PT Sbagliato'; }).length;
     const fg2_a = fg2_m + fg2_miss;
 
-    const fg3_m = pEvents.filter(e => getAz(e) === '3PT Fatto').length;
-    const fg3_miss = pEvents.filter(e => getAz(e) === '3PT Sbagliato').length;
+    const fg3_m = pEvents.filter(e => { const az = getAz(e); return az === '3PT Made' || az === '3PT Fatto'; }).length;
+    const fg3_miss = pEvents.filter(e => { const az = getAz(e); return az === '3PT Missed' || az === '3PT Sbagliato'; }).length;
     const fg3_a = fg3_m + fg3_miss;
 
-    const ft_m = pEvents.filter(e => getAz(e) === 'TL Fatto').length;
-    const ft_miss = pEvents.filter(e => getAz(e) === 'TL Sbagliato').length;
+    const ft_m = pEvents.filter(e => { const az = getAz(e); return az === 'FT Made' || az === 'TL Fatto'; }).length;
+    const ft_miss = pEvents.filter(e => { const az = getAz(e); return az === 'FT Missed' || az === 'TL Sbagliato'; }).length;
     const ft_a = ft_m + ft_miss;
 
     const pts = (fg2_m * 2) + (fg3_m * 3) + (ft_m * 1);
-    const oreb = pEvents.filter(e => getAz(e) === 'Rimb Offensivo').length;
-    const dreb = pEvents.filter(e => getAz(e) === 'Rimb Difensivo').length;
+    const oreb = pEvents.filter(e => { const az = getAz(e); return az === 'Off Rebound' || az === 'Rimb Offensivo'; }).length;
+    const dreb = pEvents.filter(e => { const az = getAz(e); return az === 'Def Rebound' || az === 'Rimb Difensivo'; }).length;
     const treb = oreb + dreb;
-    const ast = pEvents.filter(e => getAz(e) === 'Assist').length;
-    const stl = pEvents.filter(e => getAz(e) === 'Palla Recuperata').length;
-    const tov = pEvents.filter(e => getAz(e) === 'Palla Persa').length;
-    const pf = pEvents.filter(e => getAz(e) === 'Fallo Fatto').length;
-    const fd = pEvents.filter(e => getAz(e) === 'Fallo Subito').length;
-    const blk = pEvents.filter(e => getAz(e) === 'Stoppata Data').length;
-    const blka = pEvents.filter(e => getAz(e) === 'Stoppata Subita').length;
+    const ast = pEvents.filter(e => { const az = getAz(e); return az === 'Assist'; }).length;
+    const stl = pEvents.filter(e => { const az = getAz(e); return az === 'Steal' || az === 'Palla Recuperata'; }).length;
+    const tov = pEvents.filter(e => { const az = getAz(e); return az === 'Turnover' || az === 'Palla Persa'; }).length;
+    const pf = pEvents.filter(e => { const az = getAz(e); return az === 'Personal Foul' || az === 'Fallo Fatto'; }).length;
+    const fd = pEvents.filter(e => { const az = getAz(e); return az === 'Foul Drawn' || az === 'Fallo Subito'; }).length;
+    const blk = pEvents.filter(e => { const az = getAz(e); return az === 'Block' || az === 'Stoppata Data'; }).length;
+    const blka = pEvents.filter(e => { const az = getAz(e); return az === 'Block Allowed' || az === 'Stoppata Subita'; }).length;
 
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
@@ -73,10 +73,17 @@ export default function BoxScoreTable({ roster, events }) {
     };
   }).sort((a, b) => b.actionsCount - a.actionsCount || b.pts - a.pts);
 
-  const shotEvents = events.filter(e => ['2PT Fatto', '2PT Sbagliato', '3PT Fatto', '3PT Sbagliato'].includes(getAz(e)));
+  const shotEvents = events.filter(e => {
+    const az = getAz(e);
+    return ['2PT Made', '2PT Missed', '3PT Made', '3PT Missed', '2PT Fatto', '2PT Sbagliato', '3PT Fatto', '3PT Sbagliato'].includes(az);
+  });
+
   const zoneSummary = Object.values(COURT_ZONES).map(zoneInfo => {
     const zEvents = shotEvents.filter(e => getZona(e) === zoneInfo.name);
-    const made = zEvents.filter(e => getAz(e).includes('Fatto')).length;
+    const made = zEvents.filter(e => {
+      const az = getAz(e);
+      return az.includes('Made') || az.includes('Fatto');
+    }).length;
     const attempts = zEvents.length;
     const pct = attempts > 0 ? ((made / attempts) * 100).toFixed(1) : '0.0';
     return {
@@ -89,9 +96,9 @@ export default function BoxScoreTable({ roster, events }) {
   return (
     <div className="grid grid-cols-12 gap-4">
       {/* Box Score Table */}
-      <div className="col-span-12 lg:col-span-8 glass-card p-4 overflow-x-auto">
+      <div className="col-span-12 lg:col-span-8 glass-card p-4 overflow-x-auto border-slate-700/60">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
-          <Trophy className="w-4 h-4 text-amber-500" />
+          <Trophy className="w-4 h-4 text-sky-400" />
           <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
             OFFICIAL FIBA BOX SCORE
           </h2>
@@ -120,20 +127,20 @@ export default function BoxScoreTable({ roster, events }) {
           <tbody>
             {rows.map(r => (
               <tr key={r.number} className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors">
-                <td className="py-2.5 px-2 font-bold text-slate-300">#{r.number}</td>
+                <td className="py-2.5 px-2 font-bold text-sky-400 font-mono">#{r.number}</td>
                 <td className="py-2.5 px-2 text-slate-100 font-bold">{r.name} ({r.pos})</td>
                 <td className="py-2.5 px-2 text-amber-400 font-black text-sm">{r.pts}</td>
-                <td className="py-2.5 px-2">{r.fg2}</td>
-                <td className="py-2.5 px-2">{r.pct2p}</td>
-                <td className="py-2.5 px-2">{r.fg3}</td>
-                <td className="py-2.5 px-2">{r.pct3p}</td>
-                <td className="py-2.5 px-2">{r.ft}</td>
-                <td className="py-2.5 px-2">{r.pctFt}</td>
-                <td className="py-2.5 px-2">{r.reb}</td>
-                <td className="py-2.5 px-2">{r.ast}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.fg2}</td>
+                <td className="py-2.5 px-2 text-slate-300">{r.pct2p}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.fg3}</td>
+                <td className="py-2.5 px-2 text-slate-300">{r.pct3p}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.ft}</td>
+                <td className="py-2.5 px-2 text-slate-300">{r.pctFt}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.reb}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.ast}</td>
                 <td className="py-2.5 px-2 text-sky-400 font-bold">{r.stl}</td>
                 <td className="py-2.5 px-2 text-rose-400 font-bold">{r.tov}</td>
-                <td className="py-2.5 px-2">{r.pf}</td>
+                <td className="py-2.5 px-2 text-slate-200">{r.pf}</td>
                 <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
               </tr>
             ))}
@@ -142,9 +149,9 @@ export default function BoxScoreTable({ roster, events }) {
       </div>
 
       {/* Shot Zone Efficiency Table */}
-      <div className="col-span-12 lg:col-span-4 glass-card p-4">
+      <div className="col-span-12 lg:col-span-4 glass-card p-4 border-slate-700/60">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
-          <BarChart2 className="w-4 h-4 text-emerald-500" />
+          <BarChart2 className="w-4 h-4 text-emerald-400" />
           <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
             SHOT ZONE EFFICIENCY CHART
           </h2>

@@ -112,13 +112,13 @@ export default function App() {
 
   const dispatchAction = async (azione, categoria, zonaName) => {
     if (!selectedPlayer) {
-      showToast('⚠️ Seleziona prima un giocatore!');
+      showToast('⚠️ Please select a player first!');
       return;
     }
 
     if (!gameSession) {
       setShowSessionModal(true);
-      showToast('⚠️ Inserisci prima il nome della partita!');
+      showToast('⚠️ Please enter a match name first!');
       return;
     }
 
@@ -152,7 +152,7 @@ export default function App() {
           showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione} (Supabase Cloud)`);
         } else {
           console.warn('Supabase insert error:', error);
-          showToast(`⚠️ Supabase: ${error.message || 'Errore colonna/permessi'}`);
+          showToast(`⚠️ Supabase: ${error.message || 'Column/Permission error'}`);
         }
       } catch (err) {
         console.warn('Supabase network exception:', err);
@@ -164,7 +164,7 @@ export default function App() {
       saveToOfflineQueue(payload);
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
-      showToast(`📦 Salvato in coda offline (${newQueueLength} in attesa di sync)`);
+      showToast(`📦 Saved to offline queue (${newQueueLength} pending sync)`);
     }
 
     // Local server fallback
@@ -181,13 +181,13 @@ export default function App() {
 
   const handleUndo = async () => {
     if (events.length === 0) {
-      showToast('⚠️ Nessuna azione da annullare!');
+      showToast('⚠️ No action to undo!');
       return;
     }
 
     const lastEv = events[events.length - 1];
     setEvents(prev => prev.slice(0, -1));
-    showToast(`↩️ Annullato: #${lastEv.Numero || lastEv.numero} ${lastEv.Azione || lastEv.azione}`);
+    showToast(`↩️ Undone: #${lastEv.Numero || lastEv.numero} ${lastEv.Azione || lastEv.azione}`);
 
     if (navigator.onLine && lastEv.id) {
       try {
@@ -204,7 +204,7 @@ export default function App() {
   };
 
   const handleResetGame = async () => {
-    if (window.confirm(`Sei sicuro di voler azzerare i dati della partita "${gameSession}"?`)) {
+    if (window.confirm(`Are you sure you want to reset all data for match "${gameSession}"?`)) {
       setEvents([]);
       setSelectedPlayer(null);
 
@@ -218,7 +218,7 @@ export default function App() {
         await fetch('/api/reset', { method: 'POST' });
       } catch (e) {}
 
-      showToast('🗑️ Dati partita azzerati!');
+      showToast('🗑️ Match data reset!');
     }
   };
 
@@ -227,16 +227,16 @@ export default function App() {
     setOfflineQueueCount(getOfflineQueue().length);
     
     if (res.syncedCount > 0) {
-      showToast(`⚡ Sincronizzati con successo ${res.syncedCount} eventi su Supabase!`);
+      showToast(`⚡ Successfully synced ${res.syncedCount} events to Supabase!`);
       fetchEvents();
     } else if (res.unconfigured) {
       showToast(`⚠️ ${res.message}`);
     } else if (res.error) {
-      showToast(`❌ Errore Sync Supabase: ${res.error}`);
+      showToast(`❌ Supabase Sync Error: ${res.error}`);
     } else if (res.offline) {
-      showToast('⚠️ Ancora offline. Connettiti al Wi-Fi per il sync.');
+      showToast('⚠️ Still offline. Connect to Wi-Fi to sync.');
     } else if (res.queueEmpty) {
-      showToast('ℹ️ Nessun evento in coda offline.');
+      showToast('ℹ️ No offline events in queue.');
     }
   };
 
