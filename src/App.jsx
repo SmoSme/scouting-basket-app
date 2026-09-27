@@ -44,6 +44,54 @@ export default function App() {
   const updateActiveRoster = (newActive) => {
     setActiveRoster(newActive);
     localStorage.setItem('current_match_roster', JSON.stringify(newActive));
+    
+    // Automatically keep 5 players on court if active roster changes
+    const activeNumSet = new Set(newActive.map(p => String(p.number)));
+    const validOnCourt = onCourtPlayerNums.filter(n => activeNumSet.has(String(n)));
+    if (validOnCourt.length < 5 && newActive.length >= 5) {
+      const remaining = newActive.filter(p => !validOnCourt.includes(String(p.number)));
+      const filled = [...validOnCourt, ...remaining.slice(0, 5 - validOnCourt.length).map(p => String(p.number))];
+      updateOnCourtPlayerNums(filled);
+    }
+  };
+
+  const [onCourtPlayerNums, setOnCourtPlayerNums] = useState(() => {
+    try {
+      const saved = localStorage.getItem('current_on_court_nums');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    const defaultSquad = (localStorage.getItem('current_match_roster') 
+      ? JSON.parse(localStorage.getItem('current_match_roster')) 
+      : DEFAULT_MASTER_ROSTER);
+    return defaultSquad.slice(0, 5).map(p => String(p.number));
+  });
+
+  const updateOnCourtPlayerNums = (newNums) => {
+    setOnCourtPlayerNums(newNums);
+    localStorage.setItem('current_on_court_nums', JSON.stringify(newNums));
+  };
+
+  const handleSwapSubstitution = (subOutNum, subInNum) => {
+    const outStr = String(subOutNum);
+    const inStr = String(subInNum);
+
+    const outPlayer = activeRoster.find(p => String(p.number) === outStr);
+    const inPlayer = activeRoster.find(p => String(p.number) === inStr);
+
+    const newOnCourt = onCourtPlayerNums.map(num => String(num) === outStr ? inStr : String(num));
+    updateOnCourtPlayerNums(newOnCourt);
+
+    if (selectedPlayer && String(selectedPlayer.number) === outStr) {
+      setSelectedPlayer(null);
+    }
+
+    const outName = outPlayer ? `#${outPlayer.number} ${outPlayer.name}` : `#${outStr}`;
+    const inName = inPlayer ? `#${inPlayer.number} ${inPlayer.name}` : `#${inStr}`;
+
+    showToast(`🔁 SUB: ${outName} ➔ BENCH | ${inName} ➔ COURT`);
   };
 
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -302,6 +350,9 @@ export default function App() {
                 setMasterRoster={updateMasterRoster}
                 roster={activeRoster}
                 setRoster={updateActiveRoster}
+                onCourtPlayerNums={onCourtPlayerNums}
+                setOnCourtPlayerNums={updateOnCourtPlayerNums}
+                handleSwapSubstitution={handleSwapSubstitution}
                 selectedPlayer={selectedPlayer}
                 setSelectedPlayer={setSelectedPlayer}
                 selectedZoneKey={selectedZoneKey}

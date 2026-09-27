@@ -17,6 +17,9 @@ export default function LiveGame({
   setMasterRoster,
   roster,
   setRoster,
+  onCourtPlayerNums,
+  setOnCourtPlayerNums,
+  handleSwapSubstitution,
   selectedPlayer,
   setSelectedPlayer,
   selectedZoneKey,
@@ -473,8 +476,10 @@ export default function LiveGame({
               <div className="col-span-3 h-full overflow-hidden">
                 <PlayerSelector
                   roster={roster}
+                  onCourtPlayerNums={onCourtPlayerNums}
                   selectedPlayer={selectedPlayer}
                   onSelectPlayer={setSelectedPlayer}
+                  onSwapSubstitution={handleSwapSubstitution}
                   events={events}
                 />
               </div>
@@ -507,11 +512,13 @@ export default function LiveGame({
                 <div className="h-full overflow-hidden">
                   <PlayerSelector
                     roster={roster}
+                    onCourtPlayerNums={onCourtPlayerNums}
                     selectedPlayer={selectedPlayer}
                     onSelectPlayer={(p) => {
                       setSelectedPlayer(p);
                       if (p) setMobileView('COURT'); // Auto switch to court after selecting player!
                     }}
+                    onSwapSubstitution={handleSwapSubstitution}
                     events={events}
                   />
                 </div>
