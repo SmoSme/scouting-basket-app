@@ -33,6 +33,52 @@ export function clearOfflineQueue() {
   }
 }
 
+/**
+ * Robust cleanup of stale, old (>24h), or mismatched match session offline queue items.
+ */
+export function cleanStaleOfflineQueue(currentMatchName) {
+  try {
+    const queue = getOfflineQueue();
+    if (!queue || queue.length === 0) return [];
+
+    const now = Date.now();
+    const validQueue = queue.filter(item => {
+      if (!item || typeof item !== 'object') return false;
+
+      // 1. Filter out items older than 24 hours
+      if (item._queuedAt) {
+        const queuedTime = new Date(item._queuedAt).getTime();
+        if (isNaN(queuedTime) || now - queuedTime > 86400000) {
+          console.warn('Purging stale offline queue item (>24h):', item);
+          return false;
+        }
+      }
+
+      // 2. Filter out items belonging to a different/previous match session
+      if (currentMatchName && item.nome_partita && item.nome_partita !== currentMatchName) {
+        console.warn(`Purging offline queue item from previous session "${item.nome_partita}" (current: "${currentMatchName}"):`, item);
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validQueue.length !== queue.length) {
+      if (validQueue.length === 0) {
+        clearOfflineQueue();
+      } else {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(validQueue));
+      }
+    }
+
+    return validQueue;
+  } catch (err) {
+    console.error('Error cleaning stale offline queue:', err);
+    clearOfflineQueue();
+    return [];
+  }
+}
+
 export async function syncOfflineQueue(onSyncSuccess) {
   const queue = getOfflineQueue();
   if (queue.length === 0) return { syncedCount: 0, queueEmpty: true };
@@ -88,4 +134,41 @@ export function setupOnlineSyncListener(onSyncSuccess) {
   return () => {
     window.removeEventListener('online', handleOnline);
   };
+}
+
+/**
+ * Listens for visibilitychange (tablet wake up / tab refocus) and window focus events.
+ * Forces state re-fetch and queue flush when tablet comes back from standby.
+ */
+export function setupStandbyRefocusListener(onFocusOrWake) {
+  const handleWake = () => {
+    if (document.visibilityState === 'visible') {
+      console.log('App returned from standby / tab refocus! Triggering sync & re-fetch...');
+      if (onFocusOrWake) onFocusOrWake();
+    }
+  };
+
+  window.addEventListener('visibilitychange', handleWake);
+  window.addEventListener('focus', handleWake);
+
+  return () => {
+    window.removeEventListener('visibilitychange', handleWake);
+    window.removeEventListener('focus', handleWake);
+  };
+}
+
+/**
+ * Safely unregisters stale PWA service workers if any exist in the browser.
+ */
+export function unregisterLegacyServiceWorkers() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        registration.unregister();
+        console.log('Unregistered legacy Service Worker:', registration);
+      }
+    }).catch(err => {
+      console.warn('Service worker unregister error:', err);
+    });
+  }
 }

@@ -10,7 +10,10 @@ import {
   saveToOfflineQueue,
   getOfflineQueue,
   syncOfflineQueue,
-  setupOnlineSyncListener
+  setupOnlineSyncListener,
+  cleanStaleOfflineQueue,
+  setupStandbyRefocusListener,
+  unregisterLegacyServiceWorkers
 } from './services/offlineSync';
 
 export default function App() {
@@ -102,17 +105,52 @@ export default function App() {
   const [showRosterModal, setShowRosterModal] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(!localStorage.getItem('current_game_session'));
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [offlineQueueCount, setOfflineQueueCount] = useState(getOfflineQueue().length);
+  const [offlineQueueCount, setOfflineQueueCount] = useState(() => {
+    return cleanStaleOfflineQueue(localStorage.getItem('current_game_session') || '').length;
+  });
 
   useEffect(() => {
+    // 1. Unregister legacy service workers if present in tablet browser cache
+    unregisterLegacyServiceWorkers();
+
+    // 2. Clean stale queue items from previous/mismatched match sessions or >24h old
+    const validQueue = cleanStaleOfflineQueue(gameSession);
+    setOfflineQueueCount(validQueue.length);
+
+    // 3. Fetch latest match events from Supabase Cloud
     fetchEvents();
 
-    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
+    const handleOnlineStatus = () => {
+      const online = navigator.onLine;
+      setIsOnline(online);
+      if (online) {
+        cleanStaleOfflineQueue(gameSession);
+        syncOfflineQueue((syncedCount) => {
+          showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+          setOfflineQueueCount(getOfflineQueue().length);
+          fetchEvents();
+        });
+      }
+    };
+
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
 
+    // Online listener
     const cleanupSync = setupOnlineSyncListener((syncedCount) => {
-      showToast(`⚡ Sincronizzati ${syncedCount} eventi offline su Supabase!`);
+      showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+      setOfflineQueueCount(getOfflineQueue().length);
+      fetchEvents();
+    });
+
+    // Standby & Tab Refocus / Visibility listener for courtside tablets
+    const cleanupRefocus = setupStandbyRefocusListener(() => {
+      setIsOnline(navigator.onLine);
+      cleanStaleOfflineQueue(gameSession);
+      syncOfflineQueue((syncedCount) => {
+        showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+        setOfflineQueueCount(getOfflineQueue().length);
+      });
       setOfflineQueueCount(getOfflineQueue().length);
       fetchEvents();
     });
@@ -121,6 +159,7 @@ export default function App() {
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOnlineStatus);
       cleanupSync();
+      cleanupRefocus();
     };
   }, [gameSession]);
 
