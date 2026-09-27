@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+html, body, #root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden !important;
+  background-color: #06090F;
+  color: #F8FAFC;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  touch-action: manipulation;
+}
+
+/* Custom Compact Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0F17;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 2px;
+}
+
+/* Glassmorphism Panel Cards (Compact Padding) */
+.glass-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* High-Density Compact Player Cards */
+.player-tile-dense {
+  background: #0F172A;
+  border: 1px solid #1E293B;
+  border-left: 4px solid #475569;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  user-select: none;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+.player-tile-dense:hover {
+  background: #1E293B;
+  border-color: #334155;
+}
+
+/* HIGH-CONTRAST ELECTRIC GOLD ACTIVE PLAYER CARD */
+.player-tile-active {
+  background: #FFD700 !important;
+  color: #000000 !important;
+  border: 2px solid #FFFFFF !important;
+  border-left: 6px solid #000000 !important;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.9) !important;
+  font-weight: 900 !important;
+}
+
+/* Compact Action Control Clusters */
+.cluster-panel-dense {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.cluster-header-title {
+  color: #94A3B8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Compact Action Control Buttons (36px Height) */
+.action-btn-dense {
+  width: 100%;
+  min-height: 36px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 0.06s ease, filter 0.1s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #FFFFFF;
+  padding: 4px 6px;
+}
+.action-btn-dense:active {
+  transform: scale(0.96);
+}
+
+.btn-made-bg {
+  background-color: #059669;
+  border-color: #10B981;
+}
+.btn-miss-bg {
+  background-color: #DC2626;
+  border-color: #EF4444;
+}
+.btn-ft-made-bg {
+  background-color: #047857;
+}
+.btn-ft-miss-bg {
+  background-color: #991B1B;
+}
+.btn-stl-bg {
+  background-color: #0284C7;
+  border-color: #38BDF8;
+}
+.btn-tov-bg {
+  background-color: #E11D48;
+  border-color: #FB7185;
+}
+.btn-reb-bg {
+  background-color: #D97706;
+}
+.btn-ast-bg {
+  background-color: #0D9488;
+}
+.btn-foul-bg {
+  background-color: #6D28D9;
+}
+.btn-undo-bg {
+  background-color: #475569;
+  color: #F8FAFC;
+}
+
+/* Dense Live Stat Metric Pills */
+.stat-pill-dense {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #334155;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.stat-pill-gold-dense {
+  background: #FFD700;
+  color: #000000;
+  border: 1px solid #FFFFFF;
+  border-radius: 5px;
+  padding: 2px 9px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Digital Scoreboard Typography */
+.digital-score-dense {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #F59E0B;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
+}
