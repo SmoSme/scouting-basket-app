@@ -126,13 +126,13 @@ export default function LiveGame({
     const zoneInfo = COURT_ZONES[selectedZoneKey];
     const shotType = zoneInfo.type; // "2PT" or "3PT"
     const outcome = isMade ? 'Made' : 'Missed';
-    const azione = `${shotType} ${outcome}`;
+    const actionName = `${shotType} ${outcome}`;
 
-    dispatchAction(azione, 'Shot', zoneInfo.name);
+    dispatchAction(actionName, 'Shot', zoneInfo.name);
   };
 
-  const handleRecordAction = (azione, categoria) => {
-    dispatchAction(azione, categoria, 'Generic');
+  const handleRecordAction = (actionName, categoryName) => {
+    dispatchAction(actionName, categoryName, 'Generic');
   };
 
   return (
@@ -265,7 +265,7 @@ export default function LiveGame({
                 <span className="text-xs font-bold text-slate-300 flex-none whitespace-nowrap">Add Guest:</span>
                 <input
                   type="text"
-                  placeholder="N°"
+                  placeholder="#"
                   value={newNum}
                   onChange={(e) => setNewNum(e.target.value)}
                   className="w-12 bg-slate-950 border border-slate-700 text-amber-400 font-bold text-xs p-1.5 rounded text-center"
@@ -369,7 +369,7 @@ export default function LiveGame({
               <form onSubmit={handleAddPlayerToMaster} className="flex items-center gap-2 flex-1">
                 <input
                   type="text"
-                  placeholder="N°"
+                  placeholder="#"
                   value={newNum}
                   onChange={(e) => setNewNum(e.target.value)}
                   className="w-14 bg-slate-950 border border-slate-700 text-sky-400 font-bold text-xs p-2 rounded text-center"

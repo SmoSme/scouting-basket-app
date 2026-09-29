@@ -18,10 +18,10 @@ export default function BoxScoreTable({ roster, events }) {
     rosterMap[String(p.number)] = p;
   });
 
-  const getAz = (e) => String(e?.Azione || e?.azione || '');
-  const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
-  const getZona = (e) => String(e?.Zona || e?.zona || '');
-  const getGiocatore = (e) => String(e?.Giocatore || e?.giocatore || '');
+  const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
+  const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
+  const getZona = (e) => String(e?.Zone || e?.zone || e?.Zona || e?.zona || '');
+  const getGiocatore = (e) => String(e?.Player || e?.player || e?.Giocatore || e?.giocatore || '');
 
   const logNums = Array.from(new Set(events.map(e => getNum(e)))).filter(Boolean);
   const allNums = Array.from(new Set([...Object.keys(rosterMap), ...logNums]));

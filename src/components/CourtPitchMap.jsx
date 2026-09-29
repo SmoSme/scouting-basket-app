@@ -8,9 +8,9 @@ export default function CourtPitchMap({
   onSelectZone,
   events
 }) {
-  const getAz = (e) => String(e?.Azione || e?.azione || '');
-  const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
-  const getZona = (e) => String(e?.Zona || e?.zona || '');
+  const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
+  const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
+  const getZona = (e) => String(e?.Zone || e?.zone || e?.Zona || e?.zona || '');
 
   // Compute zone colors and statistics (Made / Attempts and Shooting %)
   const getZoneStats = (zoneName) => {

@@ -12,8 +12,8 @@ export default function PlayerSelector({
   const [subBenchPlayer, setSubBenchPlayer] = useState(null); // Bench player selected for substitution
   const [activeSubCourtPlayer, setActiveSubCourtPlayer] = useState(null); // On-Court player selecting bench sub
 
-  const getAz = (e) => String(e?.Azione || e?.azione || '');
-  const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
+  const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
+  const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
 
   // Split roster into ON COURT (5) and BENCH
   const onCourtSet = new Set(onCourtPlayerNums.map(n => String(n)));

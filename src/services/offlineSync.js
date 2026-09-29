@@ -55,8 +55,9 @@ export function cleanStaleOfflineQueue(currentMatchName) {
       }
 
       // 2. Filter out items belonging to a different/previous match session
-      if (currentMatchName && item.nome_partita && item.nome_partita !== currentMatchName) {
-        console.warn(`Purging offline queue item from previous session "${item.nome_partita}" (current: "${currentMatchName}"):`, item);
+      const itemMatch = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita;
+      if (currentMatchName && itemMatch && itemMatch !== currentMatchName) {
+        console.warn(`Purging offline queue item from previous session "${itemMatch}" (current: "${currentMatchName}"):`, item);
         return false;
       }
 
@@ -90,11 +91,32 @@ export async function syncOfflineQueue(onSyncSuccess) {
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   if (!supabaseUrl || supabaseUrl.includes('your-supabase-project')) {
-    return { syncedCount: 0, unconfigured: true, message: 'Chiavi Supabase non configurate nel file .env' };
+    return { syncedCount: 0, unconfigured: true, message: 'Supabase API keys not configured in .env file' };
   }
 
   try {
-    const payload = queue.map(({ _queuedAt, ...item }) => item);
+    const payload = queue.map(({ _queuedAt, ...item }) => {
+      const Match_Name = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || '';
+      const Quarter = item.Quarter || item.quarter || item.Quarto || item.quarto || '';
+      const NumberVal = String(item.Number ?? item.number ?? item.Numero ?? item.numero ?? '');
+      const Player = item.Player || item.player || item.Giocatore || item.giocatore || '';
+      const Action = item.Action || item.action || item.Azione || item.azione || '';
+      const Category = item.Category || item.category || item.Categoria || item.categoria || '';
+      const Zone = item.Zone || item.zone || item.Zona || item.zona || '';
+      const Timestamp = item.Timestamp || item.timestamp || '';
+
+      return {
+        ...item,
+        Match_Name, match_name: Match_Name, nome_partita: Match_Name,
+        Quarter, quarter: Quarter, quarto: Quarter,
+        Number: NumberVal, number: NumberVal, numero: NumberVal,
+        Player, player: Player, giocatore: Player,
+        Action, action: Action, azione: Action,
+        Category, category: Category, categoria: Category,
+        Zone, zone: Zone, zona: Zone,
+        Timestamp, timestamp: Timestamp
+      };
+    });
     
     const { data, error } = await supabase
       .from('scouting_log')
@@ -115,7 +137,7 @@ export async function syncOfflineQueue(onSyncSuccess) {
     return { syncedCount, data };
   } catch (err) {
     console.error('Unexpected error during offline queue sync:', err);
-    return { syncedCount: 0, error: err.message || 'Errore di connessione' };
+    return { syncedCount: 0, error: err.message || 'Connection error' };
   }
 }
 
@@ -136,10 +158,6 @@ export function setupOnlineSyncListener(onSyncSuccess) {
   };
 }
 
-/**
- * Listens for visibilitychange (tablet wake up / tab refocus) and window focus events.
- * Forces state re-fetch and queue flush when tablet comes back from standby.
- */
 export function setupStandbyRefocusListener(onFocusOrWake) {
   const handleWake = () => {
     if (document.visibilityState === 'visible') {
@@ -157,9 +175,6 @@ export function setupStandbyRefocusListener(onFocusOrWake) {
   };
 }
 
-/**
- * Safely unregisters stale PWA service workers if any exist in the browser.
- */
 export function unregisterLegacyServiceWorkers() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(registrations => {

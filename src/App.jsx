@@ -167,22 +167,24 @@ export default function App() {
     if (!Array.isArray(rawEvents)) return [];
     return rawEvents.map(ev => {
       if (!ev) return {};
-      const Azione = ev.Azione || ev.azione || '';
-      const Giocatore = ev.Giocatore || ev.giocatore || '';
-      const Numero = String(ev.Numero ?? ev.numero ?? '');
-      const Quarto = ev.Quarto || ev.quarto || '';
-      const Zona = ev.Zona || ev.zona || '';
-      const Categoria = ev.Categoria || ev.categoria || '';
-      const Timestamp = ev.Timestamp || ev.timestamp || (ev.created_at ? new Date(ev.created_at).toLocaleTimeString('it-IT', { hour12: false }) : '');
+      const Action = ev.Action || ev.action || ev.Azione || ev.azione || '';
+      const Player = ev.Player || ev.player || ev.Giocatore || ev.giocatore || '';
+      const NumberVal = String(ev.Number ?? ev.number ?? ev.Numero ?? ev.numero ?? '');
+      const Quarter = ev.Quarter || ev.quarter || ev.Quarto || ev.quarto || '';
+      const Zone = ev.Zone || ev.zone || ev.Zona || ev.zona || '';
+      const Category = ev.Category || ev.category || ev.Categoria || ev.categoria || '';
+      const Match_Name = ev.Match_Name || ev.match_name || ev.nome_partita || ev.Nome_Partita || '';
+      const Timestamp = ev.Timestamp || ev.timestamp || (ev.created_at ? new Date(ev.created_at).toLocaleTimeString('en-US', { hour12: false }) : '');
 
       return {
         ...ev,
-        Azione, azione: Azione,
-        Giocatore, giocatore: Giocatore,
-        Numero, numero: Numero,
-        Quarto, quarto: Quarto,
-        Zona, zona: Zona,
-        Categoria, categoria: Categoria,
+        Action, action: Action, Azione: Action, azione: Action,
+        Player, player: Player, Giocatore: Player, giocatore: Player,
+        Number: NumberVal, number: NumberVal, Numero: NumberVal, numero: NumberVal,
+        Quarter, quarter: Quarter, Quarto: Quarter, quarto: Quarter,
+        Zone, zone: Zone, Zona: Zone, zona: Zone,
+        Category, category: Category, Categoria: Category, categoria: Category,
+        Match_Name, match_name: Match_Name, nome_partita: Match_Name, Nome_Partita: Match_Name,
         Timestamp, timestamp: Timestamp
       };
     });
@@ -195,11 +197,26 @@ export default function App() {
     }
 
     try {
-      const { data, error } = await supabase
+      // Query using Match_Name primary column
+      let { data, error } = await supabase
         .from('scouting_log')
         .select('*')
-        .eq('nome_partita', gameSession)
+        .eq('Match_Name', gameSession)
         .order('id', { ascending: true });
+
+      if (error || !data || data.length === 0) {
+        // Fallback to nome_partita column
+        const fallback = await supabase
+          .from('scouting_log')
+          .select('*')
+          .eq('nome_partita', gameSession)
+          .order('id', { ascending: true });
+
+        if (!fallback.error && fallback.data && fallback.data.length > 0) {
+          data = fallback.data;
+          error = null;
+        }
+      }
 
       if (!error && data) {
         setEvents(normalizeEvents(data));
@@ -224,7 +241,7 @@ export default function App() {
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  const dispatchAction = async (azione, categoria, zonaName) => {
+  const dispatchAction = async (actionName, categoryName, zoneName) => {
     if (!selectedPlayer) {
       showToast('⚠️ Please select a player first!');
       return;
@@ -236,19 +253,42 @@ export default function App() {
       return;
     }
 
-    const timestamp = new Date().toLocaleTimeString('it-IT', { hour12: false });
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     const payload = {
+      Match_Name: gameSession,
+      match_name: gameSession,
       nome_partita: gameSession,
+
+      Quarter: currentQuarter,
+      quarter: currentQuarter,
       quarto: currentQuarter,
+
+      Number: String(selectedPlayer.number),
+      number: String(selectedPlayer.number),
       numero: String(selectedPlayer.number),
+
+      Player: selectedPlayer.name,
+      player: selectedPlayer.name,
       giocatore: selectedPlayer.name,
-      azione: azione,
-      categoria: categoria,
-      zona: zonaName
+
+      Action: actionName,
+      action: actionName,
+      azione: actionName,
+
+      Category: categoryName,
+      category: categoryName,
+      categoria: categoryName,
+
+      Zone: zoneName,
+      zone: zoneName,
+      zona: zoneName,
+
+      Timestamp: timestamp,
+      timestamp: timestamp
     };
 
     // 1. Instant local state update (<5ms)
-    const localEv = { ...payload, Timestamp: timestamp, Quarto: currentQuarter, Numero: selectedPlayer.number, Giocatore: selectedPlayer.name, Azione: azione, Categoria: categoria, Zona: zonaName };
+    const localEv = { ...payload };
     setEvents(prev => [...prev, localEv]);
 
     // 2. Try Supabase insert
@@ -263,7 +303,7 @@ export default function App() {
 
         if (!error) {
           cloudSynced = true;
-          showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${azione} (Supabase Cloud)`);
+          showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${actionName} (Supabase Cloud)`);
         } else {
           console.warn('Supabase insert error:', error);
           showToast(`⚠️ Supabase: ${error.message || 'Column/Permission error'}`);
@@ -301,7 +341,7 @@ export default function App() {
 
     const lastEv = events[events.length - 1];
     setEvents(prev => prev.slice(0, -1));
-    showToast(`↩️ Undone: #${lastEv.Numero || lastEv.numero} ${lastEv.Azione || lastEv.azione}`);
+    showToast(`↩️ Undone: #${lastEv.Number || lastEv.number || lastEv.Numero} ${lastEv.Action || lastEv.action || lastEv.Azione}`);
 
     if (navigator.onLine && lastEv.id) {
       try {
@@ -354,21 +394,21 @@ export default function App() {
       if (!isTarget) return ev;
 
       const merged = { ...ev, ...updatedFields };
-      const Azione = merged.Azione || merged.azione || '';
-      const Giocatore = merged.Giocatore || merged.giocatore || '';
-      const Numero = String(merged.Numero ?? merged.numero ?? '');
-      const Quarto = merged.Quarto || merged.quarto || '';
-      const Zona = merged.Zona || merged.zona || '';
-      const Categoria = merged.Categoria || merged.categoria || '';
+      const Action = merged.Action || merged.action || merged.Azione || merged.azione || '';
+      const Player = merged.Player || merged.player || merged.Giocatore || merged.giocatore || '';
+      const NumberVal = String(merged.Number ?? merged.number ?? merged.Numero ?? merged.numero ?? '');
+      const Quarter = merged.Quarter || merged.quarter || merged.Quarto || merged.quarto || '';
+      const Zone = merged.Zone || merged.zone || merged.Zona || merged.zona || '';
+      const Category = merged.Category || merged.category || merged.Categoria || merged.categoria || '';
 
       return {
         ...merged,
-        Azione, azione: Azione,
-        Giocatore, giocatore: Giocatore,
-        Numero, numero: Numero,
-        Quarto, quarto: Quarto,
-        Zona, zona: Zona,
-        Categoria, categoria: Categoria
+        Action, action: Action, Azione: Action, azione: Action,
+        Player, player: Player, Giocatore: Player, giocatore: Player,
+        Number: NumberVal, number: NumberVal, Numero: NumberVal, numero: NumberVal,
+        Quarter, quarter: Quarter, Quarto: Quarter, quarto: Quarter,
+        Zone, zone: Zone, Zona: Zone, zona: Zone,
+        Category, category: Category, Categoria: Category, categoria: Category
       };
     }));
 
@@ -377,13 +417,20 @@ export default function App() {
     // 2. Supabase Cloud update
     if (navigator.onLine && eventId) {
       try {
+        const valPlayer = updatedFields.Player || updatedFields.player || updatedFields.Giocatore || updatedFields.giocatore;
+        const valNum = String(updatedFields.Number ?? updatedFields.number ?? updatedFields.Numero ?? updatedFields.numero);
+        const valAction = updatedFields.Action || updatedFields.action || updatedFields.Azione || updatedFields.azione;
+        const valQuarter = updatedFields.Quarter || updatedFields.quarter || updatedFields.Quarto || updatedFields.quarto;
+        const valZone = updatedFields.Zone || updatedFields.zone || updatedFields.Zona || updatedFields.zona;
+        const valCat = updatedFields.Category || updatedFields.category || updatedFields.Categoria || updatedFields.categoria;
+
         const payload = {
-          giocatore: updatedFields.Giocatore || updatedFields.giocatore,
-          numero: String(updatedFields.Numero ?? updatedFields.numero),
-          azione: updatedFields.Azione || updatedFields.azione,
-          quarto: updatedFields.Quarto || updatedFields.quarto,
-          zona: updatedFields.Zona || updatedFields.zona,
-          categoria: updatedFields.Categoria || updatedFields.categoria
+          Player: valPlayer, player: valPlayer, giocatore: valPlayer,
+          Number: valNum, number: valNum, numero: valNum,
+          Action: valAction, action: valAction, azione: valAction,
+          Quarter: valQuarter, quarter: valQuarter, quarto: valQuarter,
+          Zone: valZone, zone: valZone, zona: valZone,
+          Category: valCat, category: valCat, categoria: valCat
         };
 
         await supabase

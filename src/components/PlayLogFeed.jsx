@@ -36,11 +36,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
 
   const startEditing = (ev, key) => {
     setEditingKey(key);
-    setEditNum(String(ev?.Numero ?? ev?.numero ?? ''));
-    setEditName(ev?.Giocatore || ev?.giocatore || '');
-    setEditAction(ev?.Azione || ev?.azione || '2PT Made');
-    setEditQuarter(ev?.Quarto || ev?.quarto || 'Q1');
-    setEditZone(ev?.Zona || ev?.zona || 'Paint / Key');
+    setEditNum(String(ev?.Number ?? ev?.number ?? ev?.Numero ?? ev?.numero ?? ''));
+    setEditName(ev?.Player || ev?.player || ev?.Giocatore || ev?.giocatore || '');
+    setEditAction(ev?.Action || ev?.action || ev?.Azione || ev?.azione || '2PT Made');
+    setEditQuarter(ev?.Quarter || ev?.quarter || ev?.Quarto || ev?.quarto || 'Q1');
+    setEditZone(ev?.Zone || ev?.zone || ev?.Zona || ev?.zona || 'Paint / Key');
   };
 
   const handleSaveEdit = (ev, key) => {
@@ -51,14 +51,24 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
     const finalName = matchedPlayer ? matchedPlayer.name : editName;
 
     const payload = {
+      Number: editNum,
+      number: editNum,
       Numero: editNum,
       numero: editNum,
+      Player: finalName,
+      player: finalName,
       Giocatore: finalName,
       giocatore: finalName,
+      Action: editAction,
+      action: editAction,
       Azione: editAction,
       azione: editAction,
+      Quarter: editQuarter,
+      quarter: editQuarter,
       Quarto: editQuarter,
       quarto: editQuarter,
+      Zone: editZone,
+      zone: editZone,
       Zona: editZone,
       zona: editZone
     };
@@ -84,16 +94,16 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           const itemKey = ev?.id || `idx-${events.length - 1 - idx}`;
           const isEditing = editingKey === itemKey;
 
-          const actionStr = String(ev?.Azione || ev?.azione || '');
+          const actionStr = String(ev?.Action || ev?.action || ev?.Azione || ev?.azione || '');
           const isSuccess = actionStr.includes('Made') || actionStr.includes('Fatto') || actionStr.includes('Steal') || actionStr.includes('Assist');
           const isNegative = actionStr.includes('Missed') || actionStr.includes('Sbagliato') || actionStr.includes('Turnover') || actionStr.includes('Persa');
           const badgeColor = isSuccess ? '#059669' : (isNegative ? '#BE123C' : '#0284C7');
 
           const timestamp = ev?.Timestamp || ev?.timestamp || '';
-          const quarto = ev?.Quarto || ev?.quarto || '';
-          const zona = ev?.Zona || ev?.zona || '';
-          const numero = ev?.Numero ?? ev?.numero ?? '';
-          const giocatore = ev?.Giocatore || ev?.giocatore || '';
+          const quarto = ev?.Quarter || ev?.quarter || ev?.Quarto || ev?.quarto || '';
+          const zona = ev?.Zone || ev?.zone || ev?.Zona || ev?.zona || '';
+          const numero = ev?.Number ?? ev?.number ?? ev?.Numero ?? ev?.numero ?? '';
+          const giocatore = ev?.Player || ev?.player || ev?.Giocatore || ev?.giocatore || '';
 
           if (isEditing) {
             return (

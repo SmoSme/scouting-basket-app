@@ -8,8 +8,8 @@ export default function ScoreboardHeader({
   setCurrentQuarter,
   onUndo
 }) {
-  const getAz = (e) => String(e?.Azione || e?.azione || '');
-  const getNum = (e) => String(e?.Numero ?? e?.numero ?? '');
+  const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
+  const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
 
   const teamPts = events.reduce((acc, ev) => {
     const az = getAz(ev);
