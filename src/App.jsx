@@ -317,22 +317,82 @@ export default function App() {
     } catch (e) {}
   };
 
-  const handleResetGame = async () => {
-    if (window.confirm(`Are you sure you want to reset all data for match "${gameSession}"?`)) {
+  const handleResetGame = () => {
+    if (window.confirm(`Clear current live screen tracking for "${gameSession || 'Current Match'}"? (Archived database data will remain safe in Supabase)`)) {
       setEvents([]);
       setSelectedPlayer(null);
+      showToast('🧹 Live screen cleared! Match remains saved in Archive.');
+    }
+  };
 
-      if (navigator.onLine && gameSession) {
-        try {
-          await supabase.from('scouting_log').delete().eq('nome_partita', gameSession);
-        } catch (e) {}
-      }
+  const handleDeleteEvent = async (eventId, eventIndex) => {
+    // 1. Local state update
+    setEvents(prev => prev.filter((ev, idx) => {
+      if (eventId && ev.id) return ev.id !== eventId;
+      return idx !== eventIndex;
+    }));
 
+    showToast('🗑️ Event deleted from feed!');
+
+    // 2. Supabase Cloud delete
+    if (navigator.onLine && eventId) {
       try {
-        await fetch('/api/reset', { method: 'POST' });
-      } catch (e) {}
+        await supabase
+          .from('scouting_log')
+          .delete()
+          .eq('id', eventId);
+      } catch (e) {
+        console.warn('Supabase delete event error:', e);
+      }
+    }
+  };
 
-      showToast('🗑️ Match data reset!');
+  const handleEditEvent = async (eventId, eventIndex, updatedFields) => {
+    // 1. Local state update
+    setEvents(prev => prev.map((ev, idx) => {
+      const isTarget = eventId && ev.id ? ev.id === eventId : idx === eventIndex;
+      if (!isTarget) return ev;
+
+      const merged = { ...ev, ...updatedFields };
+      const Azione = merged.Azione || merged.azione || '';
+      const Giocatore = merged.Giocatore || merged.giocatore || '';
+      const Numero = String(merged.Numero ?? merged.numero ?? '');
+      const Quarto = merged.Quarto || merged.quarto || '';
+      const Zona = merged.Zona || merged.zona || '';
+      const Categoria = merged.Categoria || merged.categoria || '';
+
+      return {
+        ...merged,
+        Azione, azione: Azione,
+        Giocatore, giocatore: Giocatore,
+        Numero, numero: Numero,
+        Quarto, quarto: Quarto,
+        Zona, zona: Zona,
+        Categoria, categoria: Categoria
+      };
+    }));
+
+    showToast('✏️ Event updated!');
+
+    // 2. Supabase Cloud update
+    if (navigator.onLine && eventId) {
+      try {
+        const payload = {
+          giocatore: updatedFields.Giocatore || updatedFields.giocatore,
+          numero: String(updatedFields.Numero ?? updatedFields.numero),
+          azione: updatedFields.Azione || updatedFields.azione,
+          quarto: updatedFields.Quarto || updatedFields.quarto,
+          zona: updatedFields.Zona || updatedFields.zona,
+          categoria: updatedFields.Categoria || updatedFields.categoria
+        };
+
+        await supabase
+          .from('scouting_log')
+          .update(payload)
+          .eq('id', eventId);
+      } catch (e) {
+        console.warn('Supabase edit event error:', e);
+      }
     }
   };
 
@@ -405,6 +465,8 @@ export default function App() {
                 dispatchAction={dispatchAction}
                 handleUndo={handleUndo}
                 handleResetGame={handleResetGame}
+                onDeleteEvent={handleDeleteEvent}
+                onEditEvent={handleEditEvent}
               />
             }
           />

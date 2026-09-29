@@ -32,7 +32,9 @@ export default function LiveGame({
   setShowSessionModal,
   dispatchAction,
   handleUndo,
-  handleResetGame
+  handleResetGame,
+  onDeleteEvent,
+  onEditEvent
 }) {
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
   const [mobileView, setMobileView] = useState('COURT'); // 'COURT' | 'ROSTER' | 'STREAM'
@@ -458,12 +460,21 @@ export default function LiveGame({
           </div>
         )}
 
-        <button
-          onClick={handleResetGame}
-          className="text-[10px] bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold px-2.5 py-1 rounded-md transition-all"
-        >
-          RESET MATCH
-        </button>
+        {/* Action Buttons: New Match & Clear Screen */}
+        <div className="flex gap-1.5 items-center">
+          <button
+            onClick={() => setShowSessionModal(true)}
+            className="text-[10px] bg-sky-600 hover:bg-sky-500 text-white font-black px-2.5 py-1 rounded-md transition-all shadow-md uppercase tracking-wider flex items-center gap-1"
+          >
+            <Play className="w-3 h-3" /> NEW MATCH
+          </button>
+          <button
+            onClick={handleResetGame}
+            className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-1 rounded-md transition-all border border-slate-700"
+          >
+            CLEAR SCREEN
+          </button>
+        </div>
       </div>
 
       {/* MAIN VIEWPORT CONTAINER (Responsive for Desktop, Tablet & Mobile) */}
@@ -502,7 +513,12 @@ export default function LiveGame({
 
               {/* Panel 3: Right Live Play Stream Feed */}
               <div className="col-span-3 h-full overflow-hidden">
-                <PlayLogFeed events={events} />
+                <PlayLogFeed
+                  events={events}
+                  roster={roster}
+                  onDeleteEvent={onDeleteEvent}
+                  onEditEvent={onEditEvent}
+                />
               </div>
             </div>
 
@@ -568,7 +584,12 @@ export default function LiveGame({
 
               {mobileView === 'STREAM' && (
                 <div className="h-full overflow-hidden">
-                  <PlayLogFeed events={events} />
+                  <PlayLogFeed
+                    events={events}
+                    roster={roster}
+                    onDeleteEvent={onDeleteEvent}
+                    onEditEvent={onEditEvent}
+                  />
                 </div>
               )}
             </div>
