@@ -114,7 +114,7 @@ export default function CourtPitchMap({
           {/* 3. MID-RANGE RIGHT (2PT - INSIDE 3PT ARC) */}
           <g onClick={() => onSelectZone('MID_R')} className="cursor-pointer hover:opacity-90 transition-opacity">
             <path
-              d="M 390 10 L 540 10 L 540 40 A 240 240 0 0 0 444 232 L 390 160 L 390 10 Z"
+              d="M 390 10 L 540 10 L 540 40 A 240 240 0 0 1 444 232 L 390 160 L 390 10 Z"
               fill={getZoneStats(COURT_ZONES.MID_R.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('MID_R')}
             />
@@ -178,7 +178,7 @@ export default function CourtPitchMap({
           {/* 8. WING 3 RIGHT (3PT - OUTSIDE 3PT ARC) */}
           <g onClick={() => onSelectZone('W3_R')} className="cursor-pointer hover:opacity-90 transition-opacity">
             <path
-              d="M 590 90 L 540 90 L 540 40 A 240 240 0 0 0 444 232 L 460 350 L 590 350 Z"
+              d="M 590 90 L 540 90 L 540 40 A 240 240 0 0 1 444 232 L 460 350 L 590 350 Z"
               fill={getZoneStats(COURT_ZONES.W3_R.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('W3_R')}
             />
