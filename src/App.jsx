@@ -460,7 +460,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#06090F] p-2 text-slate-100">
+      <div className="h-screen h-[100dvh] w-screen overflow-hidden flex flex-col bg-[#06090F] p-1 sm:p-2 text-slate-100">
         {/* Toast Notification */}
         {toastMsg && (
           <div className="fixed top-3 right-3 z-50 bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-lg shadow-2xl border-2 border-white flex items-center gap-2 animate-pulse text-xs">

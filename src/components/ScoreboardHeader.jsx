@@ -66,110 +66,113 @@ export default function ScoreboardHeader({
   const pStats = getPlayerStats();
 
   return (
-    <div className="glass-card p-2 px-3 mb-2 flex-none flex items-center justify-between gap-3 border-slate-800">
-      {/* Big Touch-Optimized Quarter Selector */}
-      <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-700 shadow-sm flex-none">
-        <Clock className="w-4 h-4 text-sky-400 ml-1 mr-0.5 flex-none" />
-        {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => {
-          const isCurrent = currentQuarter === q;
-          return (
-            <button
-              key={q}
-              onClick={() => setCurrentQuarter(q)}
-              className={`px-3 py-1.5 rounded text-xs sm:text-sm font-black transition-all ${
-                isCurrent
-                  ? 'bg-sky-500 text-slate-950 shadow-md scale-105'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-            >
-              {q}
-            </button>
-          );
-        })}
+    <div className="glass-card p-2 px-3 mb-2 flex-none border-slate-800 flex flex-col gap-1.5 shadow-md">
+      {/* Top Row: Quarter Selector + Tactical Counters + Team Score Display + Undo */}
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2 flex-wrap xs:flex-nowrap">
+        {/* Big Touch-Optimized Quarter Selector */}
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-950 p-1 rounded-lg border border-slate-700 shadow-sm flex-none">
+          <Clock className="w-3.5 h-3.5 text-sky-400 ml-1 mr-0.5 flex-none hidden sm:inline" />
+          {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => {
+            const isCurrent = currentQuarter === q;
+            return (
+              <button
+                key={q}
+                onClick={() => setCurrentQuarter(q)}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-black transition-all ${
+                  isCurrent
+                    ? 'bg-sky-500 text-slate-950 shadow-md scale-105'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                }`}
+              >
+                {q}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right Group: Tactical Counters, Team Score, and Undo */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-none">
+          {/* Tactical Counters */}
+          <div className="flex flex-col justify-center gap-0.5 sm:gap-1 bg-slate-950 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg border border-slate-800 flex-none">
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-violet-300" title="Team Stagger Screens">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-none"></span>
+              <span>STAG:</span>
+              <span className="font-mono font-black text-violet-100">{teamStagger}</span>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-cyan-300" title="Team Ghost Screens">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-none"></span>
+              <span>GHOST:</span>
+              <span className="font-mono font-black text-cyan-100">{teamGhost}</span>
+            </div>
+          </div>
+
+          {/* Clear & Evident Team Score Display */}
+          <div className="flex items-center bg-slate-950 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg border-2 border-amber-500/40 shadow-md flex-none">
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
+                TEAM SCORE
+              </span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-mono text-2xl sm:text-3xl font-black text-amber-400 leading-none tabular-nums">
+                  {teamPts}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase">PTS</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Undo Button */}
+          <button
+            onClick={onUndo}
+            className="action-btn-dense btn-undo-bg text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 min-h-[34px] sm:min-h-[38px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1 sm:gap-1.5 rounded-lg shadow-sm"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
+            <span className="hidden xs:inline">UNDO</span>
+          </button>
+        </div>
       </div>
 
-      {/* Active Player Live Stat Summary Banner */}
-      <div className="flex-1 flex items-center justify-center gap-1.5 flex-wrap overflow-hidden">
+      {/* Bottom Row: Active Player Live Stat Summary Banner / Ticker */}
+      <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pt-1 border-t border-slate-800/80">
         {selectedPlayer && pStats ? (
           <>
-            <span className="stat-pill-gold-dense">
+            <span className="stat-pill-gold-dense flex-none">
               <UserCheck className="w-3.5 h-3.5 text-sky-400" />
               #{selectedPlayer.number} {selectedPlayer.name} ({selectedPlayer.pos})
             </span>
-            <span className="stat-pill-dense text-amber-300 border-amber-600/40">
+            <span className="stat-pill-dense text-amber-300 border-amber-600/40 flex-none">
               {pStats.pts} PTS
             </span>
-            <span className="stat-pill-dense text-slate-300">
+            <span className="stat-pill-dense text-slate-300 flex-none">
               2P: {pStats.fg2}
             </span>
-            <span className="stat-pill-dense text-slate-300">
+            <span className="stat-pill-dense text-slate-300 flex-none">
               3P: {pStats.fg3}
             </span>
-            <span className="stat-pill-dense text-slate-300">
+            <span className="stat-pill-dense text-slate-300 flex-none">
               FT: {pStats.ft}
             </span>
-            <span className="stat-pill-dense text-slate-300">
+            <span className="stat-pill-dense text-slate-300 flex-none">
               REB: {pStats.reb}
             </span>
-            <span className="stat-pill-dense text-slate-300">
+            <span className="stat-pill-dense text-slate-300 flex-none">
               AST: {pStats.ast}
             </span>
-            <span className="stat-pill-dense text-sky-400 border-sky-600/40">
+            <span className="stat-pill-dense text-sky-400 border-sky-600/40 flex-none">
               STL: {pStats.stl}
             </span>
-            <span className="stat-pill-dense text-rose-400 border-rose-600/40">
+            <span className="stat-pill-dense text-rose-400 border-rose-600/40 flex-none">
               TOV: {pStats.tov}
             </span>
-            <span className="stat-pill-dense text-emerald-400 border-emerald-600/40">
+            <span className="stat-pill-dense text-emerald-400 border-emerald-600/40 flex-none">
               PIR: {pStats.pir}
             </span>
           </>
         ) : (
-          <span className="text-slate-400 text-xs font-semibold tracking-wide">
+          <span className="text-slate-400 text-[11px] sm:text-xs font-semibold tracking-wide py-0.5 px-1 truncate">
             Select an active on-court player to review real-time match metrics
           </span>
         )}
-      </div>
-
-      {/* Team Tactical Counters, Evident Score Display & Undo */}
-      <div className="flex items-center gap-2.5 flex-none">
-        {/* Tactical Counters */}
-        <div className="flex flex-col justify-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 flex-none">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-violet-300" title="Team Stagger Screens">
-            <span className="w-2 h-2 rounded-full bg-violet-400"></span>
-            <span>STAG:</span>
-            <span className="font-mono font-black text-violet-100">{teamStagger}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300" title="Team Ghost Screens">
-            <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
-            <span>GHOST:</span>
-            <span className="font-mono font-black text-cyan-100">{teamGhost}</span>
-          </div>
-        </div>
-
-        {/* Clear & Evident Team Score Display */}
-        <div className="flex items-center bg-slate-950 px-4 py-1.5 rounded-lg border-2 border-amber-500/40 shadow-md flex-none">
-          <div className="flex flex-col items-center">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
-              TEAM SCORE
-            </span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-mono text-2xl sm:text-3xl font-black text-amber-400 leading-none tabular-nums">
-                {teamPts}
-              </span>
-              <span className="text-[10px] font-black text-slate-400 uppercase">PTS</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Undo Button */}
-        <button
-          onClick={onUndo}
-          className="action-btn-dense btn-undo-bg text-xs px-3 py-1.5 min-h-[38px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1.5 rounded-lg shadow-sm"
-        >
-          <RotateCcw className="w-4 h-4 text-slate-300" />
-          UNDO
-        </button>
       </div>
     </div>
   );

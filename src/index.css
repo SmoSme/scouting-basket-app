@@ -12,6 +12,7 @@
 
 html, body, #root {
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden !important;
   background-color: #090D16;
@@ -290,4 +291,22 @@ html, body, #root {
   color: #F8FAFC;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
+}
+
+/* Hide scrollbar for clean horizontal tickers while keeping touch scrollable */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mobile modal fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.15s ease-out forwards;
 }
