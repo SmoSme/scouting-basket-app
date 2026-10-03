@@ -46,6 +46,8 @@ export default function ScoreboardHeader({
     const fd = pEvents.filter(e => { const az = getAz(e); return az === 'Fallo Subito' || az === 'Foul Drawn'; }).length;
     const blk = pEvents.filter(e => { const az = getAz(e); return az === 'Block' || az === 'Stoppata Data'; }).length;
     const blka = pEvents.filter(e => { const az = getAz(e); return az === 'Block Allowed' || az === 'Stoppata Subita'; }).length;
+    const stagger = pEvents.filter(e => { const az = getAz(e); return az === 'Stagger'; }).length;
+    const ghost = pEvents.filter(e => { const az = getAz(e); return az === 'Ghost'; }).length;
     
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
@@ -56,7 +58,8 @@ export default function ScoreboardHeader({
       fg2: `${fg2_m}/${fg2_a} (${pct2p}%)`,
       fg3: `${fg3_m}/${fg3_a} (${pct3p}%)`,
       ft: `${ft_m}/${ft_a}`,
-      reb: treb, ast, stl, tov, pf, pir
+      reb: treb, ast, stl, tov, pf, pir,
+      stagger, ghost
     };
   };
 
@@ -110,6 +113,16 @@ export default function ScoreboardHeader({
             <span className="stat-pill-dense text-rose-400 border-rose-500/30">
               TOV: {pStats.tov}
             </span>
+            {pStats.stagger > 0 && (
+              <span className="stat-pill-dense text-purple-400 border-purple-500/40 bg-purple-950/40">
+                STAG: {pStats.stagger}
+              </span>
+            )}
+            {pStats.ghost > 0 && (
+              <span className="stat-pill-dense text-cyan-400 border-cyan-500/40 bg-cyan-950/40">
+                GHOST: {pStats.ghost}
+              </span>
+            )}
             <span className="stat-pill-dense text-emerald-400 border-emerald-500/30">
               PIR: {pStats.pir}
             </span>

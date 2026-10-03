@@ -53,6 +53,8 @@ export default function BoxScoreTable({ roster, events }) {
     const fd = pEvents.filter(e => { const az = getAz(e); return az === 'Foul Drawn' || az === 'Fallo Subito'; }).length;
     const blk = pEvents.filter(e => { const az = getAz(e); return az === 'Block' || az === 'Stoppata Data'; }).length;
     const blka = pEvents.filter(e => { const az = getAz(e); return az === 'Block Allowed' || az === 'Stoppata Subita'; }).length;
+    const stagger = pEvents.filter(e => { const az = getAz(e); return az === 'Stagger'; }).length;
+    const ghost = pEvents.filter(e => { const az = getAz(e); return az === 'Ghost'; }).length;
 
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
@@ -69,6 +71,7 @@ export default function BoxScoreTable({ roster, events }) {
       fg3: `${fg3_m}/${fg3_a}`, pct3p: `${pct3p}%`,
       ft: `${ft_m}/${ft_a}`, pctFt: `${pctFt}%`,
       reb: treb, ast, stl, tov, pf, fd, blk, pir,
+      stagger, ghost,
       actionsCount: pEvents.length
     };
   }).sort((a, b) => b.actionsCount - a.actionsCount || b.pts - a.pts);
@@ -120,6 +123,8 @@ export default function BoxScoreTable({ roster, events }) {
               <th className="py-2.5 px-2">AST</th>
               <th className="py-2.5 px-2 text-sky-400">STL</th>
               <th className="py-2.5 px-2 text-rose-400">TOV</th>
+              <th className="py-2.5 px-2 text-purple-400 font-bold" title="Stagger Screens/Techniques">STAG</th>
+              <th className="py-2.5 px-2 text-cyan-400 font-bold" title="Ghost Screens/Techniques">GHOST</th>
               <th className="py-2.5 px-2">PF</th>
               <th className="py-2.5 px-2 text-emerald-400 font-bold">PIR</th>
             </tr>
@@ -140,6 +145,8 @@ export default function BoxScoreTable({ roster, events }) {
                 <td className="py-2.5 px-2 text-slate-200">{r.ast}</td>
                 <td className="py-2.5 px-2 text-sky-400 font-bold">{r.stl}</td>
                 <td className="py-2.5 px-2 text-rose-400 font-bold">{r.tov}</td>
+                <td className="py-2.5 px-2 text-purple-400 font-bold">{r.stagger}</td>
+                <td className="py-2.5 px-2 text-cyan-400 font-bold">{r.ghost}</td>
                 <td className="py-2.5 px-2 text-slate-200">{r.pf}</td>
                 <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
               </tr>

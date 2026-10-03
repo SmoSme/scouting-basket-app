@@ -9,7 +9,8 @@ const ACTION_OPTIONS = [
   'Steal', 'Turnover',
   'Off Rebound', 'Def Rebound',
   'Assist', 'Personal Foul',
-  'Foul Drawn', 'Block', 'Block Allowed'
+  'Foul Drawn', 'Block', 'Block Allowed',
+  'Stagger', 'Ghost'
 ];
 
 const QUARTER_OPTIONS = ['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'];
@@ -97,7 +98,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           const actionStr = String(ev?.Action || ev?.action || ev?.Azione || ev?.azione || '');
           const isSuccess = actionStr.includes('Made') || actionStr.includes('Fatto') || actionStr.includes('Steal') || actionStr.includes('Assist');
           const isNegative = actionStr.includes('Missed') || actionStr.includes('Sbagliato') || actionStr.includes('Turnover') || actionStr.includes('Persa');
-          const badgeColor = isSuccess ? '#059669' : (isNegative ? '#BE123C' : '#0284C7');
+          let badgeColor = '#0284C7';
+          if (isSuccess) badgeColor = '#059669';
+          else if (isNegative) badgeColor = '#BE123C';
+          else if (actionStr === 'Stagger') badgeColor = '#8B5CF6';
+          else if (actionStr === 'Ghost') badgeColor = '#06B6D4';
 
           const timestamp = ev?.Timestamp || ev?.timestamp || '';
           const quarto = ev?.Quarter || ev?.quarter || ev?.Quarto || ev?.quarto || '';

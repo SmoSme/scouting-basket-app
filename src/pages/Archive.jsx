@@ -494,6 +494,10 @@ export default function Archive({ showToast }) {
                                   ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                                   : isMiss
                                   ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                                  : act === 'Stagger'
+                                  ? 'bg-purple-950 text-purple-300 border border-purple-800'
+                                  : act === 'Ghost'
+                                  ? 'bg-cyan-950 text-cyan-300 border border-cyan-800'
                                   : 'bg-slate-800 text-slate-200'
                               }`}>
                                 {act}

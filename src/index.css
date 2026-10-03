@@ -243,3 +243,27 @@ html, body, #root {
   color: #38BDF8;
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
+
+/* Tactical Techniques Action Buttons */
+.btn-tactics-stagger {
+  background-color: #3B0764;
+  border-color: #7C3AED;
+  color: #EDE9FE;
+}
+.btn-tactics-stagger:hover {
+  background-color: #581C87;
+  color: #FFFFFF;
+  border-color: #A78BFA;
+}
+
+.btn-tactics-ghost {
+  background-color: #083344;
+  border-color: #06B6D4;
+  color: #CFFAFE;
+}
+.btn-tactics-ghost:hover {
+  background-color: #0E7490;
+  color: #FFFFFF;
+  border-color: #67E8F9;
+}
+

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Crosshair, Shield, Zap, AlertCircle, Check, X } from 'lucide-react';
+import { Target, Crosshair, Shield, Zap, AlertCircle, Check, X, Sparkles, Layers, Ghost } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
 
 export default function ActionClusters({
@@ -7,7 +7,7 @@ export default function ActionClusters({
   onRecordShot,
   onRecordAction
 }) {
-  const currentZone = COURT_ZONES[selectedZoneKey];
+  const currentZone = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
 
   return (
     <div className="space-y-1.5">
@@ -133,6 +133,30 @@ export default function ActionClusters({
             className="action-btn-dense btn-ast-bg"
           >
             FOUL DRAWN (FD)
+          </button>
+        </div>
+      </div>
+
+      {/* CLUSTER 6: TACTICAL TECHNIQUES (STAGGER & GHOST) */}
+      <div className="cluster-panel-dense">
+        <div className="cluster-header-title">
+          <Sparkles className="w-3 h-3 text-purple-400" />
+          6. TACTICAL TECHNIQUES
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            onClick={() => onRecordAction('Stagger', 'Technique')}
+            className="action-btn-dense btn-tactics-stagger"
+          >
+            <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
+            STAGGER
+          </button>
+          <button
+            onClick={() => onRecordAction('Ghost', 'Technique')}
+            className="action-btn-dense btn-tactics-ghost"
+          >
+            <Ghost className="w-3.5 h-3.5 stroke-[2.5]" />
+            GHOST
           </button>
         </div>
       </div>

@@ -483,8 +483,8 @@ export default function LiveGame({
           <>
             {/* DESKTOP & LARGE TABLET LANDSCAPE VIEW (>= 1024px) */}
             <div className="hidden lg:grid grid-cols-12 gap-2 h-full">
-              {/* Panel 1: Left Roster List */}
-              <div className="col-span-3 h-full overflow-hidden">
+              {/* Panel 1: Left Roster List (Expanded for 2-column side-by-side Court & Bench) */}
+              <div className="col-span-4 h-full overflow-hidden">
                 <PlayerSelector
                   roster={roster}
                   onCourtPlayerNums={onCourtPlayerNums}
@@ -496,7 +496,7 @@ export default function LiveGame({
               </div>
 
               {/* Panel 2: Center Main Stage (Court Heatmap + Clustered Actions) */}
-              <div className="col-span-6 h-full overflow-y-auto space-y-2 pr-0.5">
+              <div className="col-span-5 h-full overflow-y-auto space-y-2 pr-0.5">
                 <CourtPitchMap
                   selectedPlayer={selectedPlayer}
                   selectedZoneKey={selectedZoneKey}
