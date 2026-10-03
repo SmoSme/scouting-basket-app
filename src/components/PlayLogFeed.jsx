@@ -48,8 +48,13 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
     if (!onEditEvent) return;
 
     // Find player from roster if available
-    const matchedPlayer = roster.find(p => String(p.number) === String(editNum));
-    const finalName = matchedPlayer ? matchedPlayer.name : editName;
+    let finalName = editName;
+    if (editNum === '-') {
+      finalName = 'TEAM';
+    } else {
+      const matchedPlayer = roster.find(p => String(p.number) === String(editNum));
+      if (matchedPlayer) finalName = matchedPlayer.name;
+    }
 
     const payload = {
       Number: editNum,
@@ -119,22 +124,28 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
 
                 {/* Player Selection Dropdown */}
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">PLAYER</label>
+                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">PLAYER / SQUAD</label>
                   <select
                     value={editNum}
                     onChange={(e) => {
-                      setEditNum(e.target.value);
-                      const p = roster.find(r => String(r.number) === String(e.target.value));
-                      if (p) setEditName(p.name);
+                      const val = e.target.value;
+                      setEditNum(val);
+                      if (val === '-') {
+                        setEditName('TEAM');
+                      } else {
+                        const p = roster.find(r => String(r.number) === String(val));
+                        if (p) setEditName(p.name);
+                      }
                     }}
                     className="w-full bg-slate-950 border border-slate-700 text-slate-100 font-bold p-1 rounded text-xs"
                   >
+                    <option value="-">⚡ TEAM (Tactical Screen / Team Play)</option>
                     {roster.map(p => (
                       <option key={p.number} value={p.number}>
                         #{p.number} {p.name}
                       </option>
                     ))}
-                    {!roster.some(p => String(p.number) === String(editNum)) && (
+                    {editNum !== '-' && !roster.some(p => String(p.number) === String(editNum)) && (
                       <option value={editNum}>#{editNum} {editName}</option>
                     )}
                   </select>
@@ -238,8 +249,17 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 </div>
               </div>
 
-              <div className="font-bold text-slate-100 truncate mt-0.5">
-                #{numero} {giocatore}
+              <div className="font-bold text-slate-100 truncate mt-0.5 flex items-center gap-1.5">
+                {numero === '-' || giocatore === 'TEAM' ? (
+                  <>
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-purple-950/80 text-purple-300 border border-purple-500/40">
+                      TEAM PLAY
+                    </span>
+                    <span className="text-slate-300 text-xs">BBA Squad</span>
+                  </>
+                ) : (
+                  <span>#{numero} {giocatore}</span>
+                )}
               </div>
 
               <div className="font-black text-[11px] uppercase tracking-wide mt-0.5" style={{ color: badgeColor }}>

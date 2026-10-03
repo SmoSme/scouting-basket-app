@@ -15,8 +15,25 @@ export function getOfflineQueue() {
 export function saveToOfflineQueue(eventData) {
   try {
     const currentQueue = getOfflineQueue();
+    // Normalize to exact schema columns before storing in queue
+    const Timestamp = eventData.Timestamp || eventData.timestamp || '';
+    const Quarter = eventData.Quarter || eventData.quarter || eventData.Quarto || eventData.quarto || '';
+    const NumberVal = String(eventData.Number ?? eventData.number ?? eventData.Numero ?? eventData.numero ?? '');
+    const Player = eventData.Player || eventData.player || eventData.Giocatore || eventData.giocatore || '';
+    const Action = eventData.Action || eventData.action || eventData.Azione || eventData.azione || '';
+    const Category = eventData.Category || eventData.category || eventData.Categoria || eventData.categoria || '';
+    const Zone = eventData.Zone || eventData.zone || eventData.Zona || eventData.zona || '';
+    const Match_Name = eventData.Match_Name || eventData.match_name || eventData.nome_partita || eventData.Nome_Partita || '';
+
     currentQueue.push({
-      ...eventData,
+      Timestamp,
+      Quarter,
+      Number: NumberVal,
+      Player,
+      Action,
+      Category,
+      Zone,
+      Match_Name,
       _queuedAt: new Date().toISOString()
     });
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(currentQueue));
@@ -95,26 +112,26 @@ export async function syncOfflineQueue(onSyncSuccess) {
   }
 
   try {
-    const payload = queue.map(({ _queuedAt, ...item }) => {
-      const Match_Name = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || '';
+    // Sanitize payload: ONLY include exact columns that exist in the Supabase schema
+    const payload = queue.map(item => {
+      const Timestamp = item.Timestamp || item.timestamp || '';
       const Quarter = item.Quarter || item.quarter || item.Quarto || item.quarto || '';
       const NumberVal = String(item.Number ?? item.number ?? item.Numero ?? item.numero ?? '');
       const Player = item.Player || item.player || item.Giocatore || item.giocatore || '';
       const Action = item.Action || item.action || item.Azione || item.azione || '';
       const Category = item.Category || item.category || item.Categoria || item.categoria || '';
       const Zone = item.Zone || item.zone || item.Zona || item.zona || '';
-      const Timestamp = item.Timestamp || item.timestamp || '';
+      const Match_Name = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || '';
 
       return {
-        ...item,
-        Match_Name, match_name: Match_Name, nome_partita: Match_Name,
-        Quarter, quarter: Quarter, quarto: Quarter,
-        Number: NumberVal, number: NumberVal, numero: NumberVal,
-        Player, player: Player, giocatore: Player,
-        Action, action: Action, azione: Action,
-        Category, category: Category, categoria: Category,
-        Zone, zone: Zone, zona: Zone,
-        Timestamp, timestamp: Timestamp
+        Timestamp,
+        Quarter,
+        Number: NumberVal,
+        Player,
+        Action,
+        Category,
+        Zone,
+        Match_Name
       };
     });
     

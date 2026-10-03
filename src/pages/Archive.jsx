@@ -433,14 +433,16 @@ export default function Archive({ showToast }) {
                       className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-3 py-1.5 font-bold focus:outline-none focus:border-sky-400"
                     >
                       <option value="">Whole Team (All Players)</option>
-                      {Array.from(new Set(reviewMatch.events.map(ev => String(ev.Number ?? ev.number ?? ev.Numero ?? ev.numero ?? '')))).filter(Boolean).map(num => {
-                        const p = DEFAULT_ROSTER.find(r => String(r.number) === String(num));
-                        return (
-                          <option key={num} value={num}>
-                            #{num} - {p ? p.name : `Player #${num}`}
-                          </option>
-                        );
-                      })}
+                      {Array.from(new Set(reviewMatch.events.map(ev => String(ev.Number ?? ev.number ?? ev.Numero ?? ev.numero ?? ''))))
+                        .filter(num => Boolean(num) && num !== '-' && num !== 'TEAM')
+                        .map(num => {
+                          const p = DEFAULT_ROSTER.find(r => String(r.number) === String(num));
+                          return (
+                            <option key={num} value={num}>
+                              #{num} - {p ? p.name : `Player #${num}`}
+                            </option>
+                          );
+                        })}
                     </select>
                   </div>
 
@@ -486,7 +488,11 @@ export default function Archive({ showToast }) {
                             <td className="py-2 px-2 font-mono text-sky-400 font-bold">{q}</td>
                             <td className="py-2 px-2 text-slate-400 text-[11px]">{ts}</td>
                             <td className="py-2 px-2 font-bold text-slate-100">
-                              #{num} - {pName}
+                              {num === '-' || pName === 'TEAM' ? (
+                                <span className="text-amber-400 font-black">⚡ TEAM EVENT</span>
+                              ) : (
+                                `#${num} - ${pName}`
+                              )}
                             </td>
                             <td className="py-2 px-2">
                               <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${

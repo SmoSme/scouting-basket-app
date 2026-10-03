@@ -242,7 +242,9 @@ export default function App() {
   };
 
   const dispatchAction = async (actionName, categoryName, zoneName) => {
-    if (!selectedPlayer) {
+    const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+
+    if (!isTeamEvent && !selectedPlayer) {
       showToast('⚠️ Please select a player first!');
       return;
     }
@@ -254,41 +256,32 @@ export default function App() {
     }
 
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-    const payload = {
-      Match_Name: gameSession,
-      match_name: gameSession,
-      nome_partita: gameSession,
-
-      Quarter: currentQuarter,
-      quarter: currentQuarter,
-      quarto: currentQuarter,
-
-      Number: String(selectedPlayer.number),
-      number: String(selectedPlayer.number),
-      numero: String(selectedPlayer.number),
-
-      Player: selectedPlayer.name,
-      player: selectedPlayer.name,
-      giocatore: selectedPlayer.name,
-
-      Action: actionName,
-      action: actionName,
-      azione: actionName,
-
-      Category: categoryName,
-      category: categoryName,
-      categoria: categoryName,
-
-      Zone: zoneName,
-      zone: zoneName,
-      zona: zoneName,
-
+    const playerNum = isTeamEvent ? '-' : String(selectedPlayer.number);
+    const playerName = isTeamEvent ? 'TEAM' : selectedPlayer.name;
+    
+    // Exact schema payload matching the 8 Supabase scouting_log columns
+    const supabasePayload = {
       Timestamp: timestamp,
-      timestamp: timestamp
+      Quarter: currentQuarter,
+      Number: playerNum,
+      Player: playerName,
+      Action: actionName,
+      Category: categoryName,
+      Zone: zoneName,
+      Match_Name: gameSession
     };
 
     // 1. Instant local state update (<5ms)
-    const localEv = { ...payload };
+    const localEv = {
+      ...supabasePayload,
+      action: actionName,
+      player: playerName,
+      number: playerNum,
+      quarter: currentQuarter,
+      zone: zoneName,
+      category: categoryName,
+      timestamp
+    };
     setEvents(prev => [...prev, localEv]);
 
     // 2. Try Supabase insert
@@ -299,11 +292,12 @@ export default function App() {
       try {
         const { error } = await supabase
           .from('scouting_log')
-          .insert([payload]);
+          .insert([supabasePayload]);
 
         if (!error) {
           cloudSynced = true;
-          showToast(`✅ #${selectedPlayer.number} ${selectedPlayer.name} -> ${actionName} (Supabase Cloud)`);
+          const label = isTeamEvent ? `[TEAM] ${actionName}` : `#${selectedPlayer.number} ${selectedPlayer.name} -> ${actionName}`;
+          showToast(`✅ ${label} (Supabase Cloud)`);
         } else {
           console.warn('Supabase insert error:', error);
           showToast(`⚠️ Supabase: ${error.message || 'Column/Permission error'}`);
@@ -315,7 +309,7 @@ export default function App() {
 
     // 3. If cloud insert failed or offline, save to local queue
     if (!cloudSynced) {
-      saveToOfflineQueue(payload);
+      saveToOfflineQueue(supabasePayload);
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
       showToast(`📦 Saved to offline queue (${newQueueLength} pending sync)`);
@@ -326,11 +320,14 @@ export default function App() {
       fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(supabasePayload)
       });
     } catch (e) {}
 
-    setSelectedPlayer(null);
+    // Only deselect player if this was an individual player action
+    if (!isTeamEvent) {
+      setSelectedPlayer(null);
+    }
   };
 
   const handleUndo = async () => {
@@ -425,12 +422,12 @@ export default function App() {
         const valCat = updatedFields.Category || updatedFields.category || updatedFields.Categoria || updatedFields.categoria;
 
         const payload = {
-          Player: valPlayer, player: valPlayer, giocatore: valPlayer,
-          Number: valNum, number: valNum, numero: valNum,
-          Action: valAction, action: valAction, azione: valAction,
-          Quarter: valQuarter, quarter: valQuarter, quarto: valQuarter,
-          Zone: valZone, zone: valZone, zona: valZone,
-          Category: valCat, category: valCat, categoria: valCat
+          Player: valPlayer,
+          Number: valNum,
+          Action: valAction,
+          Quarter: valQuarter,
+          Zone: valZone,
+          Category: valCat
         };
 
         await supabase

@@ -137,11 +137,16 @@ export default function ActionClusters({
         </div>
       </div>
 
-      {/* CLUSTER 6: TACTICAL TECHNIQUES (STAGGER & GHOST) */}
+      {/* CLUSTER 6: TACTICAL TECHNIQUES (TEAM SCREENS: STAGGER & GHOST) */}
       <div className="cluster-panel-dense">
-        <div className="cluster-header-title">
-          <Sparkles className="w-3 h-3 text-purple-400" />
-          6. TACTICAL TECHNIQUES
+        <div className="cluster-header-title flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-purple-400" />
+            <span>6. TACTICAL TECHNIQUES</span>
+          </div>
+          <span className="text-[9px] font-bold text-purple-300 bg-purple-950/70 border border-purple-500/30 px-1.5 py-0.2 rounded">
+            TEAM EVENT (NO PLAYER NEEDED)
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-1.5">
           <button

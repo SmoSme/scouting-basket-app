@@ -19,6 +19,9 @@ export default function ScoreboardHeader({
     return acc;
   }, 0);
 
+  const teamStagger = events.filter(e => getAz(e) === 'Stagger').length;
+  const teamGhost = events.filter(e => getAz(e) === 'Ghost').length;
+
   const getPlayerStats = () => {
     if (!selectedPlayer) return null;
     const pEvents = events.filter(e => getNum(e) === String(selectedPlayer.number));
@@ -46,8 +49,6 @@ export default function ScoreboardHeader({
     const fd = pEvents.filter(e => { const az = getAz(e); return az === 'Fallo Subito' || az === 'Foul Drawn'; }).length;
     const blk = pEvents.filter(e => { const az = getAz(e); return az === 'Block' || az === 'Stoppata Data'; }).length;
     const blka = pEvents.filter(e => { const az = getAz(e); return az === 'Block Allowed' || az === 'Stoppata Subita'; }).length;
-    const stagger = pEvents.filter(e => { const az = getAz(e); return az === 'Stagger'; }).length;
-    const ghost = pEvents.filter(e => { const az = getAz(e); return az === 'Ghost'; }).length;
     
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
@@ -58,8 +59,7 @@ export default function ScoreboardHeader({
       fg2: `${fg2_m}/${fg2_a} (${pct2p}%)`,
       fg3: `${fg3_m}/${fg3_a} (${pct3p}%)`,
       ft: `${ft_m}/${ft_a}`,
-      reb: treb, ast, stl, tov, pf, pir,
-      stagger, ghost
+      reb: treb, ast, stl, tov, pf, pir
     };
   };
 
@@ -113,16 +113,6 @@ export default function ScoreboardHeader({
             <span className="stat-pill-dense text-rose-400 border-rose-500/30">
               TOV: {pStats.tov}
             </span>
-            {pStats.stagger > 0 && (
-              <span className="stat-pill-dense text-purple-400 border-purple-500/40 bg-purple-950/40">
-                STAG: {pStats.stagger}
-              </span>
-            )}
-            {pStats.ghost > 0 && (
-              <span className="stat-pill-dense text-cyan-400 border-cyan-500/40 bg-cyan-950/40">
-                GHOST: {pStats.ghost}
-              </span>
-            )}
             <span className="stat-pill-dense text-emerald-400 border-emerald-500/30">
               PIR: {pStats.pir}
             </span>
@@ -134,8 +124,20 @@ export default function ScoreboardHeader({
         )}
       </div>
 
-      {/* Team Points & Undo */}
-      <div className="flex items-center gap-3">
+      {/* Team Points, Tactical Screens (Stagger/Ghost) & Undo */}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-slate-950/90 px-2 py-1 rounded-lg border border-slate-800 shadow-inner">
+          <div className="flex items-center gap-1 text-[11px] font-black text-purple-400" title="Team Stagger Screens">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            STAG: <span className="font-mono text-purple-200">{teamStagger}</span>
+          </div>
+          <span className="text-slate-700">|</span>
+          <div className="flex items-center gap-1 text-[11px] font-black text-cyan-400" title="Team Ghost Screens">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            GHOST: <span className="font-mono text-cyan-200">{teamGhost}</span>
+          </div>
+        </div>
+
         <div className="digital-score-dense">
           {teamPts} <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">PTS</span>
         </div>
