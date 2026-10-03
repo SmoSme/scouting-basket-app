@@ -80,7 +80,7 @@ export default function ActionClusters({
           </button>
           <button
             onClick={() => onRecordAction('Block', 'Defense')}
-            className="action-btn-dense btn-stl-bg"
+            className="action-btn-dense btn-blk-bg"
           >
             BLOCK (BLK)
           </button>
@@ -96,15 +96,15 @@ export default function ActionClusters({
         <div className="grid grid-cols-3 gap-1.5">
           <button
             onClick={() => onRecordAction('Off Rebound', 'Rebound')}
-            className="action-btn-dense btn-reb-bg"
+            className="action-btn-dense btn-oreb-bg"
           >
-            OFF REBOUND
+            OFF REB
           </button>
           <button
             onClick={() => onRecordAction('Def Rebound', 'Rebound')}
-            className="action-btn-dense btn-reb-bg"
+            className="action-btn-dense btn-dreb-bg"
           >
-            DEF REBOUND
+            DEF REB
           </button>
           <button
             onClick={() => onRecordAction('Assist', 'Passing')}
@@ -130,7 +130,7 @@ export default function ActionClusters({
           </button>
           <button
             onClick={() => onRecordAction('Foul Drawn', 'Foul')}
-            className="action-btn-dense btn-ast-bg"
+            className="action-btn-dense btn-fd-bg"
           >
             FOUL DRAWN (FD)
           </button>
