@@ -14,16 +14,18 @@ html, body, #root {
   height: 100vh;
   width: 100vw;
   overflow: hidden !important;
-  background-color: #0B0F19;
-  color: #F8FAFC;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #090D16;
+  color: #F1F5F9;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Compact Scrollbars */
+/* Custom Minimalist Precision Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
 }
 ::-webkit-scrollbar-track {
   background: #090D16;
@@ -32,57 +34,30 @@ html, body, #root {
   background: #1E293B;
   border-radius: 2px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
 
-/* Dark Analytics Glassmorphism Panel Cards */
+/* Professional Analytics Cards */
 .glass-card {
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-/* Roster Player Cards - Minimalist Dark Analytics */
-.player-tile-dense {
-  background: #0F172A;
+  background-color: #0F172A;
   border: 1px solid #1E293B;
-  border-left: 3px solid #334155;
   border-radius: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  user-select: none;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-}
-.player-tile-dense:hover {
-  background: #1E293B;
-  border-color: #475569;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* ACTIVE SELECTED PLAYER CARD — Sleek contrast border, medium gray bg, no harsh gold */
-.player-tile-active {
-  background: #1E293B !important;
-  color: #F8FAFC !important;
-  border: 1px solid #38BDF8 !important;
-  border-left: 4px solid #38BDF8 !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25) !important;
-}
-
-/* Compact Action Control Clusters */
+/* Action Control Panels */
 .cluster-panel-dense {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  border-radius: 8px;
-  padding: 6px 10px;
+  background-color: #0F172A;
+  border: 1px solid #1E293B;
+  border-radius: 6px;
+  padding: 6px 8px;
 }
 .cluster-header-title {
   color: #94A3B8;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 5px;
   display: flex;
@@ -90,18 +65,19 @@ html, body, #root {
   gap: 5px;
 }
 
-/* Compact Action Control Buttons — Desaturated Flat Palette */
+/* Professional Action Buttons — Balanced Contrast & Tactile Precision */
 .action-btn-dense {
   width: 100%;
+  height: 36px;
   min-height: 36px;
-  font-size: 0.80rem;
-  font-weight: 800;
-  border-radius: 6px;
-  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 5px;
+  border: 1px solid;
   cursor: pointer;
-  transition: all 0.1s ease-in-out;
+  transition: all 0.12s ease;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -109,161 +85,178 @@ html, body, #root {
   padding: 4px 8px;
 }
 .action-btn-dense:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-/* Desaturated Emerald Greens for Positive Actions */
+/* Made Shots (2PT / 3PT Made) - Crisp FIBA Emerald */
 .btn-made-bg {
   background-color: #064E3B;
   border-color: #059669;
-  color: #A7F3D0;
+  color: #D1FAE5;
 }
 .btn-made-bg:hover {
   background-color: #047857;
+  border-color: #10B981;
   color: #FFFFFF;
 }
 
 .btn-ft-made-bg {
-  background-color: #065F46;
-  border-color: #10B981;
+  background-color: #064E3B;
+  border-color: #059669;
   color: #D1FAE5;
 }
 .btn-ft-made-bg:hover {
   background-color: #047857;
+  border-color: #10B981;
+  color: #FFFFFF;
 }
 
-.btn-stl-bg {
-  background-color: #065F46;
-  border-color: #059669;
-  color: #A7F3D0;
-}
-.btn-stl-bg:hover {
-  background-color: #047857;
-}
-
-.btn-ast-bg {
-  background-color: #115E59;
-  border-color: #0D9488;
-  color: #CCFBF1;
-}
-.btn-ast-bg:hover {
-  background-color: #0F766E;
-}
-
-/* Desaturated Brick Reds / Muted Roses for Negative Actions */
+/* Missed Shots (2PT / 3PT Missed) - Controlled Crimson */
 .btn-miss-bg {
-  background-color: #7F1D1D;
+  background-color: #450A0A;
   border-color: #991B1B;
   color: #FECDD3;
 }
 .btn-miss-bg:hover {
-  background-color: #991B1B;
+  background-color: #7F1D1D;
+  border-color: #DC2626;
   color: #FFFFFF;
 }
 
 .btn-ft-miss-bg {
-  background-color: #881337;
-  border-color: #BE123C;
-  color: #FFE4E6;
+  background-color: #450A0A;
+  border-color: #991B1B;
+  color: #FECDD3;
 }
 .btn-ft-miss-bg:hover {
-  background-color: #9F1239;
+  background-color: #7F1D1D;
+  border-color: #DC2626;
+  color: #FFFFFF;
+}
+
+/* Defense & Turnovers */
+.btn-stl-bg {
+  background-color: #111827;
+  border-color: #334155;
+  color: #E2E8F0;
+}
+.btn-stl-bg:hover {
+  background-color: #1E293B;
+  border-color: #0284C7;
+  color: #38BDF8;
 }
 
 .btn-tov-bg {
-  background-color: #881337;
-  border-color: #BE123C;
+  background-color: #450A0A;
+  border-color: #991B1B;
   color: #FECDD3;
 }
 .btn-tov-bg:hover {
-  background-color: #9F1239;
+  background-color: #7F1D1D;
+  border-color: #DC2626;
+  color: #FFFFFF;
 }
 
-.btn-foul-bg {
-  background-color: #701A75;
-  border-color: #A21CAF;
-  color: #F5D0FE;
+.btn-ast-bg {
+  background-color: #111827;
+  border-color: #334155;
+  color: #E2E8F0;
 }
-.btn-foul-bg:hover {
-  background-color: #86198F;
-}
-
-/* Neutral Muted Rebounds / Utilities */
-.btn-reb-bg {
+.btn-ast-bg:hover {
   background-color: #1E293B;
-  border-color: #475569;
+  border-color: #0D9488;
+  color: #5EEAD4;
+}
+
+.btn-reb-bg {
+  background-color: #111827;
+  border-color: #334155;
   color: #E2E8F0;
 }
 .btn-reb-bg:hover {
-  background-color: #334155;
-  color: #FFFFFF;
+  background-color: #1E293B;
+  border-color: #D97706;
+  color: #FCD34D;
+}
+
+.btn-foul-bg {
+  background-color: #111827;
+  border-color: #334155;
+  color: #E2E8F0;
+}
+.btn-foul-bg:hover {
+  background-color: #1E293B;
+  border-color: #7C3AED;
+  color: #DDD6FE;
 }
 
 .btn-undo-bg {
   background-color: #1E293B;
-  border-color: #475569;
-  color: #CBD5E1;
+  border-color: #334155;
+  color: #94A3B8;
 }
 .btn-undo-bg:hover {
   background-color: #334155;
+  border-color: #475569;
   color: #F8FAFC;
+}
+
+/* Tactical Techniques Action Buttons */
+.btn-tactics-stagger {
+  background-color: #1E1B4B;
+  border-color: #4338CA;
+  color: #E0E7FF;
+}
+.btn-tactics-stagger:hover {
+  background-color: #312E81;
+  border-color: #6366F1;
+  color: #FFFFFF;
+}
+
+.btn-tactics-ghost {
+  background-color: #082F49;
+  border-color: #0284C7;
+  color: #E0F2FE;
+}
+.btn-tactics-ghost:hover {
+  background-color: #075985;
+  border-color: #38BDF8;
+  color: #FFFFFF;
 }
 
 /* Dense Live Stat Metric Pills */
 .stat-pill-dense {
-  background: rgba(15, 23, 42, 0.9);
+  background-color: #111827;
   border: 1px solid #334155;
-  border-radius: 5px;
-  padding: 2px 7px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-pill-gold-dense {
-  background: #1E293B;
+  background-color: #111827;
   color: #38BDF8;
   border: 1px solid #0284C7;
-  border-radius: 5px;
-  padding: 2px 9px;
-  font-size: 0.82rem;
-  font-weight: 800;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-/* Digital Scoreboard Typography */
+/* Clean Professional Scoreboard Number */
 .digital-score-dense {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #38BDF8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #F8FAFC;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
 }
-
-/* Tactical Techniques Action Buttons */
-.btn-tactics-stagger {
-  background-color: #3B0764;
-  border-color: #7C3AED;
-  color: #EDE9FE;
-}
-.btn-tactics-stagger:hover {
-  background-color: #581C87;
-  color: #FFFFFF;
-  border-color: #A78BFA;
-}
-
-.btn-tactics-ghost {
-  background-color: #083344;
-  border-color: #06B6D4;
-  color: #CFFAFE;
-}
-.btn-tactics-ghost:hover {
-  background-color: #0E7490;
-  color: #FFFFFF;
-  border-color: #67E8F9;
-}
-

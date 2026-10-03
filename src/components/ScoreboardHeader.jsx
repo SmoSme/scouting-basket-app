@@ -66,14 +66,14 @@ export default function ScoreboardHeader({
   const pStats = getPlayerStats();
 
   return (
-    <div className="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-700/60 rounded-xl p-1.5 px-3 mb-2 flex-none shadow-md">
+    <div className="glass-card p-1.5 px-3 mb-2 flex-none flex items-center justify-between gap-2 border-slate-800">
       {/* Quarter Selector */}
       <div className="flex items-center gap-1.5">
-        <Clock className="w-3.5 h-3.5 text-sky-400" />
+        <Clock className="w-3.5 h-3.5 text-slate-400" />
         <select
           value={currentQuarter}
           onChange={(e) => setCurrentQuarter(e.target.value)}
-          className="bg-slate-950 text-slate-100 font-bold py-0.5 px-2 rounded border border-slate-700 text-xs cursor-pointer focus:outline-none focus:border-sky-400"
+          className="bg-slate-950 text-slate-200 font-bold py-1 px-2.5 rounded border border-slate-700 text-xs cursor-pointer focus:outline-none focus:border-sky-500"
         >
           {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => (
             <option key={q} value={q}>{q}</option>
@@ -89,64 +89,65 @@ export default function ScoreboardHeader({
               <UserCheck className="w-3.5 h-3.5 text-sky-400" />
               #{selectedPlayer.number} {selectedPlayer.name} ({selectedPlayer.pos})
             </span>
-            <span className="stat-pill-dense text-amber-400 border-amber-500/40">
+            <span className="stat-pill-dense text-amber-300 border-amber-600/40">
               {pStats.pts} PTS
             </span>
-            <span className="stat-pill-dense text-slate-200">
+            <span className="stat-pill-dense text-slate-300">
               2P: {pStats.fg2}
             </span>
-            <span className="stat-pill-dense text-slate-200">
+            <span className="stat-pill-dense text-slate-300">
               3P: {pStats.fg3}
             </span>
-            <span className="stat-pill-dense text-slate-200">
+            <span className="stat-pill-dense text-slate-300">
               FT: {pStats.ft}
             </span>
-            <span className="stat-pill-dense text-slate-200">
+            <span className="stat-pill-dense text-slate-300">
               REB: {pStats.reb}
             </span>
-            <span className="stat-pill-dense text-slate-200">
+            <span className="stat-pill-dense text-slate-300">
               AST: {pStats.ast}
             </span>
-            <span className="stat-pill-dense text-sky-400 border-sky-500/30">
+            <span className="stat-pill-dense text-sky-400 border-sky-600/40">
               STL: {pStats.stl}
             </span>
-            <span className="stat-pill-dense text-rose-400 border-rose-500/30">
+            <span className="stat-pill-dense text-rose-400 border-rose-600/40">
               TOV: {pStats.tov}
             </span>
-            <span className="stat-pill-dense text-emerald-400 border-emerald-500/30">
+            <span className="stat-pill-dense text-emerald-400 border-emerald-600/40">
               PIR: {pStats.pir}
             </span>
           </>
         ) : (
-          <span className="text-slate-400 font-semibold text-xs truncate">
-            👈 SELECT A PLAYER CARD TO DISPLAY INDIVIDUAL MATCH STATS
+          <span className="text-slate-400 text-xs font-medium tracking-wide">
+            Select an active on-court player to review real-time match metrics
           </span>
         )}
       </div>
 
       {/* Team Points, Tactical Screens (Stagger/Ghost) & Undo */}
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 bg-slate-950/90 px-2 py-1 rounded-lg border border-slate-800 shadow-inner">
-          <div className="flex items-center gap-1 text-[11px] font-black text-purple-400" title="Team Stagger Screens">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-            STAG: <span className="font-mono text-purple-200">{teamStagger}</span>
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-violet-300" title="Team Stagger Screens">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+            STAG: <span className="font-mono font-bold text-violet-100">{teamStagger}</span>
           </div>
           <span className="text-slate-700">|</span>
-          <div className="flex items-center gap-1 text-[11px] font-black text-cyan-400" title="Team Ghost Screens">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-            GHOST: <span className="font-mono text-cyan-200">{teamGhost}</span>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-cyan-300" title="Team Ghost Screens">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+            GHOST: <span className="font-mono font-bold text-cyan-100">{teamGhost}</span>
           </div>
         </div>
 
-        <div className="digital-score-dense">
-          {teamPts} <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">PTS</span>
+        <div className="digital-score-dense px-1 flex items-baseline gap-1">
+          <span>{teamPts}</span>
+          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">PTS</span>
         </div>
 
         <button
           onClick={onUndo}
-          className="action-btn-dense btn-undo-bg text-xs px-2.5 py-1 min-h-[30px]"
+          className="action-btn-dense btn-undo-bg text-xs px-2.5 py-1 min-h-[30px] border-slate-700 hover:border-slate-600"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
           UNDO
         </button>
       </div>

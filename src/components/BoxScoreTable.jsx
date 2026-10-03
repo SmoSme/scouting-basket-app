@@ -112,10 +112,10 @@ export default function BoxScoreTable({ roster, events }) {
   return (
     <div className="grid grid-cols-12 gap-4">
       {/* Box Score Table */}
-      <div className="col-span-12 lg:col-span-8 glass-card p-4 overflow-x-auto border-slate-700/60">
+      <div className="col-span-12 lg:col-span-8 glass-card p-4 overflow-x-auto border-slate-800">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
           <Trophy className="w-4 h-4 text-sky-400" />
-          <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
             OFFICIAL FIBA BOX SCORE
           </h2>
         </div>
@@ -167,34 +167,34 @@ export default function BoxScoreTable({ roster, events }) {
       {/* Right Column: Team Tactical Metrics & Shot Zone Efficiency */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         {/* Team Tactical Metrics Card */}
-        <div className="glass-card p-4 border-slate-700/60">
+        <div className="glass-card p-4 border-slate-800">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-400" />
-              <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
+              <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
                 TEAM TACTICAL METRICS
               </h2>
             </div>
-            <span className="text-[10px] font-black text-purple-300 bg-purple-950/70 border border-purple-500/40 px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-slate-300 bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded">
               TOTAL: {totalTactics}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-purple-950/40 border border-purple-500/40 rounded-lg p-2.5 flex items-center justify-between shadow-inner">
+            <div className="bg-slate-900 border border-slate-800 rounded p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-purple-400" />
-                <span className="text-xs font-bold text-purple-200">STAGGER</span>
+                <Layers className="w-4 h-4 text-violet-400" />
+                <span className="text-xs font-semibold text-slate-200">STAGGER</span>
               </div>
-              <span className="text-base font-black text-purple-300 font-mono">{staggerEvents.length}</span>
+              <span className="text-base font-bold text-violet-300 font-mono">{staggerEvents.length}</span>
             </div>
 
-            <div className="bg-cyan-950/40 border border-cyan-500/40 rounded-lg p-2.5 flex items-center justify-between shadow-inner">
+            <div className="bg-slate-900 border border-slate-800 rounded p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Ghost className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-bold text-cyan-200">GHOST</span>
+                <span className="text-xs font-semibold text-slate-200">GHOST</span>
               </div>
-              <span className="text-base font-black text-cyan-300 font-mono">{ghostEvents.length}</span>
+              <span className="text-base font-bold text-cyan-300 font-mono">{ghostEvents.length}</span>
             </div>
           </div>
 
@@ -204,7 +204,7 @@ export default function BoxScoreTable({ roster, events }) {
               <thead>
                 <tr className="border-b border-slate-700/80 text-slate-400 text-[11px]">
                   <th className="py-1.5 px-2">PERIOD</th>
-                  <th className="py-1.5 px-2 text-purple-400">STAGGER</th>
+                  <th className="py-1.5 px-2 text-violet-400">STAGGER</th>
                   <th className="py-1.5 px-2 text-cyan-400">GHOST</th>
                   <th className="py-1.5 px-2 text-right">TOTAL</th>
                 </tr>
@@ -213,7 +213,7 @@ export default function BoxScoreTable({ roster, events }) {
                 {tacticsByQuarter.map(t => (
                   <tr key={t.quarter} className="border-b border-slate-800/40 hover:bg-slate-800/30">
                     <td className="py-1.5 px-2 text-slate-300 font-mono font-bold">{t.quarter}</td>
-                    <td className="py-1.5 px-2 text-purple-300 font-mono">{t.stagger}</td>
+                    <td className="py-1.5 px-2 text-violet-300 font-mono">{t.stagger}</td>
                     <td className="py-1.5 px-2 text-cyan-300 font-mono">{t.ghost}</td>
                     <td className="py-1.5 px-2 text-right text-slate-200 font-bold font-mono">{t.total}</td>
                   </tr>
@@ -224,10 +224,10 @@ export default function BoxScoreTable({ roster, events }) {
         </div>
 
         {/* Shot Zone Efficiency Table */}
-        <div className="glass-card p-4 border-slate-700/60">
+        <div className="glass-card p-4 border-slate-800">
           <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
             <BarChart2 className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-xs font-black text-slate-300 uppercase tracking-wider">
+            <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
               SHOT ZONE EFFICIENCY CHART
             </h2>
           </div>

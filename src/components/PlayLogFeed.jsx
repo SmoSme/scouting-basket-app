@@ -84,15 +84,15 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
   };
 
   return (
-    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden border-slate-700/60">
+    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden border-slate-800">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 flex-none">
         <div className="flex items-center gap-1.5">
           <History className="w-3.5 h-3.5 text-sky-400" />
-          <h2 className="text-[11px] font-black text-slate-300 uppercase tracking-wider">
-            LIVE AUDIT STREAM ({events.length})
+          <h2 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+            PLAY LOG ({events.length})
           </h2>
         </div>
-        <span className="text-[9px] text-slate-400 font-semibold">Hover/Tap to Edit or Delete</span>
+        <span className="text-[10px] text-slate-500 font-medium">Click to edit / delete</span>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
@@ -103,11 +103,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           const actionStr = String(ev?.Action || ev?.action || ev?.Azione || ev?.azione || '');
           const isSuccess = actionStr.includes('Made') || actionStr.includes('Fatto') || actionStr.includes('Steal') || actionStr.includes('Assist');
           const isNegative = actionStr.includes('Missed') || actionStr.includes('Sbagliato') || actionStr.includes('Turnover') || actionStr.includes('Persa');
-          let badgeColor = '#0284C7';
-          if (isSuccess) badgeColor = '#059669';
-          else if (isNegative) badgeColor = '#BE123C';
-          else if (actionStr === 'Stagger') badgeColor = '#8B5CF6';
-          else if (actionStr === 'Ghost') badgeColor = '#06B6D4';
+          let badgeColor = '#64748B';
+          if (isSuccess) badgeColor = '#10B981';
+          else if (isNegative) badgeColor = '#EF4444';
+          else if (actionStr === 'Stagger') badgeColor = '#818CF8';
+          else if (actionStr === 'Ghost') badgeColor = '#38BDF8';
 
           const timestamp = ev?.Timestamp || ev?.timestamp || '';
           const quarto = ev?.Quarter || ev?.quarter || ev?.Quarto || ev?.quarto || '';
@@ -217,7 +217,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           return (
             <div
               key={itemKey}
-              className="bg-slate-900/90 border-l-4 rounded-md p-2 text-xs border-r border-t border-b border-slate-800/60 group relative hover:border-slate-700 transition-all"
+              className="bg-slate-900/60 border-l-2 rounded p-2 text-xs border-r border-t border-b border-slate-800/80 group relative hover:border-slate-700 transition-colors"
               style={{ borderLeftColor: badgeColor }}
             >
               <div className="flex justify-between items-start text-[10px] text-slate-400 font-mono">
@@ -230,7 +230,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                     <button
                       onClick={() => startEditing(ev, itemKey)}
                       title="Edit event"
-                      className="p-1 rounded bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white transition-all"
+                      className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
                     >
                       <Edit3 className="w-3 h-3" />
                     </button>
@@ -241,7 +241,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                         }
                       }}
                       title="Delete event"
-                      className="p-1 rounded bg-slate-800 hover:bg-rose-700 text-slate-300 hover:text-white transition-all"
+                      className="p-1 rounded bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 transition-colors"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -249,20 +249,20 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 </div>
               </div>
 
-              <div className="font-bold text-slate-100 truncate mt-0.5 flex items-center gap-1.5">
+              <div className="font-semibold text-slate-200 truncate mt-0.5 flex items-center gap-1.5">
                 {numero === '-' || giocatore === 'TEAM' ? (
                   <>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-purple-950/80 text-purple-300 border border-purple-500/40">
-                      TEAM PLAY
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/30">
+                      TEAM
                     </span>
-                    <span className="text-slate-300 text-xs">BBA Squad</span>
+                    <span className="text-slate-300 text-xs">Tactical Play</span>
                   </>
                 ) : (
                   <span>#{numero} {giocatore}</span>
                 )}
               </div>
 
-              <div className="font-black text-[11px] uppercase tracking-wide mt-0.5" style={{ color: badgeColor }}>
+              <div className="font-bold text-[11px] uppercase tracking-wide mt-0.5" style={{ color: badgeColor }}>
                 {actionStr}
               </div>
             </div>

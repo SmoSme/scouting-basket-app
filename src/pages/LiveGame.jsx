@@ -411,19 +411,19 @@ export default function LiveGame({
 
       {/* Main Nav Sub-Bar & Mobile View Switcher */}
       <div className="flex justify-between items-center mb-1.5 flex-none gap-2">
-        <div className="flex gap-2 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
+        <div className="flex gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
           <button
             onClick={() => setActiveTab('LIVE')}
-            className={`px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'LIVE' ? 'bg-sky-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              activeTab === 'LIVE' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >
             COURT & ACTIONS
           </button>
           <button
             onClick={() => setActiveTab('BOXSCORE')}
-            className={`px-3 py-1 text-xs font-black rounded-md transition-all ${
-              activeTab === 'BOXSCORE' ? 'bg-sky-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              activeTab === 'BOXSCORE' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >
             FIBA BOX SCORE
@@ -432,30 +432,30 @@ export default function LiveGame({
 
         {/* Mobile View Switcher (Only visible on smaller screens < 1024px when activeTab === 'LIVE') */}
         {activeTab === 'LIVE' && (
-          <div className="flex lg:hidden gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-700">
+          <div className="flex lg:hidden gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
             <button
               onClick={() => setMobileView('ROSTER')}
-              className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                mobileView === 'ROSTER' ? 'bg-sky-500 text-slate-950 font-black' : 'text-slate-400'
+              className={`px-2 py-0.5 text-[10px] font-semibold rounded ${
+                mobileView === 'ROSTER' ? 'bg-sky-600 text-white' : 'text-slate-400'
               }`}
             >
-              👥 ROSTER ({roster.length})
+              ROSTER ({roster.length})
             </button>
             <button
               onClick={() => setMobileView('COURT')}
-              className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                mobileView === 'COURT' ? 'bg-sky-500 text-slate-950 font-black' : 'text-slate-400'
+              className={`px-2 py-0.5 text-[10px] font-semibold rounded ${
+                mobileView === 'COURT' ? 'bg-sky-600 text-white' : 'text-slate-400'
               }`}
             >
-              🎯 COURT
+              COURT
             </button>
             <button
               onClick={() => setMobileView('STREAM')}
-              className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                mobileView === 'STREAM' ? 'bg-sky-500 text-slate-950 font-black' : 'text-slate-400'
+              className={`px-2 py-0.5 text-[10px] font-semibold rounded ${
+                mobileView === 'STREAM' ? 'bg-sky-600 text-white' : 'text-slate-400'
               }`}
             >
-              📜 FEED
+              FEED
             </button>
           </div>
         )}
@@ -464,13 +464,13 @@ export default function LiveGame({
         <div className="flex gap-1.5 items-center">
           <button
             onClick={() => setShowSessionModal(true)}
-            className="text-[10px] bg-sky-600 hover:bg-sky-500 text-white font-black px-2.5 py-1 rounded-md transition-all shadow-md uppercase tracking-wider flex items-center gap-1"
+            className="text-[11px] bg-sky-700/80 hover:bg-sky-600 text-white font-semibold px-2.5 py-1 rounded transition-colors uppercase tracking-wider flex items-center gap-1.5 border border-sky-600"
           >
             <Play className="w-3 h-3" /> NEW MATCH
           </button>
           <button
             onClick={handleResetGame}
-            className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-1 rounded-md transition-all border border-slate-700"
+            className="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold px-2.5 py-1 rounded transition-colors border border-slate-800 hover:border-slate-700"
           >
             CLEAR SCREEN
           </button>
@@ -543,9 +543,9 @@ export default function LiveGame({
               {mobileView === 'COURT' && (
                 <div className="h-full overflow-y-auto space-y-1.5 pr-0.5">
                   {/* Compact Mobile Quick On-Court Player Selection Strip */}
-                  <div className="glass-card p-1.5 flex items-center gap-1 overflow-x-auto border-slate-700/80">
-                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider px-1 flex-none flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                  <div className="glass-card p-1.5 flex items-center gap-1 overflow-x-auto border-slate-800">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider px-1 flex-none flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                       COURT:
                     </span>
                     {roster.filter(p => new Set(onCourtPlayerNums.map(n => String(n))).has(String(p.number))).map(p => {
@@ -554,13 +554,13 @@ export default function LiveGame({
                         <button
                           key={p.number}
                           onClick={() => setSelectedPlayer(isSel ? null : p)}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-md flex items-center gap-1 flex-none transition-all ${
+                          className={`px-2 py-0.5 text-xs font-semibold rounded flex items-center gap-1 flex-none transition-colors ${
                             isSel
-                              ? 'bg-sky-500 text-slate-950 font-black shadow-md'
-                              : 'bg-slate-900 text-slate-200 border border-slate-800 hover:bg-slate-800'
+                              ? 'bg-sky-600 text-white shadow-sm'
+                              : 'bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800'
                           }`}
                         >
-                          <span className="font-mono text-sky-400 font-black">#{p.number}</span>
+                          <span className="font-mono text-sky-400 font-bold">#{p.number}</span>
                           <span className="truncate max-w-[85px]">{p.name.split(' ')[0]}</span>
                         </button>
                       );
