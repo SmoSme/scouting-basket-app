@@ -173,10 +173,10 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
             <button
               onClick={() => setActiveMetricGuideKey('ortg')}
               className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-black px-2.5 sm:px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
-              title="Guida Metriche & Valori Decisionali"
+              title="Metric Guide & Reference Benchmarks"
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">GUIDA</span> METRICHE
+              <span className="hidden sm:inline">METRIC</span> GUIDE
             </button>
             <button
               onClick={() => onDownloadCSV(match.name, match.events)}
@@ -288,14 +288,14 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div className="flex items-center gap-2 text-slate-300">
                   <Info className="w-4 h-4 text-sky-400 flex-none" />
                   <span>
-                    <strong className="text-sky-300">Scouting Intelligence:</strong> I Tiri Liberi sono conteggiati quando tirati. I Falli personali non sono attualmente annotati. Clicca su qualsiasi metrica o su <span className="text-amber-400 font-bold">ⓘ</span> per visualizzare formule, valori di riferimento e consigli tattici.
+                    <strong className="text-sky-300">Scouting Intelligence:</strong> Free Throws are recorded as made/missed. Personal Fouls are not currently logged. Click on any metric or <span className="text-amber-400 font-bold">ⓘ</span> to view formulas, definitions, and decision benchmarks.
                   </span>
                 </div>
                 <button
                   onClick={() => setActiveMetricGuideKey('ortg')}
                   className="text-[11px] font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 underline flex-none"
                 >
-                  <span>Apri Guida Metriche</span>
+                  <span>Open Metric Guide</span>
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
@@ -305,7 +305,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('ortg')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -323,7 +323,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('possessions')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -341,7 +341,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('efg')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -359,7 +359,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('ts')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -377,7 +377,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('asttov')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -395,7 +395,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <div
                   onClick={() => setActiveMetricGuideKey('pir')}
                   className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                  title="Click to view metric definition and benchmarks"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
@@ -417,7 +417,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <div
                     onClick={() => setActiveMetricGuideKey('fourfactors')}
                     className="flex items-center gap-2 cursor-pointer group"
-                    title="Clicca per visualizzare la guida ai 4 Fattori di Dean Oliver"
+                    title="Click to view Dean Oliver's Four Factors guide"
                   >
                     <Shield className="w-4 h-4 text-emerald-400" />
                     <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider group-hover:text-sky-400 transition-colors flex items-center gap-1.5">
@@ -429,7 +429,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                     onClick={() => setActiveMetricGuideKey('fourfactors')}
                     className="text-[10px] font-bold text-slate-400 hover:text-sky-400 transition-colors underline"
                   >
-                    Guida 4 Fattori
+                    Four Factors Guide
                   </button>
                 </div>
 
@@ -438,7 +438,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <div
                     onClick={() => setActiveMetricGuideKey('efg')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Fattore 1: Shooting Efficiency (eFG%)"
+                    title="Factor 1: Shooting Efficiency (eFG%)"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -464,7 +464,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <div
                     onClick={() => setActiveMetricGuideKey('ortg')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-sky-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Fattore 2: Turnover Rate (TOV%)"
+                    title="Factor 2: Turnover Rate (TOV%)"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -490,7 +490,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <div
                     onClick={() => setActiveMetricGuideKey('fourfactors')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Fattore 3: Offensive Rebound Share"
+                    title="Factor 3: Offensive Rebound Share"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -514,7 +514,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <div
                     onClick={() => setActiveMetricGuideKey('ts')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-purple-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Fattore 4: Free Throw Rate (FTR)"
+                    title="Factor 4: Free Throw Rate (FTR)"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -881,7 +881,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           <button
                             onClick={() => setActiveMetricGuideKey('gamescore')}
                             className="text-emerald-400 font-bold hover:text-emerald-300 underline inline-flex items-center gap-0.5 transition-colors"
-                            title="Clicca per visualizzare la guida a Hollinger GameScore"
+                            title="Click to view Hollinger GameScore guide"
                           >
                             <span>{activePlayer.gameScore}</span>
                             <Info className="w-2.5 h-2.5" />
@@ -907,7 +907,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       <div 
                         onClick={() => setActiveMetricGuideKey('pir')}
                         className="bg-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-emerald-500/50 hover:border-emerald-400 text-center shadow-md cursor-pointer group transition-all"
-                        title="Clicca per visualizzare la guida al FIBA PIR"
+                        title="Click to view FIBA PIR guide"
                       >
                         <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center justify-center gap-1">
                           FIBA PIR <Info className="w-2.5 h-2.5 text-slate-500 group-hover:text-emerald-300" />
@@ -994,7 +994,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           <div 
                             onClick={() => setActiveMetricGuideKey('ts')}
                             className="bg-slate-950 p-2 rounded-lg border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all"
-                            title="Clicca per visualizzare la guida a TS% ed eFG%"
+                            title="Click to view TS% and eFG% guide"
                           >
                             <span className="text-[9px] text-slate-400 group-hover:text-emerald-300 font-bold flex items-center justify-center gap-1 uppercase transition-colors">
                               TRUE SHOOTING <Info className="w-2.5 h-2.5 text-slate-500" />
@@ -1178,7 +1178,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <button
                     onClick={() => setActiveMetricGuideKey('pps')}
                     className="text-[10px] font-bold text-slate-400 hover:text-amber-400 underline flex items-center gap-1 transition-colors"
-                    title="Clicca per visualizzare la guida a Points Per Shot (PPS)"
+                    title="Click to view Points Per Shot (PPS) guide"
                   >
                     <span>PPS = Points Per Shot (Expected Value)</span>
                     <Info className="w-2.5 h-2.5 text-amber-400" />
@@ -1196,7 +1196,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       <th 
                         onClick={() => setActiveMetricGuideKey('pps')}
                         className="py-2 px-2 text-amber-400 font-bold cursor-pointer hover:text-amber-300 transition-colors"
-                        title="Clicca per visualizzare la guida a Points Per Shot (PPS)"
+                        title="Click to view Points Per Shot (PPS) guide"
                       >
                         <span className="flex items-center gap-1">
                           PTS / SHOT (PPS) <Info className="w-2.5 h-2.5" />
@@ -1258,17 +1258,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                     <button
                       onClick={() => setActiveMetricGuideKey('pir')}
                       className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 transition-colors"
-                      title="Guida al calcolo FIBA PIR"
+                      title="FIBA PIR Calculation Guide"
                     >
-                      <span>Cos'è PIR?</span>
+                      <span>What is PIR?</span>
                       <Info className="w-2.5 h-2.5" />
                     </button>
                     <button
                       onClick={() => setActiveMetricGuideKey('gamescore')}
                       className="text-[10px] font-bold text-purple-400 hover:underline flex items-center gap-1 transition-colors"
-                      title="Guida a Hollinger GameScore"
+                      title="Hollinger GameScore Guide"
                     >
-                      <span>Cos'è GS?</span>
+                      <span>What is GS?</span>
                       <Info className="w-2.5 h-2.5" />
                     </button>
                     <span className="text-[10px] font-bold text-slate-500 hidden sm:inline">• Click column header to sort</span>

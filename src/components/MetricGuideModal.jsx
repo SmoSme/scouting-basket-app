@@ -1,127 +1,117 @@
 import React, { useState } from 'react';
 import { 
-  X, Info, AlertTriangle, Shield, TrendingUp, CheckCircle, 
-  HelpCircle, BookOpen, ChevronRight, Sparkles 
+  X, Info, AlertTriangle, TrendingUp, BookOpen 
 } from 'lucide-react';
 
 export const METRIC_GUIDES = {
   ortg: {
     key: 'ortg',
-    title: 'ORTG — Offensive Rating (Efficienza Offensiva)',
-    formula: '(Punti Totali / Possessi Stimati) × 100',
-    description: 'Misura la reale produttività offensiva della squadra parametrata su 100 possessi di palla. È la metrica madre dell\'analitica moderna perché elimina la distorsione del ritmo di gioco (Pace): una squadra può segnare 95 punti giocando a ritmi folli ma con scarsa efficienza, oppure segnare 75 punti a metà campo con un\'efficienza chirurgica.',
+    title: 'ORTG — Offensive Rating (Offensive Efficiency)',
+    formula: '(Total Points / Estimated Possessions) × 100',
+    description: 'Measures true offensive efficiency scaled to 100 possessions. It is the cornerstone of modern basketball analytics because it eliminates the distorting effect of game speed (Pace): a team can score 95 points playing at a frantic pace with poor efficiency, or score 75 points in half-court sets with surgical precision.',
     benchmarks: [
-      { level: 'Élite', range: '> 112', color: 'emerald', desc: 'Attacco travolgente, esecuzione tattica e selezione di tiro impeccabili' },
-      { level: 'Buono / In Linea', range: '100 – 111', color: 'amber', desc: 'Produzione offensiva standard nella media del campionato' },
-      { level: 'Critico / Basso', range: '< 98', color: 'rose', desc: 'Attacco sterile, troppi tiri contestati o possessi gettati senza costruire' }
+      { level: 'Elite', range: '> 112', color: 'emerald', desc: 'Dominant offense, superior execution, and high shot quality' },
+      { level: 'Good / Average', range: '100 – 111', color: 'amber', desc: 'Solid, balanced offensive production' },
+      { level: 'Critical / Low', range: '< 98', color: 'rose', desc: 'Struggling offense, excessive contested shots, or wasted possessions' }
     ],
-    coachingTip: 'Se l\'ORTG è sotto 98, la squadra sta sprecando possessi con conclusioni premature o forzate. Chiama giochi a due (Stagger/Ghost) per disorganizzare i cambi difensivi o ordina di attaccare il ferro per andare in lunetta.',
-    warning: 'CALCOLO DEI POSSESSI: I tiri liberi segnati e mancati vengono conteggiati regolarmente. I falli personali non sono attualmente annotati, ma il Pace e l\'ORTG restano accurati con uno scarto inferiore al 5%.'
+    warning: 'POSSESSION TRACKING: Free Throws (Made/Missed) are actively tracked. Personal fouls are not currently recorded, but Pace and ORTG remain accurate within a 3-5% margin.'
   },
   possessions: {
     key: 'possessions',
-    title: 'Est. Possessions — Pace (Ritmo di Gioco)',
+    title: 'Est. Possessions — Pace (Game Tempo)',
     formula: 'FGA + 0.44 × FTA - OREB + TOV',
-    description: 'Numero totale stimato di possessi giocati nella gara (Formula ufficiale Dean Oliver). Ogni possesso termina sempre con un tiro dal campo (FGA), con viaggi in lunetta (0.44 × FTA) o con una palla persa (TOV). I rimbalzi d\'attacco (OREB) prolungano il possesso senza incrementarne il conteggio.',
+    description: 'Estimated total offensive possessions in the game (Dean Oliver official formula). Every possession concludes with a field goal attempt (FGA), trips to the free throw line (0.44 × FTA), or a turnover (TOV). Offensive rebounds (OREB) extend possessions without consuming a new one.',
     benchmarks: [
-      { level: 'Ritmo Molto Alto (Uptempo)', range: '> 78 poss', color: 'emerald', desc: 'Gara a ritmi altissimi, forte spinta in contropiede e transizione' },
-      { level: 'Ritmo Medio / Standard', range: '68 – 77 poss', color: 'amber', desc: 'Velocità controllata tipica del basket europeo/FIBA' },
-      { level: 'Ritmo Lento / Difensivo', range: '< 67 poss', color: 'slate', desc: 'Partita fisica, difese aggressive, possessi lunghi a metà campo' }
+      { level: 'High Pace (Uptempo)', range: '> 78 poss', color: 'emerald', desc: 'Fast-paced game, heavy transition and early-clock offense' },
+      { level: 'Medium / Standard Pace', range: '68 – 77 poss', color: 'amber', desc: 'Controlled tempo typical of European / FIBA half-court play' },
+      { level: 'Slow / Grinding Pace', range: '< 67 poss', color: 'slate', desc: 'Physical, defensive game with long, deliberate half-court sets' }
     ],
-    coachingTip: 'Confronta il Pace con l\'identità della tua squadra: se ami correre in campo aperto ma registri meno di 68 possessi, stai subendo il piano gara avversario.',
-    warning: 'I tiri liberi (FT Made/Missed) e i rimbalzi offensivi vengono conteggiati accuratamente.'
+    warning: 'Free Throws (FT Made/Missed) and Offensive Rebounds are accurately factored into the calculation.'
   },
   efg: {
     key: 'efg',
-    title: 'eFG% — Effective Field Goal % (Tiro Effettivo)',
+    title: 'eFG% — Effective Field Goal %',
     formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
-    description: 'Percentuale dal campo effettiva che assegna il 50% di peso in più ai canestri da 3 punti rispetto a quelli da 2 punti. Risolve il limite del FG% classico: segnare 4 triple su 10 tentativi produce 12 punti, esattamente come fare 6 su 10 da due! Per l\'eFG%, quel 4/10 da tre vale un formidabile 60% effettivo.',
+    description: 'Adjusts field goal percentage by awarding 50% extra value to 3-point field goals over 2-pointers. It resolves the limitation of standard FG%: shooting 4-of-10 from three yields 12 points, exactly like shooting 6-of-10 from two! eFG% evaluates that 4-of-10 from beyond the arc as a stellar 60% effective shooting.',
     benchmarks: [
-      { level: 'Élite', range: '> 54%', color: 'emerald', desc: 'Selezione di tiro eccellente e precisione mortifera dall\'arco' },
-      { level: 'Buono / Medio', range: '48% – 53%', color: 'amber', desc: 'Produzione di tiro equilibrata e solida' },
-      { level: 'Critico', range: '< 46%', color: 'rose', desc: 'Tiri forzati o pessime percentuali da 3 punti' }
+      { level: 'Elite', range: '> 54%', color: 'emerald', desc: 'Outstanding shot selection and lethal perimeter accuracy' },
+      { level: 'Solid / Average', range: '48% – 53%', color: 'amber', desc: 'Consistent, balanced shooting efficiency' },
+      { level: 'Low / Inefficient', range: '< 46%', color: 'rose', desc: 'Subpar perimeter shooting or forced, contested attempts' }
     ],
-    coachingTip: 'Nello scouting moderno, chi vince la battaglia dell\'eFG% vince la partita nell\'82% dei casi. Privilegia sempre conclusioni al ferro ad alta percentuale o triple piedi per terra aperte.',
-    warning: 'METRICA 100% AFFIDABILE: Dipende esclusivamente da canestri fatti (2P/3P) e tiri totali tentati. È totalmente indipendente da falli e assist!'
+    warning: '100% RELIABLE METRIC: Calculated strictly from field goals made (2P/3P) and field goals attempted. Completely independent of fouls and assists!'
   },
   ts: {
     key: 'ts',
-    title: 'TS% — True Shooting % (Efficienza Reale Totale)',
-    formula: '(Punti Totali) / [2 × (FGA + 0.44 × FTA)] × 100',
-    description: 'La metrica assoluta di rendimento al tiro. Calcola quanti punti effettivi produce un giocatore o la squadra per ogni singolo tentativo di conclusione, combinando insieme tiri da 2, tiri da 3 e gite in lunetta con i tiri liberi.',
+    title: 'TS% — True Shooting % (True Overall Efficiency)',
+    formula: 'Total Points / [2 × (FGA + 0.44 × FTA)] × 100',
+    description: 'The definitive metric for overall scoring efficiency. It measures how many points a player or team generates per scoring attempt, synthesizing 2-pointers, 3-pointers, and free throws into a single unified figure.',
     benchmarks: [
-      { level: 'Élite', range: '> 58%', color: 'emerald', desc: 'Massima letalità realizzativa su ogni fronte' },
-      { level: 'Solido', range: '50% – 57%', color: 'amber', desc: 'Buona resa e monetizzazione dei tiri liberi' },
-      { level: 'Basso', range: '< 48%', color: 'rose', desc: 'Troppi possessi sprecati senza monetizzare' }
+      { level: 'Elite', range: '> 58%', color: 'emerald', desc: 'Lethal multi-level scoring and high free-throw capitalization' },
+      { level: 'Solid', range: '50% – 57%', color: 'amber', desc: 'Good offensive efficiency across shot types' },
+      { level: 'Low', range: '< 48%', color: 'rose', desc: 'Poor conversion rate per scoring opportunity' }
     ],
-    coachingTip: 'Se il TS% della squadra è significativamente superiore all\'eFG%, significa che la squadra sta vincendo la partita guadagnando punti facili ed efficienti in lunetta.',
-    warning: 'I tiri liberi (FT) sono inclusi regolarmente nel calcolo. Se in una frazione non vengono scoccati tiri liberi, il TS% corrisponde matematicamente all\'eFG%.'
+    warning: 'Free throws are included in this metric. If no free throws were attempted in a period, TS% mathematically equals eFG%.'
   },
   asttov: {
     key: 'asttov',
-    title: 'AST / TOV Ratio (Rapporto Assist / Perse)',
-    formula: 'Assist Totali / Palle Perse Totali',
-    description: 'Il termometro della disciplina tattica, della circolazione di palla e della lucidità mentale. Misura quanti canestri costruiti e assistiti produce la squadra per ogni pallone buttato via.',
+    title: 'AST / TOV Ratio (Assist-to-Turnover Ratio)',
+    formula: 'Total Assists / Total Turnovers',
+    description: 'The benchmark of tactical discipline, ball circulation, and decision-making under pressure. It measures the number of created, assisted baskets produced for every lost possession.',
     benchmarks: [
-      { level: 'Élite', range: '> 2.0', color: 'emerald', desc: 'Attacco corale, passaggi puntuali e massima protezione del pallone' },
-      { level: 'Standard', range: '1.2 – 1.9', color: 'amber', desc: 'Equilibrio nella media tra creazione e sbavature' },
-      { level: 'Allarme', range: '< 1.0', color: 'rose', desc: 'Più palle perse che assist: attacco fermo, isolamenti forzati o passaggi nel traffico' }
+      { level: 'Elite', range: '> 2.0', color: 'emerald', desc: 'Superb ball movement, unselfish play, and ball security' },
+      { level: 'Standard', range: '1.2 – 1.9', color: 'amber', desc: 'Average balance between playmaking and mistakes' },
+      { level: 'Critical / Alarm', range: '< 1.0', color: 'rose', desc: 'More turnovers than assists: stagnant offense, isolation heavy, or live-ball mistakes' }
     ],
-    coachingTip: 'Se il rapporto scende sotto 1.0, chiama timeout: la squadra sta giocando da sola. Ristabilisci le spaziature perimetrali e ordina un extra-pass obbligatorio prima del tiro.',
-    warning: 'ATTENZIONE: Se gli Assist non sono stati registrati dallo scout durante la partita, questo rapporto risulterà pari a 0 o non affidabile. Le palle perse (TOV) sono invece tracciate regolarmente.'
+    warning: 'DATA TRACKING NOTICE: If assists are not logged by the statistician during the game, this ratio will display as 0 or be compromised. Turnovers (TOV) are logged and accurate.'
   },
   pir: {
     key: 'pir',
     title: 'FIBA PIR (Performance Index Rating)',
     formula: '(PTS + REB + AST + STL + BLK + FD) - (FG_Miss + FT_Miss + TOV + PF + BLKA)',
-    description: 'La valutazione statistica ufficiale adottata da FIBA ed EuroLeague. Assegna +1 per ogni azione positiva (punti, rimbalzi, assist, recuperi, stoppate, falli subiti) e penalizza di -1 ogni errore (tiri sbagliati, liberi falliti, palle perse, falli commessi, stoppate subite).',
+    description: 'The official all-in-one performance rating used by FIBA and EuroLeague. Awards +1 for every positive box-score action and subtracts -1 for missed shots, turnovers, and fouls.',
     benchmarks: [
-      { level: 'Squadra Dominante', range: '> 90 PIR', color: 'emerald', desc: 'Partita di altissima qualità tecnica e pochissime sbavature' },
-      { level: 'Partita Equilibrata', range: '65 – 89 PIR', color: 'amber', desc: 'Rendimento solido e combattuto' },
-      { level: 'Prestazione Negativa', range: '< 60 PIR', color: 'rose', desc: 'Troppi errori al tiro e palle perse rispetto alla produzione' }
+      { level: 'Team Dominance', range: '> 90 PIR', color: 'emerald', desc: 'High-quality technical execution with minimal errors' },
+      { level: 'Competitive / Solid', range: '65 – 89 PIR', color: 'amber', desc: 'Good team production across key stat categories' },
+      { level: 'Subpar Performance', range: '< 60 PIR', color: 'rose', desc: 'High volume of missed shots or unforced turnovers' }
     ],
-    coachingTip: 'Per i singoli giocatori: PIR > 15 = protagonista assoluto della gara; PIR > 20 = prestazione da MVP di giornata.',
-    warning: 'ATTENZIONE: I Falli Commessi (PF) e Subiti (FD) non sono attualmente registrati e gli Assist potrebbero non essere stati segnati. Il PIR riflette fedelmente canestri, errori, rimbalzi e palle perse, ma risulterà privo delle componenti fallo.'
+    warning: 'DATA TRACKING NOTICE: Personal Fouls committed (PF) and drawn (FD) are not currently tracked, and assists may be untracked. PIR accurately reflects points, rebounds, misses, and turnovers, but will be slightly lower than standard box scores due to missing foul data.'
   },
   gamescore: {
     key: 'gamescore',
     title: 'Hollinger GameScore (GS)',
     formula: 'PTS + 0.4×FGM - 0.7×FGA - 0.4×(FTA-FTM) + 0.7×OREB + 0.3×DREB + STL + 0.7×AST + 0.7×BLK - 0.4×PF - TOV',
-    description: 'Indice di rendimento sintetico inventato da John Hollinger (NBA/ESPN). A differenza del semplice PIR FIBA, il GameScore pesa specificamente ogni singola voce con un coefficiente matematico avanzato per riflettere il valore reale sul risultato.',
+    description: 'A single-game composite rating formulated by John Hollinger (NBA/ESPN). Unlike basic PIR, GameScore weights each box-score category with statistical regression coefficients reflecting real win-probability impact.',
     benchmarks: [
-      { level: 'Prestazione MVP', range: '> 18', color: 'emerald', desc: 'Dominatore del parquet su entrambe le metà campo' },
-      { level: 'Ottima Partita', range: '12 – 17', color: 'amber', desc: 'Contributo decisivo ed efficiente' },
-      { level: 'Partita Discreta / Opaca', range: '< 8', color: 'rose', desc: 'Poco impatto o percentuale di tiro deficitaria' }
+      { level: 'MVP Performance', range: '> 18', color: 'emerald', desc: 'Dominant two-way impact controlling both ends of the floor' },
+      { level: 'Strong Game', range: '12 – 17', color: 'amber', desc: 'High-efficiency, decisive individual contribution' },
+      { level: 'Quiet / Inefficient', range: '< 8', color: 'rose', desc: 'Limited positive impact or poor shooting volume' }
     ],
-    coachingTip: 'Il GameScore è perfetto per identificare i giocatori più concreti della gara aldilà del semplice tabellino dei punti segnati.',
-    warning: 'ATTENZIONE: Senza i falli commessi (PF) e gli assist registrati, il calcolo non include queste due variabili ma rimane pienamente indicativo per volumi di tiro, rimbalzi e palle perse.'
+    warning: 'DATA TRACKING NOTICE: Calculated without personal fouls (PF) and optional assists. Fully valid for evaluating shooting volume, rebounds, and ball security.'
   },
   fourfactors: {
     key: 'fourfactors',
-    title: 'Dean Oliver\'s Four Factors (I 4 Fattori della Vittoria)',
+    title: 'Dean Oliver\'s Four Factors of Basketball Success',
     formula: 'Shooting (40%) + Turnovers (25%) + Rebounding (20%) + Free Throws (15%)',
-    description: 'Il modello scientifico di Dean Oliver dimostra che il risultato di qualsiasi partita di basket è deciso da 4 fattori fondamentali: 1) Qualità del tiro (eFG%), 2) Cura della palla (TOV%), 3) Rimbalzo d\'attacco (OREB%), 4) Aggressività verso il ferro e lunetta (FTR).',
+    description: 'Dean Oliver\'s analytical framework demonstrates that basketball outcomes are governed by four fundamental pillars: 1) Shooting Efficiency (eFG%), 2) Possession Care (TOV%), 3) Offensive Rebound Share (OREB%), 4) Getting to the Free Throw Line (FTR).',
     benchmarks: [
-      { level: 'Shooting eFG%', range: '> 52%', color: 'emerald', desc: 'Fattore 1 (peso 40%): Selezione di tiro' },
-      { level: 'Turnover Rate', range: '< 14%', color: 'emerald', desc: 'Fattore 2 (peso 25%): Cura del possesso' },
-      { level: 'OREB Share', range: '> 30%', color: 'emerald', desc: 'Fattore 3 (peso 20%): Seconde opportunità' },
-      { level: 'Free Throw Rate', range: '> 0.25', color: 'emerald', desc: 'Fattore 4 (peso 15%): Pressione al ferro e falli' }
+      { level: 'Shooting eFG%', range: '> 52%', color: 'emerald', desc: 'Factor 1 (40% weight): Shot selection and finishing' },
+      { level: 'Turnover Rate', range: '< 14%', color: 'emerald', desc: 'Factor 2 (25% weight): Ball security and protecting possessions' },
+      { level: 'OREB Share', range: '> 30%', color: 'emerald', desc: 'Factor 3 (20% weight): Second-chance opportunities' },
+      { level: 'Free Throw Rate', range: '> 0.25', color: 'emerald', desc: 'Factor 4 (15% weight): Rim pressure and drawing contact' }
     ],
-    coachingTip: 'Regola d\'oro dello scouting: la squadra che vince almeno 3 dei 4 fattori vince la partita nel 94% dei casi.',
-    warning: 'Il Free Throw Rate misura FTA/FGA. I tiri liberi tirati sono conteggiati quando registrati. I falli non sono tracciati.'
+    warning: 'Free Throw Rate measures FTA/FGA. Free throws attempted are recorded when shot. Fouls are not currently tracked.'
   },
   pps: {
     key: 'pps',
-    title: 'PPS — Points Per Shot (Punti per Tentativo)',
-    formula: '(Canestri Fatti × Valore 2 o 3) / Tiri Tentati',
-    description: 'Il valore analitico fondamentale di ogni singola mattonella del campo. Indica il valore atteso di un tiro scoccato da quella determinata zona: permette di distinguere i tiri ad alto rendimento (al ferro o triple ad alta percentuale) dai tiri a basso rendimento (es. lunghi tiri contestati dalla media distanza).',
+    title: 'PPS — Points Per Shot (Expected Value per Zone)',
+    formula: '(FGM × Value 2 or 3) / FGA',
+    description: 'The fundamental expected value metric for court zones. It measures average points produced per field goal attempt in that specific area, distinguishing high-value shots (at the rim, open corner 3s) from low-value shots (long contested mid-range jumpers).',
     benchmarks: [
-      { level: 'Zona ad Alta Resa (HOT)', range: '≥ 1.15 PPS', color: 'emerald', desc: 'Tiro d\'oro: area sotto canestro (Paint) o triple piedi per terra aperte' },
-      { level: 'Zona Solida / Accettabile', range: '0.95 – 1.14 PPS', color: 'amber', desc: 'Rendimento medio standard di campionato' },
-      { level: 'Zona a Bassa Resa (COLD)', range: '< 0.85 PPS', color: 'rose', desc: 'Tiro statisticamente inefficiente (spesso mid-range contestato)' }
+      { level: 'High Value (HOT)', range: '≥ 1.15 PPS', color: 'emerald', desc: 'Golden zone: paint area or spot-up open 3-pointers' },
+      { level: 'Average / Solid', range: '0.95 – 1.14 PPS', color: 'amber', desc: 'Standard league-average shot efficiency' },
+      { level: 'Low Value (COLD)', range: '< 0.85 PPS', color: 'rose', desc: 'Statistically inefficient shot (typically contested mid-range)' }
     ],
-    coachingTip: 'Usa la tabella PPS per indirizzare il piano d\'attacco: disegna giochi per portare i tiratori nelle zone con PPS > 1.15 ed elimina i tiri dalle zone fredde.',
-    warning: 'METRICA 100% AFFIDABILE: Calcolata matematicamente direttamente sui canestri ed errori registrati sulle 9 zone del campo.'
+    warning: '100% RELIABLE METRIC: Calculated mathematically directly from logged makes and misses across the 9 designated half-court zones.'
   }
 };
 
@@ -147,17 +137,17 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
-                GUIDA METRICHE & DECISION BENCHMARK
+                METRIC GUIDE & DECISION BENCHMARKS
               </h3>
               <p className="text-[11px] text-slate-400 font-semibold">
-                Significato tattico, scale di valore ed affidabilità scouting
+                Formulas, definitions, reference values, and tracking reliability
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all"
-            title="Chiudi Guida"
+            title="Close Guide"
           >
             <X className="w-4 h-4" />
           </button>
@@ -208,11 +198,11 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
             </p>
           </div>
 
-          {/* Decision Benchmarks (Semaforo di Valore) */}
+          {/* Decision Benchmarks */}
           <div className="space-y-2">
             <div className="text-xs font-black text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              <span>VALORI DI RIFERIMENTO DECISIONALI (BENCHMARK):</span>
+              <span>DECISION BENCHMARKS & REFERENCE VALUES:</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {guide.benchmarks.map((b, idx) => (
@@ -240,22 +230,11 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
             </div>
           </div>
 
-          {/* Coaching Takeaway / Consiglio per l'allenatore */}
-          <div className="bg-emerald-950/30 border border-emerald-500/40 p-3.5 rounded-xl space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-black text-emerald-400 uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>INDICAZIONE TATTICA PER IL COACHING STAFF:</span>
-            </div>
-            <p className="text-xs text-slate-200 leading-relaxed font-medium">
-              {guide.coachingTip}
-            </p>
-          </div>
-
-          {/* Data Warning Alert (Affidabilità Tracciamento Dati) */}
+          {/* Data Tracking Reliability Notice */}
           <div className="bg-amber-950/30 border border-amber-500/40 p-3.5 rounded-xl space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-black text-amber-400 uppercase tracking-wider">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              <span>AVVISO AFFIDABILITÀ TRACCIAMENTO DATI:</span>
+              <span>DATA TRACKING & RELIABILITY NOTICE:</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
               {guide.warning}
@@ -272,7 +251,7 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
             onClick={onClose}
             className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-1.5 rounded-lg text-xs transition-colors border border-slate-700"
           >
-            CHIUDI
+            CLOSE
           </button>
         </div>
       </div>
