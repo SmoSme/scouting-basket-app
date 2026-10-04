@@ -3,9 +3,11 @@ import {
   Trophy, Download, X, PieChart, List, 
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
-  Check, ArrowRight, UserCheck, Flame, ChevronRight
+  Check, ArrowRight, UserCheck, Flame, ChevronRight,
+  Info, AlertTriangle, BookOpen, HelpCircle
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
+import MetricGuideModal from './MetricGuideModal';
 import { calculateMatchAnalytics } from '../utils/basketballAnalytics';
 
 export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
@@ -15,6 +17,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
   const [shotMapSelectedZone, setShotMapSelectedZone] = useState('PAINT');
   const [boxScoreSortKey, setBoxScoreSortKey] = useState('pir');
   const [boxScoreSortAsc, setBoxScoreSortAsc] = useState(false);
+  const [activeMetricGuideKey, setActiveMetricGuideKey] = useState(null); // 'ortg' | 'possessions' | 'efg' | 'ts' | 'asttov' | 'pir' | 'gamescore' | 'fourfactors' | 'pps'
 
   // Play-by-Play Filters
   const [playSearch, setPlaySearch] = useState('');
@@ -168,6 +171,14 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setActiveMetricGuideKey('ortg')}
+              className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-black px-2.5 sm:px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
+              title="Guida Metriche & Valori Decisionali"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">GUIDA</span> METRICHE
+            </button>
+            <button
               onClick={() => onDownloadCSV(match.name, match.events)}
               className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
               title="Export complete match data to CSV"
@@ -272,10 +283,36 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
           {/* ===================================================================== */}
           {activeTab === 'overview' && (
             <div className="space-y-4">
-              {/* Executive Summary Metrics Grid */}
+              {/* Contextual Scouting Intelligence & Tracking Alert Banner */}
+              <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 px-3.5 flex items-center justify-between gap-3 text-xs flex-wrap shadow-sm">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <Info className="w-4 h-4 text-sky-400 flex-none" />
+                  <span>
+                    <strong className="text-sky-300">Scouting Intelligence:</strong> I Tiri Liberi sono conteggiati quando tirati. I Falli personali non sono attualmente annotati. Clicca su qualsiasi metrica o su <span className="text-amber-400 font-bold">ⓘ</span> per visualizzare formule, valori di riferimento e consigli tattici.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setActiveMetricGuideKey('ortg')}
+                  className="text-[11px] font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 underline flex-none"
+                >
+                  <span>Apri Guida Metriche</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Executive Summary Metrics Grid with Interactive Info Triggers */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">OFFENSIVE RATING</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('ortg')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      OFFENSIVE RATING
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-amber-400">{teamOverview.ortg}</span>
                     <span className="text-[10px] font-bold text-slate-500">PTS/100</span>
@@ -283,8 +320,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.ppp} pts/poss</span>
                 </div>
 
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">EST. POSSESSIONS</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('possessions')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      EST. POSSESSIONS
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-sky-400">{teamOverview.possessions}</span>
                     <span className="text-[10px] font-bold text-slate-500">PACE</span>
@@ -292,8 +338,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.fga} FGA + {teamOthersCount(teamOverview)}</span>
                 </div>
 
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">EFFECTIVE FG%</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('efg')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      EFFECTIVE FG%
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-emerald-400">{teamOverview.efgPct.toFixed(1)}%</span>
                     <span className="text-[10px] font-bold text-slate-500">eFG%</span>
@@ -301,8 +356,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <span className="text-[9px] text-slate-500 font-semibold">2P: {teamOverview.pct2p.toFixed(0)}% | 3P: {teamOverview.pct3p.toFixed(0)}%</span>
                 </div>
 
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TRUE SHOOTING</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('ts')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      TRUE SHOOTING
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-emerald-300">{teamOverview.tsPct.toFixed(1)}%</span>
                     <span className="text-[10px] font-bold text-slate-500">TS%</span>
@@ -310,8 +374,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <span className="text-[9px] text-slate-500 font-semibold">FT: {teamOverview.ftm}/{teamOverview.fta} ({teamOverview.pctFt.toFixed(0)}%)</span>
                 </div>
 
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AST / TOV RATIO</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('asttov')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      AST / TOV RATIO
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-cyan-400">{teamOverview.astTovRatio}</span>
                     <span className="text-[10px] font-bold text-slate-500">RATIO</span>
@@ -319,8 +392,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.ast} AST / {teamOverview.tov} TOV</span>
                 </div>
 
-                <div className="glass-card p-2.5 border-slate-800 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">FIBA EFFICIENCY</span>
+                <div
+                  onClick={() => setActiveMetricGuideKey('pir')}
+                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Clicca per visualizzare spiegazione e valori di riferimento"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                      FIBA EFFICIENCY
+                    </span>
+                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                  </div>
                   <div className="flex items-baseline gap-1 my-1">
                     <span className="font-mono text-xl sm:text-2xl font-black text-purple-400">{teamOverview.pir}</span>
                     <span className="text-[10px] font-bold text-slate-500">PIR</span>
@@ -332,21 +414,37 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
               {/* Dean Oliver's Four Factors Section */}
               <div className="glass-card p-3 sm:p-4 border-slate-800">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
-                  <div className="flex items-center gap-2">
+                  <div
+                    onClick={() => setActiveMetricGuideKey('fourfactors')}
+                    className="flex items-center gap-2 cursor-pointer group"
+                    title="Clicca per visualizzare la guida ai 4 Fattori di Dean Oliver"
+                  >
                     <Shield className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider group-hover:text-sky-400 transition-colors flex items-center gap-1.5">
                       DEAN OLIVER'S FOUR FACTORS OF BASKETBALL SUCCESS
+                      <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400" />
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400">Core Pillars of Match Victory</span>
+                  <button
+                    onClick={() => setActiveMetricGuideKey('fourfactors')}
+                    className="text-[10px] font-bold text-slate-400 hover:text-sky-400 transition-colors underline"
+                  >
+                    Guida 4 Fattori
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Factor 1: Shooting */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between">
+                  <div
+                    onClick={() => setActiveMetricGuideKey('efg')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Fattore 1: Shooting Efficiency (eFG%)"
+                  >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span>1. SHOOTING EFFICIENCY</span>
+                        <span className="group-hover:text-emerald-300 transition-colors flex items-center gap-1">
+                          1. SHOOTING EFFICIENCY <Info className="w-2.5 h-2.5 text-slate-500" />
+                        </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                           fourFactors.shooting.rating === 'Elite' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'
                         }`}>
@@ -363,10 +461,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   </div>
 
                   {/* Factor 2: Turnovers */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between">
+                  <div
+                    onClick={() => setActiveMetricGuideKey('ortg')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-sky-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Fattore 2: Turnover Rate (TOV%)"
+                  >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span>2. TURNOVER RATE</span>
+                        <span className="group-hover:text-sky-300 transition-colors flex items-center gap-1">
+                          2. TURNOVER RATE <Info className="w-2.5 h-2.5 text-slate-500" />
+                        </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                           fourFactors.turnovers.rating.includes('Elite') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'
                         }`}>
@@ -383,10 +487,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   </div>
 
                   {/* Factor 3: Rebounding */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between">
+                  <div
+                    onClick={() => setActiveMetricGuideKey('fourfactors')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Fattore 3: Offensive Rebound Share"
+                  >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span>3. OFFENSIVE REBOUND SHARE</span>
+                        <span className="group-hover:text-amber-300 transition-colors flex items-center gap-1">
+                          3. OFFENSIVE REBOUND SHARE <Info className="w-2.5 h-2.5 text-slate-500" />
+                        </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
                           {fourFactors.rebounding.rating}
                         </span>
@@ -401,10 +511,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   </div>
 
                   {/* Factor 4: Free Throws */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between">
+                  <div
+                    onClick={() => setActiveMetricGuideKey('ts')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-purple-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Fattore 4: Free Throw Rate (FTR)"
+                  >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span>4. FREE THROW RATE</span>
+                        <span className="group-hover:text-purple-300 transition-colors flex items-center gap-1">
+                          4. FREE THROW RATE <Info className="w-2.5 h-2.5 text-slate-500" />
+                        </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
                           {fourFactors.freeThrows.rating}
                         </span>
@@ -761,7 +877,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           </span>
                         </div>
                         <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                          {activePlayer.eventsCount} logged match interactions • Hollinger GameScore: <strong className="text-emerald-400">{activePlayer.gameScore}</strong>
+                          {activePlayer.eventsCount} logged match interactions • Hollinger GameScore:{' '}
+                          <button
+                            onClick={() => setActiveMetricGuideKey('gamescore')}
+                            className="text-emerald-400 font-bold hover:text-emerald-300 underline inline-flex items-center gap-0.5 transition-colors"
+                            title="Clicca per visualizzare la guida a Hollinger GameScore"
+                          >
+                            <span>{activePlayer.gameScore}</span>
+                            <Info className="w-2.5 h-2.5" />
+                          </button>
                         </p>
                       </div>
                     </div>
@@ -780,8 +904,14 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">ASSISTS</span>
                         <span className="font-mono text-2xl font-black text-cyan-400 leading-none">{activePlayer.ast}</span>
                       </div>
-                      <div className="bg-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-emerald-500/50 text-center shadow-md">
-                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest block">FIBA PIR</span>
+                      <div 
+                        onClick={() => setActiveMetricGuideKey('pir')}
+                        className="bg-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-emerald-500/50 hover:border-emerald-400 text-center shadow-md cursor-pointer group transition-all"
+                        title="Clicca per visualizzare la guida al FIBA PIR"
+                      >
+                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center justify-center gap-1">
+                          FIBA PIR <Info className="w-2.5 h-2.5 text-slate-500 group-hover:text-emerald-300" />
+                        </span>
                         <span className="font-mono text-2xl font-black text-emerald-300 leading-none">{activePlayer.pir}</span>
                       </div>
                     </div>
@@ -861,8 +991,14 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                             <span className="font-mono text-sm font-black text-slate-100">{activePlayer.ftm}/{activePlayer.fta}</span>
                             <span className="text-[10px] text-slate-400 font-mono block">{activePlayer.pctFt.toFixed(0)}%</span>
                           </div>
-                          <div className="bg-slate-950 p-2 rounded-lg border border-slate-850">
-                            <span className="text-[9px] text-slate-400 font-bold block uppercase">TRUE SHOOTING</span>
+                          <div 
+                            onClick={() => setActiveMetricGuideKey('ts')}
+                            className="bg-slate-950 p-2 rounded-lg border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all"
+                            title="Clicca per visualizzare la guida a TS% ed eFG%"
+                          >
+                            <span className="text-[9px] text-slate-400 group-hover:text-emerald-300 font-bold flex items-center justify-center gap-1 uppercase transition-colors">
+                              TRUE SHOOTING <Info className="w-2.5 h-2.5 text-slate-500" />
+                            </span>
                             <span className="font-mono text-sm font-black text-emerald-400">{activePlayer.tsPct.toFixed(1)}%</span>
                             <span className="text-[10px] text-slate-500 font-mono block">eFG: {activePlayer.efgPct.toFixed(1)}%</span>
                           </div>
@@ -1039,9 +1175,14 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       9-ZONE SHOT EFFICIENCY & VOLUME RANKING
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400">
-                    PPS = Points Per Shot (Expected Value)
-                  </span>
+                  <button
+                    onClick={() => setActiveMetricGuideKey('pps')}
+                    className="text-[10px] font-bold text-slate-400 hover:text-amber-400 underline flex items-center gap-1 transition-colors"
+                    title="Clicca per visualizzare la guida a Points Per Shot (PPS)"
+                  >
+                    <span>PPS = Points Per Shot (Expected Value)</span>
+                    <Info className="w-2.5 h-2.5 text-amber-400" />
+                  </button>
                 </div>
 
                 <table className="w-full text-left text-xs font-semibold">
@@ -1052,7 +1193,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       <th className="py-2 px-2 text-slate-200">FGM / FGA</th>
                       <th className="py-2 px-2">ACCURACY (FG%)</th>
                       <th className="py-2 px-2">SHOT SHARE</th>
-                      <th className="py-2 px-2 text-amber-400 font-bold">PTS / SHOT (PPS)</th>
+                      <th 
+                        onClick={() => setActiveMetricGuideKey('pps')}
+                        className="py-2 px-2 text-amber-400 font-bold cursor-pointer hover:text-amber-300 transition-colors"
+                        title="Clicca per visualizzare la guida a Points Per Shot (PPS)"
+                      >
+                        <span className="flex items-center gap-1">
+                          PTS / SHOT (PPS) <Info className="w-2.5 h-2.5" />
+                        </span>
+                      </th>
                       <th className="py-2 px-2 text-right">RATING</th>
                     </tr>
                   </thead>
@@ -1105,7 +1254,25 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       OFFICIAL FIBA BOX SCORE — SORTABLE METRICS
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400">Click column header to sort</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setActiveMetricGuideKey('pir')}
+                      className="text-[10px] font-bold text-emerald-400 hover:underline flex items-center gap-1 transition-colors"
+                      title="Guida al calcolo FIBA PIR"
+                    >
+                      <span>Cos'è PIR?</span>
+                      <Info className="w-2.5 h-2.5" />
+                    </button>
+                    <button
+                      onClick={() => setActiveMetricGuideKey('gamescore')}
+                      className="text-[10px] font-bold text-purple-400 hover:underline flex items-center gap-1 transition-colors"
+                      title="Guida a Hollinger GameScore"
+                    >
+                      <span>Cos'è GS?</span>
+                      <Info className="w-2.5 h-2.5" />
+                    </button>
+                    <span className="text-[10px] font-bold text-slate-500 hidden sm:inline">• Click column header to sort</span>
+                  </div>
                 </div>
 
                 <table className="w-full text-left text-xs font-semibold">
@@ -1127,8 +1294,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       <th onClick={() => handleSortBoxScore('pf')} className="py-2.5 px-2 cursor-pointer hover:text-white">PF</th>
                       <th onClick={() => handleSortBoxScore('fd')} className="py-2.5 px-2 cursor-pointer hover:text-white">FD</th>
                       <th onClick={() => handleSortBoxScore('blk')} className="py-2.5 px-2 cursor-pointer hover:text-white">BLK</th>
-                      <th onClick={() => handleSortBoxScore('pir')} className="py-2.5 px-2 text-emerald-400 font-black cursor-pointer hover:text-emerald-300">PIR</th>
-                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-400 font-bold cursor-pointer hover:text-purple-300">GS</th>
+                      <th onClick={() => handleSortBoxScore('pir')} className="py-2.5 px-2 text-emerald-400 font-black cursor-pointer hover:text-emerald-300" title="Sort by FIBA PIR">
+                        <span className="inline-flex items-center gap-0.5">
+                          PIR <Info className="w-2.5 h-2.5 text-emerald-500 hover:text-emerald-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('pir'); }} />
+                        </span>
+                      </th>
+                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-400 font-bold cursor-pointer hover:text-purple-300" title="Sort by Hollinger GameScore">
+                        <span className="inline-flex items-center gap-0.5">
+                          GS <Info className="w-2.5 h-2.5 text-purple-500 hover:text-purple-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('gamescore'); }} />
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1333,6 +1508,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
         </div>
       </div>
+
+      {/* Metric Decision Guide Modal */}
+      {activeMetricGuideKey && (
+        <MetricGuideModal
+          activeKey={activeMetricGuideKey}
+          onClose={() => setActiveMetricGuideKey(null)}
+          onSelectMetric={(k) => setActiveMetricGuideKey(k)}
+        />
+      )}
     </div>
   );
 }
