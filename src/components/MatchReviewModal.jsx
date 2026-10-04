@@ -462,9 +462,9 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
                   {/* Factor 2: Turnovers */}
                   <div
-                    onClick={() => setActiveMetricGuideKey('ortg')}
+                    onClick={() => setActiveMetricGuideKey('tovpct')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-sky-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 2: Turnover Rate (TOV%)"
+                    title="Factor 2: Turnover Rate (TOV% = Turnovers / Possessions)"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -488,9 +488,9 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
                   {/* Factor 3: Rebounding */}
                   <div
-                    onClick={() => setActiveMetricGuideKey('fourfactors')}
+                    onClick={() => setActiveMetricGuideKey('oreb')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 3: Offensive Rebound Share"
+                    title="Factor 3: Offensive Rebound Share (OREB / Total REB)"
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -512,25 +512,31 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
                   {/* Factor 4: Free Throws */}
                   <div
-                    onClick={() => setActiveMetricGuideKey('ts')}
+                    onClick={() => setActiveMetricGuideKey('ftr')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-purple-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 4: Free Throw Rate (FTR)"
+                    title="Factor 4: Free Throw Rate (FTR = FTA / FGA). Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
                         <span className="group-hover:text-purple-300 transition-colors flex items-center gap-1">
-                          4. FREE THROW RATE <Info className="w-2.5 h-2.5 text-slate-500" />
+                          4. FREE THROW RATE (FTR) <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
                           {fourFactors.freeThrows.rating}
                         </span>
                       </div>
-                      <div className="font-mono text-2xl font-black text-purple-400 my-1">
-                        {fourFactors.freeThrows.value}
+                      <div className="flex items-baseline gap-2 my-1">
+                        <span className="font-mono text-2xl font-black text-purple-400">
+                          {fourFactors.freeThrows.value}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                          FTA / FGA
+                        </span>
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {fourFactors.freeThrows.subtext}
+                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2 flex items-center justify-between">
+                      <span>Shooting: {teamOverview.ftm}/{teamOverview.fta} FT</span>
+                      <span className="font-mono font-bold text-slate-300">({teamOverview.pctFt.toFixed(0)}% FT)</span>
                     </div>
                   </div>
                 </div>

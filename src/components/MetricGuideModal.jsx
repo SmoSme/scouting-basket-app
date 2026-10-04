@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Info, AlertTriangle, TrendingUp, BookOpen 
 } from 'lucide-react';
@@ -30,7 +30,7 @@ export const METRIC_GUIDES = {
   },
   efg: {
     key: 'efg',
-    title: 'eFG% — Effective Field Goal %',
+    title: 'eFG% — Effective Field Goal % (Factor 1: Shooting)',
     formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
     description: 'Adjusts field goal percentage by awarding 50% extra value to 3-point field goals over 2-pointers. It resolves the limitation of standard FG%: shooting 4-of-10 from three yields 12 points, exactly like shooting 6-of-10 from two! eFG% evaluates that 4-of-10 from beyond the arc as a stellar 60% effective shooting.',
     benchmarks: [
@@ -39,6 +39,55 @@ export const METRIC_GUIDES = {
       { level: 'Low / Inefficient', range: '< 46%', color: 'rose', desc: 'Subpar perimeter shooting or forced, contested attempts' }
     ],
     warning: '100% RELIABLE METRIC: Calculated strictly from field goals made (2P/3P) and field goals attempted. Completely independent of fouls and assists!'
+  },
+  tovpct: {
+    key: 'tovpct',
+    title: 'TOV% — Turnover Rate (Factor 2: Ball Care)',
+    formula: '(Total Turnovers / Estimated Possessions) × 100',
+    description: 'Measures the percentage of offensive possessions that end in a turnover without a shot being attempted. Unlike raw turnover count, Turnover Rate normalizes for game tempo: 14 turnovers in a slow 60-possession game (23.3% TOV%) represents serious ball security trouble, whereas 14 turnovers in an 85-possession uptempo game (16.5% TOV%) is acceptable.',
+    benchmarks: [
+      { level: 'Elite Ball Security', range: '< 13.0%', color: 'emerald', desc: 'Superior ball protection, precise passing, minimal live-ball turnovers' },
+      { level: 'Average Ball Care', range: '14.0% – 18.0%', color: 'amber', desc: 'Standard competitive turnover frequency' },
+      { level: 'High Risk / Sloppy', range: '> 19.0%', color: 'rose', desc: 'Wasting nearly 1 out of every 5 possessions without getting a shot up' }
+    ],
+    warning: 'Calculated from logged team turnovers divided by estimated team possessions.'
+  },
+  oreb: {
+    key: 'oreb',
+    title: 'OREB Share — Offensive Rebound Rate (Factor 3: Second Chances)',
+    formula: '(Offensive Rebounds / Total Team Rebounds) × 100',
+    description: 'Measures your team\'s ability to generate second-chance scoring opportunities. In single-team tracking (where opponent defensive rebounds are not logged), this calculates the proportion of your team\'s total rebounds grabbed on the offensive glass. High offensive rebound rates salvage empty possessions and generate easy putback baskets.',
+    benchmarks: [
+      { level: 'Dominant Glass Crashing', range: '> 32.0%', color: 'emerald', desc: 'Relentless offensive rebounding generating high-value second chances' },
+      { level: 'Solid Second Chances', range: '22.0% – 31.9%', color: 'amber', desc: 'Balanced offensive rebounding with transition defense awareness' },
+      { level: 'Low Rebounding Share', range: '< 21.0%', color: 'rose', desc: 'One-and-done offense; prioritizes immediate transition retreat' }
+    ],
+    warning: 'Calculated from your team\'s logged OREB and DREB events. Opponent defensive rebounds are not tracked.'
+  },
+  ftr: {
+    key: 'ftr',
+    title: 'FTR — Free Throw Rate (Factor 4: Free Throws & Rim Pressure)',
+    formula: 'FTA / FGA (Free Throw Attempts / Field Goal Attempts)',
+    description: 'Measures foul-drawing aggression and rim pressure relative to field goal volume. CRITICAL DISTINCTION: Free Throw Rate (FTR) is NOT Free Throw Shooting Percentage (FT%)! While FT% measures shooting accuracy at the line (e.g. 11/19 = 58%), FTR measures how frequently your offense generates free throw attempts per field goal attempt (e.g. 19 FTA / 86 FGA = 0.22). In Dean Oliver\'s Four Factors, getting to the line in high volume is vastly more decisive for winning than minor variations in free throw shooting accuracy.',
+    benchmarks: [
+      { level: 'High Rim Pressure', range: '> 0.28 FTA/FGA', color: 'emerald', desc: 'Constant paint touches, drawing heavy contact, and getting to the line frequently' },
+      { level: 'Moderate / Balanced', range: '0.18 – 0.27 FTA/FGA', color: 'amber', desc: 'Healthy balance between perimeter jump shots and inside drives' },
+      { level: 'Low Rim Pressure', range: '< 0.17 FTA/FGA', color: 'rose', desc: 'Perimeter-heavy offense settling for outside jumpers without drawing fouls' }
+    ],
+    warning: 'Free Throw Rate is calculated from recorded FT attempts (19) and Field Goal attempts (86). Personal fouls are not tracked.'
+  },
+  fourfactors: {
+    key: 'fourfactors',
+    title: 'Dean Oliver\'s Four Factors of Basketball Success',
+    formula: 'Shooting (40%) + Turnovers (25%) + Rebounding (20%) + Free Throws (15%)',
+    description: 'Dean Oliver\'s seminal analytical framework demonstrates that basketball outcomes are governed by four fundamental pillars: 1) Shooting Efficiency (eFG%), 2) Possession Care (TOV%), 3) Offensive Rebound Share (OREB%), 4) Free Throw Rate (FTR). Teams winning at least 3 of the 4 factors win over 90% of games.',
+    benchmarks: [
+      { level: 'Factor 1: Shooting eFG%', range: '> 52%', color: 'emerald', desc: 'Shot selection and finishing efficiency (40% weight)' },
+      { level: 'Factor 2: Turnover Rate', range: '< 14%', color: 'emerald', desc: 'Ball security and protecting possessions (25% weight)' },
+      { level: 'Factor 3: OREB Share', range: '> 30%', color: 'emerald', desc: 'Second-chance opportunities on misses (20% weight)' },
+      { level: 'Factor 4: Free Throw Rate', range: '> 0.25', color: 'emerald', desc: 'Rim pressure: FTA per FGA, NOT shooting accuracy (15% weight)' }
+    ],
+    warning: 'All four factors are computed directly from logged field goals, free throws, rebounds, and turnovers.'
   },
   ts: {
     key: 'ts',
@@ -88,19 +137,6 @@ export const METRIC_GUIDES = {
     ],
     warning: 'DATA TRACKING NOTICE: Calculated without personal fouls (PF) and optional assists. Fully valid for evaluating shooting volume, rebounds, and ball security.'
   },
-  fourfactors: {
-    key: 'fourfactors',
-    title: 'Dean Oliver\'s Four Factors of Basketball Success',
-    formula: 'Shooting (40%) + Turnovers (25%) + Rebounding (20%) + Free Throws (15%)',
-    description: 'Dean Oliver\'s analytical framework demonstrates that basketball outcomes are governed by four fundamental pillars: 1) Shooting Efficiency (eFG%), 2) Possession Care (TOV%), 3) Offensive Rebound Share (OREB%), 4) Getting to the Free Throw Line (FTR).',
-    benchmarks: [
-      { level: 'Shooting eFG%', range: '> 52%', color: 'emerald', desc: 'Factor 1 (40% weight): Shot selection and finishing' },
-      { level: 'Turnover Rate', range: '< 14%', color: 'emerald', desc: 'Factor 2 (25% weight): Ball security and protecting possessions' },
-      { level: 'OREB Share', range: '> 30%', color: 'emerald', desc: 'Factor 3 (20% weight): Second-chance opportunities' },
-      { level: 'Free Throw Rate', range: '> 0.25', color: 'emerald', desc: 'Factor 4 (15% weight): Rim pressure and drawing contact' }
-    ],
-    warning: 'Free Throw Rate measures FTA/FGA. Free throws attempted are recorded when shot. Fouls are not currently tracked.'
-  },
   pps: {
     key: 'pps',
     title: 'PPS — Points Per Shot (Expected Value per Zone)',
@@ -117,6 +153,12 @@ export const METRIC_GUIDES = {
 
 export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelectMetric }) {
   const [currentKey, setCurrentKey] = useState(activeKey || 'ortg');
+
+  useEffect(() => {
+    if (activeKey && METRIC_GUIDES[activeKey]) {
+      setCurrentKey(activeKey);
+    }
+  }, [activeKey]);
 
   const guide = METRIC_GUIDES[currentKey] || METRIC_GUIDES.ortg;
 
@@ -170,11 +212,14 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
                 {m.key === 'ortg' && <span>ORTG</span>}
                 {m.key === 'possessions' && <span>Pace</span>}
                 {m.key === 'efg' && <span>eFG%</span>}
+                {m.key === 'tovpct' && <span>TOV%</span>}
+                {m.key === 'oreb' && <span>OREB%</span>}
+                {m.key === 'ftr' && <span>FTR</span>}
+                {m.key === 'fourfactors' && <span>4 Factors</span>}
                 {m.key === 'ts' && <span>TS%</span>}
                 {m.key === 'asttov' && <span>AST/TOV</span>}
                 {m.key === 'pir' && <span>PIR</span>}
                 {m.key === 'gamescore' && <span>GameScore</span>}
-                {m.key === 'fourfactors' && <span>Four Factors</span>}
                 {m.key === 'pps' && <span>PPS</span>}
               </button>
             );
