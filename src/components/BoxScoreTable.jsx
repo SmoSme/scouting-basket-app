@@ -31,7 +31,12 @@ export default function BoxScoreTable({ roster, events }) {
 
   const rows = allNums.map(num => {
     const pEvents = events.filter(e => getNum(e) === num);
-    const pInfo = rosterMap[num] || { name: getGiocatore(pEvents[0]) || `Player #${num}`, pos: '-' };
+    const eventPlayer = pEvents.find(e => getGiocatore(e)?.trim());
+    const eventName = eventPlayer ? getGiocatore(eventPlayer).trim() : '';
+    const pInfo = {
+      name: eventName || rosterMap[num]?.name || `Player #${num}`,
+      pos: rosterMap[num]?.pos || '-'
+    };
 
     const fg2_m = pEvents.filter(e => { const az = getAz(e); return az === '2PT Made' || az === '2PT Fatto'; }).length;
     const fg2_miss = pEvents.filter(e => { const az = getAz(e); return az === '2PT Missed' || az === '2PT Sbagliato'; }).length;

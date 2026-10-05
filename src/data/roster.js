@@ -10,7 +10,7 @@ export const DEFAULT_MASTER_ROSTER = [
   { number: "12", name: "Angelo Davide Del Regno", pos: "N/A" },
   { number: "13", name: "Maurizio Lepore", pos: "N/A" },
   { number: "22", name: "Amedeo Decuzzi", pos: "N/A" },
-  { number: "31", name: "Giuseppe Macinante", pos: "N/A" },
+  { number: "31", name: "Emanuele Cuomo", pos: "N/A" },
   { number: "32", name: "Armando Oddo Casano", pos: "N/A" },
   { number: "34", name: "Gerardo Spisso", pos: "N/A" },
   { number: "43", name: "Antoine Ghanem", pos: "N/A" }

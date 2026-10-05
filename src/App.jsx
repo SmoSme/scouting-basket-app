@@ -42,10 +42,22 @@ export default function App() {
     return localStorage.getItem('current_game_session') || '';
   });
   
+  const sanitizeRoster = (rawList) => {
+    if (!Array.isArray(rawList) || rawList.length === 0) return DEFAULT_MASTER_ROSTER;
+    return rawList.map(p => {
+      if (String(p.number) === '31' && p.name === 'Giuseppe Macinante') {
+        return { ...p, name: 'Emanuele Cuomo' };
+      }
+      return p;
+    });
+  };
+
   const [masterRoster, setMasterRoster] = useState(() => {
     try {
       const saved = localStorage.getItem('master_roster');
-      return saved ? JSON.parse(saved) : DEFAULT_MASTER_ROSTER;
+      const list = saved ? sanitizeRoster(JSON.parse(saved)) : DEFAULT_MASTER_ROSTER;
+      localStorage.setItem('master_roster', JSON.stringify(list));
+      return list;
     } catch (e) {
       return DEFAULT_MASTER_ROSTER;
     }
@@ -54,7 +66,9 @@ export default function App() {
   const [activeRoster, setActiveRoster] = useState(() => {
     try {
       const saved = localStorage.getItem('current_match_roster');
-      return saved ? JSON.parse(saved) : (localStorage.getItem('master_roster') ? JSON.parse(localStorage.getItem('master_roster')) : DEFAULT_MASTER_ROSTER);
+      const list = saved ? sanitizeRoster(JSON.parse(saved)) : (localStorage.getItem('master_roster') ? sanitizeRoster(JSON.parse(localStorage.getItem('master_roster'))) : DEFAULT_MASTER_ROSTER);
+      localStorage.setItem('current_match_roster', JSON.stringify(list));
+      return list;
     } catch (e) {
       return DEFAULT_MASTER_ROSTER;
     }

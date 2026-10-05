@@ -21,25 +21,51 @@ export const getQtr = (e) => {
 export function calculateMatchAnalytics(events = [], customRoster = []) {
   const safeEvents = Array.isArray(events) ? events : [];
 
-  // 1. Build comprehensive player map from master roster and events
+  // 1. Build comprehensive player map.
+  // The actual match events recorded in the database are the primary ground truth!
   const rosterMap = {};
-  DEFAULT_MASTER_ROSTER.forEach(p => {
-    rosterMap[String(p.number)] = { ...p };
-  });
-  if (Array.isArray(customRoster)) {
-    customRoster.forEach(p => {
-      rosterMap[String(p.number)] = { ...p };
-    });
-  }
 
-  // Also collect any players logged in events not in master roster
+  // Step A: Extract player names directly from the match events (from database)
   safeEvents.forEach(e => {
     const num = getNum(e);
     const name = getGiocatore(e);
+    if (num && num !== '-' && num !== 'TEAM' && name && name.trim()) {
+      const cleanName = name.trim();
+      if (!rosterMap[num] || !rosterMap[num].name) {
+        rosterMap[num] = { number: num, name: cleanName, pos: 'N/A' };
+      } else if (rosterMap[num].name.startsWith('Player #') && !cleanName.startsWith('Player #')) {
+        rosterMap[num].name = cleanName;
+      }
+    }
+  });
+
+  // Step B: For any players in customRoster, fill missing players or enrich position
+  if (Array.isArray(customRoster) && customRoster.length > 0) {
+    customRoster.forEach(p => {
+      const num = String(p.number);
+      if (!rosterMap[num]) {
+        rosterMap[num] = { ...p };
+      } else if (p.pos && p.pos !== 'N/A' && (!rosterMap[num].pos || rosterMap[num].pos === 'N/A')) {
+        rosterMap[num].pos = p.pos;
+      }
+    });
+  }
+
+  // Step C: Fallback to DEFAULT_MASTER_ROSTER for any player numbers not named in events
+  DEFAULT_MASTER_ROSTER.forEach(p => {
+    const num = String(p.number);
+    if (!rosterMap[num]) {
+      rosterMap[num] = { ...p };
+    } else if (p.pos && p.pos !== 'N/A' && (!rosterMap[num].pos || rosterMap[num].pos === 'N/A')) {
+      rosterMap[num].pos = p.pos;
+    }
+  });
+
+  // Step D: Ensure all active players logged in events have a valid object
+  safeEvents.forEach(e => {
+    const num = getNum(e);
     if (num && num !== '-' && num !== 'TEAM' && !rosterMap[num]) {
-      rosterMap[num] = { number: num, name: name || `Player #${num}`, pos: 'N/A' };
-    } else if (num && rosterMap[num] && name && (!rosterMap[num].name || rosterMap[num].name.startsWith('Player #'))) {
-      rosterMap[num].name = name;
+      rosterMap[num] = { number: num, name: `Player #${num}`, pos: 'N/A' };
     }
   });
 

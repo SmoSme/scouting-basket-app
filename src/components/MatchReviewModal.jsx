@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Trophy, Download, X, PieChart, List, 
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
-  Check, ArrowRight, UserCheck, Flame, ChevronRight,
+  Check, ArrowRight, ArrowLeft, UserCheck, Flame, ChevronRight, ChevronLeft,
   Info, AlertTriangle, BookOpen, HelpCircle
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
@@ -48,6 +48,71 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
     }
     return playerStats[0];
   }, [playerStats, selectedPlayerNum]);
+
+  // Horizontal Carousel Ref for Auto-Scroll & Wheel
+  const carouselContainerRef = useRef(null);
+
+  // Active Player Index in playerStats list
+  const activePlayerIndex = useMemo(() => {
+    if (!activePlayer || playerStats.length === 0) return 0;
+    const idx = playerStats.findIndex(p => String(p.number) === String(activePlayer.number));
+    return idx >= 0 ? idx : 0;
+  }, [activePlayer, playerStats]);
+
+  const handlePrevPlayer = () => {
+    if (playerStats.length <= 1) return;
+    const prevIdx = (activePlayerIndex - 1 + playerStats.length) % playerStats.length;
+    setSelectedPlayerNum(playerStats[prevIdx].number);
+  };
+
+  const handleNextPlayer = () => {
+    if (playerStats.length <= 1) return;
+    const nextIdx = (activePlayerIndex + 1) % playerStats.length;
+    setSelectedPlayerNum(playerStats[nextIdx].number);
+  };
+
+  // Keyboard Arrow Navigation (ArrowLeft [←] & ArrowRight [→]) for Player Cards
+  useEffect(() => {
+    if (activeTab !== 'players' || playerStats.length <= 1) return;
+
+    const handleKeyDown = (e) => {
+      // Don't intercept if user is typing in search/filter inputs or textareas
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevPlayer();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextPlayer();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, playerStats, activePlayerIndex]);
+
+  // Keep active player pill smoothly centered in the carousel
+  useEffect(() => {
+    if (activeTab === 'players' && activePlayer && carouselContainerRef.current) {
+      const activeBtn = carouselContainerRef.current.querySelector(`[data-player-card-num="${activePlayer.number}"]`);
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [activeTab, activePlayer]);
+
+  // Support horizontal mouse wheel scrolling over the carousel
+  const handleCarouselWheel = (e) => {
+    if (carouselContainerRef.current) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        carouselContainerRef.current.scrollLeft += e.deltaY;
+      }
+    }
+  };
 
   // Sortable Box Score rows
   const sortedPlayers = useMemo(() => {
@@ -832,35 +897,83 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
           {/* ===================================================================== */}
           {activeTab === 'players' && (
             <div className="space-y-4">
-              {/* Horizontal Player Carousel / Selector */}
-              <div className="glass-card p-2 border-slate-800">
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-                  {playerStats.map(p => {
-                    const isSelected = activePlayer && String(activePlayer.number) === String(p.number);
-                    return (
-                      <button
-                        key={p.number}
-                        onClick={() => setSelectedPlayerNum(p.number)}
-                        className={`px-3 py-2 rounded-xl flex items-center gap-2 flex-none transition-all border ${
-                          isSelected
-                            ? 'bg-sky-500/20 border-sky-400 text-white shadow-md ring-1 ring-sky-400/50 scale-105'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                        }`}
-                      >
-                        <span className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center font-mono font-black text-xs text-sky-400 border border-slate-800 flex-none">
-                          #{p.number}
-                        </span>
-                        <div className="text-left min-w-0">
-                          <div className="text-xs font-bold truncate max-w-[110px] leading-tight text-slate-100">
-                            {p.name.split(' ')[0]}
+              {/* Horizontal Player Carousel / Selector with Controls */}
+              <div className="glass-card p-2.5 border-slate-800 space-y-1.5">
+                {/* Carousel Top Helper Bar */}
+                <div className="flex items-center justify-between px-1 text-[11px] font-bold text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="uppercase tracking-wider">SELECT PLAYER CARD</span>
+                    <span className="hidden sm:inline text-slate-500 font-normal">
+                      (Press <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-sky-300 font-mono text-[10px]">←</kbd> <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-sky-300 font-mono text-[10px]">→</kbd> or click arrows)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sky-400 text-xs">
+                      #{activePlayer?.number} ({activePlayerIndex + 1}/{playerStats.length})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Carousel Row with Clickable Prev/Next Buttons & Horizontal Scroll */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handlePrevPlayer}
+                    disabled={playerStats.length <= 1}
+                    className="w-9 h-11 rounded-xl bg-slate-950 hover:bg-sky-600 hover:text-white text-slate-400 border border-slate-800 hover:border-sky-500 flex items-center justify-center flex-none transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95 shadow-md group"
+                    title="Previous Player (Left Arrow [←])"
+                  >
+                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                  </button>
+
+                  <div
+                    ref={carouselContainerRef}
+                    onWheel={handleCarouselWheel}
+                    className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 flex-1 scroll-smooth"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#0284c7 #0f172a'
+                    }}
+                  >
+                    {playerStats.map(p => {
+                      const isSelected = activePlayer && String(activePlayer.number) === String(p.number);
+                      return (
+                        <button
+                          key={p.number}
+                          data-player-card-num={p.number}
+                          onClick={() => setSelectedPlayerNum(p.number)}
+                          className={`px-3 py-2 rounded-xl flex items-center gap-2 flex-none transition-all border ${
+                            isSelected
+                              ? 'bg-sky-500/25 border-sky-400 text-white shadow-lg ring-2 ring-sky-400/50 scale-[1.03]'
+                              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                          }`}
+                        >
+                          <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-mono font-black text-xs border flex-none ${
+                            isSelected ? 'bg-sky-500 text-slate-950 border-white' : 'bg-slate-900 text-sky-400 border-slate-800'
+                          }`}>
+                            #{p.number}
+                          </span>
+                          <div className="text-left min-w-0">
+                            <div className="text-xs font-bold truncate max-w-[110px] leading-tight text-slate-100">
+                              {p.name.split(' ')[0]}
+                            </div>
+                            <div className="text-[10px] font-mono font-bold text-amber-400">
+                              {p.pts} PTS • {p.pir} PIR
+                            </div>
                           </div>
-                          <div className="text-[10px] font-mono font-bold text-amber-400">
-                            {p.pts} PTS • {p.pir} PIR
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={handleNextPlayer}
+                    disabled={playerStats.length <= 1}
+                    className="w-9 h-11 rounded-xl bg-slate-950 hover:bg-sky-600 hover:text-white text-slate-400 border border-slate-800 hover:border-sky-500 flex items-center justify-center flex-none transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95 shadow-md group"
+                    title="Next Player (Right Arrow [→])"
+                  >
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
                 </div>
               </div>
 
@@ -874,7 +987,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                         #{activePlayer.number}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-lg sm:text-xl font-black text-slate-100 uppercase tracking-wider">
                             {activePlayer.name}
                           </h3>
@@ -894,6 +1007,29 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           </button>
                         </p>
                       </div>
+                    </div>
+
+                    {/* Quick Player Switcher Pill in Hero Header */}
+                    <div className="flex items-center gap-1.5 bg-slate-950/90 p-1.5 rounded-xl border border-slate-800 shadow-inner">
+                      <button
+                        onClick={handlePrevPlayer}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-sky-600 hover:text-white text-slate-300 transition-all flex items-center gap-1 text-xs font-bold border border-slate-800 hover:border-sky-500 active:scale-95"
+                        title="Previous Player (Left Arrow [←])"
+                      >
+                        <ChevronLeft className="w-4 h-4 text-sky-400" />
+                        <span className="hidden sm:inline">PREV</span>
+                      </button>
+                      <span className="text-xs font-mono font-bold text-slate-400 px-1.5">
+                        {activePlayerIndex + 1} / {playerStats.length}
+                      </span>
+                      <button
+                        onClick={handleNextPlayer}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-sky-600 hover:text-white text-slate-300 transition-all flex items-center gap-1 text-xs font-bold border border-slate-800 hover:border-sky-500 active:scale-95"
+                        title="Next Player (Right Arrow [→])"
+                      >
+                        <span className="hidden sm:inline">NEXT</span>
+                        <ChevronRight className="w-4 h-4 text-sky-400" />
+                      </button>
                     </div>
 
                     {/* Big Key Metric Badges */}
