@@ -24,11 +24,11 @@ export default function AuthModal({
     const trimmed = passcode.trim();
 
     // Accept custom pin, default 'bba2026', or fallback 'coach'
-    if (trimmed === storedPin || trimmed.toLowerCase() === 'coach' || trimmed === 'bba2026') {
+    if (trimmed === storedPin || trimmed === 'bba2026') {
       onLogin('admin');
       setPasscode('');
     } else {
-      setError('Incorrect passcode. Try "coach" or "bba2026"');
+      setError('Incorrect passcode.');
     }
   };
 
@@ -99,7 +99,7 @@ export default function AuthModal({
                     setPasscode(e.target.value);
                     if (error) setError(null);
                   }}
-                  placeholder="Enter Coach Passcode (e.g. coach or bba2026)"
+                  placeholder="Enter Coach Passcode"
                   className="w-full bg-slate-900 border border-slate-700 focus:border-sky-400 text-slate-100 text-xs px-3 py-2 rounded-lg font-mono placeholder:text-slate-500 focus:outline-none pr-9"
                   autoFocus
                 />
