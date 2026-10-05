@@ -123,7 +123,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     ((teamShooting.fg2miss + teamShooting.fg3miss) + teamShooting.ftmiss + teamOthers.tov + teamOthers.pf + teamOthers.blka);
 
   // Advanced: Possessions, Pace & Efficiency
-  // Standard Oliver formula: FGA + 0.44 * FTA - OREB + TOV
+  // Standard possession formula: FGA + 0.44 * FTA - OREB + TOV
   const estimatedPossessions = Math.max(1, (teamShooting.fga + (0.44 * teamShooting.fta) - teamOthers.oreb + teamOthers.tov));
   const ortg = (teamShooting.pts / estimatedPossessions) * 100; // Points per 100 possessions
   const ppp = teamShooting.pts / estimatedPossessions; // Points per possession
@@ -255,7 +255,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     const pir = (pShooting.pts + pOthers.reb + pOthers.ast + pOthers.stl + pOthers.blk + pOthers.fd) -
       ((pShooting.fg2miss + pShooting.fg3miss) + pShooting.ftmiss + pOthers.tov + pOthers.pf + pOthers.blka);
 
-    // Hollinger Game Score
+    // GameScore formula
     const gameScore = pShooting.pts + 
       (0.4 * pShooting.fgm) - 
       (0.7 * pShooting.fga) - 

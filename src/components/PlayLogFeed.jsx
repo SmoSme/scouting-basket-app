@@ -15,7 +15,7 @@ const ACTION_OPTIONS = [
 
 const QUARTER_OPTIONS = ['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'];
 
-export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEditEvent }) {
+export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEditEvent, isAdmin = true }) {
   const [editingKey, setEditingKey] = useState(null);
 
   // Edit form state
@@ -225,27 +225,29 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 <div className="flex items-center gap-1">
                   <span className="truncate max-w-[90px] text-slate-400">{zona}</span>
                   
-                  {/* Quick Edit & Delete Actions */}
-                  <div className="flex items-center gap-1 ml-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => startEditing(ev, itemKey)}
-                      title="Edit event"
-                      className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Delete event #${numero} ${giocatore} -> ${actionStr}?`)) {
-                          onDeleteEvent(ev?.id, events.length - 1 - idx);
-                        }
-                      }}
-                      title="Delete event"
-                      className="p-1 rounded bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
+                  {/* Quick Edit & Delete Actions (Admin only) */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-1 ml-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => startEditing(ev, itemKey)}
+                        title="Edit event"
+                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete event #${numero} ${giocatore} -> ${actionStr}?`)) {
+                            onDeleteEvent(ev?.id, events.length - 1 - idx);
+                          }
+                        }}
+                        title="Delete event"
+                        className="p-1 rounded bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

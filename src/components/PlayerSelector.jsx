@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Users, CheckCircle2, RefreshCw, X, GripVertical, ArrowLeftRight } from 'lucide-react';
+import { Users, CheckCircle2, RefreshCw, X, GripVertical, ArrowLeftRight, UserCheck } from 'lucide-react';
 
 export default function PlayerSelector({
   roster,
@@ -7,7 +7,8 @@ export default function PlayerSelector({
   selectedPlayer,
   onSelectPlayer,
   onSwapSubstitution,
-  events
+  events,
+  isAdmin = true
 }) {
   const [subBenchPlayer, setSubBenchPlayer] = useState(null); // Bench player selected for tap substitution
   const [activeSubCourtPlayer, setActiveSubCourtPlayer] = useState(null); // On-Court player selecting bench sub menu
@@ -135,8 +136,16 @@ export default function PlayerSelector({
     setDragOverPlayerNum(null);
   };
 
-  // --- TAP-TO-SUB FALLBACK ---
+  // --- TAP-TO-SUB / INSPECT FALLBACK ---
   const handleBenchClick = (benchPlayer) => {
+    if (!isAdmin) {
+      if (selectedPlayer && String(selectedPlayer.number) === String(benchPlayer.number)) {
+        onSelectPlayer(null);
+      } else {
+        onSelectPlayer(benchPlayer);
+      }
+      return;
+    }
     if (activeSubCourtPlayer) {
       // Complete swap initiated from an on-court player
       onSwapSubstitution(activeSubCourtPlayer.number, benchPlayer.number);
@@ -150,12 +159,12 @@ export default function PlayerSelector({
   };
 
   const handleOnCourtClick = (courtPlayer) => {
-    if (subBenchPlayer) {
+    if (isAdmin && subBenchPlayer) {
       // Complete swap initiated from bench player
       onSwapSubstitution(courtPlayer.number, subBenchPlayer.number);
       setSubBenchPlayer(null);
     } else {
-      // Toggle active selection for stat recording
+      // Toggle active selection for stat recording / inspection
       if (selectedPlayer && String(selectedPlayer.number) === String(courtPlayer.number)) {
         onSelectPlayer(null);
       } else {
@@ -184,14 +193,21 @@ export default function PlayerSelector({
             LINEUP & SUBSTITUTIONS
           </h2>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-slate-400 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-          <ArrowLeftRight className="w-3 h-3 text-sky-400" />
-          <span>DRAG TO SUB</span>
-        </div>
+        {isAdmin ? (
+          <div className="flex items-center gap-1 text-[10px] text-slate-400 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+            <ArrowLeftRight className="w-3 h-3 text-sky-400" />
+            <span>DRAG TO SUB</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-[10px] text-sky-400 font-semibold bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/60">
+            <UserCheck className="w-3 h-3 text-sky-400" />
+            <span>TAP TO VIEW STATS</span>
+          </div>
+        )}
       </div>
 
-      {/* TAP-TO-SUB ACTIVE BANNER */}
-      {subBenchPlayer && (
+      {/* TAP-TO-SUB ACTIVE BANNER (Admin only) */}
+      {isAdmin && subBenchPlayer && (
         <div className="mb-2 p-2 bg-slate-900 border border-amber-500/50 rounded-lg flex items-center justify-between text-xs flex-none shadow-sm">
           <div className="flex items-center gap-1.5 font-semibold text-amber-300 truncate">
             <RefreshCw className="w-3.5 h-3.5 text-amber-400 flex-none" />
@@ -223,28 +239,31 @@ export default function PlayerSelector({
                 BENCH ({benchPlayers.length})
               </span>
             </div>
-            <span className="text-[10px] text-slate-500 font-medium">Drag / Tap</span>
+            <span className="text-[10px] text-slate-500 font-medium">
+              {isAdmin ? 'Drag / Tap' : 'Tap to view'}
+            </span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
             {benchPlayers.map((player) => {
               const { pts, fouls } = getPlayerStats(player.number);
-              const isSelectedBenchSub = subBenchPlayer && String(subBenchPlayer.number) === String(player.number);
-              const isDragOver = dragOverPlayerNum === String(player.number);
-              const isDragging = draggedPlayer && draggedPlayer.number === String(player.number);
+              const isSelectedBenchSub = isAdmin && subBenchPlayer && String(subBenchPlayer.number) === String(player.number);
+              const isSelectedPlayer = selectedPlayer && String(selectedPlayer.number) === String(player.number);
+              const isDragOver = isAdmin && dragOverPlayerNum === String(player.number);
+              const isDragging = isAdmin && draggedPlayer && draggedPlayer.number === String(player.number);
 
               return (
                 <div
                   key={player.number}
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, player, 'bench')}
-                  onDragOver={(e) => handleDragOver(e, player, 'bench')}
-                  onDragLeave={(e) => handleDragLeave(e, player)}
-                  onDrop={(e) => handleDrop(e, player, 'bench')}
-                  onDragEnd={handleDragEnd}
-                  onTouchStart={() => handleTouchStart(player, 'bench')}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
+                  draggable={isAdmin}
+                  onDragStart={isAdmin ? (e) => handleDragStart(e, player, 'bench') : undefined}
+                  onDragOver={isAdmin ? (e) => handleDragOver(e, player, 'bench') : undefined}
+                  onDragLeave={isAdmin ? (e) => handleDragLeave(e, player) : undefined}
+                  onDrop={isAdmin ? (e) => handleDrop(e, player, 'bench') : undefined}
+                  onDragEnd={isAdmin ? handleDragEnd : undefined}
+                  onTouchStart={isAdmin ? () => handleTouchStart(player, 'bench') : undefined}
+                  onTouchMove={isAdmin ? handleTouchMove : undefined}
+                  onTouchEnd={isAdmin ? handleTouchEnd : undefined}
                   data-player-num={player.number}
                   data-player-source="bench"
                   onClick={() => handleBenchClick(player)}
@@ -253,13 +272,17 @@ export default function PlayerSelector({
                       ? 'border-dashed border-sky-400 bg-sky-950/40'
                       : isSelectedBenchSub
                       ? 'bg-amber-950/40 border border-amber-500/70 text-amber-200'
+                      : isSelectedPlayer
+                      ? 'bg-sky-950/50 border border-sky-400 ring-1 ring-sky-500/30'
                       : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-850'
                   } ${isDragging ? 'opacity-40 border-dashed border-slate-600' : ''}`}
                 >
                   {/* Top Row: Grip Handle, Number, Name */}
                   <div className="flex items-center justify-between gap-1.5 w-full">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                      {isAdmin && (
+                        <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                      )}
                       <div className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-slate-300 border border-slate-800 flex-none">
                         #{player.number}
                       </div>
@@ -281,19 +304,25 @@ export default function PlayerSelector({
                       </div>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBenchClick(player);
-                      }}
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors border ${
-                        isSelectedBenchSub
-                          ? 'bg-amber-500 text-slate-950 border-amber-400'
-                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                      }`}
-                    >
-                      {isSelectedBenchSub ? 'ACTIVE' : 'SUB'}
-                    </button>
+                    {isAdmin ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBenchClick(player);
+                        }}
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors border ${
+                          isSelectedBenchSub
+                            ? 'bg-amber-500 text-slate-950 border-amber-400'
+                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                        }`}
+                      >
+                        {isSelectedBenchSub ? 'ACTIVE' : 'SUB'}
+                      </button>
+                    ) : (
+                      isSelectedPlayer && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 flex-none" />
+                      )
+                    )}
                   </div>
 
                   {/* Bottom Row: Points Pill */}
@@ -343,15 +372,15 @@ export default function PlayerSelector({
               return (
                 <div key={player.number} className="relative">
                   <div
-                    draggable={true}
-                    onDragStart={(e) => handleDragStart(e, player, 'court')}
-                    onDragOver={(e) => handleDragOver(e, player, 'court')}
-                    onDragLeave={(e) => handleDragLeave(e, player)}
-                    onDrop={(e) => handleDrop(e, player, 'court')}
-                    onDragEnd={handleDragEnd}
-                    onTouchStart={() => handleTouchStart(player, 'court')}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
+                    draggable={isAdmin}
+                    onDragStart={isAdmin ? (e) => handleDragStart(e, player, 'court') : undefined}
+                    onDragOver={isAdmin ? (e) => handleDragOver(e, player, 'court') : undefined}
+                    onDragLeave={isAdmin ? (e) => handleDragLeave(e, player) : undefined}
+                    onDrop={isAdmin ? (e) => handleDrop(e, player, 'court') : undefined}
+                    onDragEnd={isAdmin ? handleDragEnd : undefined}
+                    onTouchStart={isAdmin ? () => handleTouchStart(player, 'court') : undefined}
+                    onTouchMove={isAdmin ? handleTouchMove : undefined}
+                    onTouchEnd={isAdmin ? handleTouchEnd : undefined}
                     data-player-num={player.number}
                     data-player-source="court"
                     onClick={() => handleOnCourtClick(player)}
@@ -368,7 +397,9 @@ export default function PlayerSelector({
                     {/* Top Row: Grip Handle, Jersey Number, Player Name & Selection Indicator */}
                     <div className="flex items-center justify-between gap-1.5 w-full">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                        {isAdmin && (
+                          <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                        )}
                         <div className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-sky-400 border border-slate-800 flex-none">
                           #{player.number}
                         </div>
@@ -399,13 +430,15 @@ export default function PlayerSelector({
                         {isSelected && (
                           <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 flex-none" />
                         )}
-                        <button
-                          onClick={(e) => handleDirectSubButtonClick(e, player)}
-                          title="Click to select bench replacement"
-                          className="p-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700/80"
-                        >
-                          <RefreshCw className="w-3 h-3 text-slate-300" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => handleDirectSubButtonClick(e, player)}
+                            title="Click to select bench replacement"
+                            className="p-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700/80"
+                          >
+                            <RefreshCw className="w-3 h-3 text-slate-300" />
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -426,8 +459,8 @@ export default function PlayerSelector({
                     </div>
                   </div>
 
-                  {/* Inline Bench Dropdown Menu for Direct Sub Button */}
-                  {isTargetForSub && (
+                  {/* Inline Bench Dropdown Menu for Direct Sub Button (Admin only) */}
+                  {isAdmin && isTargetForSub && (
                     <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-slate-950 border border-slate-700 rounded-lg shadow-xl space-y-1 z-30">
                       <div className="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1 border-b border-slate-800 pb-1">
                         <span>SUB FOR #{player.number}:</span>

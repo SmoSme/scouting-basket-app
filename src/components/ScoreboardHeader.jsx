@@ -6,7 +6,8 @@ export default function ScoreboardHeader({
   events,
   currentQuarter,
   setCurrentQuarter,
-  onUndo
+  onUndo,
+  isAdmin = true
 }) {
   const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
@@ -121,14 +122,16 @@ export default function ScoreboardHeader({
             </div>
           </div>
 
-          {/* Undo Button */}
-          <button
-            onClick={onUndo}
-            className="action-btn-dense btn-undo-bg text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 min-h-[34px] sm:min-h-[38px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1 sm:gap-1.5 rounded-lg shadow-sm"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
-            <span className="hidden xs:inline">UNDO</span>
-          </button>
+          {/* Undo Button (Admin only) */}
+          {isAdmin && (
+            <button
+              onClick={onUndo}
+              className="action-btn-dense btn-undo-bg text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 min-h-[34px] sm:min-h-[38px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1 sm:gap-1.5 rounded-lg shadow-sm"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
+              <span className="hidden xs:inline">UNDO</span>
+            </button>
+          )}
         </div>
       </div>
 

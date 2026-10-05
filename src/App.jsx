@@ -4,6 +4,7 @@ import { Activity } from 'lucide-react';
 import Navbar from './components/Navbar';
 import LiveGame from './pages/LiveGame';
 import Archive from './pages/Archive';
+import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
 import {
@@ -17,6 +18,26 @@ import {
 } from './services/offlineSync';
 
 export default function App() {
+  const [authRole, setAuthRole] = useState(() => {
+    return localStorage.getItem('bba_auth_role') || 'admin';
+  });
+  const [showAuthModal, setShowAuthModal] = useState(() => {
+    return !localStorage.getItem('bba_auth_role');
+  });
+
+  const handleLoginRole = (role) => {
+    setAuthRole(role);
+    localStorage.setItem('bba_auth_role', role);
+    setShowAuthModal(false);
+    showToast(role === 'admin' ? '🛡️ Logged in as Coach (Full Access)' : '👤 Guest Mode (Read-Only)');
+  };
+
+  const handleLogout = () => {
+    setAuthRole('guest');
+    localStorage.setItem('bba_auth_role', 'guest');
+    showToast('👤 Switched to Guest / Player view');
+  };
+
   const [gameSession, setGameSession] = useState(() => {
     return localStorage.getItem('current_game_session') || '';
   });
@@ -477,6 +498,9 @@ export default function App() {
           gameSession={gameSession}
           onEditGameSession={() => setShowSessionModal(true)}
           onToggleRosterModal={() => setShowRosterModal(!showRosterModal)}
+          authRole={authRole}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onLogout={handleLogout}
         />
 
         {/* Routes */}
@@ -511,14 +535,23 @@ export default function App() {
                 handleResetGame={handleResetGame}
                 onDeleteEvent={handleDeleteEvent}
                 onEditEvent={handleEditEvent}
+                authRole={authRole}
               />
             }
           />
           <Route
             path="/archive"
-            element={<Archive showToast={showToast} />}
+            element={<Archive showToast={showToast} authRole={authRole} />}
           />
         </Routes>
+
+        {/* Role Selection / Passcode Auth Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          currentRole={authRole}
+          onLogin={handleLoginRole}
+          onClose={() => setShowAuthModal(false)}
+        />
       </div>
     </BrowserRouter>
   );

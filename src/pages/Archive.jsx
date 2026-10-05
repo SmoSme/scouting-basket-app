@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import MatchReviewModal from '../components/MatchReviewModal';
 
-export default function Archive({ showToast }) {
+export default function Archive({ showToast, authRole = 'admin' }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
@@ -308,14 +308,16 @@ export default function Archive({ showToast }) {
                   <Download className="w-4 h-4" />
                   CSV
                 </button>
-                <button
-                  onClick={() => handleDeleteGame(m.name)}
-                  disabled={actionLoading === m.name}
-                  className="flex items-center justify-center gap-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold py-2 px-2.5 rounded-lg text-xs transition-all"
-                  title="Delete Match"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {authRole === 'admin' && (
+                  <button
+                    onClick={() => handleDeleteGame(m.name)}
+                    disabled={actionLoading === m.name}
+                    className="flex items-center justify-center gap-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold py-2 px-2.5 rounded-lg text-xs transition-all"
+                    title="Delete Match"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

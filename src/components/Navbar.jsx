@@ -1,6 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Trophy, LayoutDashboard, Archive as ArchiveIcon, Wifi, WifiOff, Edit3, Settings } from 'lucide-react';
+import { 
+  Trophy, LayoutDashboard, Archive as ArchiveIcon, 
+  Wifi, WifiOff, Edit3, Settings, Shield, User, Lock, LogOut 
+} from 'lucide-react';
 
 export default function Navbar({
   isOnline,
@@ -8,10 +11,15 @@ export default function Navbar({
   onManualSync,
   gameSession,
   onEditGameSession,
-  onToggleRosterModal
+  onToggleRosterModal,
+  authRole = 'admin',
+  onOpenAuth,
+  onLogout
 }) {
+  const isAdmin = authRole === 'admin';
+
   return (
-    <header className="glass-card px-3 py-1.5 mb-2 flex items-center justify-between border-slate-800 flex-none">
+    <header className="glass-card px-2 sm:px-3 py-1.5 mb-2 flex items-center justify-between border-slate-800 flex-none gap-2 flex-wrap">
       {/* Brand & Connection Status */}
       <div className="flex items-center gap-1.5 sm:gap-2.5">
         <div className="w-6 h-6 rounded bg-sky-500/10 border border-sky-500/30 flex items-center justify-center flex-none">
@@ -76,24 +84,63 @@ export default function Navbar({
         </NavLink>
       </div>
 
-      {/* Active Game Session & Roster Management */}
+      {/* Active Game Session & Role Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <button
-          onClick={onEditGameSession}
-          className="flex items-center gap-1 sm:gap-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-200 px-2 sm:px-2.5 py-1 rounded text-xs font-semibold transition-colors"
-        >
-          <span className="text-[10px] text-sky-400 uppercase font-bold hidden sm:inline">MATCH:</span>
-          <span className="truncate max-w-[80px] sm:max-w-[150px] text-slate-300">{gameSession || 'Match'}</span>
-          <Edit3 className="w-3 h-3 text-slate-400 flex-none" />
-        </button>
+        {/* Match Name Display */}
+        {isAdmin ? (
+          <button
+            onClick={onEditGameSession}
+            className="flex items-center gap-1 sm:gap-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-200 px-2 sm:px-2.5 py-1 rounded text-xs font-semibold transition-colors"
+            title="Edit Game Session"
+          >
+            <span className="text-[10px] text-sky-400 uppercase font-bold hidden sm:inline">MATCH:</span>
+            <span className="truncate max-w-[80px] sm:max-w-[130px] text-slate-300">{gameSession || 'Match'}</span>
+            <Edit3 className="w-3 h-3 text-slate-400 flex-none" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 px-2 py-1 rounded text-xs">
+            <span className="text-[10px] text-slate-500 uppercase font-bold hidden sm:inline">MATCH:</span>
+            <span className="truncate max-w-[80px] sm:max-w-[130px] text-slate-300 font-semibold">{gameSession || 'Match'}</span>
+          </div>
+        )}
 
-        <button
-          onClick={onToggleRosterModal}
-          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors border border-slate-800 hover:border-slate-700"
-        >
-          <Settings className="w-3 h-3 text-slate-400 flex-none" />
-          <span className="hidden sm:inline">ROSTER</span>
-        </button>
+        {/* Coach-only Roster Settings */}
+        {isAdmin && (
+          <button
+            onClick={onToggleRosterModal}
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors border border-slate-800 hover:border-slate-700"
+            title="Manage Match Roster"
+          >
+            <Settings className="w-3 h-3 text-slate-400 flex-none" />
+            <span className="hidden sm:inline">ROSTER</span>
+          </button>
+        )}
+
+        {/* Role Status Badge & Switcher */}
+        {isAdmin ? (
+          <div className="flex items-center gap-1 bg-emerald-950/60 border border-emerald-500/40 rounded-lg p-0.5 pl-2">
+            <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1 uppercase tracking-wider">
+              <Shield className="w-3 h-3 text-emerald-400" />
+              <span className="hidden md:inline">COACH</span>
+            </span>
+            <button
+              onClick={onLogout}
+              className="p-1 hover:bg-emerald-900/50 text-emerald-400 hover:text-white rounded transition-colors ml-1"
+              title="Switch role / Logout"
+            >
+              <LogOut className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg transition-all shadow-sm active:scale-95"
+            title="Login as Coach to record matches"
+          >
+            <Lock className="w-3 h-3" />
+            <span>COACH LOGIN</span>
+          </button>
+        )}
       </div>
     </header>
   );

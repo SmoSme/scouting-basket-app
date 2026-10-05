@@ -6,7 +6,7 @@ import ActionClusters from '../components/ActionClusters';
 import BoxScoreTable from '../components/BoxScoreTable';
 import PlayLogFeed from '../components/PlayLogFeed';
 import { COURT_ZONES } from '../data/roster';
-import { Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, ArrowLeftRight } from 'lucide-react';
+import { Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, ArrowLeftRight, Eye, Shield, Lock } from 'lucide-react';
 
 export default function LiveGame({
   gameSession,
@@ -34,8 +34,10 @@ export default function LiveGame({
   handleUndo,
   handleResetGame,
   onDeleteEvent,
-  onEditEvent
+  onEditEvent,
+  authRole = 'admin'
 }) {
+  const isAdmin = authRole === 'admin';
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
   const [mobileView, setMobileView] = useState('COURT'); // 'COURT' | 'ROSTER' | 'STREAM'
   const [showMobileQuickSub, setShowMobileQuickSub] = useState(false);
@@ -127,6 +129,7 @@ export default function LiveGame({
   };
 
   const handleRecordShot = (isMade) => {
+    if (!isAdmin) return;
     const zoneInfo = COURT_ZONES[selectedZoneKey];
     const shotType = zoneInfo.type; // "2PT" or "3PT"
     const outcome = isMade ? 'Made' : 'Missed';
@@ -136,13 +139,14 @@ export default function LiveGame({
   };
 
   const handleRecordAction = (actionName, categoryName) => {
+    if (!isAdmin) return;
     dispatchAction(actionName, categoryName, 'Generic');
   };
 
   return (
     <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
       {/* 1. NEW MATCH SESSION & SQUAD SELECTION MODAL */}
-      {showSessionModal && (
+      {isAdmin && showSessionModal && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 overflow-y-auto">
           <div className="glass-card max-w-2xl w-full p-5 border-slate-700/80 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
@@ -313,8 +317,8 @@ export default function LiveGame({
         </div>
       )}
 
-      {/* 2. ROSTER MANAGER MODAL */}
-      {showRosterModal && (
+      {/* 2. ROSTER MANAGER MODAL (Admin only) */}
+      {isAdmin && showRosterModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
           <div className="glass-card max-w-3xl w-full p-5 border-slate-700/80 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
@@ -404,8 +408,8 @@ export default function LiveGame({
         </div>
       )}
 
-      {/* 3. MOBILE QUICK SUBSTITUTION MODAL */}
-      {showMobileQuickSub && (
+      {/* 3. MOBILE QUICK SUBSTITUTION MODAL (Admin only) */}
+      {isAdmin && showMobileQuickSub && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center p-3">
           <div className="glass-card w-full max-w-md mx-auto p-4 border-slate-700 shadow-2xl flex flex-col max-h-[85vh] rounded-xl my-auto">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-800 flex-none">
@@ -519,6 +523,7 @@ export default function LiveGame({
         currentQuarter={currentQuarter}
         setCurrentQuarter={setCurrentQuarter}
         onUndo={handleUndo}
+        isAdmin={isAdmin}
       />
 
       {/* Main Nav Sub-Bar & Mobile View Switcher */}
@@ -572,21 +577,29 @@ export default function LiveGame({
           </div>
         )}
 
-        {/* Action Buttons: New Match & Clear Screen */}
-        <div className="flex gap-1.5 items-center">
-          <button
-            onClick={() => setShowSessionModal(true)}
-            className="text-[11px] bg-sky-700/80 hover:bg-sky-600 text-white font-semibold px-2.5 py-1 rounded transition-colors uppercase tracking-wider flex items-center gap-1.5 border border-sky-600"
-          >
-            <Play className="w-3 h-3" /> NEW MATCH
-          </button>
-          <button
-            onClick={handleResetGame}
-            className="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold px-2.5 py-1 rounded transition-colors border border-slate-800 hover:border-slate-700"
-          >
-            CLEAR SCREEN
-          </button>
-        </div>
+        {/* Action Buttons: New Match & Clear Screen (Admin only) */}
+        {isAdmin ? (
+          <div className="flex gap-1.5 items-center">
+            <button
+              onClick={() => setShowSessionModal(true)}
+              className="text-[11px] bg-sky-700/80 hover:bg-sky-600 text-white font-semibold px-2.5 py-1 rounded transition-colors uppercase tracking-wider flex items-center gap-1.5 border border-sky-600"
+            >
+              <Play className="w-3 h-3" /> NEW MATCH
+            </button>
+            <button
+              onClick={handleResetGame}
+              className="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold px-2.5 py-1 rounded transition-colors border border-slate-800 hover:border-slate-700"
+            >
+              CLEAR SCREEN
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded text-slate-400 text-[10px] font-bold">
+            <Eye className="w-3 h-3 text-sky-400" />
+            <span className="hidden xs:inline">GUEST SPECTATOR MODE</span>
+            <span className="xs:hidden">GUEST</span>
+          </div>
+        )}
       </div>
 
       {/* MAIN VIEWPORT CONTAINER (Responsive for Desktop, Tablet & Mobile) */}
@@ -604,6 +617,7 @@ export default function LiveGame({
                   onSelectPlayer={setSelectedPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
+                  isAdmin={isAdmin}
                 />
               </div>
 
@@ -616,11 +630,23 @@ export default function LiveGame({
                   events={events}
                 />
 
-                <ActionClusters
-                  selectedZoneKey={selectedZoneKey}
-                  onRecordShot={handleRecordShot}
-                  onRecordAction={handleRecordAction}
-                />
+                {isAdmin ? (
+                  <ActionClusters
+                    selectedZoneKey={selectedZoneKey}
+                    onRecordShot={handleRecordShot}
+                    onRecordAction={handleRecordAction}
+                  />
+                ) : (
+                  <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">
+                    <div className="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-sky-400" />
+                      <span>GUEST / PLAYER SPECTATOR MODE</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 max-w-sm mx-auto leading-relaxed">
+                      You are viewing this match in read-only mode. Select players and court zones to inspect live shot charts and shooting efficiency. Event recording is reserved for coaches.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Panel 3: Right Live Play Stream Feed */}
@@ -630,6 +656,7 @@ export default function LiveGame({
                   roster={roster}
                   onDeleteEvent={onDeleteEvent}
                   onEditEvent={onEditEvent}
+                  isAdmin={isAdmin}
                 />
               </div>
             </div>
@@ -645,6 +672,7 @@ export default function LiveGame({
                   onSelectPlayer={setSelectedPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
+                  isAdmin={isAdmin}
                 />
               </div>
 
@@ -657,11 +685,23 @@ export default function LiveGame({
                   events={events}
                 />
 
-                <ActionClusters
-                  selectedZoneKey={selectedZoneKey}
-                  onRecordShot={handleRecordShot}
-                  onRecordAction={handleRecordAction}
-                />
+                {isAdmin ? (
+                  <ActionClusters
+                    selectedZoneKey={selectedZoneKey}
+                    onRecordShot={handleRecordShot}
+                    onRecordAction={handleRecordAction}
+                  />
+                ) : (
+                  <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">
+                    <div className="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-sky-400" />
+                      <span>GUEST / PLAYER SPECTATOR MODE</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 max-w-sm mx-auto leading-relaxed">
+                      You are viewing this match in read-only mode. Select players and court zones to inspect live shot charts and shooting efficiency. Event recording is reserved for coaches.
+                    </p>
+                  </div>
+                )}
 
                 <div className="h-64 min-h-[220px]">
                   <PlayLogFeed
@@ -669,6 +709,7 @@ export default function LiveGame({
                     roster={roster}
                     onDeleteEvent={onDeleteEvent}
                     onEditEvent={onEditEvent}
+                    isAdmin={isAdmin}
                   />
                 </div>
               </div>
@@ -688,6 +729,7 @@ export default function LiveGame({
                     }}
                     onSwapSubstitution={handleSwapSubstitution}
                     events={events}
+                    isAdmin={isAdmin}
                   />
                 </div>
               )}
@@ -720,14 +762,16 @@ export default function LiveGame({
                       })}
                     </div>
 
-                    {/* Instant Quick-Sub Trigger Button */}
-                    <button
-                      onClick={() => setShowMobileQuickSub(true)}
-                      className="text-[10px] font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded flex items-center gap-1 flex-none shadow-sm active:scale-95"
-                    >
-                      <ArrowLeftRight className="w-3 h-3 text-amber-400" />
-                      SUB
-                    </button>
+                    {/* Instant Quick-Sub Trigger Button (Admin only) */}
+                    {isAdmin && (
+                      <button
+                        onClick={() => setShowMobileQuickSub(true)}
+                        className="text-[10px] font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 px-2 py-1 rounded flex items-center gap-1 flex-none shadow-sm active:scale-95"
+                      >
+                        <ArrowLeftRight className="w-3 h-3 text-amber-400" />
+                        SUB
+                      </button>
+                    )}
                   </div>
 
                   <CourtPitchMap
@@ -737,11 +781,23 @@ export default function LiveGame({
                     events={events}
                   />
 
-                  <ActionClusters
-                    selectedZoneKey={selectedZoneKey}
-                    onRecordShot={handleRecordShot}
-                    onRecordAction={handleRecordAction}
-                  />
+                  {isAdmin ? (
+                    <ActionClusters
+                      selectedZoneKey={selectedZoneKey}
+                      onRecordShot={handleRecordShot}
+                      onRecordAction={handleRecordAction}
+                    />
+                  ) : (
+                    <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">
+                      <div className="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5 text-sky-400" />
+                        <span>GUEST / PLAYER SPECTATOR MODE</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 max-w-sm mx-auto leading-relaxed">
+                        You are viewing this match in read-only mode. Select players and court zones to inspect live shot charts and shooting efficiency. Event recording is reserved for coaches.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -752,6 +808,7 @@ export default function LiveGame({
                     roster={roster}
                     onDeleteEvent={onDeleteEvent}
                     onEditEvent={onEditEvent}
+                    isAdmin={isAdmin}
                   />
                 </div>
               )}

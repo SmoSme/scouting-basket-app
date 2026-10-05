@@ -411,17 +411,17 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 </div>
               </div>
 
-              {/* Dean Oliver's Four Factors Section */}
+              {/* Four Factors Section */}
               <div className="glass-card p-3 sm:p-4 border-slate-800">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
                   <div
                     onClick={() => setActiveMetricGuideKey('fourfactors')}
                     className="flex items-center gap-2 cursor-pointer group"
-                    title="Click to view Dean Oliver's Four Factors guide"
+                    title="Click to view Four Factors guide"
                   >
                     <Shield className="w-4 h-4 text-emerald-400" />
                     <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider group-hover:text-sky-400 transition-colors flex items-center gap-1.5">
-                      DEAN OLIVER'S FOUR FACTORS OF BASKETBALL SUCCESS
+                      THE FOUR FACTORS (KEY EFFICIENCY PILLARS)
                       <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400" />
                     </h3>
                   </div>
@@ -883,11 +883,11 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           </span>
                         </div>
                         <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                          {activePlayer.eventsCount} logged match interactions • Hollinger GameScore:{' '}
+                          {activePlayer.eventsCount} logged match interactions • GameScore (GS):{' '}
                           <button
                             onClick={() => setActiveMetricGuideKey('gamescore')}
                             className="text-emerald-400 font-bold hover:text-emerald-300 underline inline-flex items-center gap-0.5 transition-colors"
-                            title="Click to view Hollinger GameScore guide"
+                            title="Click to view GameScore guide"
                           >
                             <span>{activePlayer.gameScore}</span>
                             <Info className="w-2.5 h-2.5" />
@@ -1272,7 +1272,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                     <button
                       onClick={() => setActiveMetricGuideKey('gamescore')}
                       className="text-[10px] font-bold text-purple-400 hover:underline flex items-center gap-1 transition-colors"
-                      title="Hollinger GameScore Guide"
+                      title="GameScore Guide"
                     >
                       <span>What is GS?</span>
                       <Info className="w-2.5 h-2.5" />
@@ -1305,7 +1305,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           PIR <Info className="w-2.5 h-2.5 text-emerald-500 hover:text-emerald-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('pir'); }} />
                         </span>
                       </th>
-                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-400 font-bold cursor-pointer hover:text-purple-300" title="Sort by Hollinger GameScore">
+                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-400 font-bold cursor-pointer hover:text-purple-300" title="Sort by GameScore">
                         <span className="inline-flex items-center gap-0.5">
                           GS <Info className="w-2.5 h-2.5 text-purple-500 hover:text-purple-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('gamescore'); }} />
                         </span>
