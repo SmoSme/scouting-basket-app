@@ -14,22 +14,22 @@ export const METRIC_GUIDES = {
       { level: 'Pillar 1: Shooting eFG%', range: '> 48% (Target > 52%)', color: 'emerald', desc: 'Shot quality and perimeter conversion' },
       { level: 'Pillar 2: Paint Attacks', range: '> 35% Paint / > 65% FT', color: 'emerald', desc: 'Rim pressure and drawing fouls' },
       { level: 'Pillar 3: OREB Share', range: '> 30% of Total REB', color: 'emerald', desc: 'Second-chance scoring opportunities' },
-      { level: 'Pillar 4: Ball Security', range: '< 14 TOV / STL-TOV ≥ 0', color: 'emerald', desc: 'Protecting possessions & turnover margin' }
+      { level: 'Pillar 4: Ball Security', range: '< 14 TOV / STL-TOV ≥ 0', color: 'emerald', desc: 'Protecting the ball & positive turnover margin' }
     ],
-    warning: 'All 4 pillars are computed directly from logged field goals, court coordinates, free throws, rebounds, turnovers, and steals.'
+    warning: 'Computed directly from tracked field goals, court coordinates, free throws, rebounds, assists, turnovers, and steals.'
   },
   efg: {
     key: 'efg',
     shortLabel: 'eFG%',
     title: 'eFG% — Effective Field Goal % (Pillar 1: Shooting)',
     formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
-    description: 'Field goal percentage adjusted for the added value of 3-point shots (each 3-pointer is weighted as 1.5 two-pointers). Reflects true scoring output per field goal attempt without being distorted by foul tracking limitations.',
+    description: 'Field goal percentage adjusted for the added value of 3-point shots (each 3-pointer is weighted as 1.5 two-pointers). Reflects true scoring efficiency per field goal attempt.',
     benchmarks: [
       { level: 'Elite Regional', range: '> 52%', color: 'emerald', desc: 'High shot quality and rhythm perimeter conversion' },
       { level: 'Solid / Average', range: '47% – 51%', color: 'amber', desc: 'Competitive efficiency for regional senior basketball' },
       { level: 'Low / Inefficient', range: '< 46%', color: 'rose', desc: 'Subpar perimeter conversion or forced, contested attempts' }
     ],
-    warning: '100% RELIABLE: Calculated strictly from field goals made (2P/3P) and field goals attempted. Completely independent of fouls and assists.'
+    warning: 'Directly calculated from field goals made (2P/3P) and field goals attempted, weighting 3-pointers at 1.5x.'
   },
   shotProfile: {
     key: 'shotProfile',
@@ -42,59 +42,33 @@ export const METRIC_GUIDES = {
       { level: 'Balanced Spread', range: '30% – 39% Paint / 20% – 28% Mid / 60% – 70% FT', color: 'amber', desc: 'Healthy balance between inside finishes, mid-range pull-ups, and 3PT spacing' },
       { level: 'Mid-Range Heavy', range: '> 30% Mid / < 30% Paint / < 60% FT', color: 'rose', desc: 'Settling for low-value contested 2s with low free throw generation' }
     ],
-    warning: 'Calculated directly from clicked court zones and logged Free Throw events.'
+    warning: 'Calculated directly from logged shot coordinates across all 9 zones and recorded free throws.'
   },
   oreb: {
     key: 'oreb',
     shortLabel: 'OREB%',
     title: 'OREB Share — Offensive Rebound Share (Pillar 3: Second Chances)',
     formula: '(Offensive Rebounds / Total Team Rebounds) × 100',
-    description: 'Proportion of team rebounds collected on the offensive backboard. Measures physical hustle, positioning, and the ability to manufacture second-chance points and extra scoring possessions from missed shots.',
+    description: 'Proportion of team rebounds collected on the offensive backboard. Measures physical hustle, positioning, and the ability to manufacture second-chance points and extra scoring opportunities from missed shots.',
     benchmarks: [
       { level: 'Board Dominance', range: '> 30.0%', color: 'emerald', desc: 'Consistently generates 12+ second-chance scoring opportunities' },
       { level: 'Solid Glass', range: '22.0% – 29.9%', color: 'amber', desc: 'Balanced offensive rebounding while maintaining transition defense stability' },
       { level: 'Low OREB Share', range: '< 22.0%', color: 'rose', desc: 'One-and-done possessions; emphasizes quick defensive retreat' }
     ],
-    warning: 'Calculated from logged team OREB and DREB events. Opponent defensive rebounds are not tracked.'
+    warning: 'Calculated from tracked offensive and defensive rebounds to measure second-chance opportunity generation.'
   },
   ballControl: {
     key: 'ballControl',
     shortLabel: 'Ball Care',
     title: 'Ball Security & Playmaking (Pillar 4: TOV vs AST & STL Margin)',
     formula: 'Total Turnovers (TOV), AST/TOV Ratio, Steal-to-Turnover Margin (STL - TOV)',
-    description: 'Direct, practical evaluation of possession protection and playmaking control. Rather than abstract possession formulas, this focuses on concrete bench targets: keeping turnovers under 14 per game, rewarding high AST/TOV ratios, and winning the steal-to-turnover margin.',
+    description: 'Direct, practical evaluation of possession protection and playmaking control. Focuses on concrete bench targets: keeping turnovers under 14 per game, rewarding high AST/TOV ratios, and winning the steal-to-turnover margin.',
     benchmarks: [
       { level: 'Elite Ball Care', range: '< 14 TOV / AST:TOV > 1.5 / STL-TOV Margin ≥ 0', color: 'emerald', desc: 'Careful passing, disciplined spacing, and positive net turnover creation' },
       { level: 'Manageable', range: '14 – 18 TOV / AST:TOV 1.0 – 1.4 / STL-TOV Margin -1 to -4', color: 'amber', desc: 'Standard competitive turnover volume in regional senior leagues' },
-      { level: 'High Turnover Risk', range: '> 18 TOV / AST:TOV < 1.0 / STL-TOV Margin ≤ -5', color: 'rose', desc: 'Losing too many possessions to unforced errors and poor transition security' }
+      { level: 'High Turnover Risk', range: '> 18 TOV / AST:TOV < 1.0 / STL-TOV Margin ≤ -5', color: 'rose', desc: 'Losing too many scoring chances to unforced errors and transition giveaways' }
     ],
-    warning: 'Turnovers and Steals are actively logged. If assists are unrecorded during a game, focus on raw Turnovers (< 14 target) and Steal-to-Turnover margin.'
-  },
-  ortg: {
-    key: 'ortg',
-    shortLabel: 'ORTG',
-    title: 'ORTG — Offensive Rating (Offensive Efficiency)',
-    formula: '(Total Points / Estimated Possessions) × 100',
-    description: 'Points scored per 100 offensive possessions. It normalizes scoring output independently of game tempo (Pace), enabling objective comparison of offensive efficiency across different game speeds.',
-    benchmarks: [
-      { level: 'Elite', range: '> 112', color: 'emerald', desc: 'High-efficiency scoring and superior offensive execution' },
-      { level: 'Good / Average', range: '100 – 111', color: 'amber', desc: 'Solid, balanced offensive production' },
-      { level: 'Critical / Low', range: '< 98', color: 'rose', desc: 'Low efficiency, contested shot selection, or wasted possessions' }
-    ],
-    warning: 'POSSESSION TRACKING: Free Throws (Made/Missed) are actively tracked. Personal fouls are not currently recorded, but Pace and ORTG remain accurate within a 3-5% margin.'
-  },
-  possessions: {
-    key: 'possessions',
-    shortLabel: 'Pace',
-    title: 'Est. Possessions — Pace (Game Tempo)',
-    formula: 'FGA + 0.44 × FTA - OREB + TOV',
-    description: 'Total estimated offensive possessions in the match. Each possession concludes with a field goal attempt (FGA), free throw trips (0.44 × FTA), or a turnover (TOV). Offensive rebounds (OREB) extend an ongoing possession without consuming a new one.',
-    benchmarks: [
-      { level: 'High Pace (Uptempo)', range: '> 78 poss', color: 'emerald', desc: 'Fast-paced game with heavy transition and early-clock offense' },
-      { level: 'Medium / Standard Pace', range: '68 – 77 poss', color: 'amber', desc: 'Controlled tempo typical of organized half-court play' },
-      { level: 'Slow / Grinding Pace', range: '< 67 poss', color: 'slate', desc: 'Physical, deliberate game with long half-court possessions' }
-    ],
-    warning: 'Free Throws (FT Made/Missed) and Offensive Rebounds are accurately factored into the calculation.'
+    warning: 'Directly computed from tracked assists, turnovers, and steals, measuring decision-making and turnover margin.'
   },
   ts: {
     key: 'ts',
@@ -107,7 +81,7 @@ export const METRIC_GUIDES = {
       { level: 'Solid', range: '50% – 57%', color: 'amber', desc: 'Good offensive efficiency across shot types' },
       { level: 'Low', range: '< 48%', color: 'rose', desc: 'Low conversion rate per scoring opportunity' }
     ],
-    warning: 'Free throws are included in this metric. If no free throws were attempted in a period, TS% mathematically equals eFG%.'
+    warning: 'Combines 2-point, 3-point, and free-throw conversion into a single unified true scoring percentage.'
   },
   asttov: {
     key: 'asttov',
@@ -120,20 +94,20 @@ export const METRIC_GUIDES = {
       { level: 'Standard', range: '1.1 – 1.7', color: 'amber', desc: 'Balanced playmaking and mistake control' },
       { level: 'Critical / Alarm', range: '< 1.0', color: 'rose', desc: 'More turnovers than assists; indicates stagnant ball movement' }
     ],
-    warning: 'DATA TRACKING NOTICE: If assists are not logged by the statistician during the game, this ratio will display as 0. Turnovers (TOV) are logged and accurate.'
+    warning: 'Evaluates ball-handling and playmaking discipline directly from recorded assists and turnovers.'
   },
   pir: {
     key: 'pir',
     shortLabel: 'PIR',
     title: 'FIBA PIR (Performance Index Rating)',
     formula: '(PTS + REB + AST + STL + BLK + FD) - (FG_Miss + FT_Miss + TOV + PF + BLKA)',
-    description: 'The official all-in-one performance rating used by FIBA and EuroLeague. Awards +1 for positive contributions (points, rebounds, assists, steals, blocks) and subtracts -1 for errors (missed field goals, missed free throws, turnovers).',
+    description: 'The official all-in-one performance rating used by FIBA and EuroLeague. Awards +1 for positive contributions (points, rebounds, assists, steals, blocks, fouls drawn) and subtracts -1 for errors (missed field goals, missed free throws, turnovers, personal fouls, blocked shots).',
     benchmarks: [
       { level: 'Team Dominance', range: '> 90 PIR', color: 'emerald', desc: 'Clean execution with minimal errors across the roster' },
       { level: 'Competitive / Solid', range: '65 – 89 PIR', color: 'amber', desc: 'Solid team production across primary statistical categories' },
-      { level: 'Subpar Performance', range: '< 60 PIR', color: 'rose', desc: 'High volume of missed shots or unforced turnovers' }
+      { level: 'Subpar Performance', range: '< 60 PIR', color: 'rose', desc: 'High volume of missed shots, fouls, or unforced turnovers' }
     ],
-    warning: 'DATA TRACKING NOTICE: Personal Fouls committed (PF) and drawn (FD) are not currently tracked, and assists may be untracked. PIR accurately reflects points, rebounds, misses, and turnovers.'
+    warning: 'Official FIBA Performance Index Rating computed from all individual categories: points, rebounds, assists, steals, blocks, personal fouls, fouls drawn, and turnovers.'
   },
   gamescore: {
     key: 'gamescore',
@@ -146,7 +120,7 @@ export const METRIC_GUIDES = {
       { level: 'Strong Game', range: '12 – 17', color: 'amber', desc: 'High-efficiency, decisive individual contribution' },
       { level: 'Quiet / Inefficient', range: '< 8', color: 'rose', desc: 'Limited positive impact or poor shooting volume' }
     ],
-    warning: 'DATA TRACKING NOTICE: Calculated without personal fouls (PF) and optional assists. Fully valid for evaluating shooting volume, rebounds, and ball security.'
+    warning: 'Comprehensive player productivity rating combining all tracked scoring, rebounding, playmaking, personal fouls, and defensive stats.'
   },
   pps: {
     key: 'pps',
@@ -159,7 +133,36 @@ export const METRIC_GUIDES = {
       { level: 'Average / Solid', range: '0.95 – 1.14 PPS', color: 'amber', desc: 'Standard league-average shot efficiency' },
       { level: 'Low Value (COLD)', range: '< 0.85 PPS', color: 'rose', desc: 'Low-efficiency scoring location (typically contested mid-range)' }
     ],
-    warning: '100% RELIABLE METRIC: Calculated mathematically directly from logged makes and misses across the 9 designated half-court zones.'
+    warning: 'Calculated directly from recorded makes and misses across each of the 9 half-court zones.'
+  },
+  // Theoretical & Possession-based metrics (hidden from primary tabs per coach directive)
+  ortg: {
+    key: 'ortg',
+    hidden: true,
+    shortLabel: 'ORTG',
+    title: 'ORTG — Offensive Rating',
+    formula: '(Total Points / Estimated Possessions) × 100',
+    description: 'Theoretical points scored per 100 estimated offensive possessions.',
+    benchmarks: [
+      { level: 'Elite', range: '> 112', color: 'emerald', desc: 'High-efficiency execution' },
+      { level: 'Good / Average', range: '100 – 111', color: 'amber', desc: 'Solid offensive production' },
+      { level: 'Low', range: '< 98', color: 'rose', desc: 'Low conversion rate' }
+    ],
+    warning: 'Theoretical estimated possession metric.'
+  },
+  possessions: {
+    key: 'possessions',
+    hidden: true,
+    shortLabel: 'Pace',
+    title: 'Est. Possessions — Pace',
+    formula: 'FGA + 0.44 × FTA - OREB + TOV',
+    description: 'Estimated offensive possessions in the match.',
+    benchmarks: [
+      { level: 'High Pace', range: '> 78 poss', color: 'emerald', desc: 'Fast-paced game' },
+      { level: 'Standard Pace', range: '68 – 77 poss', color: 'amber', desc: 'Controlled half-court play' },
+      { level: 'Slow Pace', range: '< 67 poss', color: 'slate', desc: 'Deliberate grinding game' }
+    ],
+    warning: 'Theoretical estimated possession metric.'
   },
   // Backward-compatibility aliases
   fourfactors: {
@@ -204,8 +207,8 @@ export const METRIC_GUIDES = {
   }
 };
 
-export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelectMetric }) {
-  const [currentKey, setCurrentKey] = useState(activeKey || 'ortg');
+export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSelectMetric }) {
+  const [currentKey, setCurrentKey] = useState(activeKey || 'pillars');
 
   useEffect(() => {
     if (activeKey && METRIC_GUIDES[activeKey]) {
@@ -213,7 +216,7 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
     }
   }, [activeKey]);
 
-  const guide = METRIC_GUIDES[currentKey] || METRIC_GUIDES.ortg;
+  const guide = METRIC_GUIDES[currentKey] || METRIC_GUIDES.pillars;
 
   const handleSelect = (k) => {
     setCurrentKey(k);
@@ -317,11 +320,11 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
             </div>
           </div>
 
-          {/* Data Tracking Reliability Notice */}
-          <div className="bg-amber-950/30 border border-amber-500/40 p-3.5 rounded-xl space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-black text-amber-400 uppercase tracking-wider">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              <span>DATA TRACKING & RELIABILITY NOTICE:</span>
+          {/* Practical Coaching Interpretation */}
+          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-black text-sky-400 uppercase tracking-wider">
+              <Info className="w-3.5 h-3.5 text-sky-400" />
+              <span>PRACTICAL COACHING INTERPRETATION:</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
               {guide.warning}
