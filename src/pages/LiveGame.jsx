@@ -114,6 +114,12 @@ export default function LiveGame({
     const updatedMaster = [...masterRoster, playerObj].sort((a, b) => Number(a.number) - Number(b.number));
     setMasterRoster(updatedMaster);
     setSelectedSquadNums([...selectedSquadNums, String(newNum.trim())]);
+    
+    // Automatically add to active match squad as well so they immediately appear on BENCH
+    if (setRoster && Array.isArray(roster)) {
+      setRoster([...roster, playerObj].sort((a, b) => Number(a.number) - Number(b.number)));
+    }
+
     setNewNum('');
     setNewName('');
   };
@@ -420,9 +426,15 @@ export default function LiveGame({
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
           <div className="glass-card max-w-3xl w-full p-5 border-slate-700/80 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
-              <h3 className="text-xs font-black text-sky-400 uppercase tracking-wider">
-                MASTER ROSTER MANAGER — TEAM PLAYER LIST ({masterRoster.length} PLAYERS)
-              </h3>
+              <div>
+                <h3 className="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-sky-400" />
+                  MATCH ROSTER & SQUAD MANAGER
+                </h3>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                  Current Match Squad: <strong className="text-emerald-400">{roster.length} players</strong> ({onCourtPlayerNums.length} on court, {roster.length - onCourtPlayerNums.length} on bench). Tap <span className="text-amber-300 font-bold">+ BENCH</span> to add late-arriving players.
+                </p>
+              </div>
               <button
                 onClick={() => setShowRosterModal(false)}
                 className="text-slate-400 hover:text-white p-1 rounded-md"
@@ -432,47 +444,82 @@ export default function LiveGame({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto p-1 pr-2">
-              {masterRoster.map((p, idx) => (
-                <div key={idx} className="flex gap-1.5 items-center bg-slate-900 p-1.5 rounded-md border border-slate-800 text-xs">
-                  <input
-                    type="text"
-                    value={p.number}
-                    onChange={(e) => {
-                      const newMaster = [...masterRoster];
-                      newMaster[idx].number = e.target.value;
-                      setMasterRoster(newMaster);
-                    }}
-                    className="w-10 bg-slate-950 text-sky-400 font-mono font-black text-xs p-1 rounded text-center border border-slate-700"
-                  />
-                  <input
-                    type="text"
-                    value={p.name}
-                    onChange={(e) => {
-                      const newMaster = [...masterRoster];
-                      newMaster[idx].name = e.target.value;
-                      setMasterRoster(newMaster);
-                    }}
-                    className="flex-1 bg-slate-950 text-slate-100 font-bold text-xs p-1 rounded border border-slate-700 truncate"
-                  />
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Delete player #${p.number} ${p.name} from master roster?`)) {
-                        const newMaster = masterRoster.filter((_, i) => i !== idx);
+              {masterRoster.map((p, idx) => {
+                const numStr = String(p.number);
+                const inMatch = roster.some(pr => String(pr.number) === numStr);
+                const isOnCourt = onCourtPlayerNums.map(n => String(n)).includes(numStr);
+
+                return (
+                  <div key={idx} className={`flex gap-1.5 items-center p-2 rounded-lg border text-xs transition-all ${
+                    inMatch ? 'bg-slate-900 border-slate-700 shadow-sm' : 'bg-slate-950/70 border-slate-850 opacity-80 hover:opacity-100'
+                  }`}>
+                    <input
+                      type="text"
+                      value={p.number}
+                      onChange={(e) => {
+                        const newMaster = [...masterRoster];
+                        newMaster[idx].number = e.target.value;
                         setMasterRoster(newMaster);
-                        setRoster(roster.filter(pr => String(pr.number) !== String(p.number)));
-                      }
-                    }}
-                    className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-950/50"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
+                      }}
+                      className="w-10 bg-slate-950 text-sky-400 font-mono font-black text-xs p-1 rounded text-center border border-slate-700"
+                    />
+                    <input
+                      type="text"
+                      value={p.name}
+                      onChange={(e) => {
+                        const newMaster = [...masterRoster];
+                        newMaster[idx].name = e.target.value;
+                        setMasterRoster(newMaster);
+                      }}
+                      className="flex-1 bg-slate-950 text-slate-100 font-bold text-xs p-1 rounded border border-slate-700 truncate"
+                    />
+
+                    {/* Match Squad Status & Quick Toggle */}
+                    {inMatch ? (
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex-none ${
+                        isOnCourt
+                          ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                          : 'bg-sky-950 text-sky-300 border border-sky-800'
+                      }`}>
+                        {isOnCourt ? 'COURT' : 'BENCH'}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (setRoster && Array.isArray(roster)) {
+                            setRoster([...roster, p].sort((a, b) => Number(a.number) - Number(b.number)));
+                          }
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/50 transition-colors flex-none"
+                        title="Add this player to current match bench"
+                      >
+                        + BENCH
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Delete player #${p.number} ${p.name} from club roster?`)) {
+                          const newMaster = masterRoster.filter((_, i) => i !== idx);
+                          setMasterRoster(newMaster);
+                          setRoster(roster.filter(pr => String(pr.number) !== String(p.number)));
+                        }
+                      }}
+                      className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-950/50 flex-none"
+                      title="Delete from club roster"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Quick Add Player Row */}
-            <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-              <form onSubmit={handleAddPlayerToMaster} className="flex items-center gap-2 flex-1">
+            <div className="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+              <form onSubmit={handleAddPlayerToMaster} className="flex items-center gap-2 flex-1 min-w-[280px]">
                 <input
                   type="text"
                   placeholder="#"
@@ -482,22 +529,22 @@ export default function LiveGame({
                 />
                 <input
                   type="text"
-                  placeholder="Player Full Name"
+                  placeholder="Player Full Name (New / Guest)"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   className="flex-1 bg-slate-950 border border-slate-700 text-slate-100 font-bold text-xs p-2 rounded"
                 />
                 <button
                   type="submit"
-                  className="bg-sky-500 text-slate-950 font-black text-xs px-3 py-2 rounded-lg hover:bg-sky-400 transition-all flex items-center gap-1"
+                  className="bg-sky-500 text-slate-950 font-black text-xs px-3 py-2 rounded-lg hover:bg-sky-400 transition-all flex items-center gap-1 flex-none"
                 >
-                  <Plus className="w-4 h-4" /> ADD PLAYER
+                  <Plus className="w-4 h-4" /> ADD TO MATCH
                 </button>
               </form>
 
               <button
                 onClick={() => setShowRosterModal(false)}
-                className="bg-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-700 transition-all border border-slate-700"
+                className="bg-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-700 transition-all border border-slate-700 flex-none"
               >
                 DONE
               </button>
@@ -944,6 +991,7 @@ export default function LiveGame({
                   events={events}
                   plusMinusMap={plusMinusMap}
                   isAdmin={isAdmin}
+                  onOpenRosterModal={() => setShowRosterModal(true)}
                 />
               </div>
 
@@ -1000,6 +1048,7 @@ export default function LiveGame({
                   events={events}
                   plusMinusMap={plusMinusMap}
                   isAdmin={isAdmin}
+                  onOpenRosterModal={() => setShowRosterModal(true)}
                 />
               </div>
 
@@ -1058,6 +1107,7 @@ export default function LiveGame({
                     events={events}
                     plusMinusMap={plusMinusMap}
                     isAdmin={isAdmin}
+                    onOpenRosterModal={() => setShowRosterModal(true)}
                   />
                 </div>
               )}

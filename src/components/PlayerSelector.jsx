@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Users, CheckCircle2, RefreshCw, X, GripVertical, ArrowLeftRight, UserCheck } from 'lucide-react';
+import { Users, CheckCircle2, RefreshCw, X, GripVertical, ArrowLeftRight, UserCheck, UserPlus } from 'lucide-react';
 
 export default function PlayerSelector({
   roster,
@@ -9,7 +9,8 @@ export default function PlayerSelector({
   onSwapSubstitution,
   events,
   plusMinusMap = {},
-  isAdmin = true
+  isAdmin = true,
+  onOpenRosterModal
 }) {
   const [subBenchPlayer, setSubBenchPlayer] = useState(null); // Bench player selected for tap substitution
   const [activeSubCourtPlayer, setActiveSubCourtPlayer] = useState(null); // On-Court player selecting bench sub menu
@@ -235,11 +236,21 @@ export default function PlayerSelector({
         {/* ======================================================== */}
         <div className="flex flex-col h-full min-h-0 bg-slate-950/40 rounded-lg p-2 border border-slate-850">
           <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800/80 flex-none">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="w-2 h-2 rounded-full bg-slate-500" />
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 BENCH ({benchPlayers.length})
               </span>
+              {isAdmin && onOpenRosterModal && (
+                <button
+                  onClick={onOpenRosterModal}
+                  className="text-[9px] font-bold text-sky-400 hover:text-white bg-slate-900 hover:bg-sky-600 border border-slate-700 hover:border-sky-500 px-1.5 py-0.5 rounded transition-all flex items-center gap-0.5 active:scale-95 ml-1"
+                  title="Add missing or late player to match bench"
+                >
+                  <UserPlus className="w-2.5 h-2.5" />
+                  <span>ADD</span>
+                </button>
+              )}
             </div>
             <span className="text-[10px] text-slate-500 font-medium">
               {isAdmin ? 'Drag / Tap' : 'Tap to view'}
