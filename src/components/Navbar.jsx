@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Trophy, LayoutDashboard, Archive as ArchiveIcon, 
+  LayoutDashboard, Archive as ArchiveIcon, 
   Wifi, WifiOff, Edit3, Settings, Shield, User, Lock, LogOut 
 } from 'lucide-react';
+import bbaLogo from '../assets/bba-logo.png';
 
 export default function Navbar({
   isOnline,
@@ -22,14 +23,14 @@ export default function Navbar({
     <header className="glass-card px-2 sm:px-3 py-1.5 mb-2 flex items-center justify-between border-slate-800 flex-none gap-2 flex-wrap">
       {/* Brand & Connection Status */}
       <div className="flex items-center gap-1.5 sm:gap-2.5">
-        <div className="w-6 h-6 rounded bg-sky-500/10 border border-sky-500/30 flex items-center justify-center flex-none">
-          <Trophy className="w-3.5 h-3.5 text-sky-400" />
+        <div className="w-7 h-7 rounded overflow-hidden border border-amber-500/40 bg-[#032c32] flex items-center justify-center flex-none shadow-sm">
+          <img src={bbaLogo} alt="BBA Logo" className="w-full h-full object-contain" />
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="font-bold text-xs tracking-wider text-slate-100 uppercase hidden sm:inline">
+          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase hidden sm:inline">
             BBA COURTSIDE ANALYTICS
           </span>
-          <span className="font-bold text-xs tracking-wider text-slate-100 uppercase sm:hidden">
+          <span className="font-extrabold text-xs tracking-wider text-slate-100 uppercase sm:hidden">
             BBA
           </span>
           {isOnline ? (

@@ -87,13 +87,13 @@ export default function ActionClusters({
         </div>
       </div>
 
-      {/* CLUSTER 4: REBOUNDS & PLAYMAKING */}
+      {/* CLUSTER 4: REBOUNDS */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
           <Shield className="w-3 h-3 text-amber-400" />
-          4. REBOUNDS & PLAYMAKING
+          4. REBOUNDS
         </div>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordAction('Off Rebound', 'Rebound')}
             className="action-btn-dense btn-oreb-bg"
@@ -105,12 +105,6 @@ export default function ActionClusters({
             className="action-btn-dense btn-dreb-bg"
           >
             DEF REB
-          </button>
-          <button
-            onClick={() => onRecordAction('Assist', 'Passing')}
-            className="action-btn-dense btn-ast-bg"
-          >
-            ASSIST (AST)
           </button>
         </div>
       </div>

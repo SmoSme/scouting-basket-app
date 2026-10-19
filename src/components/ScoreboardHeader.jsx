@@ -1,5 +1,6 @@
 import React from 'react';
-import { Clock, RotateCcw, UserCheck } from 'lucide-react';
+import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus } from 'lucide-react';
+import { calculateTeamScore, calculateOpponentScore } from '../utils/basketballAnalytics';
 
 export default function ScoreboardHeader({
   selectedPlayer,
@@ -7,25 +8,23 @@ export default function ScoreboardHeader({
   currentQuarter,
   setCurrentQuarter,
   onUndo,
+  onRecordOpponentScore,
+  plusMinusMap = {},
   isAdmin = true
 }) {
   const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
 
-  const teamPts = events.reduce((acc, ev) => {
-    const az = getAz(ev);
-    if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
-    if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
-    if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
-    return acc;
-  }, 0);
+  const teamPts = calculateTeamScore(events);
+  const oppPts = calculateOpponentScore(events);
+  const diff = teamPts - oppPts;
 
-  const teamStagger = events.filter(e => getAz(e) === 'Stagger').length;
-  const teamGhost = events.filter(e => getAz(e) === 'Ghost').length;
+  const teamStagger = (events || []).filter(e => getAz(e) === 'Stagger').length;
+  const teamGhost = (events || []).filter(e => getAz(e) === 'Ghost').length;
 
   const getPlayerStats = () => {
     if (!selectedPlayer) return null;
-    const pEvents = events.filter(e => getNum(e) === String(selectedPlayer.number));
+    const pEvents = (events || []).filter(e => getNum(e) === String(selectedPlayer.number));
     
     const fg2_m = pEvents.filter(e => { const az = getAz(e); return az === '2PT Made' || az === '2PT Fatto'; }).length;
     const fg2_miss = pEvents.filter(e => { const az = getAz(e); return az === '2PT Missed' || az === '2PT Sbagliato'; }).length;
@@ -54,13 +53,14 @@ export default function ScoreboardHeader({
     const pct2p = fg2_a > 0 ? ((fg2_m / fg2_a) * 100).toFixed(0) : '0';
     const pct3p = fg3_a > 0 ? ((fg3_m / fg3_a) * 100).toFixed(0) : '0';
     const pir = (pts + treb + ast + stl + blk + fd) - ((fg2_miss + fg3_miss) + ft_miss + tov + pf + blka);
+    const plusMinus = plusMinusMap[String(selectedPlayer.number)] || 0;
 
     return {
       pts,
       fg2: `${fg2_m}/${fg2_a} (${pct2p}%)`,
       fg3: `${fg3_m}/${fg3_a} (${pct3p}%)`,
       ft: `${ft_m}/${ft_a}`,
-      reb: treb, ast, stl, tov, pf, pir
+      reb: treb, ast, stl, tov, pf, pir, plusMinus
     };
   };
 
@@ -68,9 +68,9 @@ export default function ScoreboardHeader({
 
   return (
     <div className="glass-card p-2 px-3 mb-2 flex-none border-slate-800 flex flex-col gap-1.5 shadow-md">
-      {/* Top Row: Quarter Selector + Tactical Counters + Team Score Display + Undo */}
+      {/* Top Row: Quarter Selector + Tactical Counters + Dual Scoreboard + Quick Opp Scoring + Undo */}
       <div className="flex items-center justify-between gap-1.5 sm:gap-2 flex-wrap xs:flex-nowrap">
-        {/* Big Touch-Optimized Quarter Selector */}
+        {/* Touch-Optimized Quarter Selector */}
         <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-950 p-1 rounded-lg border border-slate-700 shadow-sm flex-none">
           <Clock className="w-3.5 h-3.5 text-sky-400 ml-1 mr-0.5 flex-none hidden sm:inline" />
           {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => {
@@ -79,7 +79,7 @@ export default function ScoreboardHeader({
               <button
                 key={q}
                 onClick={() => setCurrentQuarter(q)}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-black transition-all ${
+                className={`px-2 sm:px-2.5 py-1 rounded text-xs sm:text-sm font-black transition-all ${
                   isCurrent
                     ? 'bg-sky-500 text-slate-950 shadow-md scale-105'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900'
@@ -91,42 +91,99 @@ export default function ScoreboardHeader({
           })}
         </div>
 
-        {/* Right Group: Tactical Counters, Team Score, and Undo */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-none">
+        {/* Right Group: Tactical Counters + Dual Scoreboard + Quick Opp Buttons + Undo */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-none flex-wrap sm:flex-nowrap justify-end">
           {/* Tactical Counters */}
-          <div className="flex flex-col justify-center gap-0.5 sm:gap-1 bg-slate-950 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg border border-slate-800 flex-none">
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-violet-300" title="Team Stagger Screens">
+          <div className="hidden md:flex flex-col justify-center gap-0.5 bg-slate-950 px-2 py-0.5 rounded-lg border border-slate-800 flex-none">
+            <div className="flex items-center gap-1 text-[10px] font-bold text-violet-300" title="Team Stagger Screens">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-none"></span>
               <span>STAG:</span>
               <span className="font-mono font-black text-violet-100">{teamStagger}</span>
             </div>
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-cyan-300" title="Team Ghost Screens">
+            <div className="flex items-center gap-1 text-[10px] font-bold text-cyan-300" title="Team Ghost Screens">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-none"></span>
               <span>GHOST:</span>
               <span className="font-mono font-black text-cyan-100">{teamGhost}</span>
             </div>
           </div>
 
-          {/* Clear & Evident Team Score Display */}
-          <div className="flex items-center bg-slate-950 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg border-2 border-amber-500/40 shadow-md flex-none">
+          {/* DUAL SCOREBOARD: BBA [Score] - [Opp Score] OPPONENT + Live Differential */}
+          <div className="flex items-center bg-slate-950 px-2 sm:px-3 py-1 rounded-lg border border-slate-750 shadow-md flex-none gap-2 sm:gap-2.5">
+            {/* BBA Team */}
             <div className="flex flex-col items-center">
-              <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
-                TEAM SCORE
+              <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider leading-none mb-0.5">
+                BBA
               </span>
-              <div className="flex items-baseline gap-1">
-                <span className="font-mono text-2xl sm:text-3xl font-black text-amber-400 leading-none tabular-nums">
-                  {teamPts}
-                </span>
-                <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase">PTS</span>
-              </div>
+              <span className="font-mono text-xl sm:text-2xl font-black text-amber-400 leading-none tabular-nums">
+                {teamPts}
+              </span>
+            </div>
+
+            {/* Live Differential Pill */}
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-slate-600 font-bold text-xs">-</span>
+              <span className={`text-[9px] font-mono font-extrabold px-1.5 py-0.2 rounded border leading-none ${
+                diff > 0 
+                  ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' 
+                  : diff < 0 
+                  ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' 
+                  : 'text-slate-400 bg-slate-900 border-slate-700'
+              }`}>
+                {diff > 0 ? `+${diff}` : diff}
+              </span>
+            </div>
+
+            {/* OPPONENT Team */}
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none mb-0.5">
+                OPP
+              </span>
+              <span className="font-mono text-xl sm:text-2xl font-black text-slate-100 leading-none tabular-nums">
+                {oppPts}
+              </span>
             </div>
           </div>
+
+          {/* Quick Opponent Score Buttons (Admin only) */}
+          {isAdmin && onRecordOpponentScore && (
+            <div className="flex items-center gap-1 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 flex-none">
+              <button
+                onClick={() => onRecordOpponentScore(1)}
+                className="btn-opp-score"
+                title="Add 1 point for Opponent"
+              >
+                +1 OPP
+              </button>
+              <button
+                onClick={() => onRecordOpponentScore(2)}
+                className="btn-opp-score"
+                title="Add 2 points for Opponent"
+              >
+                +2 OPP
+              </button>
+              <button
+                onClick={() => onRecordOpponentScore(3)}
+                className="btn-opp-score"
+                title="Add 3 points for Opponent"
+              >
+                +3 OPP
+              </button>
+              <button
+                onClick={() => onRecordOpponentScore(-1)}
+                className="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 p-1 rounded h-[28px] w-[26px] flex items-center justify-center transition-colors"
+                title="Correct / Subtract 1 point from Opponent"
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+            </div>
+          )}
 
           {/* Undo Button (Admin only) */}
           {isAdmin && (
             <button
               onClick={onUndo}
-              className="action-btn-dense btn-undo-bg text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 min-h-[34px] sm:min-h-[38px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1 sm:gap-1.5 rounded-lg shadow-sm"
+              className="action-btn-dense btn-undo-bg text-xs px-2.5 sm:px-3 py-1 min-h-[30px] border-slate-700 hover:border-slate-500 font-bold flex items-center gap-1 sm:gap-1.5 rounded-lg shadow-sm"
+              title="Undo last recorded play event"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
               <span className="hidden xs:inline">UNDO</span>
@@ -140,11 +197,18 @@ export default function ScoreboardHeader({
         {selectedPlayer && pStats ? (
           <>
             <span className="stat-pill-gold-dense flex-none">
-              <UserCheck className="w-3.5 h-3.5 text-sky-400" />
+              <UserCheck className="w-3.5 h-3.5 text-amber-400" />
               #{selectedPlayer.number} {selectedPlayer.name} ({selectedPlayer.pos})
             </span>
             <span className="stat-pill-dense text-amber-300 border-amber-600/40 flex-none">
               {pStats.pts} PTS
+            </span>
+            <span className={`stat-pill-dense font-mono font-bold flex-none ${
+              pStats.plusMinus > 0 ? 'text-emerald-400 border-emerald-500/40' :
+              pStats.plusMinus < 0 ? 'text-rose-400 border-rose-500/40' :
+              'text-slate-400 border-slate-700'
+            }`}>
+              +/-: {pStats.plusMinus > 0 ? `+${pStats.plusMinus}` : pStats.plusMinus}
             </span>
             <span className="stat-pill-dense text-slate-300 flex-none">
               2P: {pStats.fg2}

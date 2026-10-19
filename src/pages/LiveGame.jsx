@@ -6,7 +6,10 @@ import ActionClusters from '../components/ActionClusters';
 import BoxScoreTable from '../components/BoxScoreTable';
 import PlayLogFeed from '../components/PlayLogFeed';
 import { COURT_ZONES } from '../data/roster';
-import { Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, ArrowLeftRight, Eye, Shield, Lock } from 'lucide-react';
+import { 
+  Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, 
+  ArrowLeftRight, Eye, Shield, Lock, Target, Check, Sparkles, Zap 
+} from 'lucide-react';
 
 export default function LiveGame({
   gameSession,
@@ -31,6 +34,9 @@ export default function LiveGame({
   showSessionModal,
   setShowSessionModal,
   dispatchAction,
+  dispatchMultipleActions,
+  dispatchOpponentScore,
+  plusMinusMap = {},
   handleUndo,
   handleResetGame,
   onDeleteEvent,
@@ -43,7 +49,13 @@ export default function LiveGame({
   const [showMobileQuickSub, setShowMobileQuickSub] = useState(false);
   const [quickSubOutNum, setQuickSubOutNum] = useState(null);
 
+  // Court-First Contextual Action Popover State
+  const [courtShotPopover, setCourtShotPopover] = useState(null); // { zoneKey, outcome: 'MADE' | 'MISSED', step: 'SHOOTER' | 'ASSIST' | 'REBOUND', shooter }
+  // Non-Shot Single-Click 5-Player Action Prompt State
+  const [pendingActionPrompt, setPendingActionPrompt] = useState(null); // { actionName, categoryName, zoneName }
+
   const onCourtSet = new Set(onCourtPlayerNums.map(n => String(n)));
+  const onCourtPlayers = roster.filter(p => onCourtSet.has(String(p.number)));
 
   // New Match Session Creation Form States
   const [homeTeam, setHomeTeam] = useState('BBA');
@@ -128,19 +140,105 @@ export default function LiveGame({
     setShowSessionModal(false);
   };
 
+  const handleZoneClick = (zoneKey) => {
+    setSelectedZoneKey(zoneKey);
+    if (isAdmin) {
+      setCourtShotPopover({
+        zoneKey,
+        outcome: 'MADE',
+        step: 'SHOOTER',
+        shooter: null
+      });
+    }
+  };
+
   const handleRecordShot = (isMade) => {
     if (!isAdmin) return;
-    const zoneInfo = COURT_ZONES[selectedZoneKey];
-    const shotType = zoneInfo.type; // "2PT" or "3PT"
-    const outcome = isMade ? 'Made' : 'Missed';
-    const actionName = `${shotType} ${outcome}`;
-
-    dispatchAction(actionName, 'Shot', zoneInfo.name);
+    const zoneInfo = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
+    if (selectedPlayer) {
+      const shotType = zoneInfo.type; // "2PT" or "3PT"
+      const outcome = isMade ? 'Made' : 'Missed';
+      const actionName = `${shotType} ${outcome}`;
+      dispatchAction(actionName, 'Shot', zoneInfo.name);
+    } else {
+      setCourtShotPopover({
+        zoneKey: selectedZoneKey,
+        outcome: isMade ? 'MADE' : 'MISSED',
+        step: 'SHOOTER',
+        shooter: null
+      });
+    }
   };
 
   const handleRecordAction = (actionName, categoryName) => {
     if (!isAdmin) return;
-    dispatchAction(actionName, categoryName, 'Generic');
+    const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+    if (isTeamEvent || selectedPlayer) {
+      dispatchAction(actionName, categoryName, 'Generic');
+    } else {
+      setPendingActionPrompt({ actionName, categoryName, zoneName: 'Generic' });
+    }
+  };
+
+  const handleShooterSelected = (player) => {
+    const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
+    if (courtShotPopover.outcome === 'MADE') {
+      setCourtShotPopover(prev => ({
+        ...prev,
+        step: 'ASSIST',
+        shooter: player
+      }));
+    } else {
+      const shotType = zoneInfo.type;
+      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, player);
+      setCourtShotPopover(prev => ({
+        ...prev,
+        step: 'REBOUND',
+        shooter: player
+      }));
+    }
+  };
+
+  const handleCompleteMadeShotWithAssist = (assistPlayer) => {
+    const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
+    const shotType = zoneInfo.type;
+    const shooter = courtShotPopover.shooter;
+
+    if (dispatchMultipleActions) {
+      dispatchMultipleActions([
+        {
+          actionName: `${shotType} Made`,
+          categoryName: 'Shot',
+          zoneName: zoneInfo.name,
+          targetPlayer: shooter
+        },
+        {
+          actionName: 'Assist',
+          categoryName: 'Passing',
+          zoneName: zoneInfo.name,
+          targetPlayer: assistPlayer
+        }
+      ]);
+    } else {
+      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter);
+      dispatchAction('Assist', 'Passing', zoneInfo.name, assistPlayer);
+    }
+
+    setCourtShotPopover(null);
+  };
+
+  const handleCompleteMadeShotUnassisted = () => {
+    const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
+    const shotType = zoneInfo.type;
+    const shooter = courtShotPopover.shooter;
+
+    dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter);
+    setCourtShotPopover(null);
+  };
+
+  const handleCompleteMissedShotRebound = (rebAction, rebPlayer) => {
+    dispatchAction(rebAction, 'Rebound', 'Generic', rebPlayer);
+    setCourtShotPopover(null);
   };
 
   return (
@@ -516,6 +614,231 @@ export default function LiveGame({
         </div>
       )}
 
+      {/* 4. COURT-FIRST CONTEXTUAL ACTION POPOVER / MODAL */}
+      {isAdmin && courtShotPopover && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="glass-card max-w-md w-full p-4 border-slate-700 shadow-2xl rounded-xl space-y-3 my-auto">
+            {/* Popover Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-sky-400" />
+                <div className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                  {COURT_ZONES[courtShotPopover.zoneKey]?.name.toUpperCase()} ({COURT_ZONES[courtShotPopover.zoneKey]?.type})
+                </div>
+              </div>
+              <button
+                onClick={() => setCourtShotPopover(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Step 1: Outcome Toggle & Select Shooter */}
+            {courtShotPopover.step === 'SHOOTER' && (
+              <div className="space-y-3">
+                {/* Made / Missed Toggle */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setCourtShotPopover(prev => ({ ...prev, outcome: 'MADE' }))}
+                    className={`py-2 px-3 rounded-md text-xs font-black flex items-center justify-center gap-1.5 transition-all ${
+                      courtShotPopover.outcome === 'MADE'
+                        ? 'bg-emerald-600 text-white shadow-md'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    ✓ SHOT MADE
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCourtShotPopover(prev => ({ ...prev, outcome: 'MISSED' }))}
+                    className={`py-2 px-3 rounded-md text-xs font-black flex items-center justify-center gap-1.5 transition-all ${
+                      courtShotPopover.outcome === 'MISSED'
+                        ? 'bg-rose-600 text-white shadow-md'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <X className="w-4 h-4 stroke-[3]" />
+                    ✕ SHOT MISSED
+                  </button>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" />
+                    SELECT SHOOTER (5 ON-COURT):
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {onCourtPlayers.map(p => (
+                      <button
+                        key={p.number}
+                        type="button"
+                        onClick={() => handleShooterSelected(p)}
+                        className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 flex items-center justify-between transition-all active:scale-98 group text-left"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-black text-xs text-sky-400 border border-slate-800 group-hover:border-sky-500/50">
+                            #{p.number}
+                          </span>
+                          <span className="text-xs font-black text-slate-100 group-hover:text-white">{p.name}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500 group-hover:text-slate-300">{p.pos}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Conditional Assist (If MADE) */}
+            {courtShotPopover.step === 'ASSIST' && (
+              <div className="space-y-3">
+                <div className="bg-emerald-950/40 border border-emerald-500/50 p-2.5 rounded-lg flex items-center justify-between">
+                  <span className="text-xs font-black text-emerald-300">
+                    🎯 #{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MADE
+                  </span>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    ASSISTED BY? (4 ON-COURT TEAMMATES):
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 mb-2">
+                    {onCourtPlayers
+                      .filter(p => String(p.number) !== String(courtShotPopover.shooter?.number))
+                      .map(teammate => (
+                        <button
+                          key={teammate.number}
+                          type="button"
+                          onClick={() => handleCompleteMadeShotWithAssist(teammate)}
+                          className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-teal-500/60 flex items-center gap-2 transition-all active:scale-98 group text-left"
+                        >
+                          <span className="w-6 h-6 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-teal-400 border border-slate-800">
+                            #{teammate.number}
+                          </span>
+                          <span className="text-xs font-bold text-slate-200 truncate">{teammate.name}</span>
+                        </button>
+                      ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCompleteMadeShotUnassisted()}
+                    className="w-full py-2.5 px-3 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  >
+                    <span>⚡ UNASSISTED / NO ASSIST</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Rebound Follow-up (If MISSED) */}
+            {courtShotPopover.step === 'REBOUND' && (
+              <div className="space-y-3">
+                <div className="bg-rose-950/40 border border-rose-500/50 p-2.5 rounded-lg flex items-center justify-between">
+                  <span className="text-xs font-black text-rose-300">
+                    ✕ #{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MISSED (Recorded)
+                  </span>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <Shield className="w-3.5 h-3.5 text-amber-400" />
+                    REBOUND SECURED BY?
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 mb-2">
+                    {onCourtPlayers.map(p => (
+                      <button
+                        key={p.number}
+                        type="button"
+                        onClick={() => handleCompleteMissedShotRebound('Off Rebound', p)}
+                        className="p-2 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/60 flex items-center gap-1.5 transition-all active:scale-98 text-left"
+                      >
+                        <span className="w-6 h-6 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-amber-400 border border-slate-800">
+                          #{p.number}
+                        </span>
+                        <div className="truncate">
+                          <div className="text-xs font-bold text-slate-200 truncate">{p.name}</div>
+                          <div className="text-[9px] text-amber-400 font-bold uppercase">OFF REB</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleCompleteMissedShotRebound('Def Rebound', null)}
+                      className="py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-sky-300 font-bold text-xs uppercase flex items-center justify-center gap-1 transition-all"
+                    >
+                      <span>🛡️ DEF REB (Team/Opp)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCourtShotPopover(null)}
+                      className="py-2 px-3 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs uppercase transition-all"
+                    >
+                      SKIP REBOUND
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 5. NON-SHOT SINGLE-CLICK 5-PLAYER ACTION PROMPT */}
+      {isAdmin && pendingActionPrompt && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="glass-card max-w-sm w-full p-4 border-slate-700 shadow-2xl rounded-xl space-y-3 my-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-sky-400" />
+                <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                  ASSIGN: {pendingActionPrompt.actionName.toUpperCase()}
+                </h3>
+              </div>
+              <button
+                onClick={() => setPendingActionPrompt(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              SELECT ON-COURT PLAYER:
+            </div>
+
+            <div className="grid grid-cols-1 gap-1.5">
+              {onCourtPlayers.map(p => (
+                <button
+                  key={p.number}
+                  type="button"
+                  onClick={() => {
+                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, pendingActionPrompt.zoneName, p);
+                    setPendingActionPrompt(null);
+                  }}
+                  className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 flex items-center justify-between transition-all active:scale-98 group text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-black text-xs text-sky-400 border border-slate-800">
+                      #{p.number}
+                    </span>
+                    <span className="text-xs font-black text-slate-100">{p.name}</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">{pendingActionPrompt.actionName}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Scoreboard Status Bar */}
       <ScoreboardHeader
         selectedPlayer={selectedPlayer}
@@ -523,6 +846,8 @@ export default function LiveGame({
         currentQuarter={currentQuarter}
         setCurrentQuarter={setCurrentQuarter}
         onUndo={handleUndo}
+        onRecordOpponentScore={dispatchOpponentScore}
+        plusMinusMap={plusMinusMap}
         isAdmin={isAdmin}
       />
 
@@ -617,6 +942,7 @@ export default function LiveGame({
                   onSelectPlayer={setSelectedPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
+                  plusMinusMap={plusMinusMap}
                   isAdmin={isAdmin}
                 />
               </div>
@@ -626,7 +952,7 @@ export default function LiveGame({
                 <CourtPitchMap
                   selectedPlayer={selectedPlayer}
                   selectedZoneKey={selectedZoneKey}
-                  onSelectZone={setSelectedZoneKey}
+                  onSelectZone={handleZoneClick}
                   events={events}
                 />
 
@@ -672,6 +998,7 @@ export default function LiveGame({
                   onSelectPlayer={setSelectedPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
+                  plusMinusMap={plusMinusMap}
                   isAdmin={isAdmin}
                 />
               </div>
@@ -681,7 +1008,7 @@ export default function LiveGame({
                 <CourtPitchMap
                   selectedPlayer={selectedPlayer}
                   selectedZoneKey={selectedZoneKey}
-                  onSelectZone={setSelectedZoneKey}
+                  onSelectZone={handleZoneClick}
                   events={events}
                 />
 
@@ -729,6 +1056,7 @@ export default function LiveGame({
                     }}
                     onSwapSubstitution={handleSwapSubstitution}
                     events={events}
+                    plusMinusMap={plusMinusMap}
                     isAdmin={isAdmin}
                   />
                 </div>
@@ -777,7 +1105,7 @@ export default function LiveGame({
                   <CourtPitchMap
                     selectedPlayer={selectedPlayer}
                     selectedZoneKey={selectedZoneKey}
-                    onSelectZone={setSelectedZoneKey}
+                    onSelectZone={handleZoneClick}
                     events={events}
                   />
 
@@ -818,7 +1146,7 @@ export default function LiveGame({
 
         {activeTab === 'BOXSCORE' && (
           <div className="h-full overflow-y-auto">
-            <BoxScoreTable roster={roster} events={events} />
+            <BoxScoreTable roster={roster} events={events} plusMinusMap={plusMinusMap} />
           </div>
         )}
       </div>

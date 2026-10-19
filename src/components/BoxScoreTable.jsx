@@ -1,8 +1,9 @@
 import React from 'react';
 import { Trophy, BarChart2, Sparkles, Layers, Ghost } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
+import { calculatePlusMinus } from '../utils/basketballAnalytics.js';
 
-export default function BoxScoreTable({ roster, events }) {
+export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   if (!events || events.length === 0) {
     return (
       <div className="glass-card p-8 text-center border-slate-700/60">
@@ -24,10 +25,12 @@ export default function BoxScoreTable({ roster, events }) {
   const getGiocatore = (e) => String(e?.Player || e?.player || e?.Giocatore || e?.giocatore || '');
   const getQtr = (e) => String(e?.Quarter || e?.quarter || e?.Quarto || e?.quarto || 'Q1');
 
-  // Filter out '-' and 'TEAM' so team actions don't create dummy player rows
+  // Filter out non-player numbers so team/opponent/sub actions don't create dummy rows
   const logNums = Array.from(new Set(events.map(e => getNum(e))))
-    .filter(n => Boolean(n) && n !== '-' && n !== 'TEAM');
+    .filter(n => Boolean(n) && n !== '-' && n !== 'TEAM' && n !== 'SUB' && n !== 'OPP');
   const allNums = Array.from(new Set([...Object.keys(rosterMap), ...logNums]));
+
+  const activePmMap = plusMinusMap || calculatePlusMinus(events, [], roster);
 
   const rows = allNums.map(num => {
     const pEvents = events.filter(e => getNum(e) === num);
@@ -67,6 +70,7 @@ export default function BoxScoreTable({ roster, events }) {
     const pctFt = ft_a > 0 ? ((ft_m / ft_a) * 100).toFixed(0) : '0';
 
     const pir = (pts + treb + ast + stl + blk + fd) - ((fg2_miss + fg3_miss) + ft_miss + tov + pf + blka);
+    const plusMinus = activePmMap[String(num)] || 0;
 
     return {
       number: num,
@@ -76,7 +80,7 @@ export default function BoxScoreTable({ roster, events }) {
       fg2: `${fg2_m}/${fg2_a}`, pct2p: `${pct2p}%`,
       fg3: `${fg3_m}/${fg3_a}`, pct3p: `${pct3p}%`,
       ft: `${ft_m}/${ft_a}`, pctFt: `${pctFt}%`,
-      reb: treb, ast, stl, tov, pf, fd, blk, pir,
+      reb: treb, ast, stl, tov, pf, fd, blk, pir, plusMinus,
       actionsCount: pEvents.length
     };
   }).sort((a, b) => b.actionsCount - a.actionsCount || b.pts - a.pts);
@@ -143,6 +147,7 @@ export default function BoxScoreTable({ roster, events }) {
               <th className="py-2.5 px-2 text-rose-400">TOV</th>
               <th className="py-2.5 px-2">PF</th>
               <th className="py-2.5 px-2 text-emerald-400 font-bold">PIR</th>
+              <th className="py-2.5 px-2 text-cyan-400 font-bold">+/-</th>
             </tr>
           </thead>
           <tbody>
@@ -163,6 +168,13 @@ export default function BoxScoreTable({ roster, events }) {
                 <td className="py-2.5 px-2 text-rose-400 font-bold">{r.tov}</td>
                 <td className="py-2.5 px-2 text-slate-200">{r.pf}</td>
                 <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
+                <td className={`py-2.5 px-2 font-mono font-bold ${
+                  r.plusMinus > 0 ? 'text-emerald-400' :
+                  r.plusMinus < 0 ? 'text-rose-400' :
+                  'text-slate-400'
+                }`}>
+                  {r.plusMinus > 0 ? `+${r.plusMinus}` : r.plusMinus}
+                </td>
               </tr>
             ))}
           </tbody>

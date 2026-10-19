@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Official BBA Club Brand Identity */
+  --team-primary: #032c32;
+  --team-primary-light: #064E5B;
+  --team-accent: #F59E0B;
+  --team-accent-gold: #FBBF24;
+  
+  /* SaaS / Broadcast Surfaces & Borders */
+  --surface-main: #0B0F17;
+  --surface-card: #111827;
+  --surface-btn: #161F30;
+  --border-card: #1F2937;
+  --border-btn: #26334D;
+  --surface-btn-hover: #1E293B;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -15,7 +31,7 @@ html, body, #root {
   height: 100dvh;
   width: 100vw;
   overflow: hidden !important;
-  background-color: #090D16;
+  background-color: var(--surface-main);
   color: #F1F5F9;
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   touch-action: manipulation;
@@ -29,30 +45,30 @@ html, body, #root {
   height: 3px;
 }
 ::-webkit-scrollbar-track {
-  background: #090D16;
+  background: #0B0F17;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #1F2937;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #374151;
 }
 
 /* Professional Analytics Cards */
 .glass-card {
-  background-color: #0F172A;
-  border: 1px solid #1E293B;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
 
 /* Action Control Panels */
 .cluster-panel-dense {
-  background-color: #0F172A;
-  border: 1px solid #1E293B;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 5px 7px;
 }
 .cluster-header-title {
   color: #94A3B8;
@@ -60,21 +76,23 @@ html, body, #root {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-/* Professional Action Buttons — High-Visibility Intuitive Touch Targets */
+/* Professional Action Buttons — Sleek Dark-Surface Buttons with 3px Semantic Left Borders */
 .action-btn-dense {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
-  font-size: 0.78rem;
-  font-weight: 800;
+  height: 34px;
+  min-height: 34px;
+  font-size: 0.74rem;
+  font-weight: 700;
   border-radius: 6px;
-  border: 1px solid transparent;
+  background-color: var(--surface-btn);
+  border: 1px solid var(--border-btn);
+  color: #E2E8F0;
   cursor: pointer;
   transition: all 0.12s ease;
   text-transform: uppercase;
@@ -82,150 +100,135 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 5px;
+  padding: 2px 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+.action-btn-dense:hover {
+  background-color: var(--surface-btn-hover);
+  border-color: #374151;
+  color: #FFFFFF;
 }
 .action-btn-dense:active {
   transform: scale(0.97);
 }
 
-/* Made Shots (Field Goals) - Vibrant FIBA Emerald Green */
+/* Semantic Crisp 3px Accent Left Borders */
+
+/* Made Shots (Field Goals) - Emerald Accent */
 .btn-made-bg {
-  background-color: #059669;
-  border-color: #10B981;
-  color: #FFFFFF;
+  border-left: 3px solid #10B981 !important;
+  color: #ECFDF5;
 }
 .btn-made-bg:hover {
-  background-color: #10B981;
-  border-color: #34D399;
+  background-color: #064E3B;
+  border-color: #10B981;
 }
 
-/* Free Throw Made - Vibrant Emerald Green */
+/* Free Throw Made - Emerald Accent */
 .btn-ft-made-bg {
-  background-color: #047857;
-  border-color: #10B981;
-  color: #FFFFFF;
+  border-left: 3px solid #10B981 !important;
+  color: #ECFDF5;
 }
 .btn-ft-made-bg:hover {
-  background-color: #059669;
-  border-color: #34D399;
+  background-color: #064E3B;
+  border-color: #10B981;
 }
 
-/* Missed Shots (Field Goals) - Vibrant Warning Crimson Red */
+/* Missed Shots (Field Goals) - Crimson Accent */
 .btn-miss-bg {
-  background-color: #DC2626;
-  border-color: #EF4444;
-  color: #FFFFFF;
+  border-left: 3px solid #F43F5E !important;
+  color: #FFF1F2;
 }
 .btn-miss-bg:hover {
-  background-color: #EF4444;
-  border-color: #F87171;
+  background-color: #4C0519;
+  border-color: #F43F5E;
 }
 
-/* Free Throw Missed - Vibrant Crimson Red */
+/* Free Throw Missed - Crimson Accent */
 .btn-ft-miss-bg {
-  background-color: #B91C1C;
-  border-color: #DC2626;
-  color: #FFFFFF;
+  border-left: 3px solid #F43F5E !important;
+  color: #FFF1F2;
 }
 .btn-ft-miss-bg:hover {
-  background-color: #DC2626;
-  border-color: #EF4444;
+  background-color: #4C0519;
+  border-color: #F43F5E;
 }
 
-/* Steals (Defensive takeaway) - Cobalt Blue */
+/* Steals (Defensive takeaway) - Blue Accent */
 .btn-stl-bg {
-  background-color: #0284C7;
-  border-color: #38BDF8;
-  color: #FFFFFF;
+  border-left: 3px solid #3B82F6 !important;
+  color: #EFF6FF;
 }
 .btn-stl-bg:hover {
-  background-color: #0369A1;
-  border-color: #7DD3FC;
+  background-color: #1E3A8A;
+  border-color: #3B82F6;
 }
 
-/* Turnovers (Lost possession) - High-Visibility Amber Orange */
+/* Turnovers (Lost possession) - Amber Accent */
 .btn-tov-bg {
-  background-color: #D97706;
-  border-color: #F59E0B;
-  color: #FFFFFF;
+  border-left: 3px solid #F59E0B !important;
+  color: #FFFBEB;
 }
 .btn-tov-bg:hover {
-  background-color: #B45309;
-  border-color: #FBBF24;
+  background-color: #451A03;
+  border-color: #F59E0B;
 }
 
-/* Blocks (Rejection) - Royal Indigo */
+/* Blocks (Rejection) - Indigo Accent */
 .btn-blk-bg {
-  background-color: #4F46E5;
-  border-color: #6366F1;
-  color: #FFFFFF;
+  border-left: 3px solid #6366F1 !important;
+  color: #EEF2FF;
 }
 .btn-blk-bg:hover {
-  background-color: #4338CA;
-  border-color: #818CF8;
+  background-color: #312E81;
+  border-color: #6366F1;
 }
 
-/* Offensive Rebound (Second chance attack) - Warm Golden Amber */
+/* Offensive Rebound - Warm Amber/Gold Accent */
 .btn-oreb-bg {
-  background-color: #D97706;
-  border-color: #FBBF24;
-  color: #FFFFFF;
+  border-left: 3px solid #F59E0B !important;
+  color: #FEF3C7;
 }
 .btn-oreb-bg:hover {
-  background-color: #F59E0B;
-  border-color: #FDE68A;
+  background-color: #451A03;
+  border-color: #F59E0B;
 }
 
-/* Defensive Rebound (Securing the glass) - Solid Blue */
+/* Defensive Rebound - Sky Accent */
 .btn-dreb-bg {
-  background-color: #1D4ED8;
-  border-color: #3B82F6;
-  color: #FFFFFF;
+  border-left: 3px solid #0EA5E9 !important;
+  color: #F0F9FF;
 }
 .btn-dreb-bg:hover {
-  background-color: #2563EB;
-  border-color: #60A5FA;
+  background-color: #0C4A6E;
+  border-color: #0EA5E9;
 }
 
-/* Assists (Key pass) - Playmaking Teal */
-.btn-ast-bg {
-  background-color: #0D9488;
-  border-color: #14B8A6;
-  color: #FFFFFF;
-}
-.btn-ast-bg:hover {
-  background-color: #0F766E;
-  border-color: #2DD4BF;
-}
-
-/* Personal Foul - Warning Ruby Red */
+/* Personal Foul - Rose Accent */
 .btn-foul-bg {
-  background-color: #BE123C;
-  border-color: #E11D48;
-  color: #FFFFFF;
+  border-left: 3px solid #E11D48 !important;
+  color: #FFF1F2;
 }
 .btn-foul-bg:hover {
-  background-color: #E11D48;
-  border-color: #FB7185;
+  background-color: #4C0519;
+  border-color: #E11D48;
 }
 
-/* Foul Drawn (Positive contact created) - Advantage Violet */
+/* Foul Drawn (Positive contact created) - Violet Accent */
 .btn-fd-bg {
-  background-color: #7C3AED;
-  border-color: #8B5CF6;
-  color: #FFFFFF;
+  border-left: 3px solid #8B5CF6 !important;
+  color: #F5F3FF;
 }
 .btn-fd-bg:hover {
-  background-color: #8B5CF6;
-  border-color: #A78BFA;
+  background-color: #2E1065;
+  border-color: #8B5CF6;
 }
 
 /* Undo Button - Clean Neutral Slate */
 .btn-undo-bg {
-  background-color: #1E293B;
-  border-color: #475569;
+  border-left: 3px solid #64748B !important;
   color: #F1F5F9;
 }
 .btn-undo-bg:hover {
@@ -234,32 +237,54 @@ html, body, #root {
   color: #FFFFFF;
 }
 
-/* Tactical Techniques: Stagger - Purple */
+/* Tactical Techniques: Stagger - Violet Accent */
 .btn-tactics-stagger {
-  background-color: #6D28D9;
-  border-color: #8B5CF6;
-  color: #FFFFFF;
+  border-left: 3px solid #8B5CF6 !important;
+  color: #F5F3FF;
 }
 .btn-tactics-stagger:hover {
-  background-color: #7C3AED;
-  border-color: #C4B5FD;
+  background-color: #2E1065;
+  border-color: #8B5CF6;
 }
 
-/* Tactical Techniques: Ghost - Cyan */
+/* Tactical Techniques: Ghost - Cyan Accent */
 .btn-tactics-ghost {
-  background-color: #0891B2;
-  border-color: #06B6D4;
-  color: #FFFFFF;
+  border-left: 3px solid #06B6D4 !important;
+  color: #ECFEFF;
 }
 .btn-tactics-ghost:hover {
-  background-color: #06B6D4;
-  border-color: #67E8F9;
+  background-color: #164E63;
+  border-color: #06B6D4;
+}
+
+/* Opponent Scoring Action Buttons */
+.btn-opp-score {
+  background-color: #161F30;
+  border: 1px solid #374151;
+  border-left: 3px solid #F43F5E !important;
+  color: #FDA4AF;
+  font-weight: 800;
+  padding: 2px 7px;
+  height: 28px;
+  font-size: 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+.btn-opp-score:hover {
+  background-color: #4C0519;
+  border-color: #F43F5E;
+  color: #FFFFFF;
+}
+.btn-opp-score:active {
+  transform: scale(0.95);
 }
 
 /* Dense Live Stat Metric Pills */
 .stat-pill-dense {
-  background-color: #111827;
-  border: 1px solid #334155;
+  background-color: #0B0F17;
+  border: 1px solid #1F2937;
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 0.72rem;
@@ -271,9 +296,9 @@ html, body, #root {
 }
 
 .stat-pill-gold-dense {
-  background-color: #111827;
-  color: #38BDF8;
-  border: 1px solid #0284C7;
+  background-color: #0B0F17;
+  color: var(--team-accent-gold);
+  border: 1px solid #78350F;
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 0.75rem;

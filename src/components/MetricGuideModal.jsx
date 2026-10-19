@@ -4,8 +4,75 @@ import {
 } from 'lucide-react';
 
 export const METRIC_GUIDES = {
+  pillars: {
+    key: 'pillars',
+    shortLabel: '4 Pillars',
+    title: 'Game Control & Efficiency Pillars',
+    formula: '1. Shooting (eFG%) + 2. Paint vs Perimeter + 3. OREB Share + 4. Ball Security (TOV/AST/STL)',
+    description: 'The 4 practical pillars of game control designed specifically for senior regional basketball: 1) Shooting Efficiency (eFG%), 2) Shot Profile (paint attack volume and free throw conversion), 3) OREB Share (second-chance creation), and 4) Ball Care (raw turnovers, assist ratio, and steal margin). Controlling 3 or more pillars consistently dictates match victories.',
+    benchmarks: [
+      { level: 'Pillar 1: Shooting eFG%', range: '> 48% (Target > 52%)', color: 'emerald', desc: 'Shot quality and perimeter conversion' },
+      { level: 'Pillar 2: Paint Attacks', range: '> 35% Paint / > 65% FT', color: 'emerald', desc: 'Rim pressure and drawing fouls' },
+      { level: 'Pillar 3: OREB Share', range: '> 30% of Total REB', color: 'emerald', desc: 'Second-chance scoring opportunities' },
+      { level: 'Pillar 4: Ball Security', range: '< 14 TOV / STL-TOV ≥ 0', color: 'emerald', desc: 'Protecting possessions & turnover margin' }
+    ],
+    warning: 'All 4 pillars are computed directly from logged field goals, court coordinates, free throws, rebounds, turnovers, and steals.'
+  },
+  efg: {
+    key: 'efg',
+    shortLabel: 'eFG%',
+    title: 'eFG% — Effective Field Goal % (Pillar 1: Shooting)',
+    formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
+    description: 'Field goal percentage adjusted for the added value of 3-point shots (each 3-pointer is weighted as 1.5 two-pointers). Reflects true scoring output per field goal attempt without being distorted by foul tracking limitations.',
+    benchmarks: [
+      { level: 'Elite Regional', range: '> 52%', color: 'emerald', desc: 'High shot quality and rhythm perimeter conversion' },
+      { level: 'Solid / Average', range: '47% – 51%', color: 'amber', desc: 'Competitive efficiency for regional senior basketball' },
+      { level: 'Low / Inefficient', range: '< 46%', color: 'rose', desc: 'Subpar perimeter conversion or forced, contested attempts' }
+    ],
+    warning: '100% RELIABLE: Calculated strictly from field goals made (2P/3P) and field goals attempted. Completely independent of fouls and assists.'
+  },
+  shotProfile: {
+    key: 'shotProfile',
+    shortLabel: 'Shot Profile',
+    title: 'Paint vs Perimeter Balance (Pillar 2: Shot Profile & FT)',
+    formula: 'Paint FGA% vs Mid-Range FGA% vs 3PT FGA% + FT (FTM/FTA, FT%)',
+    description: 'Distribution of team field goal attempts between high-efficiency rim attacks (Paint/Key), mid-range jumpers, and perimeter 3-pointers, combined with free throw conversion. Identifies whether the team successfully attacks the basket and converts foul line opportunities or settles for contested mid-range shots.',
+    benchmarks: [
+      { level: 'High Rim Pressure', range: '> 40% Paint / < 20% Mid / > 70% FT', color: 'emerald', desc: 'Aggressive paint penetration, drawing contact, and capitalizing at the stripe' },
+      { level: 'Balanced Spread', range: '30% – 39% Paint / 20% – 28% Mid / 60% – 70% FT', color: 'amber', desc: 'Healthy balance between inside finishes, mid-range pull-ups, and 3PT spacing' },
+      { level: 'Mid-Range Heavy', range: '> 30% Mid / < 30% Paint / < 60% FT', color: 'rose', desc: 'Settling for low-value contested 2s with low free throw generation' }
+    ],
+    warning: 'Calculated directly from clicked court zones and logged Free Throw events.'
+  },
+  oreb: {
+    key: 'oreb',
+    shortLabel: 'OREB%',
+    title: 'OREB Share — Offensive Rebound Share (Pillar 3: Second Chances)',
+    formula: '(Offensive Rebounds / Total Team Rebounds) × 100',
+    description: 'Proportion of team rebounds collected on the offensive backboard. Measures physical hustle, positioning, and the ability to manufacture second-chance points and extra scoring possessions from missed shots.',
+    benchmarks: [
+      { level: 'Board Dominance', range: '> 30.0%', color: 'emerald', desc: 'Consistently generates 12+ second-chance scoring opportunities' },
+      { level: 'Solid Glass', range: '22.0% – 29.9%', color: 'amber', desc: 'Balanced offensive rebounding while maintaining transition defense stability' },
+      { level: 'Low OREB Share', range: '< 22.0%', color: 'rose', desc: 'One-and-done possessions; emphasizes quick defensive retreat' }
+    ],
+    warning: 'Calculated from logged team OREB and DREB events. Opponent defensive rebounds are not tracked.'
+  },
+  ballControl: {
+    key: 'ballControl',
+    shortLabel: 'Ball Care',
+    title: 'Ball Security & Playmaking (Pillar 4: TOV vs AST & STL Margin)',
+    formula: 'Total Turnovers (TOV), AST/TOV Ratio, Steal-to-Turnover Margin (STL - TOV)',
+    description: 'Direct, practical evaluation of possession protection and playmaking control. Rather than abstract possession formulas, this focuses on concrete bench targets: keeping turnovers under 14 per game, rewarding high AST/TOV ratios, and winning the steal-to-turnover margin.',
+    benchmarks: [
+      { level: 'Elite Ball Care', range: '< 14 TOV / AST:TOV > 1.5 / STL-TOV Margin ≥ 0', color: 'emerald', desc: 'Careful passing, disciplined spacing, and positive net turnover creation' },
+      { level: 'Manageable', range: '14 – 18 TOV / AST:TOV 1.0 – 1.4 / STL-TOV Margin -1 to -4', color: 'amber', desc: 'Standard competitive turnover volume in regional senior leagues' },
+      { level: 'High Turnover Risk', range: '> 18 TOV / AST:TOV < 1.0 / STL-TOV Margin ≤ -5', color: 'rose', desc: 'Losing too many possessions to unforced errors and poor transition security' }
+    ],
+    warning: 'Turnovers and Steals are actively logged. If assists are unrecorded during a game, focus on raw Turnovers (< 14 target) and Steal-to-Turnover margin.'
+  },
   ortg: {
     key: 'ortg',
+    shortLabel: 'ORTG',
     title: 'ORTG — Offensive Rating (Offensive Efficiency)',
     formula: '(Total Points / Estimated Possessions) × 100',
     description: 'Points scored per 100 offensive possessions. It normalizes scoring output independently of game tempo (Pace), enabling objective comparison of offensive efficiency across different game speeds.',
@@ -18,6 +85,7 @@ export const METRIC_GUIDES = {
   },
   possessions: {
     key: 'possessions',
+    shortLabel: 'Pace',
     title: 'Est. Possessions — Pace (Game Tempo)',
     formula: 'FGA + 0.44 × FTA - OREB + TOV',
     description: 'Total estimated offensive possessions in the match. Each possession concludes with a field goal attempt (FGA), free throw trips (0.44 × FTA), or a turnover (TOV). Offensive rebounds (OREB) extend an ongoing possession without consuming a new one.',
@@ -28,69 +96,9 @@ export const METRIC_GUIDES = {
     ],
     warning: 'Free Throws (FT Made/Missed) and Offensive Rebounds are accurately factored into the calculation.'
   },
-  efg: {
-    key: 'efg',
-    title: 'eFG% — Effective Field Goal % (Factor 1: Shooting)',
-    formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
-    description: 'Field goal percentage adjusted for the added value of 3-point shots (each 3-pointer is weighted as 1.5 two-pointers). It reflects true scoring production per field goal attempt.',
-    benchmarks: [
-      { level: 'Elite', range: '> 54%', color: 'emerald', desc: 'High shot quality and high-percentage perimeter shooting' },
-      { level: 'Solid / Average', range: '48% – 53%', color: 'amber', desc: 'Consistent, balanced shooting efficiency' },
-      { level: 'Low / Inefficient', range: '< 46%', color: 'rose', desc: 'Subpar perimeter conversion or forced, contested attempts' }
-    ],
-    warning: '100% RELIABLE METRIC: Calculated strictly from field goals made (2P/3P) and field goals attempted. Completely independent of fouls and assists.'
-  },
-  tovpct: {
-    key: 'tovpct',
-    title: 'TOV% — Turnover Rate (Factor 2: Ball Care)',
-    formula: '(Total Turnovers / Estimated Possessions) × 100',
-    description: 'Percentage of offensive possessions that end in a turnover without getting a shot up. Normalizes ball security relative to game tempo, distinguishing fast-paced mistakes from half-court ball control issues.',
-    benchmarks: [
-      { level: 'Elite Ball Security', range: '< 13.0%', color: 'emerald', desc: 'Strong ball protection, crisp passing, minimal live-ball turnovers' },
-      { level: 'Average Ball Care', range: '14.0% – 18.0%', color: 'amber', desc: 'Standard competitive turnover frequency' },
-      { level: 'High Risk / Sloppy', range: '> 19.0%', color: 'rose', desc: 'Losing nearly 1 out of every 5 possessions without attempting a shot' }
-    ],
-    warning: 'Calculated from logged team turnovers divided by estimated team possessions.'
-  },
-  oreb: {
-    key: 'oreb',
-    title: 'OREB Share — Offensive Rebound Rate (Factor 3: Second Chances)',
-    formula: '(Offensive Rebounds / Total Team Rebounds) × 100',
-    description: 'Proportion of team rebounds collected on the offensive backboard. Measures the team\'s ability to create second-chance scoring opportunities and extra possessions from missed shots.',
-    benchmarks: [
-      { level: 'Dominant Glass Crashing', range: '> 32.0%', color: 'emerald', desc: 'High second-chance creation and putback opportunities' },
-      { level: 'Solid Second Chances', range: '22.0% – 31.9%', color: 'amber', desc: 'Balanced offensive rebounding with transition defense stability' },
-      { level: 'Low Rebounding Share', range: '< 21.0%', color: 'rose', desc: 'One-and-done possessions; emphasizes defensive transition' }
-    ],
-    warning: 'Calculated from logged team OREB and DREB events. Opponent defensive rebounds are not tracked.'
-  },
-  ftr: {
-    key: 'ftr',
-    title: 'FTR — Free Throw Rate (Factor 4: Free Throws & Rim Pressure)',
-    formula: 'FTA / FGA (Free Throw Attempts / Field Goal Attempts)',
-    description: 'Ratio of free throw attempts generated relative to field goal attempts taken. Measures rim pressure, aggressive penetration, and drawing fouls. Note: This measures free-throw trip volume per shot attempt, not free-throw shooting accuracy (FT%).',
-    benchmarks: [
-      { level: 'High Rim Pressure', range: '> 0.28 FTA/FGA', color: 'emerald', desc: 'Consistent paint penetration and frequent trips to the free-throw line' },
-      { level: 'Moderate / Balanced', range: '0.18 – 0.27 FTA/FGA', color: 'amber', desc: 'Balanced mix of perimeter attempts and inside penetration' },
-      { level: 'Low Rim Pressure', range: '< 0.17 FTA/FGA', color: 'rose', desc: 'Jump-shot reliant offense generating few free-throw opportunities' }
-    ],
-    warning: 'Free Throw Rate is calculated from recorded FT attempts and Field Goal attempts. Personal fouls are not tracked.'
-  },
-  fourfactors: {
-    key: 'fourfactors',
-    title: 'Four Factors Model',
-    formula: 'Shooting (40%) + Turnovers (25%) + Rebounding (20%) + Free Throws (15%)',
-    description: 'The four statistical categories that determine basketball outcomes: 1) Shooting Efficiency (eFG%), 2) Possession Care (TOV%), 3) Offensive Rebounding (OREB%), and 4) Free Throw Generation (FTR). Winning at least 3 of these 4 areas strongly correlates with match victories.',
-    benchmarks: [
-      { level: 'Factor 1: Shooting (eFG%)', range: '> 52%', color: 'emerald', desc: 'Shot selection and finishing efficiency (40% weight)' },
-      { level: 'Factor 2: Turnovers (TOV%)', range: '< 14%', color: 'emerald', desc: 'Ball security and turnover prevention (25% weight)' },
-      { level: 'Factor 3: Rebounding (OREB%)', range: '> 30%', color: 'emerald', desc: 'Second-chance scoring opportunities (20% weight)' },
-      { level: 'Factor 4: Free Throws (FTR)', range: '> 0.25', color: 'emerald', desc: 'Rim pressure and foul generation (15% weight)' }
-    ],
-    warning: 'All four factors are computed directly from logged field goals, free throws, rebounds, and turnovers.'
-  },
   ts: {
     key: 'ts',
+    shortLabel: 'TS%',
     title: 'TS% — True Shooting % (Overall Scoring Efficiency)',
     formula: 'Total Points / [2 × (FGA + 0.44 × FTA)] × 100',
     description: 'Comprehensive scoring efficiency metric measuring points produced per scoring attempt, combining 2-point field goals, 3-point field goals, and free throws into a single unified percentage.',
@@ -103,18 +111,20 @@ export const METRIC_GUIDES = {
   },
   asttov: {
     key: 'asttov',
+    shortLabel: 'AST/TOV',
     title: 'AST / TOV Ratio (Assist-to-Turnover Ratio)',
     formula: 'Total Assists / Total Turnovers',
     description: 'Ratio of assisted baskets produced relative to lost possessions. Evaluates team passing discipline, decision-making, and play creation.',
     benchmarks: [
-      { level: 'Elite', range: '> 2.0', color: 'emerald', desc: 'Ball movement, unselfish play, and strong ball security' },
-      { level: 'Standard', range: '1.2 – 1.9', color: 'amber', desc: 'Balanced playmaking and mistake control' },
+      { level: 'Elite', range: '> 1.8', color: 'emerald', desc: 'Ball movement, unselfish play, and strong ball security' },
+      { level: 'Standard', range: '1.1 – 1.7', color: 'amber', desc: 'Balanced playmaking and mistake control' },
       { level: 'Critical / Alarm', range: '< 1.0', color: 'rose', desc: 'More turnovers than assists; indicates stagnant ball movement' }
     ],
     warning: 'DATA TRACKING NOTICE: If assists are not logged by the statistician during the game, this ratio will display as 0. Turnovers (TOV) are logged and accurate.'
   },
   pir: {
     key: 'pir',
+    shortLabel: 'PIR',
     title: 'FIBA PIR (Performance Index Rating)',
     formula: '(PTS + REB + AST + STL + BLK + FD) - (FG_Miss + FT_Miss + TOV + PF + BLKA)',
     description: 'The official all-in-one performance rating used by FIBA and EuroLeague. Awards +1 for positive contributions (points, rebounds, assists, steals, blocks) and subtracts -1 for errors (missed field goals, missed free throws, turnovers).',
@@ -123,10 +133,11 @@ export const METRIC_GUIDES = {
       { level: 'Competitive / Solid', range: '65 – 89 PIR', color: 'amber', desc: 'Solid team production across primary statistical categories' },
       { level: 'Subpar Performance', range: '< 60 PIR', color: 'rose', desc: 'High volume of missed shots or unforced turnovers' }
     ],
-    warning: 'DATA TRACKING NOTICE: Personal Fouls committed (PF) and drawn (FD) are not currently tracked, and assists may be untracked. PIR accurately reflects points, rebounds, misses, and turnovers, but will be slightly lower than standard box scores due to missing foul data.'
+    warning: 'DATA TRACKING NOTICE: Personal Fouls committed (PF) and drawn (FD) are not currently tracked, and assists may be untracked. PIR accurately reflects points, rebounds, misses, and turnovers.'
   },
   gamescore: {
     key: 'gamescore',
+    shortLabel: 'GameScore',
     title: 'GameScore (GS)',
     formula: 'PTS + 0.4×FGM - 0.7×FGA - 0.4×(FTA-FTM) + 0.7×OREB + 0.3×DREB + STL + 0.7×AST + 0.7×BLK - 0.4×PF - TOV',
     description: 'A single-game composite rating of individual player productivity. Unlike basic PIR, GameScore weights each box-score category with statistical coefficients to reflect real contribution to the final score.',
@@ -139,6 +150,7 @@ export const METRIC_GUIDES = {
   },
   pps: {
     key: 'pps',
+    shortLabel: 'PPS',
     title: 'PPS — Points Per Shot (Expected Value per Zone)',
     formula: '(FGM × Value 2 or 3) / FGA',
     description: 'Average points produced per field goal attempt from a specific court zone. Identifies high-value scoring locations (paint, open corner 3s) versus inefficient shooting areas (contested mid-range jumpers).',
@@ -148,6 +160,47 @@ export const METRIC_GUIDES = {
       { level: 'Low Value (COLD)', range: '< 0.85 PPS', color: 'rose', desc: 'Low-efficiency scoring location (typically contested mid-range)' }
     ],
     warning: '100% RELIABLE METRIC: Calculated mathematically directly from logged makes and misses across the 9 designated half-court zones.'
+  },
+  // Backward-compatibility aliases
+  fourfactors: {
+    key: 'fourfactors',
+    hidden: true,
+    title: 'Game Control & Efficiency Pillars (Four Factors)',
+    formula: '1. eFG% + 2. Shot Profile + 3. OREB% + 4. Ball Security',
+    description: 'The 4 practical pillars of game control designed for senior regional basketball.',
+    benchmarks: [
+      { level: 'Shooting eFG%', range: '> 48%', color: 'emerald', desc: 'Shot quality and perimeter conversion' },
+      { level: 'Paint Attack', range: '> 35% Paint', color: 'emerald', desc: 'Basket pressure and free throws' },
+      { level: 'OREB Share', range: '> 30%', color: 'emerald', desc: 'Second-chance scoring opportunities' },
+      { level: 'Ball Care', range: '< 14 TOV', color: 'emerald', desc: 'Turnover management and assist ratio' }
+    ],
+    warning: 'Refer to the 4 Pillars guide for complete regional benchmarks.'
+  },
+  tovpct: {
+    key: 'tovpct',
+    hidden: true,
+    title: 'Ball Security & Turnover Control',
+    formula: 'Total Turnovers (Target: < 14 per game)',
+    description: 'Concrete ball security and turnover management for senior regional play.',
+    benchmarks: [
+      { level: 'Elite Care', range: '< 14 TOV', color: 'emerald', desc: 'High ball protection' },
+      { level: 'Manageable', range: '14 – 18 TOV', color: 'amber', desc: 'Standard frequency' },
+      { level: 'High Risk', range: '> 18 TOV', color: 'rose', desc: 'Excessive lost possessions' }
+    ],
+    warning: 'Refer to Pillar 4 (Ball Care) for full analysis.'
+  },
+  ftr: {
+    key: 'ftr',
+    hidden: true,
+    title: 'Shot Profile & Free Throw Generation',
+    formula: 'Paint FGA% & Free Throw Conversion',
+    description: 'Measures inside rim pressure and capitalizing at the free throw line.',
+    benchmarks: [
+      { level: 'High Rim Pressure', range: '> 40% Paint', color: 'emerald', desc: 'Interior penetration' },
+      { level: 'Moderate', range: '30% – 39% Paint', color: 'amber', desc: 'Balanced spread' },
+      { level: 'Perimeter Only', range: '< 25% Paint', color: 'rose', desc: 'Jump-shot reliant' }
+    ],
+    warning: 'Refer to Pillar 2 (Shot Profile) for full analysis.'
   }
 };
 
@@ -197,30 +250,19 @@ export default function MetricGuideModal({ activeKey = 'ortg', onClose, onSelect
 
         {/* Metric Quick Switcher Horizontal Tabs */}
         <div className="flex border-b border-slate-800 bg-slate-950/60 p-2 gap-1.5 overflow-x-auto no-scrollbar flex-none">
-          {Object.values(METRIC_GUIDES).map(m => {
-            const isSelected = m.key === currentKey;
+          {Object.values(METRIC_GUIDES).filter(m => !m.hidden).map(m => {
+            const isSelected = m.key === currentKey || (currentKey === 'fourfactors' && m.key === 'pillars');
             return (
               <button
                 key={m.key}
                 onClick={() => handleSelect(m.key)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 flex-none border ${
                   isSelected
-                    ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md font-black scale-105'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black scale-105'
                     : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-850'
                 }`}
               >
-                {m.key === 'ortg' && <span>ORTG</span>}
-                {m.key === 'possessions' && <span>Pace</span>}
-                {m.key === 'efg' && <span>eFG%</span>}
-                {m.key === 'tovpct' && <span>TOV%</span>}
-                {m.key === 'oreb' && <span>OREB%</span>}
-                {m.key === 'ftr' && <span>FTR</span>}
-                {m.key === 'fourfactors' && <span>4 Factors</span>}
-                {m.key === 'ts' && <span>TS%</span>}
-                {m.key === 'asttov' && <span>AST/TOV</span>}
-                {m.key === 'pir' && <span>PIR</span>}
-                {m.key === 'gamescore' && <span>GameScore</span>}
-                {m.key === 'pps' && <span>PPS</span>}
+                <span>{m.shortLabel || m.key.toUpperCase()}</span>
               </button>
             );
           })}

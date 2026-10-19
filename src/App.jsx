@@ -7,6 +7,7 @@ import Archive from './pages/Archive';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
+import { calculatePlusMinus, calculateTeamScore, calculateOpponentScore } from './utils/basketballAnalytics';
 import {
   saveToOfflineQueue,
   getOfflineQueue,
@@ -110,26 +111,6 @@ export default function App() {
   const updateOnCourtPlayerNums = (newNums) => {
     setOnCourtPlayerNums(newNums);
     localStorage.setItem('current_on_court_nums', JSON.stringify(newNums));
-  };
-
-  const handleSwapSubstitution = (subOutNum, subInNum) => {
-    const outStr = String(subOutNum);
-    const inStr = String(subInNum);
-
-    const outPlayer = activeRoster.find(p => String(p.number) === outStr);
-    const inPlayer = activeRoster.find(p => String(p.number) === inStr);
-
-    const newOnCourt = onCourtPlayerNums.map(num => String(num) === outStr ? inStr : String(num));
-    updateOnCourtPlayerNums(newOnCourt);
-
-    if (selectedPlayer && String(selectedPlayer.number) === outStr) {
-      setSelectedPlayer(null);
-    }
-
-    const outName = outPlayer ? `#${outPlayer.number} ${outPlayer.name}` : `#${outStr}`;
-    const inName = inPlayer ? `#${inPlayer.number} ${inPlayer.name}` : `#${inStr}`;
-
-    showToast(`🔁 SUB: ${outName} ➔ BENCH | ${inName} ➔ COURT`);
   };
 
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -276,10 +257,14 @@ export default function App() {
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  const dispatchAction = async (actionName, categoryName, zoneName) => {
+  const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null) => {
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+    const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent');
+    const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
 
-    if (!isTeamEvent && !selectedPlayer) {
+    const effectivePlayer = targetPlayer || selectedPlayer;
+
+    if (!isTeamEvent && !isOpponent && !isSub && !effectivePlayer) {
       showToast('⚠️ Please select a player first!');
       return;
     }
@@ -291,8 +276,19 @@ export default function App() {
     }
 
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-    const playerNum = isTeamEvent ? '-' : String(selectedPlayer.number);
-    const playerName = isTeamEvent ? 'TEAM' : selectedPlayer.name;
+    let playerNum = '-';
+    let playerName = 'TEAM';
+
+    if (isOpponent) {
+      playerNum = 'OPP';
+      playerName = 'OPPONENT';
+    } else if (isSub) {
+      playerNum = 'SUB';
+      playerName = targetPlayer?.name || 'SUB';
+    } else if (!isTeamEvent && effectivePlayer) {
+      playerNum = String(effectivePlayer.number);
+      playerName = effectivePlayer.name;
+    }
     
     // Exact schema payload matching the 8 Supabase scouting_log columns
     const supabasePayload = {
@@ -302,7 +298,7 @@ export default function App() {
       Player: playerName,
       Action: actionName,
       Category: categoryName,
-      Zone: zoneName,
+      Zone: zoneName || 'Generic',
       Match_Name: gameSession
     };
 
@@ -313,7 +309,7 @@ export default function App() {
       player: playerName,
       number: playerNum,
       quarter: currentQuarter,
-      zone: zoneName,
+      zone: zoneName || 'Generic',
       category: categoryName,
       timestamp
     };
@@ -331,8 +327,12 @@ export default function App() {
 
         if (!error) {
           cloudSynced = true;
-          const label = isTeamEvent ? `[TEAM] ${actionName}` : `#${selectedPlayer.number} ${selectedPlayer.name} -> ${actionName}`;
-          showToast(`✅ ${label} (Supabase Cloud)`);
+          let label = actionName;
+          if (isOpponent) label = `[OPP] ${actionName}`;
+          else if (isSub) label = `[SUB] ${actionName}`;
+          else if (isTeamEvent) label = `[TEAM] ${actionName}`;
+          else label = `#${playerNum} ${playerName} -> ${actionName}`;
+          showToast(`✅ ${label}`);
         } else {
           console.warn('Supabase insert error:', error);
           showToast(`⚠️ Supabase: ${error.message || 'Column/Permission error'}`);
@@ -359,9 +359,138 @@ export default function App() {
       });
     } catch (e) {}
 
-    // Only deselect player if this was an individual player action
-    if (!isTeamEvent) {
+    // Only deselect player if this was an individual manual action
+    if (!isTeamEvent && !isOpponent && !isSub && !targetPlayer) {
       setSelectedPlayer(null);
+    }
+  };
+
+  const dispatchMultipleActions = async (actionsList = []) => {
+    if (!Array.isArray(actionsList) || actionsList.length === 0) return;
+    if (!gameSession) {
+      setShowSessionModal(true);
+      showToast('⚠️ Please enter a match name first!');
+      return;
+    }
+
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const payloads = [];
+    const localEvs = [];
+
+    actionsList.forEach(item => {
+      const { actionName, categoryName, zoneName, targetPlayer } = item;
+      const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+      const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent');
+      const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
+      const effectivePlayer = targetPlayer || selectedPlayer;
+
+      let playerNum = '-';
+      let playerName = 'TEAM';
+      if (isOpponent) {
+        playerNum = 'OPP';
+        playerName = 'OPPONENT';
+      } else if (isSub) {
+        playerNum = 'SUB';
+        playerName = targetPlayer?.name || 'SUB';
+      } else if (!isTeamEvent && effectivePlayer) {
+        playerNum = String(effectivePlayer.number);
+        playerName = effectivePlayer.name;
+      }
+
+      const p = {
+        Timestamp: timestamp,
+        Quarter: currentQuarter,
+        Number: playerNum,
+        Player: playerName,
+        Action: actionName,
+        Category: categoryName,
+        Zone: zoneName || 'Generic',
+        Match_Name: gameSession
+      };
+      payloads.push(p);
+      localEvs.push({
+        ...p,
+        action: actionName,
+        player: playerName,
+        number: playerNum,
+        quarter: currentQuarter,
+        zone: zoneName || 'Generic',
+        category: categoryName,
+        timestamp
+      });
+    });
+
+    setEvents(prev => [...prev, ...localEvs]);
+
+    let cloudSynced = false;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
+      try {
+        const { error } = await supabase.from('scouting_log').insert(payloads);
+        if (!error) {
+          cloudSynced = true;
+          showToast(`✅ ${payloads.map(p => p.Action).join(' + ')}`);
+        }
+      } catch (e) {
+        console.warn('Supabase batch insert error:', e);
+      }
+    }
+
+    if (!cloudSynced) {
+      payloads.forEach(p => saveToOfflineQueue(p));
+      const newQueueLength = getOfflineQueue().length;
+      setOfflineQueueCount(newQueueLength);
+      showToast(`📦 Saved ${payloads.length} events to offline queue`);
+    }
+
+    payloads.forEach(p => {
+      try {
+        fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(p)
+        });
+      } catch (e) {}
+    });
+
+    setSelectedPlayer(null);
+  };
+
+  const dispatchOpponentScore = (points) => {
+    const bbaPts = calculateTeamScore(events);
+    const oppPts = calculateOpponentScore(events);
+    const newOppPts = Math.max(0, oppPts + points);
+
+    let actionName = `Opponent Scored +${points} (${bbaPts}-${newOppPts})`;
+    if (points < 0) {
+      actionName = `Opponent Score Corrected ${points} (${bbaPts}-${newOppPts})`;
+    }
+
+    dispatchAction(actionName, 'Opponent', 'Generic', { number: 'OPP', name: 'OPPONENT' });
+  };
+
+  const handleSwapSubstitution = (subOutNum, subInNum) => {
+    const outStr = String(subOutNum);
+    const inStr = String(subInNum);
+
+    const outPlayer = activeRoster.find(p => String(p.number) === outStr);
+    const inPlayer = activeRoster.find(p => String(p.number) === inStr);
+
+    const newOnCourt = onCourtPlayerNums.map(num => String(num) === outStr ? inStr : String(num));
+    updateOnCourtPlayerNums(newOnCourt);
+
+    if (selectedPlayer && String(selectedPlayer.number) === outStr) {
+      setSelectedPlayer(null);
+    }
+
+    const outName = outPlayer ? `#${outPlayer.number} ${outPlayer.name}` : `#${outStr}`;
+    const inName = inPlayer ? `#${inPlayer.number} ${inPlayer.name}` : `#${inStr}`;
+
+    showToast(`🔁 SUB: ${outName} ➔ BENCH | ${inName} ➔ COURT`);
+
+    if (gameSession) {
+      const subAction = `SUB: ${inName} IN for ${outName} - ${currentQuarter}`;
+      dispatchAction(subAction, 'Substitution', 'Bench', { number: 'SUB', name: `${inStr} / ${outStr}` });
     }
   };
 
@@ -493,6 +622,8 @@ export default function App() {
     }
   };
 
+  const plusMinusMap = calculatePlusMinus(events, onCourtPlayerNums, activeRoster);
+
   return (
     <BrowserRouter>
       <div className="h-screen h-[100dvh] w-screen overflow-hidden flex flex-col bg-[#06090F] p-1 sm:p-2 text-slate-100">
@@ -545,6 +676,9 @@ export default function App() {
                 showSessionModal={showSessionModal}
                 setShowSessionModal={setShowSessionModal}
                 dispatchAction={dispatchAction}
+                dispatchMultipleActions={dispatchMultipleActions}
+                dispatchOpponentScore={dispatchOpponentScore}
+                plusMinusMap={plusMinusMap}
                 handleUndo={handleUndo}
                 handleResetGame={handleResetGame}
                 onDeleteEvent={handleDeleteEvent}

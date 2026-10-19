@@ -32,6 +32,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
 
   const {
     teamOverview,
+    efficiencyPillars,
     fourFactors,
     quarters,
     playerStats,
@@ -39,6 +40,9 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
     zoneSummary,
     totalEvents
   } = analytics;
+
+  // Fallback to fourFactors alias if efficiencyPillars is not defined
+  const pillars = efficiencyPillars || fourFactors;
 
   // Initialize selected player to top PIR player if none selected
   const activePlayer = useMemo(() => {
@@ -274,7 +278,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5" />
-            OVERVIEW & FOUR FACTORS
+            OVERVIEW & EFFICIENCY PILLARS
           </button>
 
           <button
@@ -476,34 +480,34 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 </div>
               </div>
 
-              {/* Four Factors Section */}
+              {/* Game Control & Efficiency Pillars Section */}
               <div className="glass-card p-3 sm:p-4 border-slate-800">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
                   <div
-                    onClick={() => setActiveMetricGuideKey('fourfactors')}
+                    onClick={() => setActiveMetricGuideKey('pillars')}
                     className="flex items-center gap-2 cursor-pointer group"
-                    title="Click to view Four Factors guide"
+                    title="Click to view Game Control & Efficiency Pillars guide"
                   >
-                    <Shield className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider group-hover:text-sky-400 transition-colors flex items-center gap-1.5">
-                      THE FOUR FACTORS (KEY EFFICIENCY PILLARS)
-                      <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400" />
+                    <Shield className="w-4 h-4 text-amber-400" />
+                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                      GAME CONTROL & EFFICIENCY PILLARS
+                      <Info className="w-3 h-3 text-slate-500 group-hover:text-amber-400" />
                     </h3>
                   </div>
                   <button
-                    onClick={() => setActiveMetricGuideKey('fourfactors')}
-                    className="text-[10px] font-bold text-slate-400 hover:text-sky-400 transition-colors underline"
+                    onClick={() => setActiveMetricGuideKey('pillars')}
+                    className="text-[10px] font-bold text-slate-400 hover:text-amber-400 transition-colors underline"
                   >
-                    Four Factors Guide
+                    Pillars Guide
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {/* Factor 1: Shooting */}
+                  {/* Pillar 1: Shooting Efficiency */}
                   <div
                     onClick={() => setActiveMetricGuideKey('efg')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 1: Shooting Efficiency (eFG%)"
+                    title="Pillar 1: Shooting Efficiency (eFG%). Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
@@ -511,97 +515,99 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           1. SHOOTING EFFICIENCY <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          fourFactors.shooting.rating === 'Elite' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'
+                          pillars.shooting.rating === 'Elite' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          pillars.shooting.rating === 'Solid' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-rose-950 text-rose-300 border border-rose-800'
                         }`}>
-                          {fourFactors.shooting.rating}
+                          {pillars.shooting.rating}
                         </span>
                       </div>
                       <div className="font-mono text-2xl font-black text-emerald-400 my-1">
-                        {fourFactors.shooting.value}
+                        {pillars.shooting.value}
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {fourFactors.shooting.subtext}
+                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
+                      {pillars.shooting.subtext}
                     </div>
                   </div>
 
-                  {/* Factor 2: Turnovers */}
+                  {/* Pillar 2: Paint vs Perimeter Shot Profile */}
                   <div
-                    onClick={() => setActiveMetricGuideKey('tovpct')}
+                    onClick={() => setActiveMetricGuideKey('shotProfile')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-sky-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 2: Turnover Rate (TOV% = Turnovers / Possessions)"
+                    title="Pillar 2: Paint vs Perimeter Shot Profile & FT Conversion. Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
                         <span className="group-hover:text-sky-300 transition-colors flex items-center gap-1">
-                          2. TURNOVER RATE <Info className="w-2.5 h-2.5 text-slate-500" />
+                          2. SHOT PROFILE BALANCE <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          fourFactors.turnovers.rating.includes('Elite') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-800 text-slate-300'
-                        }`}>
-                          {fourFactors.turnovers.rating}
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                          {pillars.shotProfile?.rating || 'Balanced'}
                         </span>
                       </div>
-                      <div className="font-mono text-2xl font-black text-sky-400 my-1">
-                        {fourFactors.turnovers.value}
+                      <div className="font-mono text-xl sm:text-2xl font-black text-sky-400 my-1">
+                        {pillars.shotProfile?.value || `Paint ${teamOverview.pctPaint}% | 3PT ${teamOverview.pctThree}%`}
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {fourFactors.turnovers.subtext}
+                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
+                      {pillars.shotProfile?.subtext || `Mid: ${teamOverview.pctMid}% (${teamOverview.teamMidShots || 0} FGA) • FT: ${teamOverview.ftm}/${teamOverview.fta} (${teamOverview.pctFt.toFixed(0)}%)`}
                     </div>
                   </div>
 
-                  {/* Factor 3: Rebounding */}
+                  {/* Pillar 3: Offensive Rebound Share */}
                   <div
                     onClick={() => setActiveMetricGuideKey('oreb')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 3: Offensive Rebound Share (OREB / Total REB)"
+                    title="Pillar 3: Offensive Rebound Share (OREB%). Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
                         <span className="group-hover:text-amber-300 transition-colors flex items-center gap-1">
                           3. OFFENSIVE REBOUND SHARE <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
-                          {fourFactors.rebounding.rating}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                          pillars.rebounding.rating.includes('Dominance') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          pillars.rebounding.rating.includes('Solid') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-slate-850 text-slate-300 border border-slate-700'
+                        }`}>
+                          {pillars.rebounding.rating}
                         </span>
                       </div>
                       <div className="font-mono text-2xl font-black text-amber-400 my-1">
-                        {fourFactors.rebounding.value}
+                        {pillars.rebounding.value}
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {fourFactors.rebounding.subtext}
+                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
+                      {pillars.rebounding.subtext}
                     </div>
                   </div>
 
-                  {/* Factor 4: Free Throws */}
+                  {/* Pillar 4: Ball Security & Playmaking */}
                   <div
-                    onClick={() => setActiveMetricGuideKey('ftr')}
-                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-purple-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Factor 4: Free Throw Rate (FTR = FTA / FGA). Click for guide."
+                    onClick={() => setActiveMetricGuideKey('ballControl')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-rose-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Pillar 4: Ball Security & Playmaking. Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span className="group-hover:text-purple-300 transition-colors flex items-center gap-1">
-                          4. FREE THROW RATE (FTR) <Info className="w-2.5 h-2.5 text-slate-500" />
+                        <span className="group-hover:text-rose-300 transition-colors flex items-center gap-1">
+                          4. BALL SECURITY & MARGIN <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
-                          {fourFactors.freeThrows.rating}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                          pillars.ballControl?.rating.includes('Elite') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          pillars.ballControl?.rating.includes('Manageable') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-rose-950 text-rose-300 border border-rose-800'
+                        }`}>
+                          {pillars.ballControl?.rating || (teamOverview.tov <= 14 ? 'Solid Care' : 'High TOV')}
                         </span>
                       </div>
-                      <div className="flex items-baseline gap-2 my-1">
-                        <span className="font-mono text-2xl font-black text-purple-400">
-                          {fourFactors.freeThrows.value}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                          FTA / FGA
-                        </span>
+                      <div className="font-mono text-xl sm:text-2xl font-black text-rose-400 my-1">
+                        {pillars.ballControl?.value || `${teamOverview.tov} TOV vs ${teamOverview.ast} AST`}
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2 flex items-center justify-between">
-                      <span>Shooting: {teamOverview.ftm}/{teamOverview.fta} FT</span>
-                      <span className="font-mono font-bold text-slate-300">({teamOverview.pctFt.toFixed(0)}% FT)</span>
+                    <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
+                      {pillars.ballControl?.subtext || `AST/TOV: ${teamOverview.astTovRatio} • STL-TOV Margin: ${(teamOverview.stealTovMargin || 0) >= 0 ? '+' : ''}${teamOverview.stealTovMargin || 0} (${teamOverview.stl} STL)`}
                     </div>
                   </div>
                 </div>
@@ -1046,6 +1052,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">ASSISTS</span>
                         <span className="font-mono text-2xl font-black text-cyan-400 leading-none">{activePlayer.ast}</span>
                       </div>
+                      <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-center">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">PLUS / MINUS</span>
+                        <span className={`font-mono text-2xl font-black leading-none ${
+                          (activePlayer.plusMinus || 0) > 0 ? 'text-emerald-400' :
+                          (activePlayer.plusMinus || 0) < 0 ? 'text-rose-400' :
+                          'text-slate-400'
+                        }`}>
+                          {(activePlayer.plusMinus || 0) > 0 ? `+${activePlayer.plusMinus}` : (activePlayer.plusMinus || 0)}
+                        </span>
+                      </div>
                       <div 
                         onClick={() => setActiveMetricGuideKey('pir')}
                         className="bg-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-emerald-500/50 hover:border-emerald-400 text-center shadow-md cursor-pointer group transition-all"
@@ -1441,6 +1457,9 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           PIR <Info className="w-2.5 h-2.5 text-emerald-500 hover:text-emerald-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('pir'); }} />
                         </span>
                       </th>
+                      <th onClick={() => handleSortBoxScore('plusMinus')} className="py-2.5 px-2 text-cyan-400 font-bold cursor-pointer hover:text-cyan-300" title="Sort by Plus/Minus (+/-)">
+                        +/-
+                      </th>
                       <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-400 font-bold cursor-pointer hover:text-purple-300" title="Sort by GameScore">
                         <span className="inline-flex items-center gap-0.5">
                           GS <Info className="w-2.5 h-2.5 text-purple-500 hover:text-purple-300" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('gamescore'); }} />
@@ -1468,6 +1487,13 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                         <td className="py-2.5 px-2 text-slate-300">{r.fd}</td>
                         <td className="py-2.5 px-2 text-slate-300">{r.blk}</td>
                         <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
+                        <td className={`py-2.5 px-2 font-mono font-bold ${
+                          (r.plusMinus || 0) > 0 ? 'text-emerald-400' :
+                          (r.plusMinus || 0) < 0 ? 'text-rose-400' :
+                          'text-slate-400'
+                        }`}>
+                          {(r.plusMinus || 0) > 0 ? `+${r.plusMinus}` : (r.plusMinus || 0)}
+                        </td>
                         <td className="py-2.5 px-2 text-purple-400 font-mono">{r.gameScore}</td>
                       </tr>
                     ))}
@@ -1491,6 +1517,13 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                       <td className="py-3 px-2">{teamOverview.fd}</td>
                       <td className="py-3 px-2">{teamOverview.blk}</td>
                       <td className="py-3 px-2 text-emerald-400 text-base">{teamOverview.pir}</td>
+                      <td className={`py-3 px-2 font-mono font-bold ${
+                        (teamOverview.pointDifferential || 0) > 0 ? 'text-emerald-400' :
+                        (teamOverview.pointDifferential || 0) < 0 ? 'text-rose-400' :
+                        'text-slate-400'
+                      }`}>
+                        {(teamOverview.pointDifferential || 0) > 0 ? `+${teamOverview.pointDifferential}` : (teamOverview.pointDifferential || 0)}
+                      </td>
                       <td className="py-3 px-2 text-purple-400">-</td>
                     </tr>
                   </tfoot>

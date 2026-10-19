@@ -8,6 +8,7 @@ export default function PlayerSelector({
   onSelectPlayer,
   onSwapSubstitution,
   events,
+  plusMinusMap = {},
   isAdmin = true
 }) {
   const [subBenchPlayer, setSubBenchPlayer] = useState(null); // Bench player selected for tap substitution
@@ -25,7 +26,7 @@ export default function PlayerSelector({
   const onCourtPlayers = roster.filter(p => onCourtSet.has(String(p.number)));
   const benchPlayers = roster.filter(p => !onCourtSet.has(String(p.number)));
 
-  // Calculate points and fouls for a player
+  // Calculate points, fouls, and plus/minus for a player
   const getPlayerStats = (playerNum) => {
     const playerEvents = (events || []).filter(e => getNum(e) === String(playerNum));
     const pts = playerEvents.reduce((acc, ev) => {
@@ -39,7 +40,8 @@ export default function PlayerSelector({
       const az = getAz(e);
       return az === 'Personal Foul' || az === 'Fallo Fatto';
     }).length;
-    return { pts, fouls };
+    const plusMinus = plusMinusMap[String(playerNum)] || 0;
+    return { pts, fouls, plusMinus };
   };
 
   // --- DRAG & DROP LOGIC (HTML5 for Desktop & Mouse) ---
@@ -325,11 +327,20 @@ export default function PlayerSelector({
                     )}
                   </div>
 
-                  {/* Bottom Row: Points Pill */}
+                  {/* Bottom Row: Points Pill & +/- Badge */}
                   <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/60">
-                    <span className="text-[10px] font-mono font-semibold text-slate-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
-                      {pts} PTS
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-mono font-semibold text-slate-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
+                        {pts} PTS
+                      </span>
+                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                        plusMinus > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
+                        plusMinus < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
+                        'text-slate-400 bg-slate-950/60 border-slate-800'
+                      }`} title="Plus/Minus (+/-)">
+                        {plusMinus > 0 ? `+${plusMinus}` : plusMinus}
+                      </span>
+                    </div>
                     {isDragOver ? (
                       <span className="text-[9px] font-bold text-sky-300 bg-sky-950 px-1.5 py-0.2 rounded border border-sky-500/50">
                         ⇄ SWAP
@@ -444,9 +455,18 @@ export default function PlayerSelector({
 
                     {/* Bottom Row: Points Pill & Status Badge */}
                     <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/60">
-                      <span className="text-[10px] font-mono font-bold text-amber-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
-                        {pts} PTS
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
+                          {pts} PTS
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                          plusMinus > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
+                          plusMinus < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
+                          'text-slate-400 bg-slate-950/60 border-slate-800'
+                        }`} title="Plus/Minus (+/-)">
+                          {plusMinus > 0 ? `+${plusMinus}` : plusMinus}
+                        </span>
+                      </div>
                       {isDragOver ? (
                         <span className="text-[9px] font-bold text-sky-300 bg-sky-950 px-1.5 py-0.2 rounded border border-sky-500/50">
                           ⇄ SWAP

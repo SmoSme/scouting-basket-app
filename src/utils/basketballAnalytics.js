@@ -15,10 +15,159 @@ export const getQtr = (e) => {
 };
 
 /**
- * Advanced Basketball Analytics Engine
- * Computes direct and derived metrics according to FIBA / EuroLeague / NBA analytical standards.
+ * Check if an event represents an opponent score
  */
-export function calculateMatchAnalytics(events = [], customRoster = []) {
+export const isOpponentScoreEvent = (e) => {
+  const cat = String(e?.Category || e?.category || e?.Categoria || e?.categoria || '');
+  const az = getAz(e);
+  return cat.toLowerCase() === 'opponent' || az.toLowerCase().startsWith('opponent');
+};
+
+/**
+ * Extract points from opponent score event (+1, +2, +3)
+ */
+export const getOpponentPoints = (e) => {
+  const az = getAz(e);
+  if (az.includes('+1') || az.includes('1PT') || az.includes('1 Pt') || az.includes('1 pt')) return 1;
+  if (az.includes('+2') || az.includes('2PT') || az.includes('2 Pt') || az.includes('2 pt')) return 2;
+  if (az.includes('+3') || az.includes('3PT') || az.includes('3 Pt') || az.includes('3 pt')) return 3;
+  return 0;
+};
+
+/**
+ * Compute total points scored by BBA team
+ */
+export const calculateTeamScore = (events = []) => {
+  if (!Array.isArray(events)) return 0;
+  return events.reduce((acc, ev) => {
+    const az = getAz(ev);
+    if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
+    if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
+    if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
+    return acc;
+  }, 0);
+};
+
+/**
+ * Compute total points scored by Opponent
+ */
+export const calculateOpponentScore = (events = []) => {
+  if (!Array.isArray(events)) return 0;
+  return events.reduce((acc, ev) => {
+    if (isOpponentScoreEvent(ev)) {
+      return acc + getOpponentPoints(ev);
+    }
+    return acc;
+  }, 0);
+};
+
+/**
+ * Time-Independent Plus/Minus (+/-) State Engine
+ * Replays chronological events tracking the 5 on-court players at each point in time.
+ * When BBA scores (+1, +2, +3), +pts to all 5 active on-court players.
+ * When Opponent scores (+1, +2, +3), -pts to all 5 active on-court players.
+ * Substitutions swap players in the active 5 on-court set.
+ */
+export function calculatePlusMinus(events = [], startingOnCourtNums = [], customRoster = []) {
+  const safeEvents = Array.isArray(events) ? events : [];
+  
+  // 1. Establish starting 5 on-court players
+  let currentOnCourt = [];
+  if (Array.isArray(startingOnCourtNums) && startingOnCourtNums.length === 5) {
+    currentOnCourt = startingOnCourtNums.map(n => String(n));
+  } else {
+    // Determine from custom roster or default master roster
+    const rosterList = (Array.isArray(customRoster) && customRoster.length > 0) 
+      ? customRoster 
+      : DEFAULT_MASTER_ROSTER;
+    currentOnCourt = rosterList.slice(0, 5).map(p => String(p.number));
+  }
+
+  // Active on-court set
+  let activeSet = new Set(currentOnCourt);
+
+  // Plus/Minus accumulator map
+  const plusMinusMap = {};
+
+  // Initialize all known roster players to 0
+  const allKnownPlayers = [
+    ...(Array.isArray(customRoster) ? customRoster : []),
+    ...DEFAULT_MASTER_ROSTER
+  ];
+  allKnownPlayers.forEach(p => {
+    plusMinusMap[String(p.number)] = 0;
+  });
+
+  // Track any player numbers appearing in events
+  safeEvents.forEach(e => {
+    const num = getNum(e);
+    if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP') {
+      if (plusMinusMap[num] === undefined) {
+        plusMinusMap[num] = 0;
+      }
+    }
+  });
+
+  // Replay events chronologically
+  safeEvents.forEach(ev => {
+    const az = getAz(ev);
+    const cat = String(ev?.Category || ev?.category || ev?.Categoria || ev?.categoria || '');
+
+    // Check for Substitution event
+    if (cat === 'Substitution' || az.startsWith('SUB:') || az.startsWith('Sub:')) {
+      const match = az.match(/SUB:\s*#?([A-Za-z0-9_-]+).*?IN\s+for\s+#?([A-Za-z0-9_-]+)/i);
+      if (match) {
+        const inNum = match[1].trim();
+        const outNum = match[2].trim();
+        activeSet.delete(outNum);
+        activeSet.add(inNum);
+        if (plusMinusMap[inNum] === undefined) plusMinusMap[inNum] = 0;
+        if (plusMinusMap[outNum] === undefined) plusMinusMap[outNum] = 0;
+      }
+      return;
+    }
+
+    // Check for BBA Team Scoring
+    let bbaPoints = 0;
+    if (az === '2PT Made' || az === '2PT Fatto') bbaPoints = 2;
+    else if (az === '3PT Made' || az === '3PT Fatto') bbaPoints = 3;
+    else if (az === 'FT Made' || az === 'TL Fatto') bbaPoints = 1;
+
+    if (bbaPoints > 0) {
+      // Ensure the scorer is tracked in activeSet if known
+      const scorerNum = getNum(ev);
+      if (scorerNum && scorerNum !== '-' && scorerNum !== 'TEAM' && scorerNum !== 'OPP') {
+        if (!activeSet.has(scorerNum) && activeSet.size < 5) {
+          activeSet.add(scorerNum);
+        }
+      }
+
+      activeSet.forEach(pNum => {
+        plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) + bbaPoints;
+      });
+      return;
+    }
+
+    // Check for Opponent Scoring
+    if (isOpponentScoreEvent(ev)) {
+      const oppPts = getOpponentPoints(ev);
+      if (oppPts > 0) {
+        activeSet.forEach(pNum => {
+          plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) - oppPts;
+        });
+      }
+      return;
+    }
+  });
+
+  return plusMinusMap;
+}
+
+/**
+ * Advanced Basketball Analytics Engine
+ * Computes direct and derived metrics according to FIBA / EuroLeague analytical standards.
+ */
+export function calculateMatchAnalytics(events = [], customRoster = [], startingOnCourtNums = []) {
   const safeEvents = Array.isArray(events) ? events : [];
 
   // 1. Build comprehensive player map.
@@ -29,7 +178,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
   safeEvents.forEach(e => {
     const num = getNum(e);
     const name = getGiocatore(e);
-    if (num && num !== '-' && num !== 'TEAM' && name && name.trim()) {
+    if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP' && name && name.trim()) {
       const cleanName = name.trim();
       if (!rosterMap[num] || !rosterMap[num].name) {
         rosterMap[num] = { number: num, name: cleanName, pos: 'N/A' };
@@ -64,16 +213,18 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
   // Step D: Ensure all active players logged in events have a valid object
   safeEvents.forEach(e => {
     const num = getNum(e);
-    if (num && num !== '-' && num !== 'TEAM' && !rosterMap[num]) {
+    if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP' && !rosterMap[num]) {
       rosterMap[num] = { number: num, name: `Player #${num}`, pos: 'N/A' };
     }
   });
 
-  // Filter individual player vs team events
+  // Filter individual player vs team vs opponent/substitution events
   const individualEvents = safeEvents.filter(e => {
     const num = getNum(e);
     const az = getAz(e);
-    return num !== '-' && num !== 'TEAM' && az !== 'Stagger' && az !== 'Ghost';
+    const cat = String(e?.Category || e?.category || '');
+    return num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP' && 
+      az !== 'Stagger' && az !== 'Ghost' && cat !== 'Substitution' && cat !== 'Opponent';
   });
 
   const tacticEvents = safeEvents.filter(e => {
@@ -149,10 +300,9 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     ((teamShooting.fg2miss + teamShooting.fg3miss) + teamShooting.ftmiss + teamOthers.tov + teamOthers.pf + teamOthers.blka);
 
   // Advanced: Possessions, Pace & Efficiency
-  // Standard possession formula: FGA + 0.44 * FTA - OREB + TOV
   const estimatedPossessions = Math.max(1, (teamShooting.fga + (0.44 * teamShooting.fta) - teamOthers.oreb + teamOthers.tov));
-  const ortg = (teamShooting.pts / estimatedPossessions) * 100; // Points per 100 possessions
-  const ppp = teamShooting.pts / estimatedPossessions; // Points per possession
+  const ortg = (teamShooting.pts / estimatedPossessions) * 100;
+  const ppp = teamShooting.pts / estimatedPossessions;
   const tovPct = (teamOthers.tov / estimatedPossessions) * 100;
   const ftRate = teamShooting.fga > 0 ? (teamShooting.fta / teamShooting.fga) : 0;
   const astTovRatio = teamOthers.tov > 0 ? teamOthers.ast / teamOthers.tov : teamOthers.ast;
@@ -160,9 +310,34 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
   const orebShare = (teamOthers.reb > 0) ? (teamOthers.oreb / teamOthers.reb) * 100 : 0;
   const tacticsPerPoss = (totalTactics / estimatedPossessions) * 100;
 
+  // Opponent Scoring and Point Differential
+  const opponentScore = calculateOpponentScore(safeEvents);
+  const pointDifferential = teamShooting.pts - opponentScore;
+
+  // Shot Profile Distribution: Paint vs Mid vs 3PT
+  const totalFga = teamShooting.fga > 0 ? teamShooting.fga : 1;
+  const teamPaintShots = safeEvents.filter(e => getZona(e) === COURT_ZONES.PAINT.name && getAz(e).includes('PT')).length;
+  const teamMidShots = safeEvents.filter(e => {
+    const z = getZona(e);
+    return (z === COURT_ZONES.MID_L.name || z === COURT_ZONES.MID_C.name || z === COURT_ZONES.MID_R.name) && getAz(e).includes('PT');
+  }).length;
+  const teamThreeShots = safeEvents.filter(e => {
+    const z = getZona(e);
+    return (z === COURT_ZONES.C3_L.name || z === COURT_ZONES.C3_R.name || z === COURT_ZONES.W3_L.name || z === COURT_ZONES.W3_R.name || z === COURT_ZONES.ARC3_C.name) && getAz(e).includes('PT');
+  }).length;
+
+  const pctPaint = Math.round((teamPaintShots / totalFga) * 100);
+  const pctMid = Math.round((teamMidShots / totalFga) * 100);
+  const pctThree = Math.round((teamThreeShots / totalFga) * 100);
+
+  // Ball Security & Margin
+  const stealTovMargin = teamOthers.stl - teamOthers.tov;
+
   const teamOverview = {
     ...teamShooting,
     ...teamOthers,
+    opponentScore,
+    pointDifferential,
     pir: teamPir,
     possessions: Math.round(estimatedPossessions * 10) / 10,
     ortg: Math.round(ortg * 10) / 10,
@@ -172,53 +347,73 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     astTovRatio: Math.round(astTovRatio * 100) / 100,
     astRatio: Math.round(astRatio * 10) / 10,
     orebShare: Math.round(orebShare * 10) / 10,
+    pctPaint,
+    pctMid,
+    pctThree,
+    teamPaintShots,
+    teamMidShots,
+    teamThreeShots,
+    stealTovMargin,
     staggerCount: teamStagger,
     ghostCount: teamGhost,
     totalTactics,
     tacticsPerPoss: Math.round(tacticsPerPoss * 10) / 10
   };
 
-  // Four Factors Ratings
-  const fourFactors = {
+  // Practical Regional Coaching Pillars: GAME CONTROL & EFFICIENCY PILLARS
+  const efficiencyPillars = {
     shooting: {
-      label: 'Effective FG% (eFG%)',
+      key: 'shooting',
+      title: '1. SHOOTING EFFICIENCY (eFG%)',
       value: teamShooting.efgPct.toFixed(1) + '%',
       numeric: teamShooting.efgPct,
-      subtext: `FGM: ${teamShooting.fgm}/${teamShooting.fga} (3PM: ${teamShooting.fg3m})`,
-      rating: teamShooting.efgPct >= 52 ? 'Elite' : teamShooting.efgPct >= 47 ? 'Solid' : 'Needs Improvement',
+      subtext: `2P: ${teamShooting.fg2m}/${teamShooting.fg2a} (${teamShooting.pct2p.toFixed(0)}%) | 3P: ${teamShooting.fg3m}/${teamShooting.fg3a} (${teamShooting.pct3p.toFixed(0)}%)`,
+      rating: teamShooting.efgPct >= 52 ? 'Elite' : teamShooting.efgPct >= 47 ? 'Solid' : 'Needs Work',
       color: teamShooting.efgPct >= 52 ? 'emerald' : teamShooting.efgPct >= 47 ? 'amber' : 'rose'
     },
-    turnovers: {
-      label: 'Turnover Rate (TOV%)',
-      value: teamOverview.tovPct.toFixed(1) + '%',
-      numeric: teamOverview.tovPct,
-      subtext: `${teamOthers.tov} TOVs in ~${teamOverview.possessions} poss`,
-      rating: teamOverview.tovPct <= 14 ? 'Elite Ball Care' : teamOverview.tovPct <= 18 ? 'Average' : 'High Turnover',
-      color: teamOverview.tovPct <= 14 ? 'emerald' : teamOverview.tovPct <= 18 ? 'amber' : 'rose'
+    shotProfile: {
+      key: 'shotProfile',
+      title: '2. PAINT vs PERIMETER (SHOT PROFILE)',
+      value: `Paint ${pctPaint}% | 3PT ${pctThree}%`,
+      numeric: pctPaint,
+      subtext: `Mid: ${pctMid}% (${teamMidShots} FGA) • FT: ${teamShooting.ftm}/${teamShooting.fta} (${teamShooting.pctFt.toFixed(0)}%)`,
+      rating: pctPaint >= 40 ? 'Heavy Rim Attack' : pctThree >= 40 ? 'Perimeter Heavy' : 'Balanced Spread',
+      color: pctPaint >= 35 ? 'emerald' : 'sky'
     },
     rebounding: {
-      label: 'Off Rebound Share',
+      key: 'rebounding',
+      title: '3. OFFENSIVE REBOUND SHARE (OREB%)',
       value: teamOverview.orebShare.toFixed(1) + '%',
       numeric: teamOverview.orebShare,
-      subtext: `${teamOthers.oreb} OREB / ${teamOthers.reb} Total REB`,
-      rating: teamOverview.orebShare >= 32 ? 'Crashing Boards' : teamOverview.orebShare >= 22 ? 'Solid Second Chance' : 'Low OREB',
-      color: teamOverview.orebShare >= 32 ? 'emerald' : teamOverview.orebShare >= 22 ? 'amber' : 'slate'
+      subtext: `${teamOthers.oreb} Second-Chance Opportunities Created (${teamOthers.reb} Total REB)`,
+      rating: teamOverview.orebShare >= 30 ? 'Board Dominance' : teamOverview.orebShare >= 22 ? 'Solid Glass' : 'Low OREB',
+      color: teamOverview.orebShare >= 30 ? 'emerald' : teamOverview.orebShare >= 22 ? 'amber' : 'slate'
     },
-    freeThrows: {
-      label: 'Free Throw Rate (FTR)',
-      value: teamOverview.ftRate.toFixed(2),
-      numeric: teamOverview.ftRate,
-      subtext: `${teamShooting.ftm}/${teamShooting.fta} FT (${teamShooting.pctFt.toFixed(0)}%)`,
-      rating: teamOverview.ftRate >= 0.28 ? 'Aggressive at Rim' : teamOverview.ftRate >= 0.18 ? 'Balanced' : 'Low Foul Drawing',
-      color: teamOverview.ftRate >= 0.28 ? 'emerald' : teamOverview.ftRate >= 0.18 ? 'amber' : 'slate'
+    ballControl: {
+      key: 'ballControl',
+      title: '4. BALL SECURITY & PLAYMAKING',
+      value: `${teamOthers.tov} TOV vs ${teamOthers.ast} AST`,
+      numeric: teamOthers.tov,
+      subtext: `AST/TOV: ${teamOverview.astTovRatio} • STL-TOV Margin: ${stealTovMargin >= 0 ? '+' : ''}${stealTovMargin} (${teamOthers.stl} STL)`,
+      rating: teamOthers.tov <= 13 ? 'Elite Ball Care' : teamOthers.tov <= 18 ? 'Manageable' : 'High Turnovers',
+      color: teamOthers.tov <= 13 ? 'emerald' : teamOthers.tov <= 18 ? 'amber' : 'rose'
     }
   };
+
+  // Backward compatibility alias
+  const fourFactors = {
+    ...efficiencyPillars,
+    turnovers: efficiencyPillars.ballControl,
+    freeThrows: efficiencyPillars.shotProfile
+  };
+
+  // Compute Plus/Minus for all players
+  const plusMinusMap = calculatePlusMinus(safeEvents, startingOnCourtNums, customRoster);
 
   // =========================================================================
   // 2. PERIOD / QUARTER-BY-QUARTER STATS
   // =========================================================================
   const allQuarterKeys = ['Q1', 'Q2', 'Q3', 'Q4'];
-  // Check if any OT quarters are in events
   const otQuarterKeys = Array.from(new Set(
     safeEvents.map(e => getQtr(e)).filter(q => q.startsWith('OT'))
   )).sort();
@@ -230,6 +425,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     const qOthers = computeOtherStats(qEvents);
     const qStag = qEvents.filter(e => getAz(e) === 'Stagger').length;
     const qGhost = qEvents.filter(e => getAz(e) === 'Ghost').length;
+    const qOpp = calculateOpponentScore(qEvents);
 
     const qPir = (qShooting.pts + qOthers.reb + qOthers.ast + qOthers.stl + qOthers.blk + qOthers.fd) -
       ((qShooting.fg2miss + qShooting.fg3miss) + qShooting.ftmiss + qOthers.tov + qOthers.pf + qOthers.blka);
@@ -239,6 +435,8 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     return {
       quarter: qKey,
       pts: qShooting.pts,
+      oppPts: qOpp,
+      diff: qShooting.pts - qOpp,
       fg2m: qShooting.fg2m,
       fg2a: qShooting.fg2a,
       pct2p: qShooting.pct2p,
@@ -266,7 +464,6 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
   // =========================================================================
   // 3. INDIVIDUAL PLAYER STATS & PROFILES
   // =========================================================================
-  // Find all players with events logged in this match
   const activePlayerNums = Array.from(new Set(
     individualEvents.map(e => getNum(e)).filter(Boolean)
   ));
@@ -293,6 +490,8 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
       (0.7 * pOthers.blk) - 
       (0.4 * pOthers.pf) - 
       pOthers.tov;
+
+    const plusMinus = plusMinusMap[String(num)] || 0;
 
     // Quarter progression for this specific player
     const pQuarters = {};
@@ -348,6 +547,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
       ...pShooting,
       ...pOthers,
       pir,
+      plusMinus,
       gameScore: Math.round(gameScore * 10) / 10,
       quarters: pQuarters,
       shotDist,
@@ -391,7 +591,7 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
     const attempts = zEvents.length;
     const pct = attempts > 0 ? (made / attempts) * 100 : 0;
     const shotShare = totalShotsCount > 0 ? (attempts / totalShotsCount) * 100 : 0;
-    const pps = attempts > 0 ? (made * zoneInfo.val) / attempts : 0; // Points Per Shot
+    const pps = attempts > 0 ? (made * zoneInfo.val) / attempts : 0;
 
     return {
       key,
@@ -409,11 +609,13 @@ export function calculateMatchAnalytics(events = [], customRoster = []) {
 
   return {
     teamOverview,
+    efficiencyPillars,
     fourFactors,
     quarters,
     playerStats,
     teamLeaders,
     zoneSummary,
+    plusMinusMap,
     totalEvents: safeEvents.length,
     quarterSequence
   };
