@@ -204,11 +204,11 @@ export default function ScoreboardHeader({
               {pStats.pts} PTS
             </span>
             <span className={`stat-pill-dense font-mono font-bold flex-none ${
-              pStats.plusMinus > 0 ? 'text-emerald-400 border-emerald-500/40' :
-              pStats.plusMinus < 0 ? 'text-rose-400 border-rose-500/40' :
+              (pStats?.plusMinus || 0) > 0 ? 'text-emerald-400 border-emerald-500/40' :
+              (pStats?.plusMinus || 0) < 0 ? 'text-rose-400 border-rose-500/40' :
               'text-slate-400 border-slate-700'
             }`}>
-              +/-: {pStats.plusMinus > 0 ? `+${pStats.plusMinus}` : pStats.plusMinus}
+              +/-: {(pStats?.plusMinus || 0) > 0 ? `+${pStats.plusMinus}` : (pStats?.plusMinus || 0)}
             </span>
             <span className="stat-pill-dense text-slate-300 flex-none">
               2P: {pStats.fg2}

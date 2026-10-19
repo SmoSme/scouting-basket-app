@@ -169,11 +169,11 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
                 <td className="py-2.5 px-2 text-slate-200">{r.pf}</td>
                 <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
                 <td className={`py-2.5 px-2 font-mono font-bold ${
-                  r.plusMinus > 0 ? 'text-emerald-400' :
-                  r.plusMinus < 0 ? 'text-rose-400' :
+                  (r.plusMinus || 0) > 0 ? 'text-emerald-400' :
+                  (r.plusMinus || 0) < 0 ? 'text-rose-400' :
                   'text-slate-400'
                 }`}>
-                  {r.plusMinus > 0 ? `+${r.plusMinus}` : r.plusMinus}
+                  {(r.plusMinus || 0) > 0 ? `+${r.plusMinus}` : (r.plusMinus || 0)}
                 </td>
               </tr>
             ))}

@@ -248,7 +248,10 @@ export default function PlayerSelector({
 
           <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
             {benchPlayers.map((player) => {
-              const { pts, fouls } = getPlayerStats(player.number);
+              const stats = getPlayerStats(player.number);
+              const pts = stats?.pts ?? 0;
+              const fouls = stats?.fouls ?? 0;
+              const plusMinus = stats?.plusMinus ?? plusMinusMap?.[String(player.number)] ?? 0;
               const isSelectedBenchSub = isAdmin && subBenchPlayer && String(subBenchPlayer.number) === String(player.number);
               const isSelectedPlayer = selectedPlayer && String(selectedPlayer.number) === String(player.number);
               const isDragOver = isAdmin && dragOverPlayerNum === String(player.number);
@@ -334,11 +337,11 @@ export default function PlayerSelector({
                         {pts} PTS
                       </span>
                       <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
-                        plusMinus > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
-                        plusMinus < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
+                        (plusMinus || 0) > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
+                        (plusMinus || 0) < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
                         'text-slate-400 bg-slate-950/60 border-slate-800'
                       }`} title="Plus/Minus (+/-)">
-                        {plusMinus > 0 ? `+${plusMinus}` : plusMinus}
+                        {(plusMinus || 0) > 0 ? `+${plusMinus}` : (plusMinus || 0)}
                       </span>
                     </div>
                     {isDragOver ? (
@@ -374,7 +377,10 @@ export default function PlayerSelector({
           <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
             {onCourtPlayers.map((player) => {
               const isSelected = selectedPlayer && String(selectedPlayer.number) === String(player.number);
-              const { pts, fouls } = getPlayerStats(player.number);
+              const stats = getPlayerStats(player.number);
+              const pts = stats?.pts ?? 0;
+              const fouls = stats?.fouls ?? 0;
+              const plusMinus = stats?.plusMinus ?? plusMinusMap?.[String(player.number)] ?? 0;
               const isPendingSubOut = subBenchPlayer !== null;
               const isTargetForSub = activeSubCourtPlayer && String(activeSubCourtPlayer.number) === String(player.number);
               const isDragOver = dragOverPlayerNum === String(player.number);
@@ -460,11 +466,11 @@ export default function PlayerSelector({
                           {pts} PTS
                         </span>
                         <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
-                          plusMinus > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
-                          plusMinus < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
+                          (plusMinus || 0) > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
+                          (plusMinus || 0) < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
                           'text-slate-400 bg-slate-950/60 border-slate-800'
                         }`} title="Plus/Minus (+/-)">
-                          {plusMinus > 0 ? `+${plusMinus}` : plusMinus}
+                          {(plusMinus || 0) > 0 ? `+${plusMinus}` : (plusMinus || 0)}
                         </span>
                       </div>
                       {isDragOver ? (
