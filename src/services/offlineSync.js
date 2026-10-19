@@ -25,6 +25,8 @@ export function saveToOfflineQueue(eventData) {
     const Zone = eventData.Zone || eventData.zone || eventData.Zona || eventData.zona || '';
     const Match_Name = eventData.Match_Name || eventData.match_name || eventData.nome_partita || eventData.Nome_Partita || '';
 
+    const onCourtPlayerIds = eventData.onCourtPlayerIds || eventData.onCourtNums || null;
+
     currentQueue.push({
       Timestamp,
       Quarter,
@@ -34,6 +36,7 @@ export function saveToOfflineQueue(eventData) {
       Category,
       Zone,
       Match_Name,
+      onCourtPlayerIds: Array.isArray(onCourtPlayerIds) ? onCourtPlayerIds.map(String) : [],
       _queuedAt: new Date().toISOString()
     });
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(currentQueue));

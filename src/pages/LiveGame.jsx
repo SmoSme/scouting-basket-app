@@ -143,6 +143,13 @@ export default function LiveGame({
     setGameSession(matchName);
     localStorage.setItem('current_game_session', matchName);
     setRoster(matchSquad);
+    if (setOnCourtPlayerNums && matchSquad.length >= 5) {
+      const startingFive = matchSquad.slice(0, 5).map(p => String(p.number));
+      setOnCourtPlayerNums(startingFive);
+      try {
+        localStorage.setItem(`starting_on_court_nums_${matchName}`, JSON.stringify(startingFive));
+      } catch (err) {}
+    }
     setShowSessionModal(false);
   };
 

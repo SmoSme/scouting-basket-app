@@ -181,7 +181,15 @@ export default function App() {
 
   const normalizeEvents = (rawEvents) => {
     if (!Array.isArray(rawEvents)) return [];
-    return rawEvents.map(ev => {
+
+    // Retrieve cached local events with onCourtPlayerIds snapshots if available
+    let cachedEvents = [];
+    try {
+      const saved = localStorage.getItem(`bba_events_${gameSession}`);
+      if (saved) cachedEvents = JSON.parse(saved);
+    } catch (e) {}
+
+    return rawEvents.map((ev, idx) => {
       if (!ev) return {};
       const Action = ev.Action || ev.action || ev.Azione || ev.azione || '';
       const Player = ev.Player || ev.player || ev.Giocatore || ev.giocatore || '';
@@ -192,6 +200,20 @@ export default function App() {
       const Match_Name = ev.Match_Name || ev.match_name || ev.nome_partita || ev.Nome_Partita || '';
       const Timestamp = ev.Timestamp || ev.timestamp || (ev.created_at ? new Date(ev.created_at).toLocaleTimeString('en-US', { hour12: false }) : '');
 
+      let onCourtPlayerIds = ev.onCourtPlayerIds || ev.onCourtNums || null;
+      if (!onCourtPlayerIds && cachedEvents[idx]) {
+        const cached = cachedEvents[idx];
+        if (cached && (cached.onCourtPlayerIds || cached.onCourtNums)) {
+          onCourtPlayerIds = cached.onCourtPlayerIds || cached.onCourtNums;
+        }
+      }
+
+      if (Array.isArray(onCourtPlayerIds)) {
+        onCourtPlayerIds = onCourtPlayerIds.map(String);
+      } else {
+        onCourtPlayerIds = null;
+      }
+
       return {
         ...ev,
         Action, action: Action, Azione: Action, azione: Action,
@@ -201,7 +223,9 @@ export default function App() {
         Zone, zone: Zone, Zona: Zone, zona: Zone,
         Category, category: Category, Categoria: Category, categoria: Category,
         Match_Name, match_name: Match_Name, nome_partita: Match_Name, Nome_Partita: Match_Name,
-        Timestamp, timestamp: Timestamp
+        Timestamp, timestamp: Timestamp,
+        onCourtPlayerIds,
+        onCourtNums: onCourtPlayerIds
       };
     });
   };
@@ -257,7 +281,15 @@ export default function App() {
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null) => {
+  useEffect(() => {
+    if (gameSession && events.length > 0) {
+      try {
+        localStorage.setItem(`bba_events_${gameSession}`, JSON.stringify(events));
+      } catch (e) {}
+    }
+  }, [events, gameSession]);
+
+  const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null, customOnCourt = null) => {
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
     const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent');
     const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
@@ -289,6 +321,12 @@ export default function App() {
       playerNum = String(effectivePlayer.number);
       playerName = effectivePlayer.name;
     }
+
+    const currentOnCourt = (
+      Array.isArray(customOnCourt) && customOnCourt.length > 0
+        ? customOnCourt
+        : onCourtPlayerNums
+    ).map(String);
     
     // Exact schema payload matching the 8 Supabase scouting_log columns
     const supabasePayload = {
@@ -302,7 +340,7 @@ export default function App() {
       Match_Name: gameSession
     };
 
-    // 1. Instant local state update (<5ms)
+    // 1. Instant local state update (<5ms) with onCourtPlayerIds snapshot
     const localEv = {
       ...supabasePayload,
       action: actionName,
@@ -311,7 +349,9 @@ export default function App() {
       quarter: currentQuarter,
       zone: zoneName || 'Generic',
       category: categoryName,
-      timestamp
+      timestamp,
+      onCourtPlayerIds: [...currentOnCourt],
+      onCourtNums: [...currentOnCourt]
     };
     setEvents(prev => [...prev, localEv]);
 
@@ -344,7 +384,7 @@ export default function App() {
 
     // 3. If cloud insert failed or offline, save to local queue
     if (!cloudSynced) {
-      saveToOfflineQueue(supabasePayload);
+      saveToOfflineQueue({ ...supabasePayload, onCourtPlayerIds: [...currentOnCourt] });
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
       showToast(`📦 Saved to offline queue (${newQueueLength} pending sync)`);
@@ -365,7 +405,7 @@ export default function App() {
     }
   };
 
-  const dispatchMultipleActions = async (actionsList = []) => {
+  const dispatchMultipleActions = async (actionsList = [], customOnCourt = null) => {
     if (!Array.isArray(actionsList) || actionsList.length === 0) return;
     if (!gameSession) {
       setShowSessionModal(true);
@@ -376,6 +416,12 @@ export default function App() {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     const payloads = [];
     const localEvs = [];
+
+    const currentOnCourt = (
+      Array.isArray(customOnCourt) && customOnCourt.length > 0
+        ? customOnCourt
+        : onCourtPlayerNums
+    ).map(String);
 
     actionsList.forEach(item => {
       const { actionName, categoryName, zoneName, targetPlayer } = item;
@@ -416,7 +462,9 @@ export default function App() {
         quarter: currentQuarter,
         zone: zoneName || 'Generic',
         category: categoryName,
-        timestamp
+        timestamp,
+        onCourtPlayerIds: [...currentOnCourt],
+        onCourtNums: [...currentOnCourt]
       });
     });
 
@@ -490,7 +538,7 @@ export default function App() {
 
     if (gameSession) {
       const subAction = `SUB: ${inName} IN for ${outName} - ${currentQuarter}`;
-      dispatchAction(subAction, 'Substitution', 'Bench', { number: 'SUB', name: `${inStr} / ${outStr}` });
+      dispatchAction(subAction, 'Substitution', 'Bench', { number: 'SUB', name: `${inStr} / ${outStr}` }, newOnCourt);
     }
   };
 
@@ -561,6 +609,7 @@ export default function App() {
       const Quarter = merged.Quarter || merged.quarter || merged.Quarto || merged.quarto || '';
       const Zone = merged.Zone || merged.zone || merged.Zona || merged.zona || '';
       const Category = merged.Category || merged.category || merged.Categoria || merged.categoria || '';
+      const onCourtPlayerIds = merged.onCourtPlayerIds || ev.onCourtPlayerIds || ev.onCourtNums || null;
 
       return {
         ...merged,
@@ -569,7 +618,9 @@ export default function App() {
         Number: NumberVal, number: NumberVal, Numero: NumberVal, numero: NumberVal,
         Quarter, quarter: Quarter, Quarto: Quarter, quarto: Quarter,
         Zone, zone: Zone, Zona: Zone, zona: Zone,
-        Category, category: Category, Categoria: Category, categoria: Category
+        Category, category: Category, Categoria: Category, categoria: Category,
+        onCourtPlayerIds,
+        onCourtNums: onCourtPlayerIds
       };
     }));
 
@@ -622,7 +673,18 @@ export default function App() {
     }
   };
 
-  const plusMinusMap = calculatePlusMinus(events, onCourtPlayerNums, activeRoster);
+  const startingOnCourtNums = (() => {
+    try {
+      const saved = localStorage.getItem(`starting_on_court_nums_${gameSession}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 5) return parsed;
+      }
+    } catch (e) {}
+    return onCourtPlayerNums;
+  })();
+
+  const plusMinusMap = calculatePlusMinus(events, startingOnCourtNums, activeRoster);
 
   return (
     <BrowserRouter>

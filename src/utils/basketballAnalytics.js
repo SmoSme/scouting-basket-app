@@ -62,69 +62,151 @@ export const calculateOpponentScore = (events = []) => {
 };
 
 /**
- * Time-Independent Plus/Minus (+/-) State Engine
- * Replays chronological events tracking the 5 on-court players at each point in time.
- * When BBA scores (+1, +2, +3), +pts to all 5 active on-court players.
- * When Opponent scores (+1, +2, +3), -pts to all 5 active on-court players.
- * Substitutions swap players in the active 5 on-court set.
+ * Ensure an array has exactly 5 unique player numbers by filling from fallback players.
+ * Guarantees that every scoring event is attributed to exactly 5 on-court players.
+ */
+export function ensureFivePlayers(lineup = [], fallbackPlayers = []) {
+  const set = new Set();
+  (lineup || []).forEach(n => {
+    const s = String(n).trim();
+    if (s && s !== '-' && s !== 'TEAM' && s !== 'SUB' && s !== 'OPP') {
+      set.add(s);
+    }
+  });
+
+  if (set.size < 5) {
+    for (const p of fallbackPlayers) {
+      const numStr = String(p?.number ?? p).trim();
+      if (numStr && numStr !== '-' && numStr !== 'TEAM' && numStr !== 'SUB' && numStr !== 'OPP' && !set.has(numStr)) {
+        set.add(numStr);
+        if (set.size === 5) break;
+      }
+    }
+  }
+
+  return Array.from(set).slice(0, 5);
+}
+
+/**
+ * Event-Driven Time-Independent Plus/Minus (+/-) Engine
+ * 1. Every player starts at 0.
+ * 2. Substitutions do NOT modify anyone's +/- (bench freezes accumulated +/-, entering player starts at 0 or previous stint).
+ * 3. Only scoring events while a player is actively on court change +/-:
+ *    - Team FT (+1), 2PT (+2), 3PT (+3) -> add to the 5 on-court players at that moment.
+ *    - Opponent score (+1, +2, +3) -> subtract from the 5 on-court players at that moment.
+ * 4. Derived purely from the chronological event stream (undo & delete safe).
+ * 5. Mathematically guaranteed invariant: sum(plusMinus across all roster) === 5 * (teamScore - oppScore).
  */
 export function calculatePlusMinus(events = [], startingOnCourtNums = [], customRoster = []) {
   const safeEvents = Array.isArray(events) ? events : [];
-  
-  // 1. Establish starting 5 on-court players
-  let currentOnCourt = [];
-  if (Array.isArray(startingOnCourtNums) && startingOnCourtNums.length === 5) {
-    currentOnCourt = startingOnCourtNums.map(n => String(n));
-  } else {
-    // Determine from custom roster or default master roster
-    const rosterList = (Array.isArray(customRoster) && customRoster.length > 0) 
-      ? customRoster 
-      : DEFAULT_MASTER_ROSTER;
-    currentOnCourt = rosterList.slice(0, 5).map(p => String(p.number));
-  }
 
-  // Active on-court set
-  let activeSet = new Set(currentOnCourt);
-
-  // Plus/Minus accumulator map
-  const plusMinusMap = {};
-
-  // Initialize all known roster players to 0
+  // All known players to initialize plus/minus to 0
   const allKnownPlayers = [
     ...(Array.isArray(customRoster) ? customRoster : []),
     ...DEFAULT_MASTER_ROSTER
   ];
+
+  const plusMinusMap = {};
   allKnownPlayers.forEach(p => {
     plusMinusMap[String(p.number)] = 0;
   });
 
-  // Track any player numbers appearing in events
+  if (Array.isArray(startingOnCourtNums)) {
+    startingOnCourtNums.forEach(n => {
+      const s = String(n).trim();
+      if (s && s !== '-' && s !== 'TEAM' && s !== 'SUB' && s !== 'OPP') {
+        plusMinusMap[s] = plusMinusMap[s] || 0;
+      }
+    });
+  }
+
+  // Include any player appearing in event Number or onCourtPlayerIds
   safeEvents.forEach(e => {
     const num = getNum(e);
     if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP') {
-      if (plusMinusMap[num] === undefined) {
-        plusMinusMap[num] = 0;
-      }
+      if (plusMinusMap[num] === undefined) plusMinusMap[num] = 0;
+    }
+    const oc = e.onCourtPlayerIds || e.onCourtNums;
+    if (Array.isArray(oc)) {
+      oc.forEach(n => {
+        const s = String(n).trim();
+        if (s && s !== '-' && s !== 'TEAM' && s !== 'SUB' && s !== 'OPP') {
+          if (plusMinusMap[s] === undefined) plusMinusMap[s] = 0;
+        }
+      });
     }
   });
 
-  // Replay events chronologically
+  // Track running lineup for fallback when events lack onCourtPlayerIds
+  let runningLineup = [];
+
+  // Find first event with explicit onCourtPlayerIds
+  const firstEvWithLineup = safeEvents.find(e => {
+    const oc = e.onCourtPlayerIds || e.onCourtNums;
+    return Array.isArray(oc) && oc.length >= 5;
+  });
+
+  if (firstEvWithLineup) {
+    const oc = firstEvWithLineup.onCourtPlayerIds || firstEvWithLineup.onCourtNums;
+    runningLineup = ensureFivePlayers(oc, allKnownPlayers);
+  } else {
+    // Collect active players from early plays before any substitution
+    const earlyPlayers = [];
+    for (const e of safeEvents) {
+      const az = getAz(e);
+      const cat = String(e?.Category || e?.category || '');
+      if (cat === 'Substitution' || az.startsWith('SUB:') || az.startsWith('Sub:')) {
+        break;
+      }
+      const num = getNum(e);
+      if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP' && !earlyPlayers.includes(num)) {
+        earlyPlayers.push(num);
+      }
+    }
+
+    const seedLineup = earlyPlayers.length >= 5
+      ? earlyPlayers
+      : [
+          ...earlyPlayers,
+          ...((Array.isArray(startingOnCourtNums) && startingOnCourtNums.length >= 5)
+            ? startingOnCourtNums
+            : (Array.isArray(customRoster) && customRoster.length >= 5)
+              ? customRoster.map(p => String(p.number))
+              : DEFAULT_MASTER_ROSTER.map(p => String(p.number)))
+        ];
+
+    runningLineup = ensureFivePlayers(seedLineup, allKnownPlayers);
+  }
+
+  // Iterate chronologically through events
   safeEvents.forEach(ev => {
     const az = getAz(ev);
-    const cat = String(ev?.Category || ev?.category || ev?.Categoria || ev?.categoria || '');
+    const cat = String(ev?.Category || ev?.category || '');
 
-    // Check for Substitution event
+    // Check for Substitution
     if (cat === 'Substitution' || az.startsWith('SUB:') || az.startsWith('Sub:')) {
       const match = az.match(/SUB:\s*#?([A-Za-z0-9_-]+).*?IN\s+for\s+#?([A-Za-z0-9_-]+)/i);
       if (match) {
         const inNum = match[1].trim();
         const outNum = match[2].trim();
-        activeSet.delete(outNum);
-        activeSet.add(inNum);
+        const set = new Set(runningLineup);
+        set.delete(outNum);
+        set.add(inNum);
+        runningLineup = ensureFivePlayers(Array.from(set), allKnownPlayers);
         if (plusMinusMap[inNum] === undefined) plusMinusMap[inNum] = 0;
         if (plusMinusMap[outNum] === undefined) plusMinusMap[outNum] = 0;
       }
-      return;
+      return; // Substitutions do NOT award or deduct plus/minus
+    }
+
+    // Determine 5 players on court for this event
+    let eventLineup = null;
+    const rawOc = ev.onCourtPlayerIds || ev.onCourtNums;
+    if (Array.isArray(rawOc) && rawOc.length > 0) {
+      eventLineup = ensureFivePlayers(rawOc, allKnownPlayers);
+      runningLineup = eventLineup;
+    } else {
+      eventLineup = ensureFivePlayers(runningLineup, allKnownPlayers);
     }
 
     // Check for BBA Team Scoring
@@ -133,34 +215,46 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
     else if (az === '3PT Made' || az === '3PT Fatto') bbaPoints = 3;
     else if (az === 'FT Made' || az === 'TL Fatto') bbaPoints = 1;
 
+    // Check for Opponent Scoring
+    let oppPoints = 0;
+    if (isOpponentScoreEvent(ev)) {
+      oppPoints = getOpponentPoints(ev);
+    }
+
     if (bbaPoints > 0) {
-      // Ensure the scorer is tracked in activeSet if known
+      // Ensure scorer is inside eventLineup if known
       const scorerNum = getNum(ev);
       if (scorerNum && scorerNum !== '-' && scorerNum !== 'TEAM' && scorerNum !== 'OPP') {
-        if (!activeSet.has(scorerNum) && activeSet.size < 5) {
-          activeSet.add(scorerNum);
+        if (!eventLineup.includes(scorerNum)) {
+          // Replace last non-scorer with scorer
+          eventLineup = [scorerNum, ...eventLineup.filter(n => n !== scorerNum)].slice(0, 5);
+          runningLineup = eventLineup;
         }
       }
 
-      activeSet.forEach(pNum => {
+      eventLineup.forEach(pNum => {
         plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) + bbaPoints;
       });
-      return;
-    }
-
-    // Check for Opponent Scoring
-    if (isOpponentScoreEvent(ev)) {
-      const oppPts = getOpponentPoints(ev);
-      if (oppPts > 0) {
-        activeSet.forEach(pNum => {
-          plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) - oppPts;
-        });
-      }
-      return;
+    } else if (oppPoints > 0) {
+      eventLineup.forEach(pNum => {
+        plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) - oppPoints;
+      });
     }
   });
 
   return plusMinusMap;
+}
+
+/**
+ * Sanity verification helper: checks sum(plusMinus across all roster) === 5 * (teamScore - oppScore)
+ */
+export function verifyPlusMinusInvariant(plusMinusMap, events) {
+  const teamScore = calculateTeamScore(events);
+  const oppScore = calculateOpponentScore(events);
+  const targetTotal = 5 * (teamScore - oppScore);
+  const actualTotal = Object.values(plusMinusMap).reduce((a, b) => a + (Number(b) || 0), 0);
+  const isValid = actualTotal === targetTotal;
+  return { isValid, actualTotal, targetTotal, teamScore, oppScore };
 }
 
 /**
