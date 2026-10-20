@@ -214,10 +214,23 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 <h2 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider">
                   {match.name}
                 </h2>
-                <div className="bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono font-black text-xs px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                  <span>SCORE:</span>
-                  <span className="text-amber-400 text-sm">{teamOverview.pts}</span>
-                  <span className="text-[10px] text-amber-500 uppercase">PTS</span>
+                <div className="bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono font-black text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
+                  <span className="text-slate-300 font-bold">BBA</span>
+                  <span className="text-amber-400 text-sm font-black">{teamOverview.pts}</span>
+                  <span className="text-slate-500 font-bold">-</span>
+                  <span className="text-amber-400 text-sm font-black">{teamOverview.opponentScore || 0}</span>
+                  <span className="text-[10px] text-amber-500 uppercase font-bold">OPP</span>
+                  {(teamOverview.opponentScore > 0 || teamOverview.pointDifferential !== 0) && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-black ml-0.5 ${
+                      teamOverview.pointDifferential > 0 
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
+                        : teamOverview.pointDifferential < 0 
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' 
+                          : 'bg-slate-700 text-slate-300'
+                    }`}>
+                      {teamOverview.pointDifferential > 0 ? `+${teamOverview.pointDifferential}` : teamOverview.pointDifferential}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="text-xs text-slate-400 font-semibold flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
@@ -369,120 +382,98 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                 </button>
               </div>
 
-              {/* Executive Summary Metrics Grid with Clean Measurable Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-                {/* 1. Effective FG% */}
+              {/* 4-Card Match Totals Strip (Raw, Immediate Basketball Numbers) */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                {/* 1. Field Goals (FG%) */}
                 <div
-                  onClick={() => setActiveMetricGuideKey('efg')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
+                  onClick={() => setActiveMetricGuideKey('fg')}
+                  className="glass-card p-3 border-slate-800 hover:border-emerald-500/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Click to view Field Goals (FG%) guide and shot breakdown"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
-                      EFFECTIVE FG%
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-300 uppercase tracking-wider transition-colors">
+                      FIELD GOALS (FG%)
                     </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                    <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors flex-none" />
                   </div>
                   <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-emerald-400">{teamOverview.efgPct.toFixed(1)}%</span>
-                    <span className="text-[10px] font-bold text-slate-500">eFG%</span>
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-emerald-400">
+                      {teamOverview.pctFg.toFixed(1)}%
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">FG%</span>
                   </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">2P: {teamOverview.pct2p.toFixed(0)}% | 3P: {teamOverview.pct3p.toFixed(0)}%</span>
+                  <span className="text-[10px] text-slate-400 font-semibold truncate">
+                    {teamOverview.fgm}/{teamOverview.fga} FG (2P: {teamOverview.fg2m}/{teamOverview.fg2a} • 3P: {teamOverview.fg3m}/{teamOverview.fg3a})
+                  </span>
                 </div>
 
-                {/* 2. True Shooting % */}
+                {/* 2. Free Throws (FT%) */}
                 <div
-                  onClick={() => setActiveMetricGuideKey('ts')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
+                  onClick={() => setActiveMetricGuideKey('shotProfile')}
+                  className="glass-card p-3 border-slate-800 hover:border-sky-500/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Click to view Free Throw and Shot Profile guide"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
-                      TRUE SHOOTING
+                      FREE THROWS (FT%)
                     </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                    <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
                   </div>
                   <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-emerald-300">{teamOverview.tsPct.toFixed(1)}%</span>
-                    <span className="text-[10px] font-bold text-slate-500">TS%</span>
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-sky-400">
+                      {teamOverview.pctFt.toFixed(1)}%
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">FT%</span>
                   </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">FT: {teamOverview.ftm}/{teamOverview.fta} ({teamOverview.pctFt.toFixed(0)}%) • {teamOverview.pts} PTS</span>
+                  <span className="text-[10px] text-slate-400 font-semibold truncate">
+                    {teamOverview.ftm}/{teamOverview.fta} FT Made • {teamOverview.fd || 0} Fouls Drawn
+                  </span>
                 </div>
 
                 {/* 3. Total Rebounds */}
                 <div
                   onClick={() => setActiveMetricGuideKey('oreb')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
+                  className="glass-card p-3 border-slate-800 hover:border-amber-500/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Click to view Rebounding & Extra Possessions guide"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-amber-300 uppercase tracking-wider transition-colors">
                       TOTAL REBOUNDS
                     </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                    <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 transition-colors flex-none" />
                   </div>
                   <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-amber-400">{teamOverview.reb}</span>
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-amber-400">
+                      {teamOverview.reb}
+                    </span>
                     <span className="text-[10px] font-bold text-slate-500">REB</span>
                   </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">OFF: {teamOverview.oreb} ({teamOverview.orebShare.toFixed(0)}%) • DEF: {teamOverview.dreb}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold truncate">
+                    {teamOverview.dreb} Defensive • {teamOverview.oreb} Offensive
+                  </span>
                 </div>
 
-                {/* 4. AST / TOV Ratio */}
-                <div
-                  onClick={() => setActiveMetricGuideKey('asttov')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
-                      AST / TOV RATIO
-                    </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
-                  </div>
-                  <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-cyan-400">{teamOverview.astTovRatio}</span>
-                    <span className="text-[10px] font-bold text-slate-500">RATIO</span>
-                  </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.ast} AST / {teamOverview.tov} TOV</span>
-                </div>
-
-                {/* 5. Defense & Steal-Turnover Margin */}
-                <div
-                  onClick={() => setActiveMetricGuideKey('ballControl')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
-                      DEFENSE & MARGIN
-                    </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
-                  </div>
-                  <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-rose-400">{teamOverview.stl}</span>
-                    <span className="text-[10px] font-bold text-slate-500">STL</span>
-                  </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.blk} BLK • Margin: {(teamOverview.stealTovMargin || 0) >= 0 ? '+' : ''}${teamOverview.stealTovMargin || 0} vs TOV • {teamOverview.pf} PF</span>
-                </div>
-
-                {/* 6. FIBA Efficiency (PIR) */}
+                {/* 4. Team FIBA PIR */}
                 <div
                   onClick={() => setActiveMetricGuideKey('pir')}
-                  className="glass-card p-2.5 border-slate-800 hover:border-sky-400/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
-                  title="Click to view metric definition and benchmarks"
+                  className="glass-card p-3 border-slate-800 hover:border-purple-500/80 hover:bg-slate-850 cursor-pointer group transition-all flex flex-col justify-between shadow-sm active:scale-98"
+                  title="Click to view FIBA Performance Index Rating (PIR) guide"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-300 uppercase tracking-wider transition-colors">
-                      FIBA EFFICIENCY
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-purple-300 uppercase tracking-wider transition-colors">
+                      TEAM FIBA PIR
                     </span>
-                    <Info className="w-3 h-3 text-slate-500 group-hover:text-sky-400 transition-colors flex-none" />
+                    <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-purple-400 transition-colors flex-none" />
                   </div>
                   <div className="flex items-baseline gap-1 my-1">
-                    <span className="font-mono text-xl sm:text-2xl font-black text-purple-400">{teamOverview.pir}</span>
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-purple-400">
+                      {teamOverview.pir}
+                    </span>
                     <span className="text-[10px] font-bold text-slate-500">PIR</span>
                   </div>
-                  <span className="text-[9px] text-slate-500 font-semibold">{teamOverview.pts} PTS | {teamOverview.reb} REB | {teamOverview.ast} AST</span>
+                  <span className="text-[10px] text-slate-400 font-semibold truncate">
+                    {teamOverview.pts} PTS • {teamOverview.ast} AST • {teamOverview.stl} STL
+                  </span>
                 </div>
               </div>
 
@@ -521,19 +512,19 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                           1. SHOOTING EFFICIENCY <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          pillars.shooting.rating === 'Elite' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                          pillars.shooting.rating === 'Solid' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          pillars.shooting?.rating === 'Elite' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          pillars.shooting?.rating === 'Solid' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                           'bg-rose-950 text-rose-300 border border-rose-800'
                         }`}>
-                          {pillars.shooting.rating}
+                          {pillars.shooting?.rating || 'Solid'}
                         </span>
                       </div>
                       <div className="font-mono text-2xl font-black text-emerald-400 my-1">
-                        {pillars.shooting.value}
+                        {pillars.shooting?.value || `${teamOverview.efgPct.toFixed(1)}%`}
                       </div>
                     </div>
                     <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {pillars.shooting.subtext}
+                      {pillars.shooting?.subtext || `2P: ${teamOverview.fg2m}/${teamOverview.fg2a} (${teamOverview.pct2p.toFixed(0)}%) | 3P: ${teamOverview.fg3m}/${teamOverview.fg3a} (${teamOverview.pct3p.toFixed(0)}%)`}
                     </div>
                   </div>
 
@@ -561,59 +552,59 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                     </div>
                   </div>
 
-                  {/* Pillar 3: Offensive Rebound Share */}
+                  {/* Pillar 3: Rebounding & Extra Possessions */}
                   <div
                     onClick={() => setActiveMetricGuideKey('oreb')}
                     className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Pillar 3: Offensive Rebound Share (OREB%). Click for guide."
+                    title="Pillar 3: Rebounding & Extra Possessions. Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
                         <span className="group-hover:text-amber-300 transition-colors flex items-center gap-1">
-                          3. OFFENSIVE REBOUND SHARE <Info className="w-2.5 h-2.5 text-slate-500" />
+                          3. REBOUNDING & EXTRA POSSESSIONS <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          pillars.rebounding.rating.includes('Dominance') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                          pillars.rebounding.rating.includes('Solid') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          (pillars.rebounding?.rating === 'Strong Glass' || teamOverview.oreb >= 10 || teamOverview.orebShare >= 28) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          (pillars.rebounding?.rating === 'Solid' || teamOverview.oreb >= 7) ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                           'bg-slate-850 text-slate-300 border border-slate-700'
                         }`}>
-                          {pillars.rebounding.rating}
+                          {pillars.rebounding?.rating || (teamOverview.oreb >= 10 || teamOverview.orebShare >= 28 ? 'Strong Glass' : teamOverview.oreb >= 7 ? 'Solid' : 'Passive')}
                         </span>
                       </div>
-                      <div className="font-mono text-2xl font-black text-amber-400 my-1">
-                        {pillars.rebounding.value}
+                      <div className="font-mono text-xl sm:text-2xl font-black text-amber-400 my-1">
+                        {pillars.rebounding?.value || `${teamOverview.oreb} OFF | ${teamOverview.dreb} DEF`}
                       </div>
                     </div>
                     <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {pillars.rebounding.subtext}
+                      {pillars.rebounding?.subtext || `${teamOverview.reb} Total REB • ${Math.round(teamOverview.orebShare)}% Offensive Rebound Share`}
                     </div>
                   </div>
 
-                  {/* Pillar 4: Ball Security & Playmaking */}
+                  {/* Pillar 4: Ball Movement & Security */}
                   <div
                     onClick={() => setActiveMetricGuideKey('ballControl')}
-                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-rose-500/60 cursor-pointer group transition-all flex flex-col justify-between"
-                    title="Pillar 4: Ball Security & Playmaking. Click for guide."
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-cyan-500/60 cursor-pointer group transition-all flex flex-col justify-between"
+                    title="Pillar 4: Ball Movement & Security. Click for guide."
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                        <span className="group-hover:text-rose-300 transition-colors flex items-center gap-1">
-                          4. BALL SECURITY & MARGIN <Info className="w-2.5 h-2.5 text-slate-500" />
+                        <span className="group-hover:text-cyan-300 transition-colors flex items-center gap-1">
+                          4. BALL MOVEMENT & SECURITY <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          pillars.ballControl?.rating.includes('Elite') ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                          pillars.ballControl?.rating.includes('Manageable') ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          (pillars.ballControl?.rating === 'Great Flow' || teamOverview.astTovRatio >= 1.3) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          (pillars.ballControl?.rating === 'Balanced' || teamOverview.astTovRatio >= 0.9) ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                           'bg-rose-950 text-rose-300 border border-rose-800'
                         }`}>
-                          {pillars.ballControl?.rating || (teamOverview.tov <= 14 ? 'Solid Care' : 'High TOV')}
+                          {pillars.ballControl?.rating || (teamOverview.astTovRatio >= 1.3 ? 'Great Flow' : teamOverview.astTovRatio >= 0.9 ? 'Balanced' : 'High Turnovers')}
                         </span>
                       </div>
-                      <div className="font-mono text-xl sm:text-2xl font-black text-rose-400 my-1">
-                        {pillars.ballControl?.value || `${teamOverview.tov} TOV vs ${teamOverview.ast} AST`}
+                      <div className="font-mono text-xl sm:text-2xl font-black text-cyan-400 my-1">
+                        {pillars.ballControl?.value || `${teamOverview.ast} AST / ${teamOverview.tov} TOV`}
                       </div>
                     </div>
                     <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {pillars.ballControl?.subtext || `AST/TOV: ${teamOverview.astTovRatio} • STL-TOV Margin: ${(teamOverview.stealTovMargin || 0) >= 0 ? '+' : ''}${teamOverview.stealTovMargin || 0} (${teamOverview.stl} STL)`}
+                      {pillars.ballControl?.subtext || `Assisted FGs: ${teamOverview.assistedFgmPct || (teamOverview.fgm > 0 ? Math.round((teamOverview.ast / teamOverview.fgm) * 100) : 0)}% (${teamOverview.ast} of ${teamOverview.fgm} FGM) • ${teamOverview.stl} Steals (STL)`}
                     </div>
                   </div>
                 </div>

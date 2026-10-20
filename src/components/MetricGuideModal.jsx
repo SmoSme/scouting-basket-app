@@ -8,15 +8,28 @@ export const METRIC_GUIDES = {
     key: 'pillars',
     shortLabel: '4 Pillars',
     title: 'Game Control & Efficiency Pillars',
-    formula: '1. Shooting (eFG%) + 2. Paint vs Perimeter + 3. OREB Share + 4. Ball Security (TOV/AST/STL)',
-    description: 'The 4 practical pillars of game control designed specifically for senior regional basketball: 1) Shooting Efficiency (eFG%), 2) Shot Profile (paint attack volume and free throw conversion), 3) OREB Share (second-chance creation), and 4) Ball Care (raw turnovers, assist ratio, and steal margin). Controlling 3 or more pillars consistently dictates match victories.',
+    formula: '1. Shooting (eFG%) + 2. Shot Profile + 3. Rebounding & Extra Possessions + 4. Ball Movement & Security',
+    description: 'The 4 practical pillars of game control designed specifically for senior regional basketball: 1) Shooting Efficiency (eFG% and 2P/3P splits), 2) Shot Profile Balance (paint attacks vs perimeter spacing & FT conversion), 3) Rebounding & Extra Possessions (concrete offensive vs defensive rebound splits), and 4) Ball Movement & Security (assists, turnovers, and assisted FG%). Controlling 3 or more pillars consistently dictates match victories.',
     benchmarks: [
       { level: 'Pillar 1: Shooting eFG%', range: '> 48% (Target > 52%)', color: 'emerald', desc: 'Shot quality and perimeter conversion' },
-      { level: 'Pillar 2: Paint Attacks', range: '> 35% Paint / > 65% FT', color: 'emerald', desc: 'Rim pressure and drawing fouls' },
-      { level: 'Pillar 3: OREB Share', range: '> 30% of Total REB', color: 'emerald', desc: 'Second-chance scoring opportunities' },
-      { level: 'Pillar 4: Ball Security', range: '< 14 TOV / STL-TOV ≥ 0', color: 'emerald', desc: 'Protecting the ball & positive turnover margin' }
+      { level: 'Pillar 2: Paint & FTs', range: '> 35% Paint / > 65% FT', color: 'emerald', desc: 'Rim pressure and drawing fouls' },
+      { level: 'Pillar 3: Rebounding', range: '≥ 10 OREB or ≥ 28% OREB Share', color: 'emerald', desc: 'Second-chance scoring opportunities' },
+      { level: 'Pillar 4: Ball Movement & Care', range: 'AST/TOV ≥ 1.3 / Assisted FGs > 55%', color: 'emerald', desc: 'Crisp ball movement and possession protection' }
     ],
     warning: 'Computed directly from tracked field goals, court coordinates, free throws, rebounds, assists, turnovers, and steals.'
+  },
+  fg: {
+    key: 'fg',
+    shortLabel: 'FG%',
+    title: 'FG% — Field Goals & Conversion Splits',
+    formula: '((2PM + 3PM) / (2PA + 3PA)) × 100',
+    description: 'Raw team shooting accuracy from the field combining interior (2-point) and perimeter (3-point) attempts. The breakdown displays both 2P and 3P conversion rates to isolate rim finishing versus outside shooting execution.',
+    benchmarks: [
+      { level: 'High Conversion', range: '> 50.0%', color: 'emerald', desc: 'Efficient scoring execution across both interior and perimeter zones' },
+      { level: 'Competitive Average', range: '42.0% – 49.9%', color: 'amber', desc: 'Solid regional standard for contested senior games' },
+      { level: 'Struggling / Cold', range: '< 42.0%', color: 'rose', desc: 'Forced shots, spacing issues, or rim finishing struggles' }
+    ],
+    warning: 'Calculated directly from all recorded 2-point and 3-point makes and attempts.'
   },
   efg: {
     key: 'efg',
@@ -46,32 +59,33 @@ export const METRIC_GUIDES = {
   },
   oreb: {
     key: 'oreb',
-    shortLabel: 'OREB%',
-    title: 'OREB Share — Offensive Rebound Share (Pillar 3: Second Chances)',
-    formula: '(Offensive Rebounds / Total Team Rebounds) × 100',
-    description: 'Proportion of team rebounds collected on the offensive backboard. Measures physical hustle, positioning, and the ability to manufacture second-chance points and extra scoring opportunities from missed shots.',
+    shortLabel: 'Rebounding',
+    title: 'Rebounding & Extra Possessions (Pillar 3)',
+    formula: 'Offensive Rebounds vs Defensive Rebounds & OREB Share ((OREB / Total REB) × 100)',
+    description: 'Measures backboard dominance and extra possession generation. Offensive rebounds represent second-chance scoring opportunities, while defensive rebounds secure stops to fuel transition.',
     benchmarks: [
-      { level: 'Board Dominance', range: '> 30.0%', color: 'emerald', desc: 'Consistently generates 12+ second-chance scoring opportunities' },
-      { level: 'Solid Glass', range: '22.0% – 29.9%', color: 'amber', desc: 'Balanced offensive rebounding while maintaining transition defense stability' },
-      { level: 'Low OREB Share', range: '< 22.0%', color: 'rose', desc: 'One-and-done possessions; emphasizes quick defensive retreat' }
+      { level: 'Strong Glass', range: '≥ 10 OREB or OREB Share ≥ 28%', color: 'emerald', desc: 'Dominating the offensive glass; manufactures 10+ second-chance possessions' },
+      { level: 'Solid Glass', range: '7 – 9 OREB (OREB Share 22% – 27%)', color: 'amber', desc: 'Competitive board presence with balanced transition defense retreat' },
+      { level: 'Passive Glass', range: '< 7 OREB (OREB Share < 22%)', color: 'rose', desc: 'One-and-done possessions; limited extra possession generation' }
     ],
-    warning: 'Calculated from tracked offensive and defensive rebounds to measure second-chance opportunity generation.'
+    warning: 'Directly calculated from tracked offensive and defensive rebounds.'
   },
   ballControl: {
     key: 'ballControl',
-    shortLabel: 'Ball Care',
-    title: 'Ball Security & Playmaking (Pillar 4: TOV vs AST & STL Margin)',
-    formula: 'Total Turnovers (TOV), AST/TOV Ratio, Steal-to-Turnover Margin (STL - TOV)',
-    description: 'Direct, practical evaluation of possession protection and playmaking control. Focuses on concrete bench targets: keeping turnovers under 14 per game, rewarding high AST/TOV ratios, and winning the steal-to-turnover margin.',
+    shortLabel: 'Ball Movement',
+    title: 'Ball Movement & Security (Pillar 4)',
+    formula: 'Assists (AST) vs Turnovers (TOV), AST/TOV Ratio, Assisted FG%',
+    description: 'Direct evaluation of playmaking flow and possession protection. Rewarding high ball movement (Assisted FGM%) and ball care (AST/TOV ratio >= 1.3), while keeping unforced giveaways to a minimum.',
     benchmarks: [
-      { level: 'Elite Ball Care', range: '< 14 TOV / AST:TOV > 1.5 / STL-TOV Margin ≥ 0', color: 'emerald', desc: 'Careful passing, disciplined spacing, and positive net turnover creation' },
-      { level: 'Manageable', range: '14 – 18 TOV / AST:TOV 1.0 – 1.4 / STL-TOV Margin -1 to -4', color: 'amber', desc: 'Standard competitive turnover volume in regional senior leagues' },
-      { level: 'High Turnover Risk', range: '> 18 TOV / AST:TOV < 1.0 / STL-TOV Margin ≤ -5', color: 'rose', desc: 'Losing too many scoring chances to unforced errors and transition giveaways' }
+      { level: 'Great Flow', range: 'AST/TOV ≥ 1.3 / Assisted FGs > 60%', color: 'emerald', desc: 'Crisp passing, high unselfishness, and excellent ball security' },
+      { level: 'Balanced', range: 'AST/TOV 0.9 – 1.29 / Assisted FGs 45% – 59%', color: 'amber', desc: 'Standard competitive playmaking and mistake control' },
+      { level: 'High Turnovers', range: 'AST/TOV < 0.9 / Excessive unforced giveaways', color: 'rose', desc: 'Stagnant ball movement or sloppy transition giveaways' }
     ],
-    warning: 'Directly computed from tracked assists, turnovers, and steals, measuring decision-making and turnover margin.'
+    warning: 'Directly computed from tracked assists, turnovers, and made field goals.'
   },
   ts: {
     key: 'ts',
+    hidden: true,
     shortLabel: 'TS%',
     title: 'TS% — True Shooting % (Overall Scoring Efficiency)',
     formula: 'Total Points / [2 × (FGA + 0.44 × FTA)] × 100',
@@ -85,6 +99,7 @@ export const METRIC_GUIDES = {
   },
   asttov: {
     key: 'asttov',
+    hidden: true,
     shortLabel: 'AST/TOV',
     title: 'AST / TOV Ratio (Assist-to-Turnover Ratio)',
     formula: 'Total Assists / Total Turnovers',

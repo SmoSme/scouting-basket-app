@@ -426,6 +426,7 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
 
   // Ball Security & Margin
   const stealTovMargin = teamOthers.stl - teamOthers.tov;
+  const assistedFgmPct = teamShooting.fgm > 0 ? Math.round((teamOthers.ast / teamShooting.fgm) * 100) : 0;
 
   const teamOverview = {
     ...teamShooting,
@@ -448,49 +449,66 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
     teamMidShots,
     teamThreeShots,
     stealTovMargin,
+    assistedFgmPct,
     staggerCount: teamStagger,
     ghostCount: teamGhost,
     totalTactics,
     tacticsPerPoss: Math.round(tacticsPerPoss * 10) / 10
   };
 
+  // Rebounding status rating: Strong Glass (if OREB >= 10 or OREB% >= 28%), Solid (7-9 OREB), Passive (< 7 OREB)
+  const orebRating = (teamOthers.oreb >= 10 || orebShare >= 28)
+    ? 'Strong Glass'
+    : teamOthers.oreb >= 7
+      ? 'Solid'
+      : 'Passive';
+  const orebColor = orebRating === 'Strong Glass' ? 'emerald' : orebRating === 'Solid' ? 'amber' : 'slate';
+
+  // Ball Movement status rating: Great Flow (>= 1.3), Balanced (0.9 - 1.29), High Turnovers (< 0.9)
+  const ballRating = astTovRatio >= 1.3
+    ? 'Great Flow'
+    : astTovRatio >= 0.9
+      ? 'Balanced'
+      : 'High Turnovers';
+  const ballColor = ballRating === 'Great Flow' ? 'emerald' : ballRating === 'Balanced' ? 'amber' : 'rose';
+
   // Practical Regional Coaching Pillars: GAME CONTROL & EFFICIENCY PILLARS
   const efficiencyPillars = {
     shooting: {
       key: 'shooting',
-      title: '1. SHOOTING EFFICIENCY (eFG%)',
+      title: '1. SHOOTING EFFICIENCY',
       value: teamShooting.efgPct.toFixed(1) + '%',
       numeric: teamShooting.efgPct,
       subtext: `2P: ${teamShooting.fg2m}/${teamShooting.fg2a} (${teamShooting.pct2p.toFixed(0)}%) | 3P: ${teamShooting.fg3m}/${teamShooting.fg3a} (${teamShooting.pct3p.toFixed(0)}%)`,
-      rating: teamShooting.efgPct >= 52 ? 'Elite' : teamShooting.efgPct >= 47 ? 'Solid' : 'Needs Work',
+      rating: teamShooting.efgPct >= 52 ? 'Elite' : teamShooting.efgPct >= 47 ? 'Solid' : 'Low',
       color: teamShooting.efgPct >= 52 ? 'emerald' : teamShooting.efgPct >= 47 ? 'amber' : 'rose'
     },
     shotProfile: {
       key: 'shotProfile',
-      title: '2. PAINT vs PERIMETER (SHOT PROFILE)',
+      title: '2. SHOT PROFILE BALANCE',
       value: `Paint ${pctPaint}% | 3PT ${pctThree}%`,
       numeric: pctPaint,
       subtext: `Mid: ${pctMid}% (${teamMidShots} FGA) • FT: ${teamShooting.ftm}/${teamShooting.fta} (${teamShooting.pctFt.toFixed(0)}%)`,
-      rating: pctPaint >= 40 ? 'Heavy Rim Attack' : pctThree >= 40 ? 'Perimeter Heavy' : 'Balanced Spread',
+      rating: pctPaint >= 40 ? 'Heavy Rim Attack' : pctThree >= 40 ? 'Perimeter Heavy' : 'Balanced',
       color: pctPaint >= 35 ? 'emerald' : 'sky'
     },
     rebounding: {
       key: 'rebounding',
-      title: '3. OFFENSIVE REBOUND SHARE (OREB%)',
-      value: teamOverview.orebShare.toFixed(1) + '%',
-      numeric: teamOverview.orebShare,
-      subtext: `${teamOthers.oreb} Second-Chance Opportunities Created (${teamOthers.reb} Total REB)`,
-      rating: teamOverview.orebShare >= 30 ? 'Board Dominance' : teamOverview.orebShare >= 22 ? 'Solid Glass' : 'Low OREB',
-      color: teamOverview.orebShare >= 30 ? 'emerald' : teamOverview.orebShare >= 22 ? 'amber' : 'slate'
+      title: '3. REBOUNDING & EXTRA POSSESSIONS',
+      value: `${teamOthers.oreb} OFF | ${teamOthers.dreb} DEF`,
+      numeric: teamOthers.oreb,
+      subtext: `${teamOthers.reb} Total REB • ${Math.round(orebShare)}% Offensive Rebound Share`,
+      rating: orebRating,
+      color: orebColor
     },
     ballControl: {
       key: 'ballControl',
-      title: '4. BALL SECURITY & PLAYMAKING',
-      value: `${teamOthers.tov} TOV vs ${teamOthers.ast} AST`,
-      numeric: teamOthers.tov,
-      subtext: `AST/TOV: ${teamOverview.astTovRatio} • STL-TOV Margin: ${stealTovMargin >= 0 ? '+' : ''}${stealTovMargin} (${teamOthers.stl} STL)`,
-      rating: teamOthers.tov <= 13 ? 'Elite Ball Care' : teamOthers.tov <= 18 ? 'Manageable' : 'High Turnovers',
-      color: teamOthers.tov <= 13 ? 'emerald' : teamOthers.tov <= 18 ? 'amber' : 'rose'
+      title: '4. BALL MOVEMENT & SECURITY',
+      value: `${teamOthers.ast} AST / ${teamOthers.tov} TOV`,
+      numeric: teamOthers.ast,
+      subtext: `Assisted FGs: ${assistedFgmPct}% (${teamOthers.ast} of ${teamShooting.fgm} FGM) • ${teamOthers.stl} Steals (STL)`,
+      rating: ballRating,
+      color: ballColor
     }
   };
 
