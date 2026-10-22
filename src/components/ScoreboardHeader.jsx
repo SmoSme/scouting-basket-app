@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus } from 'lucide-react';
+import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus, Calendar } from 'lucide-react';
 import { calculateTeamScore, calculateOpponentScore } from '../utils/basketballAnalytics';
 
 export default function ScoreboardHeader({
@@ -10,7 +10,9 @@ export default function ScoreboardHeader({
   onUndo,
   onRecordOpponentScore,
   plusMinusMap = {},
-  isAdmin = true
+  isAdmin = true,
+  matchDate,
+  onUpdateMatchDate
 }) {
   const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
@@ -71,24 +73,44 @@ export default function ScoreboardHeader({
       {/* Top Row: Quarter Selector + Tactical Counters + Dual Scoreboard + Quick Opp Scoring + Undo */}
       <div className="flex items-center justify-between gap-1.5 sm:gap-2 flex-wrap xs:flex-nowrap">
         {/* Touch-Optimized Quarter Selector */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-950 p-1 rounded-lg border border-slate-700 shadow-sm flex-none">
-          <Clock className="w-3.5 h-3.5 text-sky-400 ml-1 mr-0.5 flex-none hidden sm:inline" />
-          {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => {
-            const isCurrent = currentQuarter === q;
-            return (
-              <button
-                key={q}
-                onClick={() => setCurrentQuarter(q)}
-                className={`px-2 sm:px-2.5 py-1 rounded text-xs sm:text-sm font-black transition-all ${
-                  isCurrent
-                    ? 'bg-sky-500 text-slate-950 shadow-md scale-105'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                }`}
-              >
-                {q}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-1 flex-wrap xs:flex-nowrap">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-950 p-1 rounded-lg border border-slate-700 shadow-sm flex-none">
+            <Clock className="w-3.5 h-3.5 text-sky-400 ml-1 mr-0.5 flex-none hidden sm:inline" />
+            {['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'].map((q) => {
+              const isCurrent = currentQuarter === q;
+              return (
+                <button
+                  key={q}
+                  onClick={() => setCurrentQuarter(q)}
+                  className={`px-2 sm:px-2.5 py-1 rounded text-xs sm:text-sm font-black transition-all ${
+                    isCurrent
+                      ? 'bg-sky-500 text-slate-950 shadow-md scale-105'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  {q}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Editable Match Date Widget */}
+          {matchDate && (
+            <div className="hidden xs:flex items-center gap-1.5 bg-slate-950 px-2 sm:px-2.5 py-1 rounded-lg border border-slate-700/80 text-xs font-bold shadow-sm flex-none">
+              <Calendar className="w-3.5 h-3.5 text-sky-400 flex-none" />
+              {isAdmin && onUpdateMatchDate ? (
+                <input
+                  type="date"
+                  value={matchDate}
+                  onChange={(e) => onUpdateMatchDate(e.target.value)}
+                  className="bg-transparent border-none text-slate-200 text-xs font-bold focus:outline-none focus:ring-0 p-0 cursor-pointer"
+                  title="Click to edit match date (YYYY-MM-DD)"
+                />
+              ) : (
+                <span className="text-slate-300 text-xs font-mono">{matchDate}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Group: Tactical Counters + Dual Scoreboard + Quick Opp Buttons + Undo */}

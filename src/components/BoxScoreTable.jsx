@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trophy, BarChart2, Sparkles, Layers, Ghost } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
-import { calculatePlusMinus } from '../utils/basketballAnalytics.js';
+import { calculatePlusMinus, computeZoneStats } from '../utils/basketballAnalytics.js';
 
 export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   if (!events || events.length === 0) {
@@ -97,26 +97,8 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
     return { quarter: q, stagger: stagQ, ghost: ghostQ, total: stagQ + ghostQ };
   }).filter(t => t.total > 0 || ['Q1', 'Q2', 'Q3', 'Q4'].includes(t.quarter));
 
-  // Shot zone stats
-  const shotEvents = events.filter(e => {
-    const az = getAz(e);
-    return ['2PT Made', '2PT Missed', '3PT Made', '3PT Missed', '2PT Fatto', '2PT Sbagliato', '3PT Fatto', '3PT Sbagliato'].includes(az);
-  });
-
-  const zoneSummary = Object.values(COURT_ZONES).map(zoneInfo => {
-    const zEvents = shotEvents.filter(e => getZona(e) === zoneInfo.name);
-    const made = zEvents.filter(e => {
-      const az = getAz(e);
-      return az.includes('Made') || az.includes('Fatto');
-    }).length;
-    const attempts = zEvents.length;
-    const pct = attempts > 0 ? ((made / attempts) * 100).toFixed(1) : '0.0';
-    return {
-      name: zoneInfo.name,
-      type: zoneInfo.type,
-      made, attempts, pct: `${pct}%`
-    };
-  });
+  // Shot zone stats using shared computeZoneStats engine
+  const zoneSummary = computeZoneStats(events).zones;
 
   return (
     <div className="grid grid-cols-12 gap-4">

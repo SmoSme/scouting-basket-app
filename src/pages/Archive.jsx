@@ -82,6 +82,16 @@ export default function Archive({ showToast, authRole = 'admin' }) {
     }
   };
 
+  const handleUpdateMatchDate = (matchName, newDate) => {
+    try {
+      localStorage.setItem(`match_date_${matchName}`, newDate);
+    } catch (e) {}
+    setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchDate: newDate } : m));
+    if (reviewMatch && reviewMatch.name === matchName) {
+      setReviewMatch(prev => ({ ...prev, matchDate: newDate }));
+    }
+  };
+
   // Action: Open Match Review Modal
   const handleOpenMatchReview = async (match) => {
     setReviewLoading(true);
@@ -284,7 +294,11 @@ export default function Archive({ showToast, authRole = 'admin' }) {
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    {new Date(m.createdAt).toLocaleDateString('en-US')}
+                    {(() => {
+                      const stored = m.matchDate || localStorage.getItem(`match_date_${m.name}`);
+                      if (stored) return new Date(stored + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                      try { return new Date(m.createdAt).toLocaleDateString('en-US'); } catch(e) { return m.createdAt || 'n.a.'; }
+                    })()}
                   </span>
                 </div>
               </div>
@@ -330,6 +344,7 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           match={reviewMatch}
           onClose={() => setReviewMatch(null)}
           onDownloadCSV={handleDownloadCSV}
+          onUpdateMatchDate={handleUpdateMatchDate}
         />
       )}
     </div>

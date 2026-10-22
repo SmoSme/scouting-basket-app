@@ -116,6 +116,34 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedZoneKey, setSelectedZoneKey] = useState('PAINT');
   const [currentQuarter, setCurrentQuarter] = useState('Q1');
+  const [matchDate, setMatchDate] = useState(() => {
+    const session = localStorage.getItem('current_game_session');
+    if (session) {
+      const savedDate = localStorage.getItem(`match_date_${session}`);
+      if (savedDate) return savedDate;
+    }
+    return new Date().toISOString().split('T')[0];
+  });
+
+  const handleUpdateMatchDate = (newDate) => {
+    setMatchDate(newDate);
+    if (gameSession) {
+      try {
+        localStorage.setItem(`match_date_${gameSession}`, newDate);
+      } catch (e) {}
+    }
+  };
+
+  useEffect(() => {
+    if (gameSession) {
+      const savedDate = localStorage.getItem(`match_date_${gameSession}`);
+      if (savedDate) {
+        setMatchDate(savedDate);
+      } else {
+        setMatchDate(new Date().toISOString().split('T')[0]);
+      }
+    }
+  }, [gameSession]);
   const [events, setEvents] = useState([]);
   const [toastMsg, setToastMsg] = useState(null);
   const [showRosterModal, setShowRosterModal] = useState(false);
@@ -195,10 +223,15 @@ export default function App() {
       const Player = ev.Player || ev.player || ev.Giocatore || ev.giocatore || '';
       const NumberVal = String(ev.Number ?? ev.number ?? ev.Numero ?? ev.numero ?? '');
       const Quarter = ev.Quarter || ev.quarter || ev.Quarto || ev.quarto || '';
-      const Zone = ev.Zone || ev.zone || ev.Zona || ev.zona || '';
+      const rawZone = ev.Zone || ev.zone || ev.Zona || ev.zona || '';
       const Category = ev.Category || ev.category || ev.Categoria || ev.categoria || '';
       const Match_Name = ev.Match_Name || ev.match_name || ev.nome_partita || ev.Nome_Partita || '';
       const Timestamp = ev.Timestamp || ev.timestamp || (ev.created_at ? new Date(ev.created_at).toLocaleTimeString('en-US', { hour12: false }) : '');
+
+      // Strict event schema hygiene: Only true 2PT/3PT field goals may store a court zone ID
+      const isFieldGoal = Action === '2PT Made' || Action === '2PT Missed' || Action === '2PT Fatto' || Action === '2PT Sbagliato' ||
+                          Action === '3PT Made' || Action === '3PT Missed' || Action === '3PT Fatto' || Action === '3PT Sbagliato';
+      const Zone = isFieldGoal && rawZone && rawZone !== 'Generic' && rawZone !== 'Bench' ? rawZone : null;
 
       let onCourtPlayerIds = ev.onCourtPlayerIds || ev.onCourtNums || null;
       if (!onCourtPlayerIds && cachedEvents[idx]) {
@@ -224,8 +257,8 @@ export default function App() {
         Category, category: Category, Categoria: Category, categoria: Category,
         Match_Name, match_name: Match_Name, nome_partita: Match_Name, Nome_Partita: Match_Name,
         Timestamp, timestamp: Timestamp,
-        onCourtPlayerIds,
-        onCourtNums: onCourtPlayerIds
+        onCourtPlayerIds: onCourtPlayerIds ? [...onCourtPlayerIds] : null,
+        onCourtNums: onCourtPlayerIds ? [...onCourtPlayerIds] : null
       };
     });
   };
@@ -326,8 +359,13 @@ export default function App() {
       Array.isArray(customOnCourt) && customOnCourt.length > 0
         ? customOnCourt
         : onCourtPlayerNums
-    ).map(String);
-    
+    ).map(id => String(id));
+
+    // Strict schema hygiene: Only true 2PT/3PT field goal events carry a court zone; all other events get null
+    const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
+                         actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato');
+    const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
+
     // Exact schema payload matching the 8 Supabase scouting_log columns
     const supabasePayload = {
       Timestamp: timestamp,
@@ -336,7 +374,7 @@ export default function App() {
       Player: playerName,
       Action: actionName,
       Category: categoryName,
-      Zone: zoneName || 'Generic',
+      Zone: safeZone,
       Match_Name: gameSession
     };
 
@@ -347,11 +385,11 @@ export default function App() {
       player: playerName,
       number: playerNum,
       quarter: currentQuarter,
-      zone: zoneName || 'Generic',
+      zone: safeZone,
       category: categoryName,
       timestamp,
-      onCourtPlayerIds: [...currentOnCourt],
-      onCourtNums: [...currentOnCourt]
+      onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
+      onCourtNums: [...currentOnCourt.map(id => String(id))]
     };
     setEvents(prev => [...prev, localEv]);
 
@@ -384,7 +422,7 @@ export default function App() {
 
     // 3. If cloud insert failed or offline, save to local queue
     if (!cloudSynced) {
-      saveToOfflineQueue({ ...supabasePayload, onCourtPlayerIds: [...currentOnCourt] });
+      saveToOfflineQueue({ ...supabasePayload, onCourtPlayerIds: [...currentOnCourt.map(id => String(id))] });
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
       showToast(`📦 Saved to offline queue (${newQueueLength} pending sync)`);
@@ -399,10 +437,8 @@ export default function App() {
       });
     } catch (e) {}
 
-    // Only deselect player if this was an individual manual action
-    if (!isTeamEvent && !isOpponent && !isSub && !targetPlayer) {
-      setSelectedPlayer(null);
-    }
+    // Strict State Reset after Every Logged Action: Clear selected player immediately
+    setSelectedPlayer(null);
   };
 
   const dispatchMultipleActions = async (actionsList = [], customOnCourt = null) => {
@@ -421,7 +457,7 @@ export default function App() {
       Array.isArray(customOnCourt) && customOnCourt.length > 0
         ? customOnCourt
         : onCourtPlayerNums
-    ).map(String);
+    ).map(id => String(id));
 
     actionsList.forEach(item => {
       const { actionName, categoryName, zoneName, targetPlayer } = item;
@@ -443,6 +479,11 @@ export default function App() {
         playerName = effectivePlayer.name;
       }
 
+      // Only true 2PT/3PT field goals carry a court zone
+      const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
+                           actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato');
+      const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
+
       const p = {
         Timestamp: timestamp,
         Quarter: currentQuarter,
@@ -450,7 +491,7 @@ export default function App() {
         Player: playerName,
         Action: actionName,
         Category: categoryName,
-        Zone: zoneName || 'Generic',
+        Zone: safeZone,
         Match_Name: gameSession
       };
       payloads.push(p);
@@ -460,11 +501,11 @@ export default function App() {
         player: playerName,
         number: playerNum,
         quarter: currentQuarter,
-        zone: zoneName || 'Generic',
+        zone: safeZone,
         category: categoryName,
         timestamp,
-        onCourtPlayerIds: [...currentOnCourt],
-        onCourtNums: [...currentOnCourt]
+        onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
+        onCourtNums: [...currentOnCourt.map(id => String(id))]
       });
     });
 
@@ -485,7 +526,7 @@ export default function App() {
     }
 
     if (!cloudSynced) {
-      payloads.forEach(p => saveToOfflineQueue(p));
+      payloads.forEach(p => saveToOfflineQueue({ ...p, onCourtPlayerIds: [...currentOnCourt.map(id => String(id))] }));
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
       showToast(`📦 Saved ${payloads.length} events to offline queue`);
@@ -501,6 +542,7 @@ export default function App() {
       } catch (e) {}
     });
 
+    // Clear selected player immediately
     setSelectedPlayer(null);
   };
 
@@ -514,7 +556,7 @@ export default function App() {
       actionName = `Opponent Score Corrected ${points} (${bbaPts}-${newOppPts})`;
     }
 
-    dispatchAction(actionName, 'Opponent', 'Generic', { number: 'OPP', name: 'OPPONENT' });
+    dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' });
   };
 
   const handleSwapSubstitution = (subOutNum, subInNum) => {
@@ -527,9 +569,7 @@ export default function App() {
     const newOnCourt = onCourtPlayerNums.map(num => String(num) === outStr ? inStr : String(num));
     updateOnCourtPlayerNums(newOnCourt);
 
-    if (selectedPlayer && String(selectedPlayer.number) === outStr) {
-      setSelectedPlayer(null);
-    }
+    setSelectedPlayer(null);
 
     const outName = outPlayer ? `#${outPlayer.number} ${outPlayer.name}` : `#${outStr}`;
     const inName = inPlayer ? `#${inPlayer.number} ${inPlayer.name}` : `#${inStr}`;
@@ -538,7 +578,7 @@ export default function App() {
 
     if (gameSession) {
       const subAction = `SUB: ${inName} IN for ${outName} - ${currentQuarter}`;
-      dispatchAction(subAction, 'Substitution', 'Bench', { number: 'SUB', name: `${inStr} / ${outStr}` }, newOnCourt);
+      dispatchAction(subAction, 'Substitution', null, { number: 'SUB', name: `${inStr} / ${outStr}` }, newOnCourt);
     }
   };
 
@@ -550,7 +590,24 @@ export default function App() {
 
     const lastEv = events[events.length - 1];
     setEvents(prev => prev.slice(0, -1));
+    setSelectedPlayer(null);
     showToast(`↩️ Undone: #${lastEv.Number || lastEv.number || lastEv.Numero} ${lastEv.Action || lastEv.action || lastEv.Azione}`);
+
+    // If undone event was a SUB, revert onCourtPlayerNums
+    const lastAz = String(lastEv.Action || lastEv.action || '');
+    const lastCat = String(lastEv.Category || lastEv.category || '');
+    if (lastCat === 'Substitution' || lastAz.startsWith('SUB:') || lastAz.startsWith('Sub:')) {
+      const match = lastAz.match(/SUB:\s*#?([A-Za-z0-9_-]+).*?IN\s+for\s+#?([A-Za-z0-9_-]+)/i);
+      if (match) {
+        const inNum = match[1].trim();
+        const outNum = match[2].trim();
+        setOnCourtPlayerNums(prev => {
+          const reverted = prev.map(n => String(n) === inNum ? outNum : String(n));
+          try { localStorage.setItem('current_on_court_nums', JSON.stringify(reverted)); } catch(e) {}
+          return reverted;
+        });
+      }
+    }
 
     if (navigator.onLine && lastEv.id) {
       try {
@@ -746,6 +803,8 @@ export default function App() {
                 onDeleteEvent={handleDeleteEvent}
                 onEditEvent={handleEditEvent}
                 authRole={authRole}
+                matchDate={matchDate}
+                onUpdateMatchDate={handleUpdateMatchDate}
               />
             }
           />

@@ -41,7 +41,9 @@ export default function LiveGame({
   handleResetGame,
   onDeleteEvent,
   onEditEvent,
-  authRole = 'admin'
+  authRole = 'admin',
+  matchDate: matchDateProp,
+  onUpdateMatchDate
 }) {
   const isAdmin = authRole === 'admin';
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
@@ -61,6 +63,20 @@ export default function LiveGame({
   const [homeTeam, setHomeTeam] = useState('BBA');
   const [awayTeam, setAwayTeam] = useState('');
   const [customMatchName, setCustomMatchName] = useState('');
+  const [matchDate, setMatchDate] = useState(() => matchDateProp || new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    if (matchDateProp) {
+      setMatchDate(matchDateProp);
+    }
+  }, [matchDateProp]);
+
+  const handleDateChange = (val) => {
+    setMatchDate(val);
+    if (onUpdateMatchDate) {
+      onUpdateMatchDate(val);
+    }
+  };
   
   // Selected player IDs/numbers for current match session squad
   const [selectedSquadNums, setSelectedSquadNums] = useState(() => {
@@ -142,6 +158,13 @@ export default function LiveGame({
     
     setGameSession(matchName);
     localStorage.setItem('current_game_session', matchName);
+    // Save match date
+    const todayDate = matchDate || new Date().toISOString().split('T')[0];
+    if (onUpdateMatchDate) {
+      onUpdateMatchDate(todayDate);
+    } else {
+      try { localStorage.setItem(`match_date_${matchName}`, todayDate); } catch(e) {}
+    }
     setRoster(matchSquad);
     if (setOnCourtPlayerNums && matchSquad.length >= 5) {
       const startingFive = matchSquad.slice(0, 5).map(p => String(p.number));
@@ -168,11 +191,25 @@ export default function LiveGame({
   const handleRecordShot = (isMade) => {
     if (!isAdmin) return;
     const zoneInfo = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
-    if (selectedPlayer) {
-      const shotType = zoneInfo.type; // "2PT" or "3PT"
-      const outcome = isMade ? 'Made' : 'Missed';
-      const actionName = `${shotType} ${outcome}`;
-      dispatchAction(actionName, 'Shot', zoneInfo.name);
+    const shooter = selectedPlayer;
+    if (shooter) {
+      if (isMade) {
+        setCourtShotPopover({
+          zoneKey: selectedZoneKey,
+          outcome: 'MADE',
+          step: 'ASSIST',
+          shooter
+        });
+      } else {
+        const shotType = zoneInfo.type; // "2PT" or "3PT"
+        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter);
+        setCourtShotPopover({
+          zoneKey: selectedZoneKey,
+          outcome: 'MISSED',
+          step: 'REBOUND',
+          shooter
+        });
+      }
     } else {
       setCourtShotPopover({
         zoneKey: selectedZoneKey,
@@ -186,10 +223,12 @@ export default function LiveGame({
   const handleRecordAction = (actionName, categoryName) => {
     if (!isAdmin) return;
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
-    if (isTeamEvent || selectedPlayer) {
-      dispatchAction(actionName, categoryName, 'Generic');
+    if (isTeamEvent) {
+      dispatchAction(actionName, categoryName, null);
+    } else if (selectedPlayer) {
+      dispatchAction(actionName, categoryName, null, selectedPlayer);
     } else {
-      setPendingActionPrompt({ actionName, categoryName, zoneName: 'Generic' });
+      setPendingActionPrompt({ actionName, categoryName, zoneName: null });
     }
   };
 
@@ -228,13 +267,13 @@ export default function LiveGame({
         {
           actionName: 'Assist',
           categoryName: 'Passing',
-          zoneName: zoneInfo.name,
+          zoneName: null,
           targetPlayer: assistPlayer
         }
       ]);
     } else {
       dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter);
-      dispatchAction('Assist', 'Passing', zoneInfo.name, assistPlayer);
+      dispatchAction('Assist', 'Passing', null, assistPlayer);
     }
 
     setCourtShotPopover(null);
@@ -250,7 +289,7 @@ export default function LiveGame({
   };
 
   const handleCompleteMissedShotRebound = (rebAction, rebPlayer) => {
-    dispatchAction(rebAction, 'Rebound', 'Generic', rebPlayer);
+    dispatchAction(rebAction, 'Rebound', null, rebPlayer);
     setCourtShotPopover(null);
   };
 
@@ -318,6 +357,18 @@ export default function LiveGame({
                   placeholder="e.g. BBA vs Virtus - Friendly"
                   required
                   className="w-full bg-slate-950 border border-sky-500/50 text-sky-400 font-black p-2.5 rounded-lg text-xs focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">
+                  MATCH DATE
+                </label>
+                <input
+                  type="date"
+                  value={matchDate}
+                  onChange={(e) => setMatchDate(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold p-2.5 rounded-lg text-xs focus:outline-none focus:border-sky-400"
                 />
               </div>
 
@@ -822,22 +873,13 @@ export default function LiveGame({
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleCompleteMissedShotRebound('Def Rebound', null)}
-                      className="py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-sky-300 font-bold text-xs uppercase flex items-center justify-center gap-1 transition-all"
-                    >
-                      <span>🛡️ DEF REB (Team/Opp)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCourtShotPopover(null)}
-                      className="py-2 px-3 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs uppercase transition-all"
-                    >
-                      SKIP REBOUND
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCourtShotPopover(null)}
+                    className="w-full py-2 px-3 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs uppercase transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>⏩ SKIP / OPPONENT DEF REB</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -874,7 +916,7 @@ export default function LiveGame({
                   key={p.number}
                   type="button"
                   onClick={() => {
-                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, pendingActionPrompt.zoneName, p);
+                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, null, p);
                     setPendingActionPrompt(null);
                   }}
                   className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 flex items-center justify-between transition-all active:scale-98 group text-left"
@@ -903,6 +945,8 @@ export default function LiveGame({
         onRecordOpponentScore={dispatchOpponentScore}
         plusMinusMap={plusMinusMap}
         isAdmin={isAdmin}
+        matchDate={matchDate}
+        onUpdateMatchDate={handleDateChange}
       />
 
       {/* Main Nav Sub-Bar & Mobile View Switcher */}

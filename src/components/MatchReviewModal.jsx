@@ -8,9 +8,9 @@ import {
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
-import { calculateMatchAnalytics } from '../utils/basketballAnalytics';
+import { calculateMatchAnalytics, computeZoneStats } from '../utils/basketballAnalytics';
 
-export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
+export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
   const [selectedPlayerNum, setSelectedPlayerNum] = useState(null);
   const [shotMapPlayerFilter, setShotMapPlayerFilter] = useState(null);
@@ -18,6 +18,28 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
   const [boxScoreSortKey, setBoxScoreSortKey] = useState('pir');
   const [boxScoreSortAsc, setBoxScoreSortAsc] = useState(false);
   const [activeMetricGuideKey, setActiveMetricGuideKey] = useState(null); // 'pillars' | 'efg' | 'ts' | 'oreb' | 'asttov' | 'ballControl' | 'pir' | 'gamescore' | 'pps'
+
+  // Match Date State for retroactive editing
+  const [matchDateValue, setMatchDateValue] = useState(() => {
+    const stored = localStorage.getItem(`match_date_${match?.name}`);
+    if (stored) return stored;
+    if (match?.matchDate) return match.matchDate;
+    try {
+      const d = new Date(match?.createdAt);
+      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    } catch(e) {}
+    return new Date().toISOString().split('T')[0];
+  });
+
+  const handleDateChange = (newDate) => {
+    setMatchDateValue(newDate);
+    try {
+      localStorage.setItem(`match_date_${match?.name}`, newDate);
+    } catch(e) {}
+    if (onUpdateMatchDate) {
+      onUpdateMatchDate(match?.name, newDate);
+    }
+  };
 
   // Play-by-Play Filters
   const [playSearch, setPlaySearch] = useState('');
@@ -29,6 +51,19 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
   const analytics = useMemo(() => {
     return calculateMatchAnalytics(match?.events || []);
   }, [match]);
+
+  // Unified shot zone stats strictly filtered for 2PT/3PT attempts and reacting to player filter
+  const filteredShotMapEvents = useMemo(() => {
+    let evs = match?.events || [];
+    if (shotMapPlayerFilter) {
+      evs = evs.filter(e => String(e.Number ?? e.number ?? e.Numero ?? e.numero ?? '') === String(shotMapPlayerFilter.number));
+    }
+    return evs;
+  }, [match?.events, shotMapPlayerFilter]);
+
+  const activeZoneStats = useMemo(() => {
+    return computeZoneStats(filteredShotMapEvents);
+  }, [filteredShotMapEvents]);
 
   const {
     teamOverview,
@@ -239,9 +274,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   {totalEvents} Logged Plays
                 </span>
                 <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  {new Date(match.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <span className="flex items-center gap-1.5 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                  <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                  <input
+                    type="date"
+                    value={matchDateValue}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    className="bg-transparent text-slate-200 font-bold text-xs focus:outline-none focus:border-sky-400 cursor-pointer"
+                    title="Click to edit match date (YYYY-MM-DD)"
+                  />
                 </span>
                 <span>•</span>
                 <span className="text-emerald-400 font-bold">
@@ -1317,7 +1358,8 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                   selectedPlayer={shotMapPlayerFilter}
                   selectedZoneKey={shotMapSelectedZone}
                   onSelectZone={(k) => setShotMapSelectedZone(k)}
-                  events={match.events}
+                  events={filteredShotMapEvents}
+                  zoneStats={activeZoneStats}
                 />
               </div>
 
@@ -1361,7 +1403,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {zoneSummary.map(z => (
+                    {activeZoneStats.zones.map(z => (
                       <tr key={z.key} className="border-b border-slate-850 hover:bg-slate-800/30">
                         <td className="py-2.5 px-2 font-bold text-slate-100 flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: z.efficiencyColor }}></span>
@@ -1385,12 +1427,37 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV }) {
                             z.attempts > 0 ? 'bg-rose-950 text-rose-300 border border-rose-800' :
                             'bg-slate-800 text-slate-500'
                           }`}>
-                            {z.pct >= 50 ? 'HOT' : z.pct >= 33 ? 'SOLID' : z.attempts > 0 ? 'COLD' : 'NO ATTEMPTS'}
+                            {z.ratingLabel || (z.pct >= 50 ? 'HOT' : z.pct >= 33 ? 'SOLID' : z.attempts > 0 ? 'COLD' : 'NO ATTEMPTS')}
                           </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
+                  {activeZoneStats.totalShotsCount > 0 && (
+                    <tfoot>
+                      <tr className="border-t-2 border-slate-700 bg-slate-900/80 font-black text-slate-100">
+                        <td className="py-2.5 px-2">TOTAL (ALL 9 ZONES)</td>
+                        <td className="py-2.5 px-2 text-slate-400">FG</td>
+                        <td className="py-2.5 px-2 text-sky-400 font-mono text-sm">
+                          {activeZoneStats.totalMadeCount} / {activeZoneStats.totalShotsCount}
+                        </td>
+                        <td className="py-2.5 px-2 text-sky-400 font-mono text-sm">
+                          {((activeZoneStats.totalMadeCount / activeZoneStats.totalShotsCount) * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 px-2 font-mono">100.0%</td>
+                        <td className="py-2.5 px-2 text-amber-400 font-mono">
+                          {activeZoneStats.zones.reduce((acc, z) => acc + (z.attempts * z.pps), 0) > 0
+                            ? (activeZoneStats.zones.reduce((acc, z) => acc + (z.attempts * z.pps), 0) / activeZoneStats.totalShotsCount).toFixed(2)
+                            : '0.00'}
+                        </td>
+                        <td className="py-2.5 px-2 text-right">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800">
+                            ALL SHOTS
+                          </span>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             </div>

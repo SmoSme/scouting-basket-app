@@ -1,46 +1,37 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Target, MapPin } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
+import { computeZoneStats } from '../utils/basketballAnalytics.js';
 
 export default function CourtPitchMap({
   selectedPlayer,
   selectedZoneKey,
   onSelectZone,
-  events
+  events,
+  zoneStats: customZoneStats = null
 }) {
-  const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
-  const getZona = (e) => String(e?.Zone || e?.zone || e?.Zona || e?.zona || '');
 
-  // Compute zone colors and statistics (Made / Attempts and Shooting %)
-  const getZoneStats = (zoneName) => {
+  // Compute unified zone statistics using the shared computeZoneStats engine
+  const computedStats = useMemo(() => {
+    if (customZoneStats) return customZoneStats;
+
     let filteredEvents = events || [];
     if (selectedPlayer) {
       filteredEvents = filteredEvents.filter(e => getNum(e) === String(selectedPlayer.number));
     }
-    
-    const zoneEvents = filteredEvents.filter(e => getZona(e) === zoneName);
-    const made = zoneEvents.filter(e => {
-      const az = getAz(e);
-      return az.includes('Made') || az.includes('Fatto');
-    }).length;
-    const attempts = zoneEvents.length;
-    
-    if (attempts === 0) {
-      return { color: '#0F172A', label: zoneName.toUpperCase(), pct: 0, made: 0, attempts: 0 };
-    }
-    
-    const pct = (made / attempts) * 100;
-    let color = '#7F1D1D'; // Brick red 0-32%
-    if (pct >= 50.0) color = '#064E3B'; // Dark Emerald 50-100%
-    else if (pct >= 33.0) color = '#78350F'; // Dark Amber 33-49%
+    return computeZoneStats(filteredEvents);
+  }, [events, selectedPlayer, customZoneStats]);
 
+  const getZoneStats = (zoneName) => {
+    const stat = computedStats?.byName?.[zoneName];
+    if (stat) return stat;
     return {
-      color,
-      label: `${made}/${attempts} (${pct.toFixed(0)}%)`,
-      pct,
-      made,
-      attempts
+      color: '#0F172A',
+      label: zoneName.toUpperCase(),
+      pct: 0,
+      made: 0,
+      attempts: 0
     };
   };
 

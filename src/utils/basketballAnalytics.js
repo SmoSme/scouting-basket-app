@@ -137,18 +137,12 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
     }
   });
 
-  // Track running lineup for fallback when events lack onCourtPlayerIds
+  // Reconstruct active 5-man lineup chronologically from match start
   let runningLineup = [];
-
-  // Find first event with explicit onCourtPlayerIds
-  const firstEvWithLineup = safeEvents.find(e => {
-    const oc = e.onCourtPlayerIds || e.onCourtNums;
-    return Array.isArray(oc) && oc.length >= 5;
-  });
-
-  if (firstEvWithLineup) {
-    const oc = firstEvWithLineup.onCourtPlayerIds || firstEvWithLineup.onCourtNums;
-    runningLineup = ensureFivePlayers(oc, allKnownPlayers);
+  if (Array.isArray(startingOnCourtNums) && startingOnCourtNums.length >= 5) {
+    runningLineup = ensureFivePlayers(startingOnCourtNums, allKnownPlayers);
+  } else if (safeEvents.length > 0 && Array.isArray(safeEvents[0].onCourtPlayerIds) && safeEvents[0].onCourtPlayerIds.length >= 5) {
+    runningLineup = ensureFivePlayers(safeEvents[0].onCourtPlayerIds, allKnownPlayers);
   } else {
     // Collect active players from early plays before any substitution
     const earlyPlayers = [];
@@ -168,7 +162,7 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
       ? earlyPlayers
       : [
           ...earlyPlayers,
-          ...((Array.isArray(startingOnCourtNums) && startingOnCourtNums.length >= 5)
+          ...((Array.isArray(startingOnCourtNums) && startingOnCourtNums.length > 0)
             ? startingOnCourtNums
             : (Array.isArray(customRoster) && customRoster.length >= 5)
               ? customRoster.map(p => String(p.number))
@@ -195,6 +189,8 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
         runningLineup = ensureFivePlayers(Array.from(set), allKnownPlayers);
         if (plusMinusMap[inNum] === undefined) plusMinusMap[inNum] = 0;
         if (plusMinusMap[outNum] === undefined) plusMinusMap[outNum] = 0;
+      } else if (Array.isArray(ev.onCourtPlayerIds) && ev.onCourtPlayerIds.length >= 5) {
+        runningLineup = ensureFivePlayers(ev.onCourtPlayerIds, allKnownPlayers);
       }
       return; // Substitutions do NOT award or deduct plus/minus
     }
@@ -202,7 +198,7 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
     // Determine 5 players on court for this event
     let eventLineup = null;
     const rawOc = ev.onCourtPlayerIds || ev.onCourtNums;
-    if (Array.isArray(rawOc) && rawOc.length > 0) {
+    if (Array.isArray(rawOc) && rawOc.length >= 5) {
       eventLineup = ensureFivePlayers(rawOc, allKnownPlayers);
       runningLineup = eventLineup;
     } else {
@@ -224,7 +220,7 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
     if (bbaPoints > 0) {
       // Ensure scorer is inside eventLineup if known
       const scorerNum = getNum(ev);
-      if (scorerNum && scorerNum !== '-' && scorerNum !== 'TEAM' && scorerNum !== 'OPP') {
+      if (scorerNum && scorerNum !== '-' && scorerNum !== 'TEAM' && scorerNum !== 'OPP' && scorerNum !== 'SUB') {
         if (!eventLineup.includes(scorerNum)) {
           // Replace last non-scorer with scorer
           eventLineup = [scorerNum, ...eventLineup.filter(n => n !== scorerNum)].slice(0, 5);
@@ -255,6 +251,97 @@ export function verifyPlusMinusInvariant(plusMinusMap, events) {
   const actualTotal = Object.values(plusMinusMap).reduce((a, b) => a + (Number(b) || 0), 0);
   const isValid = actualTotal === targetTotal;
   return { isValid, actualTotal, targetTotal, teamScore, oppScore };
+}
+
+/**
+ * Shared Shot Zone Analytics Selector
+ * Strictly filters ONLY valid 2PT and 3PT Field Goal events (excluding FT, REB, TOV, PF, OPP, etc.)
+ * Produces unified stats for both the SVG Court Map and the 9-Zone Ranking Table.
+ */
+export function computeZoneStats(events = []) {
+  const safeEvents = Array.isArray(events) ? events : [];
+
+  // Strictly filter only true 2PT and 3PT Field Goal attempts
+  const validShotEvents = safeEvents.filter(e => {
+    if (!e) return false;
+    const az = String(e.Action || e.action || e.Azione || e.azione || '').trim();
+    const is2P = az === '2PT Made' || az === '2PT Missed' || az === '2PT Fatto' || az === '2PT Sbagliato';
+    const is3P = az === '3PT Made' || az === '3PT Missed' || az === '3PT Fatto' || az === '3PT Sbagliato';
+    if (!is2P && !is3P) return false;
+
+    // Must have a valid recognized court zone (reject null, undefined, Generic, Bench)
+    const zName = String(e.Zone || e.zone || e.Zona || e.zona || '').trim();
+    if (!zName || zName === 'null' || zName === 'undefined' || zName === 'Generic' || zName === 'Bench') {
+      return false;
+    }
+    return true;
+  });
+
+  const totalShotsCount = validShotEvents.length;
+
+  const byKey = {};
+  const byName = {};
+  const list = Object.entries(COURT_ZONES).map(([key, zoneInfo]) => {
+    const zEvents = validShotEvents.filter(e => {
+      const zName = String(e.Zone || e.zone || e.Zona || e.zona || '').trim();
+      return zName === zoneInfo.name;
+    });
+
+    const made = zEvents.filter(e => {
+      const az = String(e.Action || e.action || e.Azione || e.azione || '');
+      return az.includes('Made') || az.includes('Fatto');
+    }).length;
+
+    const attempts = zEvents.length;
+    const pct = attempts > 0 ? (made / attempts) * 100 : 0;
+    const shotShare = totalShotsCount > 0 ? (attempts / totalShotsCount) * 100 : 0;
+    const pps = attempts > 0 ? (made * zoneInfo.val) / attempts : 0;
+
+    // SVG Map color
+    let mapColor = '#0F172A';
+    if (attempts > 0) {
+      if (pct >= 50.0) mapColor = '#064E3B'; // Dark Emerald 50-100%
+      else if (pct >= 33.0) mapColor = '#78350F'; // Dark Amber 33-49%
+      else mapColor = '#7F1D1D'; // Brick red 0-32%
+    }
+
+    // Table rating and color
+    const efficiencyColor = pct >= 50 ? '#059669' : pct >= 33 ? '#D97706' : attempts > 0 ? '#DC2626' : '#334155';
+    const ratingLabel = pct >= 50 ? 'HOT' : pct >= 33 ? 'SOLID' : attempts > 0 ? 'COLD' : 'NO ATTEMPTS';
+
+    const label = attempts > 0 ? `${made}/${attempts} (${Math.round(pct)}%)` : zoneInfo.name.toUpperCase();
+
+    const zoneStat = {
+      key,
+      name: zoneInfo.name,
+      type: zoneInfo.type,
+      val: zoneInfo.val,
+      made,
+      attempts,
+      pct: Math.round(pct * 10) / 10,
+      shotShare: Math.round(shotShare * 10) / 10,
+      pps: Math.round(pps * 100) / 100,
+      color: mapColor,
+      efficiencyColor,
+      ratingLabel,
+      label
+    };
+
+    byKey[key] = zoneStat;
+    byName[zoneInfo.name] = zoneStat;
+    return zoneStat;
+  });
+
+  const sortedList = [...list].sort((a, b) => b.attempts - a.attempts);
+
+  return {
+    zones: sortedList, // sorted for ranking table
+    rawZones: list,    // in standard definition order
+    byKey,             // lookup by key (e.g. byKey['PAINT'])
+    byName,            // lookup by name (e.g. byName['Paint / Key'])
+    totalShotsCount,
+    totalMadeCount: list.reduce((acc, z) => acc + z.made, 0)
+  };
 }
 
 /**
@@ -687,37 +774,8 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
   // =========================================================================
   // 5. SHOT ZONE EFFICIENCY & BREAKDOWN
   // =========================================================================
-  const shotEvents = safeEvents.filter(e => {
-    const az = getAz(e);
-    return az.includes('2PT') || az.includes('3PT');
-  });
-
-  const totalShotsCount = shotEvents.length;
-
-  const zoneSummary = Object.entries(COURT_ZONES).map(([key, zoneInfo]) => {
-    const zEvents = shotEvents.filter(e => getZona(e) === zoneInfo.name);
-    const made = zEvents.filter(e => {
-      const az = getAz(e);
-      return az.includes('Made') || az.includes('Fatto');
-    }).length;
-    const attempts = zEvents.length;
-    const pct = attempts > 0 ? (made / attempts) * 100 : 0;
-    const shotShare = totalShotsCount > 0 ? (attempts / totalShotsCount) * 100 : 0;
-    const pps = attempts > 0 ? (made * zoneInfo.val) / attempts : 0;
-
-    return {
-      key,
-      name: zoneInfo.name,
-      type: zoneInfo.type,
-      val: zoneInfo.val,
-      made,
-      attempts,
-      pct: Math.round(pct * 10) / 10,
-      shotShare: Math.round(shotShare * 10) / 10,
-      pps: Math.round(pps * 100) / 100,
-      efficiencyColor: pct >= 50 ? '#059669' : pct >= 33 ? '#D97706' : attempts > 0 ? '#DC2626' : '#334155'
-    };
-  }).sort((a, b) => b.attempts - a.attempts);
+  const zoneStats = computeZoneStats(safeEvents);
+  const zoneSummary = zoneStats.zones;
 
   return {
     teamOverview,
@@ -727,6 +785,7 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
     playerStats,
     teamLeaders,
     zoneSummary,
+    zoneStats,
     plusMinusMap,
     totalEvents: safeEvents.length,
     quarterSequence
