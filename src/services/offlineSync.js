@@ -178,20 +178,61 @@ export function setupOnlineSyncListener(onSyncSuccess) {
   };
 }
 
+export function removeFromOfflineQueue(eventId, eventObj) {
+  try {
+    const queue = getOfflineQueue();
+    if (!queue || queue.length === 0) return;
+
+    const filtered = queue.filter(item => {
+      if (eventId && item.id && String(item.id) === String(eventId)) return false;
+      const ts = item.Timestamp || item.timestamp;
+      const num = String(item.Number ?? item.number);
+      const action = item.Action || item.action;
+      
+      const targetTs = eventObj?.Timestamp || eventObj?.timestamp;
+      const targetNum = String(eventObj?.Number ?? eventObj?.number ?? '');
+      const targetAction = eventObj?.Action || eventObj?.action;
+
+      if (targetTs && targetAction && ts === targetTs && action === targetAction && num === targetNum) {
+        return false;
+      }
+      return true;
+    });
+
+    if (filtered.length !== queue.length) {
+      if (filtered.length === 0) {
+        clearOfflineQueue();
+      } else {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(filtered));
+      }
+    }
+  } catch (err) {
+    console.error('Error removing from offline queue:', err);
+  }
+}
+
 export function setupStandbyRefocusListener(onFocusOrWake) {
-  const handleWake = () => {
-    if (document.visibilityState === 'visible') {
-      console.log('App returned from standby / tab refocus! Triggering sync & re-fetch...');
-      if (onFocusOrWake) onFocusOrWake();
+  let wasHidden = false;
+  let lastTriggerTime = 0;
+
+  const handleVisibility = () => {
+    if (document.visibilityState === 'hidden') {
+      wasHidden = true;
+    } else if (document.visibilityState === 'visible' && wasHidden) {
+      wasHidden = false;
+      const now = Date.now();
+      if (now - lastTriggerTime > 3000) {
+        lastTriggerTime = now;
+        console.log('App returned from standby / tab refocus! Triggering sync & re-fetch...');
+        if (onFocusOrWake) onFocusOrWake();
+      }
     }
   };
 
-  window.addEventListener('visibilitychange', handleWake);
-  window.addEventListener('focus', handleWake);
+  document.addEventListener('visibilitychange', handleVisibility);
 
   return () => {
-    window.removeEventListener('visibilitychange', handleWake);
-    window.removeEventListener('focus', handleWake);
+    document.removeEventListener('visibilitychange', handleVisibility);
   };
 }
 

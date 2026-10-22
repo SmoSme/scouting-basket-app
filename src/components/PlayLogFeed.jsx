@@ -238,7 +238,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                       <button
                         onClick={() => {
                           if (window.confirm(`Delete event #${numero} ${giocatore} -> ${actionStr}?`)) {
-                            onDeleteEvent(ev?.id, events.length - 1 - idx);
+                            onDeleteEvent(ev?.id, events.length - 1 - idx, ev);
                           }
                         }}
                         title="Delete event"

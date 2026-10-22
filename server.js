@@ -127,6 +127,33 @@ app.delete('/api/events/last', (req, res) => {
   }
 });
 
+// DELETE /api/events/:id
+app.delete('/api/events/:id', (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+    const fileContent = fs.readFileSync(CSV_FILE, 'utf8').trim();
+    if (!fileContent) return res.status(404).json({ error: 'No events found' });
+    
+    const lines = fileContent.split('\n');
+    if (lines.length <= 1) return res.status(404).json({ error: 'No events found' });
+    
+    const header = lines[0];
+    const dataLines = lines.slice(1);
+    
+    let filteredLines;
+    if (!isNaN(targetId) && targetId >= 1 && targetId <= dataLines.length) {
+      filteredLines = dataLines.filter((_, idx) => (idx + 1) !== targetId);
+    } else {
+      filteredLines = dataLines;
+    }
+    
+    fs.writeFileSync(CSV_FILE, [header, ...filteredLines].join('\n') + '\n', 'utf8');
+    res.json({ success: true, remaining: filteredLines.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete event' });
+  }
+});
+
 // POST /api/reset
 app.post('/api/reset', (req, res) => {
   try {

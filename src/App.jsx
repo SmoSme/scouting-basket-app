@@ -10,6 +10,7 @@ import { supabase } from './services/supabase';
 import { calculatePlusMinus, calculateTeamScore, calculateOpponentScore } from './utils/basketballAnalytics';
 import {
   saveToOfflineQueue,
+  removeFromOfflineQueue,
   getOfflineQueue,
   syncOfflineQueue,
   setupOnlineSyncListener,
@@ -144,7 +145,19 @@ export default function App() {
       }
     }
   }, [gameSession]);
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(() => {
+    const session = localStorage.getItem('current_game_session');
+    if (session) {
+      try {
+        const saved = localStorage.getItem(`bba_events_${session}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
   const [toastMsg, setToastMsg] = useState(null);
   const [showRosterModal, setShowRosterModal] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(!localStorage.getItem('current_game_session'));
@@ -152,6 +165,81 @@ export default function App() {
   const [offlineQueueCount, setOfflineQueueCount] = useState(() => {
     return cleanStaleOfflineQueue(localStorage.getItem('current_game_session') || '').length;
   });
+
+  const getStartingLineup = (sessionName) => {
+    try {
+      const saved = localStorage.getItem(`starting_on_court_nums_${sessionName}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 5) return parsed;
+      }
+    } catch (e) {}
+    return onCourtPlayerNums;
+  };
+
+  const recordDeletedEvent = (eventId, eventObj) => {
+    if (!gameSession) return;
+    try {
+      const key = `bba_deleted_events_${gameSession}`;
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const tombstone = {
+        id: eventId ? String(eventId) : null,
+        timestamp: eventObj?.Timestamp || eventObj?.timestamp || null,
+        number: String(eventObj?.Number ?? eventObj?.number ?? ''),
+        action: eventObj?.Action || eventObj?.action || null,
+        deletedAt: Date.now()
+      };
+      existing.push(tombstone);
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch (e) {}
+  };
+
+  const getDeletedTombstones = () => {
+    if (!gameSession) return [];
+    try {
+      return JSON.parse(localStorage.getItem(`bba_deleted_events_${gameSession}`) || '[]');
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const isEventTombstoned = (ev, deletedList) => {
+    if (!Array.isArray(deletedList) || deletedList.length === 0) return false;
+    const evId = ev?.id ? String(ev.id) : null;
+    const evTs = ev?.Timestamp || ev?.timestamp || '';
+    const evNum = String(ev?.Number ?? ev?.number ?? '');
+    const evAction = ev?.Action || ev?.action || '';
+
+    return deletedList.some(t => {
+      if (evId && t.id && evId === t.id) return true;
+      if (t.timestamp && t.action && t.number) {
+        return t.timestamp === evTs && t.action === evAction && t.number === evNum;
+      }
+      return false;
+    });
+  };
+
+  const persistMatchState = (updatedEvents) => {
+    const safeEvents = Array.isArray(updatedEvents) ? updatedEvents : [];
+    setEvents(safeEvents);
+
+    if (gameSession) {
+      try {
+        localStorage.setItem(`bba_events_${gameSession}`, JSON.stringify(safeEvents));
+        
+        // Recalculate and persist all derived states immediately
+        const teamScore = calculateTeamScore(safeEvents);
+        const opponentScore = calculateOpponentScore(safeEvents);
+        const lineup = getStartingLineup(gameSession);
+        const pmMap = calculatePlusMinus(safeEvents, lineup, activeRoster);
+
+        localStorage.setItem(`bba_score_${gameSession}`, JSON.stringify({ teamScore, opponentScore }));
+        localStorage.setItem(`bba_plusminus_${gameSession}`, JSON.stringify(pmMap));
+      } catch (e) {
+        console.warn('Failed to persist match state to localStorage:', e);
+      }
+    }
+  };
 
   useEffect(() => {
     // 1. Unregister legacy service workers if present in tablet browser cache
@@ -265,7 +353,7 @@ export default function App() {
 
   const fetchEvents = async () => {
     if (!gameSession) {
-      setEvents([]);
+      persistMatchState([]);
       return;
     }
 
@@ -292,7 +380,9 @@ export default function App() {
       }
 
       if (!error && data) {
-        setEvents(normalizeEvents(data));
+        const tombstones = getDeletedTombstones();
+        const nonDeleted = data.filter(ev => !isEventTombstoned(ev, tombstones));
+        persistMatchState(normalizeEvents(nonDeleted));
         return;
       }
     } catch (err) {
@@ -304,7 +394,9 @@ export default function App() {
       const res = await fetch('/api/events');
       if (res.ok) {
         const data = await res.json();
-        setEvents(normalizeEvents(data));
+        const tombstones = getDeletedTombstones();
+        const nonDeleted = Array.isArray(data) ? data.filter(ev => !isEventTombstoned(ev, tombstones)) : [];
+        persistMatchState(normalizeEvents(nonDeleted));
       }
     } catch (err) {}
   };
@@ -315,9 +407,15 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (gameSession && events.length > 0) {
+    if (gameSession) {
       try {
         localStorage.setItem(`bba_events_${gameSession}`, JSON.stringify(events));
+        const teamScore = calculateTeamScore(events);
+        const opponentScore = calculateOpponentScore(events);
+        const lineup = getStartingLineup(gameSession);
+        const pmMap = calculatePlusMinus(events, lineup, activeRoster);
+        localStorage.setItem(`bba_score_${gameSession}`, JSON.stringify({ teamScore, opponentScore }));
+        localStorage.setItem(`bba_plusminus_${gameSession}`, JSON.stringify(pmMap));
       } catch (e) {}
     }
   }, [events, gameSession]);
@@ -378,7 +476,7 @@ export default function App() {
       Match_Name: gameSession
     };
 
-    // 1. Instant local state update (<5ms) with onCourtPlayerIds snapshot
+    // 1. Instant local state update (<5ms) with onCourtPlayerIds snapshot and synchronous persistence
     const localEv = {
       ...supabasePayload,
       action: actionName,
@@ -391,20 +489,29 @@ export default function App() {
       onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
       onCourtNums: [...currentOnCourt.map(id => String(id))]
     };
-    setEvents(prev => [...prev, localEv]);
+    persistMatchState([...events, localEv]);
 
-    // 2. Try Supabase insert
+    // 2. Try Supabase insert with .select() to retrieve generated ID
     let cloudSynced = false;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('scouting_log')
-          .insert([supabasePayload]);
+          .insert([supabasePayload])
+          .select();
 
         if (!error) {
           cloudSynced = true;
+          if (data && data[0]?.id) {
+            localEv.id = data[0].id;
+            setEvents(prev => {
+              const updated = prev.map(e => (e === localEv || (!e.id && e.timestamp === timestamp && e.action === actionName && e.number === playerNum)) ? { ...e, id: data[0].id } : e);
+              persistMatchState(updated);
+              return updated;
+            });
+          }
           let label = actionName;
           if (isOpponent) label = `[OPP] ${actionName}`;
           else if (isSub) label = `[SUB] ${actionName}`;
@@ -509,15 +616,28 @@ export default function App() {
       });
     });
 
-    setEvents(prev => [...prev, ...localEvs]);
+    persistMatchState([...events, ...localEvs]);
 
     let cloudSynced = false;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { error } = await supabase.from('scouting_log').insert(payloads);
+        const { data, error } = await supabase.from('scouting_log').insert(payloads).select();
         if (!error) {
           cloudSynced = true;
+          if (Array.isArray(data) && data.length > 0) {
+            setEvents(prev => {
+              const updated = [...prev];
+              for (let i = 0; i < data.length; i++) {
+                const targetIdx = updated.length - data.length + i;
+                if (updated[targetIdx] && data[i]?.id) {
+                  updated[targetIdx] = { ...updated[targetIdx], id: data[i].id };
+                }
+              }
+              persistMatchState(updated);
+              return updated;
+            });
+          }
           showToast(`✅ ${payloads.map(p => p.Action).join(' + ')}`);
         }
       } catch (e) {
@@ -589,11 +709,19 @@ export default function App() {
     }
 
     const lastEv = events[events.length - 1];
-    setEvents(prev => prev.slice(0, -1));
+    const updatedEvents = events.slice(0, -1);
+
+    // 1. Immediately persist mutated array and derived states to localStorage
+    persistMatchState(updatedEvents);
     setSelectedPlayer(null);
+
+    // 2. Record tombstone and purge from offline queue
+    recordDeletedEvent(lastEv.id, lastEv);
+    removeFromOfflineQueue(lastEv.id, lastEv);
+
     showToast(`↩️ Undone: #${lastEv.Number || lastEv.number || lastEv.Numero} ${lastEv.Action || lastEv.action || lastEv.Azione}`);
 
-    // If undone event was a SUB, revert onCourtPlayerNums
+    // 3. If undone event was a SUB, revert onCourtPlayerNums
     const lastAz = String(lastEv.Action || lastEv.action || '');
     const lastCat = String(lastEv.Category || lastEv.category || '');
     if (lastCat === 'Substitution' || lastAz.startsWith('SUB:') || lastAz.startsWith('Sub:')) {
@@ -609,12 +737,25 @@ export default function App() {
       }
     }
 
-    if (navigator.onLine && lastEv.id) {
+    // 4. Delete from Supabase Cloud
+    if (navigator.onLine) {
       try {
-        await supabase
-          .from('scouting_log')
-          .delete()
-          .eq('id', lastEv.id);
+        if (lastEv.id) {
+          await supabase
+            .from('scouting_log')
+            .delete()
+            .eq('id', lastEv.id);
+        } else if (gameSession) {
+          const actionVal = lastEv.Action || lastEv.action;
+          const numVal = String(lastEv.Number ?? lastEv.number);
+          const tsVal = lastEv.Timestamp || lastEv.timestamp;
+
+          let query = supabase.from('scouting_log').delete().eq('Match_Name', gameSession);
+          if (actionVal) query = query.eq('Action', actionVal);
+          if (numVal && numVal !== '-') query = query.eq('Number', numVal);
+          if (tsVal) query = query.eq('Timestamp', tsVal);
+          await query;
+        }
       } catch (e) {}
     }
 
@@ -625,37 +766,71 @@ export default function App() {
 
   const handleResetGame = () => {
     if (window.confirm(`Clear current live screen tracking for "${gameSession || 'Current Match'}"? (Archived database data will remain safe in Supabase)`)) {
-      setEvents([]);
+      persistMatchState([]);
       setSelectedPlayer(null);
       showToast('🧹 Live screen cleared! Match remains saved in Archive.');
     }
   };
 
-  const handleDeleteEvent = async (eventId, eventIndex) => {
-    // 1. Local state update
-    setEvents(prev => prev.filter((ev, idx) => {
+  const handleDeleteEvent = async (eventId, eventIndex, targetEventObj = null) => {
+    // 1. Identify the event being deleted
+    const targetEv = targetEventObj || events[eventIndex] || events.find(e => eventId && e.id === eventId);
+
+    // 2. Compute updated events immutably
+    const updatedEvents = events.filter((ev, idx) => {
       if (eventId && ev.id) return ev.id !== eventId;
+      if (targetEv && !ev.id && !eventId) {
+        const matchTs = (ev.Timestamp || ev.timestamp) === (targetEv.Timestamp || targetEv.timestamp);
+        const matchNum = String(ev.Number ?? ev.number) === String(targetEv.Number ?? targetEv.number);
+        const matchAction = (ev.Action || ev.action) === (targetEv.Action || targetEv.action);
+        if (matchTs && matchNum && matchAction) return false;
+      }
       return idx !== eventIndex;
-    }));
+    });
+
+    // 3. CRITICAL: Immediately persist mutated array and derived states to localStorage INSIDE delete handler
+    persistMatchState(updatedEvents);
+
+    // 4. Record tombstone so background fetchEvents never resurrects it
+    recordDeletedEvent(eventId, targetEv);
+
+    // 5. Purge from offline queue if queued
+    removeFromOfflineQueue(eventId, targetEv);
 
     showToast('🗑️ Event deleted from feed!');
 
-    // 2. Supabase Cloud delete
-    if (navigator.onLine && eventId) {
+    // 6. Delete from Supabase Cloud
+    if (navigator.onLine) {
       try {
-        await supabase
-          .from('scouting_log')
-          .delete()
-          .eq('id', eventId);
+        if (eventId) {
+          await supabase
+            .from('scouting_log')
+            .delete()
+            .eq('id', eventId);
+        } else if (targetEv && gameSession) {
+          const actionVal = targetEv.Action || targetEv.action;
+          const numVal = String(targetEv.Number ?? targetEv.number);
+          const tsVal = targetEv.Timestamp || targetEv.timestamp;
+
+          let query = supabase.from('scouting_log').delete().eq('Match_Name', gameSession);
+          if (actionVal) query = query.eq('Action', actionVal);
+          if (numVal && numVal !== '-') query = query.eq('Number', numVal);
+          if (tsVal) query = query.eq('Timestamp', tsVal);
+          await query;
+        }
       } catch (e) {
         console.warn('Supabase delete event error:', e);
       }
     }
+
+    try {
+      if (eventId) fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+    } catch (e) {}
   };
 
   const handleEditEvent = async (eventId, eventIndex, updatedFields) => {
-    // 1. Local state update
-    setEvents(prev => prev.map((ev, idx) => {
+    // 1. Local state update immutably
+    const updatedEvents = events.map((ev, idx) => {
       const isTarget = eventId && ev.id ? ev.id === eventId : idx === eventIndex;
       if (!isTarget) return ev;
 
@@ -679,8 +854,9 @@ export default function App() {
         onCourtPlayerIds,
         onCourtNums: onCourtPlayerIds
       };
-    }));
+    });
 
+    persistMatchState(updatedEvents);
     showToast('✏️ Event updated!');
 
     // 2. Supabase Cloud update
@@ -730,16 +906,7 @@ export default function App() {
     }
   };
 
-  const startingOnCourtNums = (() => {
-    try {
-      const saved = localStorage.getItem(`starting_on_court_nums_${gameSession}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 5) return parsed;
-      }
-    } catch (e) {}
-    return onCourtPlayerNums;
-  })();
+  const startingOnCourtNums = getStartingLineup(gameSession);
 
   const plusMinusMap = calculatePlusMinus(events, startingOnCourtNums, activeRoster);
 
