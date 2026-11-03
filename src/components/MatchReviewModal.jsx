@@ -73,7 +73,11 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
     playerStats,
     teamLeaders,
     zoneSummary,
-    totalEvents
+    totalEvents,
+    opponentShooting,
+    reboundingAnalysis,
+    situational,
+    defensiveSchemes
   } = analytics;
 
   // Fallback to fourFactors alias if efficiencyPillars is not defined
@@ -333,6 +337,18 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
           >
             <BarChart2 className="w-3.5 h-3.5" />
             OVERVIEW & EFFICIENCY PILLARS
+          </button>
+
+          <button
+            onClick={() => setActiveTab('situational')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+              activeTab === 'situational'
+                ? 'bg-slate-800/90 text-amber-400 border-amber-400 shadow-sm'
+                : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/50'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            SITUATIONAL & OPPONENT
           </button>
 
           <button
@@ -605,19 +621,31 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                           3. REBOUNDING & EXTRA POSSESSIONS <Info className="w-2.5 h-2.5 text-slate-500" />
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                          (pillars.rebounding?.rating === 'Strong Glass' || teamOverview.oreb >= 10 || teamOverview.orebShare >= 28) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          (pillars.rebounding?.rating === 'Strong Glass' || pillars.rebounding?.rating === 'Elite Glass' || teamOverview.oreb >= 10 || teamOverview.orebShare >= 28) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
                           (pillars.rebounding?.rating === 'Solid' || teamOverview.oreb >= 7) ? 'bg-amber-950 text-amber-300 border border-amber-800' :
                           'bg-slate-850 text-slate-300 border border-slate-700'
                         }`}>
                           {pillars.rebounding?.rating || (teamOverview.oreb >= 10 || teamOverview.orebShare >= 28 ? 'Strong Glass' : teamOverview.oreb >= 7 ? 'Solid' : 'Passive')}
                         </span>
                       </div>
-                      <div className="font-mono text-xl sm:text-2xl font-black text-amber-400 my-1">
-                        {pillars.rebounding?.value || `${teamOverview.oreb} OFF | ${teamOverview.dreb} DEF`}
+                      <div className="flex items-center justify-between my-1">
+                        <div className="font-mono text-xl sm:text-2xl font-black text-amber-400">
+                          {pillars.rebounding?.value || `${teamOverview.oreb} OFF | ${teamOverview.dreb} DEF`}
+                        </div>
+                        {teamOverview.drbPct != null && (
+                          <div className="text-right">
+                            <span className="font-mono text-lg font-black text-emerald-400">
+                              {teamOverview.drbPct.toFixed(1)}%
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-500 ml-1">DRB%</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="text-[10px] text-slate-400 border-t border-slate-800/80 pt-1.5 mt-2">
-                      {pillars.rebounding?.subtext || `${teamOverview.reb} Total REB • ${Math.round(teamOverview.orebShare)}% Offensive Rebound Share`}
+                      {teamOverview.drbPct != null
+                        ? `${teamOverview.reb} Total REB • DRB%: ${teamOverview.drbPct.toFixed(1)}% (${teamOverview.dreb} D-REB vs ${teamOverview.oppOffReb || 0} Opp O-REB)`
+                        : (pillars.rebounding?.subtext || `${teamOverview.reb} Total REB • ${Math.round(teamOverview.orebShare)}% Offensive Rebound Share`)}
                     </div>
                   </div>
 
@@ -779,6 +807,392 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                         title={`${q.quarter}: ${q.pts} PTS (${q.pctShare}%)`}
                       >
                         {q.quarter} ({q.pts})
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================================== */}
+          {/* TAB: SITUATIONAL SCOUTING, OPPONENT SHOT PROFILE & DEFENSIVE SCHEMES */}
+          {/* ===================================================================== */}
+          {activeTab === 'situational' && (
+            <div className="space-y-4">
+              {/* Contextual Intelligence Banner */}
+              <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 px-3.5 flex items-center justify-between gap-3 text-xs flex-wrap shadow-sm">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <Zap className="w-4 h-4 text-amber-400 flex-none" />
+                  <span>
+                    <strong className="text-amber-300">Situational Scouting & Opponent Breakdown:</strong> Evaluation of Fastbreak vs Half-court offense, complete opponent shooting profile, defensive rebounding cleanup (DRB%), and defensive scheme efficiency (Man, Zone, Press).
+                  </span>
+                </div>
+                <button
+                  onClick={() => setActiveMetricGuideKey('transitionPpp')}
+                  className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 underline flex-none"
+                >
+                  <span>Situational Guide</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* 1. TRANSITION VS HALF-COURT OFFENSE COMPARISON */}
+              <div className="glass-card p-3 sm:p-4 border-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-400" />
+                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                      PACE & PACE-ADJUSTED EFFICIENCY: TRANSITION VS HALF-COURT
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    Tagged via TRANSITION toggle
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Card A: Transition / Fastbreak Offense */}
+                  <div
+                    onClick={() => setActiveMetricGuideKey('transitionPpp')}
+                    className="bg-slate-950 p-3.5 rounded-xl border border-amber-500/40 hover:border-amber-400/80 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
+                    title="Click to view Transition PPP guide"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1.5">
+                        <span className="group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-400" />
+                          FASTBREAK / TRANSITION
+                          <Info className="w-2.5 h-2.5 text-slate-500" />
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
+                          (situational?.transition?.ppp >= 1.15) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          (situational?.transition?.ppp >= 0.95) ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-slate-850 text-slate-400 border border-slate-700'
+                        }`}>
+                          {situational?.transition?.ppp >= 1.15 ? 'Elite Fastbreak' : situational?.transition?.ppp >= 0.95 ? 'Solid Pace' : (situational?.transition?.poss > 0 ? 'Low Yield' : 'No Data')}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline gap-2 my-1">
+                        <span className="font-mono text-3xl font-black text-amber-400">
+                          {situational?.transition?.ppp?.toFixed(2) || '0.00'}
+                        </span>
+                        <span className="text-xs font-bold text-slate-400">PPP</span>
+                        <span className="text-xs text-slate-500">•</span>
+                        <span className="text-xs font-bold text-emerald-400">
+                          {situational?.transition?.pts || 0} PTS
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          ({situational?.transition?.poss || 0} Possessions)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2 border-t border-slate-850 text-center">
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">FG CONVERSION</div>
+                        <div className="font-mono text-xs font-bold text-slate-200 mt-0.5">
+                          {situational?.transition?.fgm || 0}/{situational?.transition?.fga || 0}
+                        </div>
+                        <div className="text-[9px] font-bold text-amber-400">
+                          {situational?.transition?.efgPct || 0}% eFG%
+                        </div>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">TURNOVERS</div>
+                        <div className="font-mono text-xs font-bold text-rose-400 mt-0.5">
+                          {situational?.transition?.tov || 0} TOV
+                        </div>
+                        <div className="text-[9px] text-slate-500">Fastbreak errors</div>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">FREE THROWS</div>
+                        <div className="font-mono text-xs font-bold text-sky-400 mt-0.5">
+                          {situational?.transition?.ftm || 0}/{situational?.transition?.fta || 0} FT
+                        </div>
+                        <div className="text-[9px] text-slate-500">Contact drawn</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card B: Half-Court Set Offense */}
+                  <div
+                    className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1.5">
+                        <span className="flex items-center gap-1.5">
+                          <Target className="w-3.5 h-3.5 text-sky-400" />
+                          HALF-COURT SET OFFENSE
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
+                          (situational?.halfCourt?.ppp >= 0.95) ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          (situational?.halfCourt?.ppp >= 0.80) ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-slate-850 text-slate-400 border border-slate-700'
+                        }`}>
+                          {situational?.halfCourt?.ppp >= 0.95 ? 'Efficient Sets' : situational?.halfCourt?.ppp >= 0.80 ? 'Standard Sets' : (situational?.halfCourt?.poss > 0 ? 'Stagnant' : 'No Data')}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline gap-2 my-1">
+                        <span className="font-mono text-3xl font-black text-sky-400">
+                          {situational?.halfCourt?.ppp?.toFixed(2) || '0.00'}
+                        </span>
+                        <span className="text-xs font-bold text-slate-400">PPP</span>
+                        <span className="text-xs text-slate-500">•</span>
+                        <span className="text-xs font-bold text-emerald-400">
+                          {situational?.halfCourt?.pts || 0} PTS
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          ({situational?.halfCourt?.poss || 0} Possessions)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2 border-t border-slate-850 text-center">
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">FG CONVERSION</div>
+                        <div className="font-mono text-xs font-bold text-slate-200 mt-0.5">
+                          {situational?.halfCourt?.fgm || 0}/{situational?.halfCourt?.fga || 0}
+                        </div>
+                        <div className="text-[9px] font-bold text-sky-400">
+                          {situational?.halfCourt?.efgPct || 0}% eFG%
+                        </div>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">TURNOVERS</div>
+                        <div className="font-mono text-xs font-bold text-rose-400 mt-0.5">
+                          {situational?.halfCourt?.tov || 0} TOV
+                        </div>
+                        <div className="text-[9px] text-slate-500">Set-play giveaways</div>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase">FREE THROWS</div>
+                        <div className="font-mono text-xs font-bold text-sky-400 mt-0.5">
+                          {situational?.halfCourt?.ftm || 0}/{situational?.halfCourt?.fta || 0} FT
+                        </div>
+                        <div className="text-[9px] text-slate-500">Half-court fouls</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. OPPONENT SHOOTING & REBOUND PROFILE */}
+              <div className="glass-card p-3 sm:p-4 border-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-rose-400" />
+                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                      OPPONENT COMPLETE SHOOTING & REBOUND PROFILE
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-rose-400">
+                    {teamOverview.opponentScore || 0} Total Opponent Points
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                  {/* Opponent eFG% */}
+                  <div
+                    onClick={() => setActiveMetricGuideKey('oppEfg')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-rose-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
+                    title="Click to view Opponent eFG% guide"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-400 group-hover:text-rose-300 uppercase tracking-wider">
+                        OPP eFG%
+                      </span>
+                      <Info className="w-3 h-3 text-slate-500 group-hover:text-rose-400" />
+                    </div>
+                    <div className="my-1">
+                      <div className="font-mono text-2xl font-black text-rose-400">
+                        {opponentShooting?.oppEfgPct?.toFixed(1) || '0.0'}%
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {opponentShooting?.oppFgm || 0}/{opponentShooting?.oppFga || 0} FG
+                      </div>
+                    </div>
+                    <div className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded text-center border ${
+                      (opponentShooting?.oppEfgPct < 46 && opponentShooting?.oppFga > 0) ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' :
+                      (opponentShooting?.oppEfgPct <= 52 && opponentShooting?.oppFga > 0) ? 'bg-amber-950/80 text-amber-300 border-amber-800' :
+                      (opponentShooting?.oppFga > 0) ? 'bg-rose-950/80 text-rose-300 border-rose-800' :
+                      'bg-slate-900 text-slate-400 border-slate-800'
+                    }`}>
+                      {opponentShooting?.oppEfgPct < 46 && opponentShooting?.oppFga > 0 ? 'Lockdown' :
+                       opponentShooting?.oppEfgPct <= 52 && opponentShooting?.oppFga > 0 ? 'Average' :
+                       opponentShooting?.oppFga > 0 ? 'Vulnerable' : 'No FGA'}
+                    </div>
+                  </div>
+
+                  {/* DRB% (Defensive Rebounding Percentage) */}
+                  <div
+                    onClick={() => setActiveMetricGuideKey('drb')}
+                    className="bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
+                    title="Click to view DRB% guide"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-300 uppercase tracking-wider">
+                        DRB% (CLEANUP)
+                      </span>
+                      <Info className="w-3 h-3 text-slate-500 group-hover:text-emerald-400" />
+                    </div>
+                    <div className="my-1">
+                      <div className="font-mono text-2xl font-black text-emerald-400">
+                        {reboundingAnalysis?.drbPct != null ? `${reboundingAnalysis.drbPct.toFixed(1)}%` : 'N/A'}
+                      </div>
+                      <div className="text-[10px] text-slate-500 truncate">
+                        {reboundingAnalysis?.bbaDefReb || teamOverview.dreb} D-REB vs {reboundingAnalysis?.oppOffReb || 0} Opp O-REB
+                      </div>
+                    </div>
+                    <div className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded text-center border ${
+                      (reboundingAnalysis?.drbPct >= 72) ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' :
+                      (reboundingAnalysis?.drbPct >= 65) ? 'bg-amber-950/80 text-amber-300 border-amber-800' :
+                      (reboundingAnalysis?.drbPct != null) ? 'bg-rose-950/80 text-rose-300 border-rose-800' :
+                      'bg-slate-900 text-slate-400 border-slate-800'
+                    }`}>
+                      {reboundingAnalysis?.drbPct >= 72 ? 'Elite Glass' :
+                       reboundingAnalysis?.drbPct >= 65 ? 'Solid Glass' :
+                       reboundingAnalysis?.drbPct != null ? 'Vulnerable' : 'Track Misses'}
+                    </div>
+                  </div>
+
+                  {/* Opponent 2PT Shooting */}
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      OPP 2PT FG
+                    </span>
+                    <div className="my-1">
+                      <div className="font-mono text-2xl font-black text-slate-200">
+                        {opponentShooting?.oppPct2p || 0}%
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {opponentShooting?.opp2pm || 0}/{opponentShooting?.opp2pa || 0} Made
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-slate-400 border-t border-slate-850 pt-1">
+                      Interior scoring
+                    </div>
+                  </div>
+
+                  {/* Opponent 3PT Shooting */}
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      OPP 3PT FG
+                    </span>
+                    <div className="my-1">
+                      <div className="font-mono text-2xl font-black text-slate-200">
+                        {opponentShooting?.oppPct3p || 0}%
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {opponentShooting?.opp3pm || 0}/{opponentShooting?.opp3pa || 0} Made
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-slate-400 border-t border-slate-850 pt-1">
+                      Perimeter conversion
+                    </div>
+                  </div>
+
+                  {/* Opponent Free Throws */}
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between shadow-sm">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      OPP FREE THROWS
+                    </span>
+                    <div className="my-1">
+                      <div className="font-mono text-2xl font-black text-slate-200">
+                        {opponentShooting?.oppPctFt || 0}%
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {opponentShooting?.oppFtm || 0}/{opponentShooting?.oppFta || 0} FT
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-slate-400 border-t border-slate-850 pt-1">
+                      Foul conversion
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. DEFENSIVE SCHEMES BREAKDOWN (MAN vs ZONE vs PRESS) */}
+              <div className="glass-card p-3 sm:p-4 border-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-sky-400" />
+                    <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+                      DEFENSIVE SCHEME PERFORMANCE (MAN vs ZONE vs PRESS)
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    Defensive stats & opponent conversion per scheme
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    { key: 'MAN', label: 'MAN-TO-MAN (MAN)', scheme: defensiveSchemes?.MAN, color: 'sky' },
+                    { key: 'ZONE', label: 'ZONE DEFENSE (ZONE)', scheme: defensiveSchemes?.ZONE, color: 'purple' },
+                    { key: 'PRESS', label: 'FULL-COURT PRESS (PRESS)', scheme: defensiveSchemes?.PRESS, color: 'amber' }
+                  ].map(({ key, label, scheme, color }) => {
+                    const count = scheme?.eventsCount || 0;
+                    const pts = scheme?.ptsAllowed || 0;
+                    const fga = scheme?.fga || 0;
+                    const efg = scheme?.efg || 0;
+                    const stl = scheme?.stl || 0;
+                    const blk = scheme?.blk || 0;
+                    const dreb = scheme?.dreb || 0;
+                    const fouls = scheme?.fouls || 0;
+
+                    return (
+                      <div
+                        key={key}
+                        className="bg-slate-950 p-3.5 rounded-xl border border-slate-850 flex flex-col justify-between shadow-sm"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between border-b border-slate-850 pb-2 mb-2">
+                            <span className="text-xs font-black text-slate-200">
+                              {label}
+                            </span>
+                            <span className="text-[10px] font-mono font-bold bg-slate-900 px-2 py-0.5 rounded text-slate-400 border border-slate-800">
+                              {count} Events
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 my-2">
+                            <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800/80">
+                              <div className="text-[9px] font-bold text-slate-400 uppercase">PTS ALLOWED</div>
+                              <div className="font-mono text-xl font-black text-rose-400">
+                                {pts} PTS
+                              </div>
+                            </div>
+                            <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800/80">
+                              <div className="text-[9px] font-bold text-slate-400 uppercase">OPP eFG%</div>
+                              <div className="font-mono text-xl font-black text-slate-200">
+                                {fga > 0 ? `${efg}%` : 'N/A'}
+                              </div>
+                              <div className="text-[9px] text-slate-500">{fga} FGA</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-1 pt-2 border-t border-slate-850 text-center">
+                          <div className="bg-slate-900/50 p-1 rounded">
+                            <div className="text-[8px] font-bold text-slate-500 uppercase">STL</div>
+                            <div className="font-mono text-xs font-bold text-emerald-400">{stl}</div>
+                          </div>
+                          <div className="bg-slate-900/50 p-1 rounded">
+                            <div className="text-[8px] font-bold text-slate-500 uppercase">BLK</div>
+                            <div className="font-mono text-xs font-bold text-cyan-400">{blk}</div>
+                          </div>
+                          <div className="bg-slate-900/50 p-1 rounded">
+                            <div className="text-[8px] font-bold text-slate-500 uppercase">D-REB</div>
+                            <div className="font-mono text-xs font-bold text-amber-400">{dreb}</div>
+                          </div>
+                          <div className="bg-slate-900/50 p-1 rounded">
+                            <div className="text-[8px] font-bold text-slate-500 uppercase">PF</div>
+                            <div className="font-mono text-xs font-bold text-rose-400">{fouls}</div>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}

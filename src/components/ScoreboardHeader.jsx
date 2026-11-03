@@ -9,6 +9,7 @@ export default function ScoreboardHeader({
   setCurrentQuarter,
   onUndo,
   onRecordOpponentScore,
+  onOpponentShot,
   plusMinusMap = {},
   isAdmin = true,
   matchDate,
@@ -166,37 +167,73 @@ export default function ScoreboardHeader({
             </div>
           </div>
 
-          {/* Quick Opponent Score Buttons (Admin only) */}
-          {isAdmin && onRecordOpponentScore && (
-            <div className="flex items-center gap-1 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 flex-none">
-              <button
-                onClick={() => onRecordOpponentScore(1)}
-                className="btn-opp-score"
-                title="Add 1 point for Opponent"
-              >
-                +1 OPP
-              </button>
-              <button
-                onClick={() => onRecordOpponentScore(2)}
-                className="btn-opp-score"
-                title="Add 2 points for Opponent"
-              >
-                +2 OPP
-              </button>
-              <button
-                onClick={() => onRecordOpponentScore(3)}
-                className="btn-opp-score"
-                title="Add 3 points for Opponent"
-              >
-                +3 OPP
-              </button>
-              <button
-                onClick={() => onRecordOpponentScore(-1)}
-                className="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 p-1 rounded h-[28px] w-[26px] flex items-center justify-center transition-colors"
-                title="Correct / Subtract 1 point from Opponent"
-              >
-                <Minus className="w-3 h-3" />
-              </button>
+          {/* Opponent Shooting Controls: MADE Row & MISS Row */}
+          {isAdmin && (onOpponentShot || onRecordOpponentScore) && (
+            <div className="flex flex-col gap-0.5 bg-slate-950 p-1 rounded-lg border border-slate-800 flex-none shadow-sm">
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] font-mono font-black text-emerald-400 w-7 text-right">MADE</span>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot ? onOpponentShot('FT', true) : onRecordOpponentScore(1)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700 hover:bg-emerald-800 transition-colors"
+                  title="Opponent 1PT Made (FT)"
+                >
+                  1PT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot ? onOpponentShot('2PT', true) : onRecordOpponentScore(2)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700 hover:bg-emerald-800 transition-colors"
+                  title="Opponent 2PT Made"
+                >
+                  2PT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot ? onOpponentShot('3PT', true) : onRecordOpponentScore(3)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700 hover:bg-emerald-800 transition-colors"
+                  title="Opponent 3PT Made"
+                >
+                  3PT
+                </button>
+                {onRecordOpponentScore && (
+                  <button
+                    type="button"
+                    onClick={() => onRecordOpponentScore(-1)}
+                    className="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 px-1 py-0.5 rounded text-[10px] font-bold transition-colors"
+                    title="Correct / Subtract 1 pt"
+                  >
+                    -1
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[8px] font-mono font-black text-rose-400 w-7 text-right">MISS</span>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot && onOpponentShot('FT', false)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-rose-950/80 text-rose-300 border border-rose-700 hover:bg-rose-800 transition-colors"
+                  title="Opponent 1PT Miss (FT)"
+                >
+                  1PT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot && onOpponentShot('2PT', false)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-rose-950/80 text-rose-300 border border-rose-700 hover:bg-rose-800 transition-colors"
+                  title="Opponent 2PT Miss (prompts rebound)"
+                >
+                  2PT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpponentShot && onOpponentShot('3PT', false)}
+                  className="px-1.5 py-0.5 text-[10px] font-black rounded bg-rose-950/80 text-rose-300 border border-rose-700 hover:bg-rose-800 transition-colors"
+                  title="Opponent 3PT Miss (prompts rebound)"
+                >
+                  3PT
+                </button>
+              </div>
             </div>
           )}
 

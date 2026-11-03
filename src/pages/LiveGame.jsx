@@ -36,6 +36,7 @@ export default function LiveGame({
   dispatchAction,
   dispatchMultipleActions,
   dispatchOpponentScore,
+  dispatchOpponentShot,
   plusMinusMap = {},
   handleUndo,
   handleResetGame,
@@ -55,6 +56,87 @@ export default function LiveGame({
   const [courtShotPopover, setCourtShotPopover] = useState(null); // { zoneKey, outcome: 'MADE' | 'MISSED', step: 'SHOOTER' | 'ASSIST' | 'REBOUND', shooter }
   // Non-Shot Single-Click 5-Player Action Prompt State
   const [pendingActionPrompt, setPendingActionPrompt] = useState(null); // { actionName, categoryName, zoneName }
+
+  // Situational Tactical States: Transition (Offense) & Defensive Scheme
+  const [isTransition, setIsTransition] = useState(false);
+  const [defenseType, setDefenseType] = useState(() => {
+    try {
+      return localStorage.getItem('bba_defense_type') || 'MAN';
+    } catch (e) {
+      return 'MAN';
+    }
+  });
+  // Opponent Missed Shot Rebound Prompt State
+  const [opponentMissPopover, setOpponentMissPopover] = useState(null); // { shotType: 'FT' | '2PT' | '3PT' }
+
+  const handleDefenseChange = (scheme) => {
+    setDefenseType(scheme);
+    try {
+      localStorage.setItem('bba_defense_type', scheme);
+    } catch (e) {}
+  };
+
+  const handleOpponentShot = (shotType, isMade) => {
+    if (!isAdmin) return;
+    if (isMade) {
+      if (dispatchOpponentShot) {
+        dispatchOpponentShot(shotType, true, defenseType);
+      } else if (dispatchOpponentScore) {
+        const pts = (shotType === '3PT') ? 3 : (shotType === '2PT') ? 2 : 1;
+        dispatchOpponentScore(pts);
+      }
+    } else {
+      // Missed shot opens contextual rebound popover
+      setOpponentMissPopover({ shotType });
+    }
+  };
+
+  const handleResolveOpponentMissRebound = (optionType, bbaPlayer = null) => {
+    if (!opponentMissPopover) return;
+    const { shotType } = opponentMissPopover;
+
+    if (optionType === 'BBA_DEF_REB' && bbaPlayer) {
+      if (dispatchOpponentShot) {
+        dispatchOpponentShot(shotType, false, defenseType, {
+          actionName: 'Def Rebound',
+          categoryName: 'Rebound',
+          zoneName: null,
+          targetPlayer: bbaPlayer,
+          defenseType
+        });
+      }
+    } else if (optionType === 'OPP_OFF_REB') {
+      if (dispatchOpponentShot) {
+        dispatchOpponentShot(shotType, false, defenseType, {
+          actionName: 'OPP_OFF_REBOUND',
+          categoryName: 'Opponent',
+          zoneName: null,
+          targetPlayer: { number: 'OPP', name: 'OPPONENT' },
+          defenseType
+        });
+      }
+    } else {
+      // DEAD_BALL or SKIP
+      if (dispatchOpponentShot) {
+        dispatchOpponentShot(shotType, false, defenseType);
+      }
+    }
+
+    setOpponentMissPopover(null);
+  };
+
+  const isDefensiveAction = (act, cat) => {
+    const s = `${act} ${cat}`.toLowerCase();
+    return s.includes('def') || s.includes('difensivo') || s.includes('steal') || s.includes('recuperata') || 
+           (s.includes('block') && !s.includes('allowed')) || s.includes('stoppata data') || 
+           s.includes('personal foul') || s.includes('fallo fatto');
+  };
+
+  const isOffensiveAction = (act, cat) => {
+    const s = `${act} ${cat}`.toLowerCase();
+    return s.includes('turnover') || s.includes('persa') || s.includes('ft ') || s.includes('tl ') || 
+           s.includes('foul drawn') || s.includes('fallo subito') || s.includes('shot') || s.includes('off rebound');
+  };
 
   const onCourtSet = new Set(onCourtPlayerNums.map(n => String(n)));
   const onCourtPlayers = roster.filter(p => onCourtSet.has(String(p.number)));
@@ -202,7 +284,9 @@ export default function LiveGame({
         });
       } else {
         const shotType = zoneInfo.type; // "2PT" or "3PT"
-        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter);
+        const currentTransition = isTransition;
+        if (currentTransition) setIsTransition(false);
+        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: currentTransition });
         setCourtShotPopover({
           zoneKey: selectedZoneKey,
           outcome: 'MISSED',
@@ -223,10 +307,20 @@ export default function LiveGame({
   const handleRecordAction = (actionName, categoryName) => {
     if (!isAdmin) return;
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+    const isDef = isDefensiveAction(actionName, categoryName);
+    const isOff = isOffensiveAction(actionName, categoryName);
+
+    let situ = {};
+    if (isDef) situ.defenseType = defenseType;
+    if (isOff && isTransition) {
+      situ.isTransition = true;
+      setIsTransition(false);
+    }
+
     if (isTeamEvent) {
-      dispatchAction(actionName, categoryName, null);
+      dispatchAction(actionName, categoryName, null, null, null, situ);
     } else if (selectedPlayer) {
-      dispatchAction(actionName, categoryName, null, selectedPlayer);
+      dispatchAction(actionName, categoryName, null, selectedPlayer, null, situ);
     } else {
       setPendingActionPrompt({ actionName, categoryName, zoneName: null });
     }
@@ -242,7 +336,9 @@ export default function LiveGame({
       }));
     } else {
       const shotType = zoneInfo.type;
-      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, player);
+      const currentTransition = isTransition;
+      if (currentTransition) setIsTransition(false);
+      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, player, null, { isTransition: currentTransition });
       setCourtShotPopover(prev => ({
         ...prev,
         step: 'REBOUND',
@@ -255,6 +351,8 @@ export default function LiveGame({
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
+    const currentTransition = isTransition;
+    if (currentTransition) setIsTransition(false);
 
     if (dispatchMultipleActions) {
       dispatchMultipleActions([
@@ -262,18 +360,20 @@ export default function LiveGame({
           actionName: `${shotType} Made`,
           categoryName: 'Shot',
           zoneName: zoneInfo.name,
-          targetPlayer: shooter
+          targetPlayer: shooter,
+          isTransition: currentTransition
         },
         {
           actionName: 'Assist',
           categoryName: 'Passing',
           zoneName: null,
-          targetPlayer: assistPlayer
+          targetPlayer: assistPlayer,
+          isTransition: currentTransition
         }
-      ]);
+      ], null, { isTransition: currentTransition });
     } else {
-      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter);
-      dispatchAction('Assist', 'Passing', null, assistPlayer);
+      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: currentTransition });
+      dispatchAction('Assist', 'Passing', null, assistPlayer, null, { isTransition: currentTransition });
     }
 
     setCourtShotPopover(null);
@@ -283,14 +383,72 @@ export default function LiveGame({
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
+    const currentTransition = isTransition;
+    if (currentTransition) setIsTransition(false);
 
-    dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter);
+    dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: currentTransition });
     setCourtShotPopover(null);
   };
 
   const handleCompleteMissedShotRebound = (rebAction, rebPlayer) => {
     dispatchAction(rebAction, 'Rebound', null, rebPlayer);
     setCourtShotPopover(null);
+  };
+
+  const renderTacticalBar = () => {
+    if (!isAdmin) return null;
+    return (
+      <div className="bg-slate-950/85 border border-slate-800 rounded-lg p-1.5 flex items-center justify-between gap-2 shadow-sm mb-1.5">
+        {/* Offense Transition Toggle */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+            OFF:
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsTransition(!isTransition)}
+            className={`px-2.5 py-1 text-xs font-black rounded-md flex items-center gap-1.5 transition-all shadow-sm ${
+              isTransition
+                ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300 ring-offset-1 ring-offset-slate-950 animate-pulse'
+                : 'bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-amber-400 hover:border-amber-400/50'
+            }`}
+            title="Tag next offensive play as Fastbreak / Transition (Auto-resets after logging)"
+          >
+            <Zap className={`w-3.5 h-3.5 ${isTransition ? 'fill-slate-950 text-slate-950' : 'text-amber-400'}`} />
+            <span>TRANSITION</span>
+            {isTransition && <span className="text-[9px] bg-slate-950/20 px-1 rounded uppercase font-black">ON</span>}
+          </button>
+        </div>
+
+        {/* Defense Scheme Selector */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block" />
+            DEF:
+          </span>
+          <div className="flex bg-slate-900/90 p-0.5 rounded-md border border-slate-800">
+            {['MAN', 'ZONE', 'PRESS'].map((scheme) => {
+              const isActive = defenseType === scheme;
+              return (
+                <button
+                  key={scheme}
+                  type="button"
+                  onClick={() => handleDefenseChange(scheme)}
+                  className={`px-2 py-0.5 text-[11px] font-black rounded transition-all ${
+                    isActive
+                      ? 'bg-sky-500 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {scheme}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -916,7 +1074,15 @@ export default function LiveGame({
                   key={p.number}
                   type="button"
                   onClick={() => {
-                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, null, p);
+                    const isDef = isDefensiveAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName);
+                    const isOff = isOffensiveAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName);
+                    let situ = {};
+                    if (isDef) situ.defenseType = defenseType;
+                    if (isOff && isTransition) {
+                      situ.isTransition = true;
+                      setIsTransition(false);
+                    }
+                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, null, p, null, situ);
                     setPendingActionPrompt(null);
                   }}
                   className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 flex items-center justify-between transition-all active:scale-98 group text-left"
@@ -935,6 +1101,81 @@ export default function LiveGame({
         </div>
       )}
 
+      {/* 6. OPPONENT MISSED SHOT REBOUND SELECTION POPOVER */}
+      {isAdmin && opponentMissPopover && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="glass-card max-w-sm w-full p-4 border-slate-700 shadow-2xl rounded-xl space-y-3 my-auto">
+            {/* Popover Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-rose-400" />
+                <div>
+                  <div className="text-xs font-black text-rose-300 uppercase tracking-wider">
+                    OPPONENT {opponentMissPopover.shotType} MISSED
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-semibold">
+                    Who secured the rebound?
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpponentMissPopover(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Option 1: 5 On-Court BBA Players (DEF REB) */}
+            <div className="space-y-1.5">
+              <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                BBA DEFENSIVE REBOUND (5 ON COURT):
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                {onCourtPlayers.map(p => (
+                  <button
+                    key={p.number}
+                    type="button"
+                    onClick={() => handleResolveOpponentMissRebound('BBA_DEF_REB', p)}
+                    className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-500/60 flex items-center justify-between transition-all active:scale-98 group text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded bg-slate-950 flex items-center justify-center font-mono font-black text-xs text-emerald-400 border border-slate-800 group-hover:border-emerald-500/50">
+                        #{p.number}
+                      </span>
+                      <span className="text-xs font-black text-slate-100 group-hover:text-emerald-200">{p.name}</span>
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+                      + DEF REB
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Option 2 & 3: Opponent Offensive Rebound OR Dead Ball */}
+            <div className="pt-2 border-t border-slate-800 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleResolveOpponentMissRebound('OPP_OFF_REB')}
+                className="p-2.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 border border-amber-600/70 text-amber-300 font-black text-xs uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm text-center"
+              >
+                <AlertCircle className="w-3.5 h-3.5 flex-none" />
+                <span>OPP OFF REB</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleResolveOpponentMissRebound('DEAD_BALL')}
+                className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 text-slate-300 font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all active:scale-95 text-center"
+              >
+                <span>DEAD BALL / OUT</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Scoreboard Status Bar */}
       <ScoreboardHeader
         selectedPlayer={selectedPlayer}
@@ -943,6 +1184,7 @@ export default function LiveGame({
         setCurrentQuarter={setCurrentQuarter}
         onUndo={handleUndo}
         onRecordOpponentScore={dispatchOpponentScore}
+        onOpponentShot={handleOpponentShot}
         plusMinusMap={plusMinusMap}
         isAdmin={isAdmin}
         matchDate={matchDate}
@@ -1048,6 +1290,8 @@ export default function LiveGame({
 
               {/* Panel 2: Center Main Stage (Court Heatmap + Clustered Actions) */}
               <div className="col-span-5 h-full overflow-y-auto space-y-2 pr-0.5">
+                {renderTacticalBar()}
+
                 <CourtPitchMap
                   selectedPlayer={selectedPlayer}
                   selectedZoneKey={selectedZoneKey}
@@ -1060,6 +1304,7 @@ export default function LiveGame({
                     selectedZoneKey={selectedZoneKey}
                     onRecordShot={handleRecordShot}
                     onRecordAction={handleRecordAction}
+                    onOpponentShot={handleOpponentShot}
                   />
                 ) : (
                   <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">
@@ -1105,6 +1350,8 @@ export default function LiveGame({
 
               {/* Right Column (7 cols): Court Shot Map + Clustered Actions + Live Play Log Feed */}
               <div className="col-span-7 h-full overflow-y-auto space-y-2 pr-0.5">
+                {renderTacticalBar()}
+
                 <CourtPitchMap
                   selectedPlayer={selectedPlayer}
                   selectedZoneKey={selectedZoneKey}
@@ -1117,6 +1364,7 @@ export default function LiveGame({
                     selectedZoneKey={selectedZoneKey}
                     onRecordShot={handleRecordShot}
                     onRecordAction={handleRecordAction}
+                    onOpponentShot={handleOpponentShot}
                   />
                 ) : (
                   <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">
@@ -1203,6 +1451,8 @@ export default function LiveGame({
                     )}
                   </div>
 
+                  {renderTacticalBar()}
+
                   <CourtPitchMap
                     selectedPlayer={selectedPlayer}
                     selectedZoneKey={selectedZoneKey}
@@ -1215,6 +1465,7 @@ export default function LiveGame({
                       selectedZoneKey={selectedZoneKey}
                       onRecordShot={handleRecordShot}
                       onRecordAction={handleRecordAction}
+                      onOpponentShot={handleOpponentShot}
                     />
                   ) : (
                     <div className="glass-card p-3 border-slate-800 text-center rounded-lg space-y-1.5 bg-slate-950/70 shadow-inner">

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Target, Crosshair, Shield, Zap, AlertCircle, Check, X, Sparkles, Layers, Ghost } from 'lucide-react';
+import { Target, Crosshair, Shield, Zap, AlertCircle, Check, X, Sparkles, Layers, Ghost, ShieldAlert } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
 
 export default function ActionClusters({
   selectedZoneKey,
   onRecordShot,
-  onRecordAction
+  onRecordAction,
+  onOpponentShot
 }) {
   const currentZone = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
 
@@ -154,6 +155,66 @@ export default function ActionClusters({
           </button>
         </div>
       </div>
+
+      {/* CLUSTER 7: OPPONENT ACTIONS */}
+      {onOpponentShot && (
+        <div className="cluster-panel-dense border-rose-900/40 bg-slate-950/80">
+          <div className="cluster-header-title text-rose-400">
+            <ShieldAlert className="w-3 h-3 text-rose-400" />
+            7. OPPONENT ACTIONS & SHOT TRACKING
+          </div>
+          <div className="space-y-1.5">
+            {/* MADE ROW */}
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => onOpponentShot('FT', true)}
+                className="action-btn-dense bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800 text-emerald-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <Check className="w-3.5 h-3.5 stroke-[3]" /> 1PT MADE (FT)
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpponentShot('2PT', true)}
+                className="action-btn-dense bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800 text-emerald-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <Check className="w-3.5 h-3.5 stroke-[3]" /> 2PT MADE
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpponentShot('3PT', true)}
+                className="action-btn-dense bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800 text-emerald-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <Check className="w-3.5 h-3.5 stroke-[3]" /> 3PT MADE
+              </button>
+            </div>
+            {/* MISS ROW */}
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => onOpponentShot('FT', false)}
+                className="action-btn-dense bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 text-rose-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <X className="w-3.5 h-3.5 stroke-[3]" /> 1PT MISS (FT)
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpponentShot('2PT', false)}
+                className="action-btn-dense bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 text-rose-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <X className="w-3.5 h-3.5 stroke-[3]" /> 2PT MISS
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpponentShot('3PT', false)}
+                className="action-btn-dense bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 text-rose-300 font-bold text-xs py-2 flex items-center justify-center gap-1 shadow-sm"
+              >
+                <X className="w-3.5 h-3.5 stroke-[3]" /> 3PT MISS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -15,22 +15,65 @@ export const getQtr = (e) => {
 };
 
 /**
- * Check if an event represents an opponent score
+ * Check if an event represents an opponent score (MADE shot or positive point addition)
+ * Strictly excludes opponent missed shots (OPP_2PT_MISSED, OPP_3PT_MISSED, OPP_FT_MISSED)
+ * and opponent rebounds/turnovers.
  */
 export const isOpponentScoreEvent = (e) => {
-  const cat = String(e?.Category || e?.category || e?.Categoria || e?.categoria || '');
+  const cat = String(e?.Category || e?.category || e?.Categoria || e?.categoria || '').toLowerCase();
   const az = getAz(e);
-  return cat.toLowerCase() === 'opponent' || az.toLowerCase().startsWith('opponent');
+  const isOpp = cat === 'opponent' || az.toLowerCase().startsWith('opponent') || az.startsWith('OPP_');
+  if (!isOpp) return false;
+
+  const azLower = az.toLowerCase();
+  if (
+    azLower.includes('miss') ||
+    azLower.includes('sbagliato') ||
+    azLower.includes('reb') ||
+    azLower.includes('rimb') ||
+    azLower.includes('tov') ||
+    azLower.includes('persa') ||
+    azLower.includes('foul')
+  ) {
+    return false;
+  }
+
+  return getOpponentPoints(e) !== 0;
 };
 
 /**
- * Extract points from opponent score event (+1, +2, +3)
+ * Extract points from opponent score event (+1, +2, +3, OPP_FT_MADE, OPP_2PT_MADE, OPP_3PT_MADE)
+ * Returns 0 for missed shots or rebounds.
  */
 export const getOpponentPoints = (e) => {
   const az = getAz(e);
-  if (az.includes('+1') || az.includes('1PT') || az.includes('1 Pt') || az.includes('1 pt')) return 1;
-  if (az.includes('+2') || az.includes('2PT') || az.includes('2 Pt') || az.includes('2 pt')) return 2;
-  if (az.includes('+3') || az.includes('3PT') || az.includes('3 Pt') || az.includes('3 pt')) return 3;
+  const azLower = az.toLowerCase();
+
+  // Exclude misses and non-scoring plays
+  if (
+    azLower.includes('miss') ||
+    azLower.includes('sbagliato') ||
+    azLower.includes('reb') ||
+    azLower.includes('rimb')
+  ) {
+    return 0;
+  }
+
+  // Score correction negative adjustment
+  if (az.includes('-1') || az.includes('Corrected -1')) return -1;
+  if (az.includes('-2') || az.includes('Corrected -2')) return -2;
+  if (az.includes('-3') || az.includes('Corrected -3')) return -3;
+
+  // New specific Opponent Action schema
+  if (az.includes('OPP_3PT_MADE') || az.includes('3PT Made') || az.includes('3 Pt Made')) return 3;
+  if (az.includes('OPP_2PT_MADE') || az.includes('2PT Made') || az.includes('2 Pt Made')) return 2;
+  if (az.includes('OPP_FT_MADE') || az.includes('OPP_1PT_MADE') || az.includes('1PT Made') || az.includes('1 Pt Made')) return 1;
+
+  // Legacy format: "Opponent Scored +X"
+  if (az.includes('+3')) return 3;
+  if (az.includes('+2')) return 2;
+  if (az.includes('+1')) return 1;
+
   return 0;
 };
 
@@ -515,6 +558,179 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
   const stealTovMargin = teamOthers.stl - teamOthers.tov;
   const assistedFgmPct = teamShooting.fgm > 0 ? Math.round((teamOthers.ast / teamShooting.fgm) * 100) : 0;
 
+  // =========================================================================
+  // OPPONENT ADVANCED SHOT & REBOUND TRACKING
+  // =========================================================================
+  const isOppEvent = (e) => isOpponentScoreEvent(e) || String(e?.Category || e?.category || '').toLowerCase() === 'opponent' || getAz(e).startsWith('OPP_');
+
+  const opp2pm = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_2PT_MADE' || (isOppEvent(e) && (a.includes('+2') || a === '2PT Made'));
+  }).length;
+  const opp2pmiss = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_2PT_MISSED' || (isOppEvent(e) && a === '2PT Missed');
+  }).length;
+  const opp2pa = opp2pm + opp2pmiss;
+
+  const opp3pm = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_3PT_MADE' || (isOppEvent(e) && (a.includes('+3') || a === '3PT Made'));
+  }).length;
+  const opp3pmiss = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_3PT_MISSED' || (isOppEvent(e) && a === '3PT Missed');
+  }).length;
+  const opp3pa = opp3pm + opp3pmiss;
+
+  const oppFtm = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_FT_MADE' || a === 'OPP_1PT_MADE' || (isOppEvent(e) && (a.includes('+1') || a === 'FT Made'));
+  }).length;
+  const oppFtmiss = safeEvents.filter(e => {
+    const a = getAz(e);
+    return a === 'OPP_FT_MISSED' || a === 'OPP_1PT_MISSED' || (isOppEvent(e) && a === 'FT Missed');
+  }).length;
+  const oppFta = oppFtm + oppFtmiss;
+
+  const oppFgm = opp2pm + opp3pm;
+  const oppFga = opp2pa + opp3pa;
+  const oppEfgPct = oppFga > 0 ? Math.round(((opp2pm + opp3pm + 0.5 * opp3pm) / oppFga) * 1000) / 10 : 0;
+  const oppPct2p = opp2pa > 0 ? Math.round((opp2pm / opp2pa) * 1000) / 10 : 0;
+  const oppPct3p = opp3pa > 0 ? Math.round((opp3pm / opp3pa) * 1000) / 10 : 0;
+  const oppPctFt = oppFta > 0 ? Math.round((oppFtm / oppFta) * 1000) / 10 : 0;
+
+  const opponentShooting = {
+    opp2pm,
+    opp2pmiss,
+    opp2pa,
+    opp3pm,
+    opp3pmiss,
+    opp3pa,
+    oppFtm,
+    oppFtmiss,
+    oppFta,
+    oppFgm,
+    oppFga,
+    oppEfgPct,
+    oppPct2p,
+    oppPct3p,
+    oppPctFt
+  };
+
+  // Defensive Rebound Percentage (DRB%): Total BBA DEF REB / (Total BBA DEF REB + Total OPP OFF REB) * 100
+  const bbaDefReb = teamOthers.dreb;
+  const oppOffReb = safeEvents.filter(e => {
+    const a = getAz(e);
+    const cat = String(e?.Category || e?.category || '').toLowerCase();
+    return a === 'OPP_OFF_REBOUND' || a === 'Opponent Off Rebound' || (cat === 'opponent' && a.toLowerCase().includes('off reb'));
+  }).length;
+  const drbOpportunities = bbaDefReb + oppOffReb;
+  const drbPct = drbOpportunities > 0 ? Math.round((bbaDefReb / drbOpportunities) * 1000) / 10 : null;
+
+  const reboundingAnalysis = {
+    bbaDefReb,
+    bbaOffReb: teamOthers.oreb,
+    oppOffReb,
+    drbOpportunities,
+    drbPct
+  };
+
+  // =========================================================================
+  // SITUATIONAL TRANSITION VS HALF-COURT ANALYTICS
+  // =========================================================================
+  const transitionEvents = safeEvents.filter(e => {
+    if (e.isTransition !== true) return false;
+    const cat = String(e?.Category || e?.category || '').toLowerCase();
+    const az = getAz(e);
+    return cat !== 'opponent' && !az.startsWith('OPP_') && cat !== 'substitution' && !az.startsWith('SUB:');
+  });
+
+  const halfCourtEvents = safeEvents.filter(e => {
+    if (e.isTransition === true) return false;
+    const cat = String(e?.Category || e?.category || '').toLowerCase();
+    const az = getAz(e);
+    return cat !== 'opponent' && !az.startsWith('OPP_') && cat !== 'substitution' && !az.startsWith('SUB:');
+  });
+
+  const calcSituational = (evList) => {
+    const fg2m = evList.filter(e => { const a = getAz(e); return a === '2PT Made' || a === '2PT Fatto'; }).length;
+    const fg2miss = evList.filter(e => { const a = getAz(e); return a === '2PT Missed' || a === '2PT Sbagliato'; }).length;
+    const fg3m = evList.filter(e => { const a = getAz(e); return a === '3PT Made' || a === '3PT Fatto'; }).length;
+    const fg3miss = evList.filter(e => { const a = getAz(e); return a === '3PT Missed' || a === '3PT Sbagliato'; }).length;
+    const ftm = evList.filter(e => { const a = getAz(e); return a === 'FT Made' || a === 'TL Fatto'; }).length;
+    const ftmiss = evList.filter(e => { const a = getAz(e); return a === 'FT Missed' || a === 'TL Sbagliato'; }).length;
+    const tov = evList.filter(e => { const a = getAz(e); return a === 'Turnover' || a === 'Palla Persa'; }).length;
+
+    const fga = fg2m + fg2miss + fg3m + fg3miss;
+    const fgm = fg2m + fg3m;
+    const fta = ftm + ftmiss;
+    const pts = (fg2m * 2) + (fg3m * 3) + ftm;
+    const poss = fga + tov + (0.44 * fta);
+    const ppp = poss > 0 ? (pts / poss) : 0;
+    const efgPct = fga > 0 ? ((fgm + 0.5 * fg3m) / fga) * 100 : 0;
+
+    return {
+      pts,
+      fga,
+      fgm,
+      fta,
+      ftm,
+      tov,
+      poss: Math.round(poss * 10) / 10,
+      ppp: Math.round(ppp * 100) / 100,
+      efgPct: Math.round(efgPct * 10) / 10
+    };
+  };
+
+  const transition = calcSituational(transitionEvents);
+  const halfCourt = calcSituational(halfCourtEvents);
+
+  // =========================================================================
+  // DEFENSIVE SCHEMES BREAKDOWN (MAN, ZONE, PRESS)
+  // =========================================================================
+  const calcDefScheme = (schemeName) => {
+    const schemeEvents = safeEvents.filter(e => {
+      const def = e.defenseType || 'MAN';
+      return def === schemeName;
+    });
+
+    const ptsAllowed = schemeEvents.reduce((acc, ev) => {
+      if (isOpponentScoreEvent(ev)) return acc + getOpponentPoints(ev);
+      return acc;
+    }, 0);
+
+    const sOpp2m = schemeEvents.filter(e => getAz(e) === 'OPP_2PT_MADE' || (isOppEvent(e) && getAz(e).includes('+2'))).length;
+    const sOpp2miss = schemeEvents.filter(e => getAz(e) === 'OPP_2PT_MISSED').length;
+    const sOpp3m = schemeEvents.filter(e => getAz(e) === 'OPP_3PT_MADE' || (isOppEvent(e) && getAz(e).includes('+3'))).length;
+    const sOpp3miss = schemeEvents.filter(e => getAz(e) === 'OPP_3PT_MISSED').length;
+    const fga = sOpp2m + sOpp2miss + sOpp3m + sOpp3miss;
+    const efg = fga > 0 ? Math.round(((sOpp2m + sOpp3m + 0.5 * sOpp3m) / fga) * 1000) / 10 : 0;
+
+    const stl = schemeEvents.filter(e => getAz(e) === 'Steal' || getAz(e) === 'Palla Recuperata').length;
+    const blk = schemeEvents.filter(e => getAz(e) === 'Block' || getAz(e) === 'Stoppata Data').length;
+    const dreb = schemeEvents.filter(e => getAz(e) === 'Def Rebound' || getAz(e) === 'Rimb Difensivo').length;
+    const fouls = schemeEvents.filter(e => getAz(e) === 'Personal Foul' || getAz(e) === 'Fallo Fatto').length;
+
+    return {
+      schemeName,
+      eventsCount: schemeEvents.length,
+      ptsAllowed,
+      fga,
+      efg,
+      stl,
+      blk,
+      dreb,
+      fouls
+    };
+  };
+
+  const defensiveSchemes = {
+    MAN: calcDefScheme('MAN'),
+    ZONE: calcDefScheme('ZONE'),
+    PRESS: calcDefScheme('PRESS')
+  };
+
   const teamOverview = {
     ...teamShooting,
     ...teamOthers,
@@ -529,6 +745,9 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
     astTovRatio: Math.round(astTovRatio * 100) / 100,
     astRatio: Math.round(astRatio * 10) / 10,
     orebShare: Math.round(orebShare * 10) / 10,
+    drbPct,
+    oppOffReb,
+    oppEfgPct,
     pctPaint,
     pctMid,
     pctThree,
@@ -540,7 +759,12 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
     staggerCount: teamStagger,
     ghostCount: teamGhost,
     totalTactics,
-    tacticsPerPoss: Math.round(tacticsPerPoss * 10) / 10
+    tacticsPerPoss: Math.round(tacticsPerPoss * 10) / 10,
+    transition,
+    halfCourt,
+    opponentShooting,
+    reboundingAnalysis,
+    defensiveSchemes
   };
 
   // Rebounding status rating: Strong Glass (if OREB >= 10 or OREB% >= 28%), Solid (7-9 OREB), Passive (< 7 OREB)
@@ -584,7 +808,9 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
       title: '3. REBOUNDING & EXTRA POSSESSIONS',
       value: `${teamOthers.oreb} OFF | ${teamOthers.dreb} DEF`,
       numeric: teamOthers.oreb,
-      subtext: `${teamOthers.reb} Total REB • ${Math.round(orebShare)}% Offensive Rebound Share`,
+      subtext: `${teamOthers.reb} Total REB • ${Math.round(orebShare)}% OFF Share${drbPct !== null ? ` • ${drbPct}% DRB%` : ''}`,
+      drbPct,
+      oppOffReb,
       rating: orebRating,
       color: orebColor
     },
@@ -788,6 +1014,10 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
     zoneStats,
     plusMinusMap,
     totalEvents: safeEvents.length,
-    quarterSequence
+    quarterSequence,
+    opponentShooting,
+    reboundingAnalysis,
+    situational: { transition, halfCourt },
+    defensiveSchemes
   };
 }

@@ -335,6 +335,9 @@ export default function App() {
         onCourtPlayerIds = null;
       }
 
+      const isTransition = ev.isTransition === true || cachedEvents[idx]?.isTransition === true || false;
+      const defenseType = ev.defenseType || cachedEvents[idx]?.defenseType || null;
+
       return {
         ...ev,
         Action, action: Action, Azione: Action, azione: Action,
@@ -346,7 +349,9 @@ export default function App() {
         Match_Name, match_name: Match_Name, nome_partita: Match_Name, Nome_Partita: Match_Name,
         Timestamp, timestamp: Timestamp,
         onCourtPlayerIds: onCourtPlayerIds ? [...onCourtPlayerIds] : null,
-        onCourtNums: onCourtPlayerIds ? [...onCourtPlayerIds] : null
+        onCourtNums: onCourtPlayerIds ? [...onCourtPlayerIds] : null,
+        isTransition,
+        defenseType
       };
     });
   };
@@ -420,9 +425,9 @@ export default function App() {
     }
   }, [events, gameSession]);
 
-  const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null, customOnCourt = null) => {
+  const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null, customOnCourt = null, situational = {}) => {
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
-    const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent');
+    const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent') || actionName.startsWith('OPP_');
     const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
 
     const effectivePlayer = targetPlayer || selectedPlayer;
@@ -461,8 +466,11 @@ export default function App() {
 
     // Strict schema hygiene: Only true 2PT/3PT field goal events carry a court zone; all other events get null
     const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
-                         actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato');
+                         actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato') && !isOpponent;
     const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
+
+    const isTransition = situational.isTransition === true;
+    const defenseType = situational.defenseType || null;
 
     // Exact schema payload matching the 8 Supabase scouting_log columns
     const supabasePayload = {
@@ -487,7 +495,9 @@ export default function App() {
       category: categoryName,
       timestamp,
       onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
-      onCourtNums: [...currentOnCourt.map(id => String(id))]
+      onCourtNums: [...currentOnCourt.map(id => String(id))],
+      isTransition,
+      defenseType
     };
     persistMatchState([...events, localEv]);
 
@@ -548,7 +558,7 @@ export default function App() {
     setSelectedPlayer(null);
   };
 
-  const dispatchMultipleActions = async (actionsList = [], customOnCourt = null) => {
+  const dispatchMultipleActions = async (actionsList = [], customOnCourt = null, situational = {}) => {
     if (!Array.isArray(actionsList) || actionsList.length === 0) return;
     if (!gameSession) {
       setShowSessionModal(true);
@@ -567,9 +577,9 @@ export default function App() {
     ).map(id => String(id));
 
     actionsList.forEach(item => {
-      const { actionName, categoryName, zoneName, targetPlayer } = item;
+      const { actionName, categoryName, zoneName, targetPlayer, isTransition: itemTrans, defenseType: itemDef } = item;
       const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
-      const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent');
+      const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent') || actionName.startsWith('OPP_');
       const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
       const effectivePlayer = targetPlayer || selectedPlayer;
 
@@ -588,7 +598,7 @@ export default function App() {
 
       // Only true 2PT/3PT field goals carry a court zone
       const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
-                           actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato');
+                           actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato') && !isOpponent;
       const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
 
       const p = {
@@ -612,7 +622,9 @@ export default function App() {
         category: categoryName,
         timestamp,
         onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
-        onCourtNums: [...currentOnCourt.map(id => String(id))]
+        onCourtNums: [...currentOnCourt.map(id => String(id))],
+        isTransition: itemTrans !== undefined ? Boolean(itemTrans) : (situational.isTransition === true),
+        defenseType: itemDef !== undefined ? itemDef : (situational.defenseType || null)
       });
     });
 
@@ -677,6 +689,36 @@ export default function App() {
     }
 
     dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' });
+  };
+
+  const dispatchOpponentShot = (shotType, isMade, defenseType = 'MAN', extraReboundAction = null) => {
+    let actionName = '';
+    if (isMade) {
+      if (shotType === 'FT' || shotType === '1PT') actionName = 'OPP_FT_MADE';
+      else if (shotType === '2PT') actionName = 'OPP_2PT_MADE';
+      else if (shotType === '3PT') actionName = 'OPP_3PT_MADE';
+      else actionName = `OPP_${shotType}_MADE`;
+    } else {
+      if (shotType === 'FT' || shotType === '1PT') actionName = 'OPP_FT_MISSED';
+      else if (shotType === '2PT') actionName = 'OPP_2PT_MISSED';
+      else if (shotType === '3PT') actionName = 'OPP_3PT_MISSED';
+      else actionName = `OPP_${shotType}_MISSED`;
+    }
+
+    if (extraReboundAction) {
+      dispatchMultipleActions([
+        {
+          actionName,
+          categoryName: 'Opponent',
+          zoneName: null,
+          targetPlayer: { number: 'OPP', name: 'OPPONENT' },
+          defenseType
+        },
+        extraReboundAction
+      ], null, { defenseType });
+    } else {
+      dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, null, { defenseType });
+    }
   };
 
   const handleSwapSubstitution = (subOutNum, subInNum) => {
@@ -964,6 +1006,7 @@ export default function App() {
                 dispatchAction={dispatchAction}
                 dispatchMultipleActions={dispatchMultipleActions}
                 dispatchOpponentScore={dispatchOpponentScore}
+                dispatchOpponentShot={dispatchOpponentShot}
                 plusMinusMap={plusMinusMap}
                 handleUndo={handleUndo}
                 handleResetGame={handleResetGame}

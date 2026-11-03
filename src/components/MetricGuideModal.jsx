@@ -150,6 +150,45 @@ export const METRIC_GUIDES = {
     ],
     warning: 'Calculated directly from recorded makes and misses across each of the 9 half-court zones.'
   },
+  drb: {
+    key: 'drb',
+    shortLabel: 'DRB%',
+    title: 'DRB% — Defensive Rebounding Percentage',
+    formula: '(BBA Defensive Rebounds / (BBA Defensive Rebounds + Opponent Offensive Rebounds)) × 100',
+    description: 'The definitive measure of defensive glass cleanup. Indicates the percentage of all available defensive rebounds secured by the team, preventing opponent second-chance scoring opportunities.',
+    benchmarks: [
+      { level: 'Elite Glass', range: '> 72.0%', color: 'emerald', desc: 'Total defensive board lock; zero second-chance opportunities conceded' },
+      { level: 'Solid / Average', range: '65.0% – 72.0%', color: 'amber', desc: 'Competitive board security for regional senior basketball' },
+      { level: 'Vulnerable Glass', range: '< 65.0%', color: 'rose', desc: 'Leaking multiple offensive rebounds; giving opponents extra possessions' }
+    ],
+    warning: 'Calculated directly from tracked BBA defensive rebounds and opponent offensive rebounds.'
+  },
+  oppEfg: {
+    key: 'oppEfg',
+    shortLabel: 'Opp eFG%',
+    title: 'Opponent eFG% — Defensive Shot Quality Allowed',
+    formula: '((Opp 2PM + Opp 3PM + 0.5 × Opp 3PM) / Opp Total FGA) × 100',
+    description: 'Opponent effective field goal percentage allowed by our defense, weighting opponent 3-pointers at 1.5x. Demonstrates defensive containment and contest quality across 2P and 3P attempts.',
+    benchmarks: [
+      { level: 'Lockdown Defense', range: '< 46.0%', color: 'emerald', desc: 'Contested shooting; suppressing opponent rim and outside conversion' },
+      { level: 'Average Containment', range: '46.0% – 52.0%', color: 'amber', desc: 'Standard regional contest rate' },
+      { level: 'Porous Defense', range: '> 52.0%', color: 'rose', desc: 'Opponent getting open layups and uncontested rhythm 3s' }
+    ],
+    warning: 'Directly calculated from all recorded opponent makes and misses across 2-pointers and 3-pointers.'
+  },
+  transitionPpp: {
+    key: 'transitionPpp',
+    shortLabel: 'Transition PPP',
+    title: 'Transition PPP — Points Per Possession (Fastbreak Efficiency)',
+    formula: 'Transition Points / (Transition FGA + Transition TOV + 0.44 × Transition FTA)',
+    description: 'Scoring productivity per possession when attacking in transition / fastbreak. Contrasting transition PPP against half-court set offense reveals whether pushing the tempo produces higher quality scoring.',
+    benchmarks: [
+      { level: 'Elite Fastbreak', range: '≥ 1.15 PPP', color: 'emerald', desc: 'Lethal open-court execution; converting numbers advantages into high-percentage points' },
+      { level: 'Solid Pace', range: '0.95 – 1.14 PPP', color: 'amber', desc: 'Good decision-making and rim attacks in transition' },
+      { level: 'Low Yield / Sloppy', range: '< 0.95 PPP', color: 'rose', desc: 'Turnovers or rushed low-percentage shots during fastbreak opportunities' }
+    ],
+    warning: 'Directly derived from plays tagged with TRANSITION toggle during live match scouting.'
+  },
   // Theoretical & Possession-based metrics (hidden from primary tabs per coach directive)
   ortg: {
     key: 'ortg',

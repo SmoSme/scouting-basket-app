@@ -264,8 +264,18 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 )}
               </div>
 
-              <div className="font-bold text-[11px] uppercase tracking-wide mt-0.5" style={{ color: badgeColor }}>
-                {actionStr}
+              <div className="font-bold text-[11px] uppercase tracking-wide mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <span style={{ color: badgeColor }}>{actionStr}</span>
+                {Boolean(ev?.isTransition) && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-0.5">
+                    ⚡ TRANS
+                  </span>
+                )}
+                {Boolean(ev?.defenseType) && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-sky-950/80 text-sky-300 border border-sky-600/40">
+                    🛡️ {ev.defenseType}
+                  </span>
+                )}
               </div>
             </div>
           );
