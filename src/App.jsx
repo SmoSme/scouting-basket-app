@@ -4,6 +4,7 @@ import { Activity } from 'lucide-react';
 import Navbar from './components/Navbar';
 import LiveGame from './pages/LiveGame';
 import Archive from './pages/Archive';
+import SeasonTrends from './pages/SeasonTrends';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
@@ -126,11 +127,29 @@ export default function App() {
     return new Date().toISOString().split('T')[0];
   });
 
+  const [matchType, setMatchType] = useState(() => {
+    const session = localStorage.getItem('current_game_session');
+    if (session) {
+      const savedType = localStorage.getItem(`match_type_${session}`);
+      if (savedType) return savedType;
+    }
+    return 'Official';
+  });
+
   const handleUpdateMatchDate = (newDate) => {
     setMatchDate(newDate);
     if (gameSession) {
       try {
         localStorage.setItem(`match_date_${gameSession}`, newDate);
+      } catch (e) {}
+    }
+  };
+
+  const handleUpdateMatchType = (newType) => {
+    setMatchType(newType);
+    if (gameSession) {
+      try {
+        localStorage.setItem(`match_type_${gameSession}`, newType);
       } catch (e) {}
     }
   };
@@ -142,6 +161,13 @@ export default function App() {
         setMatchDate(savedDate);
       } else {
         setMatchDate(new Date().toISOString().split('T')[0]);
+      }
+
+      const savedType = localStorage.getItem(`match_type_${gameSession}`);
+      if (savedType) {
+        setMatchType(savedType);
+      } else {
+        setMatchType('Official');
       }
     }
   }, [gameSession]);
@@ -1015,12 +1041,18 @@ export default function App() {
                 authRole={authRole}
                 matchDate={matchDate}
                 onUpdateMatchDate={handleUpdateMatchDate}
+                matchType={matchType}
+                onUpdateMatchType={handleUpdateMatchType}
               />
             }
           />
           <Route
             path="/archive"
             element={<Archive showToast={showToast} authRole={authRole} />}
+          />
+          <Route
+            path="/trends"
+            element={<SeasonTrends showToast={showToast} authRole={authRole} />}
           />
         </Routes>
 

@@ -4,13 +4,13 @@ import {
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
   Check, ArrowRight, ArrowLeft, UserCheck, Flame, ChevronRight, ChevronLeft,
-  Info, AlertTriangle, BookOpen, HelpCircle
+  Info, AlertTriangle, BookOpen, HelpCircle, Tag
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
 import { calculateMatchAnalytics, computeZoneStats } from '../utils/basketballAnalytics';
 
-export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate }) {
+export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate, onUpdateMatchType }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
   const [selectedPlayerNum, setSelectedPlayerNum] = useState(null);
   const [shotMapPlayerFilter, setShotMapPlayerFilter] = useState(null);
@@ -38,6 +38,24 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
     } catch(e) {}
     if (onUpdateMatchDate) {
       onUpdateMatchDate(match?.name, newDate);
+    }
+  };
+
+  // Match Type State for retroactive editing
+  const [matchTypeValue, setMatchTypeValue] = useState(() => {
+    const stored = localStorage.getItem(`match_type_${match?.name}`);
+    if (stored) return stored;
+    if (match?.matchType) return match.matchType;
+    return 'Official';
+  });
+
+  const handleMatchTypeChange = (newType) => {
+    setMatchTypeValue(newType);
+    try {
+      localStorage.setItem(`match_type_${match?.name}`, newType);
+    } catch(e) {}
+    if (onUpdateMatchType) {
+      onUpdateMatchType(match?.name, newType);
     }
   };
 
@@ -287,6 +305,19 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                     className="bg-transparent text-slate-200 font-bold text-xs focus:outline-none focus:border-sky-400 cursor-pointer"
                     title="Click to edit match date (YYYY-MM-DD)"
                   />
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5 bg-slate-950 px-2 py-0.5 rounded border border-slate-800" title="Click to retroactively edit match type">
+                  <Tag className="w-3.5 h-3.5 text-amber-400" />
+                  <select
+                    value={matchTypeValue}
+                    onChange={(e) => handleMatchTypeChange(e.target.value)}
+                    className="bg-transparent text-amber-300 font-bold text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option value="Official" className="bg-slate-900 text-slate-200 font-bold">Official</option>
+                    <option value="Friendly" className="bg-slate-900 text-slate-200 font-bold">Friendly</option>
+                    <option value="Scrimmage" className="bg-slate-900 text-slate-200 font-bold">Scrimmage</option>
+                  </select>
                 </span>
                 <span>•</span>
                 <span className="text-emerald-400 font-bold">

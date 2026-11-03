@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, Archive as ArchiveIcon, 
+  LayoutDashboard, Archive as ArchiveIcon, TrendingUp,
   Wifi, WifiOff, Edit3, Settings, Shield, User, Lock, LogOut 
 } from 'lucide-react';
 import bbaLogo from '../assets/bba-logo.png';
@@ -82,6 +82,19 @@ export default function Navbar({
         >
           <ArchiveIcon className="w-3.5 h-3.5 flex-none" />
           <span className="hidden xs:inline">ARCHIVE</span>
+        </NavLink>
+        <NavLink
+          to="/trends"
+          className={({ isActive }) =>
+            `flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              isActive
+                ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`
+          }
+        >
+          <TrendingUp className="w-3.5 h-3.5 flex-none" />
+          <span className="hidden xs:inline">TRENDS</span>
         </NavLink>
       </div>
 

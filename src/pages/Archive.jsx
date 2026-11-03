@@ -43,7 +43,7 @@ export default function Archive({ showToast, authRole = 'admin' }) {
 
       // Group events by distinct Match_Name (or fallback to nome_partita)
       const grouped = {};
-      data.forEach(item => {
+      (data || []).forEach(item => {
         const gameName = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || 'Unnamed Match';
         if (!grouped[gameName]) {
           grouped[gameName] = {
@@ -55,6 +55,28 @@ export default function Archive({ showToast, authRole = 'admin' }) {
         grouped[gameName].events.push(item);
       });
 
+      // Also scan localStorage for any local match sessions
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('bba_events_')) {
+            const gameName = key.replace('bba_events_', '');
+            if (gameName && !grouped[gameName]) {
+              try {
+                const localEvs = JSON.parse(localStorage.getItem(key));
+                if (Array.isArray(localEvs) && localEvs.length > 0) {
+                  grouped[gameName] = {
+                    name: gameName,
+                    events: localEvs,
+                    createdAt: localEvs[0]?.timestamp || new Date().toISOString()
+                  };
+                }
+              } catch (e) {}
+            }
+          }
+        }
+      } catch (e) {}
+
       // Convert to array of match summaries
       const matchSummaries = Object.values(grouped).map(m => {
         const teamPts = m.events.reduce((acc, ev) => {
@@ -65,11 +87,16 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           return acc;
         }, 0);
 
+        const storedType = localStorage.getItem(`match_type_${m.name}`) || 'Official';
+        const storedDate = localStorage.getItem(`match_date_${m.name}`) || (m.createdAt ? m.createdAt.split('T')[0] : 'n.a.');
+
         return {
           name: m.name,
           eventCount: m.events.length,
           pts: teamPts,
           createdAt: m.createdAt,
+          matchType: storedType,
+          matchDate: storedDate,
           events: m.events
         };
       });
@@ -89,6 +116,16 @@ export default function Archive({ showToast, authRole = 'admin' }) {
     setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchDate: newDate } : m));
     if (reviewMatch && reviewMatch.name === matchName) {
       setReviewMatch(prev => ({ ...prev, matchDate: newDate }));
+    }
+  };
+
+  const handleUpdateMatchType = (matchName, newType) => {
+    try {
+      localStorage.setItem(`match_type_${matchName}`, newType);
+    } catch (e) {}
+    setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchType: newType } : m));
+    if (reviewMatch && reviewMatch.name === matchName) {
+      setReviewMatch(prev => ({ ...prev, matchType: newType }));
     }
   };
 
@@ -125,7 +162,9 @@ export default function Archive({ showToast, authRole = 'admin' }) {
         name: match.name,
         events: sortedEvents,
         pts: match.pts,
-        createdAt: match.createdAt
+        createdAt: match.createdAt,
+        matchType: match.matchType || localStorage.getItem(`match_type_${match.name}`) || 'Official',
+        matchDate: match.matchDate || localStorage.getItem(`match_date_${match.name}`)
       });
     } catch (err) {
       console.error('Error opening match review:', err);
@@ -279,9 +318,20 @@ export default function Archive({ showToast, authRole = 'admin' }) {
             <div key={idx} className="glass-card p-4 border-slate-700/60 hover:border-sky-500/50 transition-all flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-black text-base text-sky-400 uppercase tracking-wider">
-                    {m.name}
-                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-black text-base text-sky-400 uppercase tracking-wider">
+                      {m.name}
+                    </h3>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                      m.matchType === 'Official'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        : m.matchType === 'Friendly'
+                          ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                          : 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    }`}>
+                      {m.matchType || 'Official'}
+                    </span>
+                  </div>
                   <span className="bg-slate-950 border border-slate-800 text-slate-300 font-extrabold text-xs px-2.5 py-1 rounded">
                     {m.pts} PTS
                   </span>
@@ -345,6 +395,7 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           onClose={() => setReviewMatch(null)}
           onDownloadCSV={handleDownloadCSV}
           onUpdateMatchDate={handleUpdateMatchDate}
+          onUpdateMatchType={handleUpdateMatchType}
         />
       )}
     </div>

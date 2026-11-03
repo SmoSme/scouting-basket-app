@@ -45,7 +45,9 @@ export default function LiveGame({
   onEditEvent,
   authRole = 'admin',
   matchDate: matchDateProp,
-  onUpdateMatchDate
+  onUpdateMatchDate,
+  matchType: matchTypeProp,
+  onUpdateMatchType
 }) {
   const isAdmin = authRole === 'admin';
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
@@ -155,6 +157,7 @@ export default function LiveGame({
   const [awayTeam, setAwayTeam] = useState('');
   const [customMatchName, setCustomMatchName] = useState('');
   const [matchDate, setMatchDate] = useState(() => matchDateProp || new Date().toISOString().split('T')[0]);
+  const [matchType, setMatchType] = useState(() => matchTypeProp || 'Official');
 
   useEffect(() => {
     if (matchDateProp) {
@@ -162,10 +165,23 @@ export default function LiveGame({
     }
   }, [matchDateProp]);
 
+  useEffect(() => {
+    if (matchTypeProp) {
+      setMatchType(matchTypeProp);
+    }
+  }, [matchTypeProp]);
+
   const handleDateChange = (val) => {
     setMatchDate(val);
     if (onUpdateMatchDate) {
       onUpdateMatchDate(val);
+    }
+  };
+
+  const handleMatchTypeChange = (val) => {
+    setMatchType(val);
+    if (onUpdateMatchType) {
+      onUpdateMatchType(val);
     }
   };
   
@@ -249,12 +265,18 @@ export default function LiveGame({
     
     setGameSession(matchName);
     localStorage.setItem('current_game_session', matchName);
-    // Save match date
+    // Save match date and match type
     const todayDate = matchDate || new Date().toISOString().split('T')[0];
     if (onUpdateMatchDate) {
       onUpdateMatchDate(todayDate);
     } else {
       try { localStorage.setItem(`match_date_${matchName}`, todayDate); } catch(e) {}
+    }
+    const currentType = matchType || 'Official';
+    if (onUpdateMatchType) {
+      onUpdateMatchType(currentType);
+    } else {
+      try { localStorage.setItem(`match_type_${matchName}`, currentType); } catch(e) {}
     }
     setRoster(matchSquad);
     if (setOnCourtPlayerNums && matchSquad.length >= 5) {
@@ -485,16 +507,44 @@ export default function LiveGame({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">
-                  MATCH DATE
-                </label>
-                <input
-                  type="date"
-                  value={matchDate}
-                  onChange={(e) => setMatchDate(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold p-2.5 rounded-lg text-xs focus:outline-none focus:border-sky-400"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1 uppercase">
+                    MATCH DATE
+                  </label>
+                  <input
+                    type="date"
+                    value={matchDate}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-100 font-bold p-2.5 rounded-lg text-xs focus:outline-none focus:border-sky-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1 uppercase flex items-center justify-between">
+                    <span>MATCH TYPE</span>
+                    <span className="text-amber-400 font-mono text-[10px]">REQUIRED</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-900/90 rounded-lg border border-slate-700">
+                    {['Official', 'Friendly', 'Scrimmage'].map((type) => {
+                      const isSel = matchType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => handleMatchTypeChange(type)}
+                          className={`py-1.5 px-1 rounded text-xs font-black transition-all text-center ${
+                            isSel
+                              ? 'bg-amber-500 text-slate-950 shadow-md scale-100'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {/* Master Squad Selection Checklist */}
