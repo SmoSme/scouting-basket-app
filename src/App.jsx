@@ -6,6 +6,7 @@ import LiveGame from './pages/LiveGame';
 import Archive from './pages/Archive';
 import SeasonTrends from './pages/SeasonTrends';
 import OpponentScout from './pages/OpponentScout';
+import LeagueHub from './pages/LeagueHub';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
@@ -1101,8 +1102,12 @@ export default function App() {
             element={<SeasonTrends showToast={showToast} authRole={authRole} />}
           />
           <Route
+            path="/league-hub"
+            element={<LeagueHub showToast={showToast} />}
+          />
+          <Route
             path="/opponent-scout"
-            element={<OpponentScout showToast={showToast} />}
+            element={<LeagueHub showToast={showToast} />}
           />
         </Routes>
 

@@ -4,7 +4,7 @@ import {
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
   Check, ArrowRight, ArrowLeft, UserCheck, Flame, ChevronRight, ChevronLeft,
-  Info, AlertTriangle, BookOpen, HelpCircle, Tag
+  Info, AlertTriangle, BookOpen, HelpCircle, Tag, Edit3, Pencil
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
@@ -22,7 +22,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   const [activeMetricGuideKey, setActiveMetricGuideKey] = useState(null); // 'pillars' | 'efg' | 'ts' | 'oreb' | 'asttov' | 'ballControl' | 'pir' | 'gamescore' | 'pps'
   
   // Manual Score Override State
-  const [overrideScores, setOverrideScores] = useState(() => getScoreOverride(match?.name));
+  const [overrideScores, setOverrideScores] = useState(() => match?.name ? getScoreOverride(match.name) : null);
   const [showScoreOverrideModal, setShowScoreOverrideModal] = useState(false);
 
   useEffect(() => {
@@ -33,8 +33,10 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
   // Match Date State for retroactive editing
   const [matchDateValue, setMatchDateValue] = useState(() => {
-    const stored = localStorage.getItem(`match_date_${match?.name}`);
-    if (stored) return stored;
+    if (match?.name) {
+      const stored = localStorage.getItem(`match_date_${match.name}`);
+      if (stored) return stored;
+    }
     if (match?.matchDate) return match.matchDate;
     try {
       const d = new Date(match?.createdAt);
@@ -45,29 +47,35 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
   const handleDateChange = (newDate) => {
     setMatchDateValue(newDate);
-    try {
-      localStorage.setItem(`match_date_${match?.name}`, newDate);
-    } catch(e) {}
-    if (onUpdateMatchDate) {
-      onUpdateMatchDate(match?.name, newDate);
+    if (match?.name) {
+      try {
+        localStorage.setItem(`match_date_${match.name}`, newDate);
+      } catch(e) {}
+    }
+    if (onUpdateMatchDate && match?.name) {
+      onUpdateMatchDate(match.name, newDate);
     }
   };
 
   // Match Type State for retroactive editing
   const [matchTypeValue, setMatchTypeValue] = useState(() => {
-    const stored = localStorage.getItem(`match_type_${match?.name}`);
-    if (stored) return stored;
+    if (match?.name) {
+      const stored = localStorage.getItem(`match_type_${match.name}`);
+      if (stored) return stored;
+    }
     if (match?.matchType) return match.matchType;
     return 'Official';
   });
 
   const handleMatchTypeChange = (newType) => {
     setMatchTypeValue(newType);
-    try {
-      localStorage.setItem(`match_type_${match?.name}`, newType);
-    } catch(e) {}
-    if (onUpdateMatchType) {
-      onUpdateMatchType(match?.name, newType);
+    if (match?.name) {
+      try {
+        localStorage.setItem(`match_type_${match.name}`, newType);
+      } catch(e) {}
+    }
+    if (onUpdateMatchType && match?.name) {
+      onUpdateMatchType(match.name, newType);
     }
   };
 
@@ -96,26 +104,26 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   }, [filteredShotMapEvents]);
 
   const {
-    teamOverview,
-    efficiencyPillars,
-    fourFactors,
-    quarters,
-    playerStats,
-    teamLeaders,
-    zoneSummary,
-    totalEvents,
-    opponentShooting,
-    reboundingAnalysis,
-    situational,
-    defensiveSchemes
-  } = analytics;
+    teamOverview = {},
+    efficiencyPillars = {},
+    fourFactors = {},
+    quarters = [],
+    playerStats = [],
+    teamLeaders = {},
+    zoneSummary = {},
+    totalEvents = 0,
+    opponentShooting = {},
+    reboundingAnalysis = {},
+    situational = {},
+    defensiveSchemes = {}
+  } = analytics || {};
 
   // Fallback to fourFactors alias if efficiencyPillars is not defined
-  const pillars = efficiencyPillars || fourFactors;
+  const pillars = efficiencyPillars || fourFactors || {};
 
   // Derived vs Overridden Official Scores
-  const pbpTeamScore = teamOverview.pts || 0;
-  const pbpOppScore = teamOverview.opponentScore || 0;
+  const pbpTeamScore = teamOverview?.pts ?? 0;
+  const pbpOppScore = teamOverview?.opponentScore ?? 0;
   const displayedTeamScore = overrideScores?.overrideTeamScore !== null && overrideScores?.overrideTeamScore !== undefined 
     ? overrideScores.overrideTeamScore 
     : pbpTeamScore;
@@ -293,7 +301,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider">
-                  {match.name}
+                  {match?.name || 'Match'}
                 </h2>
                 <div className="bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono font-black text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
                   <span className="text-slate-300 font-bold">BBA</span>
@@ -357,7 +365,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                 </span>
                 <span>•</span>
                 <span className="text-emerald-400 font-bold">
-                  {quarters.map(q => `${q.quarter}: ${q.pts}`).join(' | ')}
+                  {(quarters || []).map(q => `${q.quarter}: ${q.pts}`).join(' | ')}
                 </span>
               </div>
             </div>
@@ -373,7 +381,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
               <span className="hidden sm:inline">METRIC</span> GUIDE
             </button>
             <button
-              onClick={() => onDownloadCSV(match.name, match.events)}
+              onClick={() => onDownloadCSV && onDownloadCSV(match?.name || 'Match', match?.events || [])}
               className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
               title="Export complete match data to CSV"
             >
