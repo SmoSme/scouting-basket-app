@@ -748,7 +748,12 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                         </span>
                       </td>
                       <td className="p-2.5 text-center font-mono font-black text-slate-100">
-                        {item.pts} - {item.oppPts}
+                        <span>{item.pts} - {item.oppPts}</span>
+                        {item.isScoreOverridden && (
+                          <span className="block text-[8px] font-black text-amber-400 bg-amber-500/10 rounded px-1 mt-0.5" title="Official table override applied">
+                            SYNCED
+                          </span>
+                        )}
                       </td>
                       <td className="p-2.5 text-center font-mono font-bold">
                         <span className={item.diff > 0 ? 'text-emerald-400' : (item.diff < 0 ? 'text-rose-400' : 'text-slate-400')}>
@@ -794,6 +799,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           onDownloadCSV={() => {}}
           onUpdateMatchDate={handleUpdateMatchDate}
           onUpdateMatchType={handleUpdateMatchType}
+          onUpdateScoreOverride={() => fetchMatches()}
         />
       )}
     </div>

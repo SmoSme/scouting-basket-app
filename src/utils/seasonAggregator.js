@@ -1,4 +1,5 @@
 import { calculateMatchAnalytics } from './basketballAnalytics.js';
+import { getScoreOverride } from './scoreOverride.js';
 
 /**
  * Retrieve saved match type from localStorage or default to 'Official'
@@ -142,8 +143,14 @@ export function aggregateSeasonStats(rawMatches = [], filter = {}) {
     const reb = m.analytics.reboundingAnalysis;
     const opp = m.analytics.opponentShooting;
 
-    const pts = t.pts || 0;
-    const oppPts = t.opponentScore || 0;
+    // Check for manual score override (official table sync)
+    const override = getScoreOverride(m.name);
+    const pts = override?.overrideTeamScore !== null && override?.overrideTeamScore !== undefined 
+      ? override.overrideTeamScore 
+      : (t.pts || 0);
+    const oppPts = override?.overrideOppScore !== null && override?.overrideOppScore !== undefined 
+      ? override.overrideOppScore 
+      : (t.opponentScore || 0);
     const diff = pts - oppPts;
     const isWin = diff > 0;
     const isLoss = diff < 0;
@@ -202,6 +209,7 @@ export function aggregateSeasonStats(rawMatches = [], filter = {}) {
       oppPts,
       diff,
       isWin,
+      isScoreOverridden: override !== null,
       resultText: isWin ? 'W' : (isLoss ? 'L' : 'T'),
       efgPct: typeof t.efgPct === 'number' ? Math.round(t.efgPct * 10) / 10 : 0,
       fg3Pct: typeof t.pct3p === 'number' ? Math.round(t.pct3p * 10) / 10 : 0,

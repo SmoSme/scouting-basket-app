@@ -8,9 +8,11 @@ import {
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
+import ScoreOverrideModal from './ScoreOverrideModal';
 import { calculateMatchAnalytics, computeZoneStats } from '../utils/basketballAnalytics';
+import { getScoreOverride, saveScoreOverride, clearScoreOverride } from '../utils/scoreOverride';
 
-export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate, onUpdateMatchType }) {
+export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate, onUpdateMatchType, onUpdateScoreOverride }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
   const [selectedPlayerNum, setSelectedPlayerNum] = useState(null);
   const [shotMapPlayerFilter, setShotMapPlayerFilter] = useState(null);
@@ -18,6 +20,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   const [boxScoreSortKey, setBoxScoreSortKey] = useState('pir');
   const [boxScoreSortAsc, setBoxScoreSortAsc] = useState(false);
   const [activeMetricGuideKey, setActiveMetricGuideKey] = useState(null); // 'pillars' | 'efg' | 'ts' | 'oreb' | 'asttov' | 'ballControl' | 'pir' | 'gamescore' | 'pps'
+  
+  // Manual Score Override State
+  const [overrideScores, setOverrideScores] = useState(() => getScoreOverride(match?.name));
+  const [showScoreOverrideModal, setShowScoreOverrideModal] = useState(false);
+
+  useEffect(() => {
+    if (match?.name) {
+      setOverrideScores(getScoreOverride(match.name));
+    }
+  }, [match?.name]);
 
   // Match Date State for retroactive editing
   const [matchDateValue, setMatchDateValue] = useState(() => {
@@ -100,6 +112,18 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
   // Fallback to fourFactors alias if efficiencyPillars is not defined
   const pillars = efficiencyPillars || fourFactors;
+
+  // Derived vs Overridden Official Scores
+  const pbpTeamScore = teamOverview.pts || 0;
+  const pbpOppScore = teamOverview.opponentScore || 0;
+  const displayedTeamScore = overrideScores?.overrideTeamScore !== null && overrideScores?.overrideTeamScore !== undefined 
+    ? overrideScores.overrideTeamScore 
+    : pbpTeamScore;
+  const displayedOppScore = overrideScores?.overrideOppScore !== null && overrideScores?.overrideOppScore !== undefined 
+    ? overrideScores.overrideOppScore 
+    : pbpOppScore;
+  const displayedPointDiff = displayedTeamScore - displayedOppScore;
+  const isScoreOverridden = overrideScores !== null && (overrideScores.overrideTeamScore !== null || overrideScores.overrideOppScore !== null);
 
   // Initialize selected player to top PIR player if none selected
   const activePlayer = useMemo(() => {
@@ -273,21 +297,33 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                 </h2>
                 <div className="bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono font-black text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
                   <span className="text-slate-300 font-bold">BBA</span>
-                  <span className="text-amber-400 text-sm font-black">{teamOverview.pts}</span>
+                  <span className="text-amber-400 text-sm font-black">{displayedTeamScore}</span>
                   <span className="text-slate-500 font-bold">-</span>
-                  <span className="text-amber-400 text-sm font-black">{teamOverview.opponentScore || 0}</span>
+                  <span className="text-amber-400 text-sm font-black">{displayedOppScore}</span>
                   <span className="text-[10px] text-amber-500 uppercase font-bold">OPP</span>
-                  {(teamOverview.opponentScore > 0 || teamOverview.pointDifferential !== 0) && (
+                  {(displayedOppScore > 0 || displayedPointDiff !== 0) && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-black ml-0.5 ${
-                      teamOverview.pointDifferential > 0 
+                      displayedPointDiff > 0 
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
-                        : teamOverview.pointDifferential < 0 
+                        : displayedPointDiff < 0 
                           ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' 
                           : 'bg-slate-700 text-slate-300'
                     }`}>
-                      {teamOverview.pointDifferential > 0 ? `+${teamOverview.pointDifferential}` : teamOverview.pointDifferential}
+                      {displayedPointDiff > 0 ? `+${displayedPointDiff}` : displayedPointDiff}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setShowScoreOverrideModal(true)}
+                    className={`ml-1 p-0.5 rounded transition-all ${
+                      isScoreOverridden
+                        ? 'text-amber-300 bg-amber-500/30'
+                        : 'text-slate-400 hover:text-amber-300'
+                    }`}
+                    title={isScoreOverridden ? `Official Table Override (${displayedTeamScore}-${displayedOppScore}). PBP: (${pbpTeamScore}-${pbpOppScore}). Click to edit.` : "Override Official Score (Sync with Table)"}
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
               <div className="text-xs text-slate-400 font-semibold flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
@@ -2192,6 +2228,27 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
         </div>
       </div>
+
+      {/* Score Override Modal */}
+      <ScoreOverrideModal
+        isOpen={showScoreOverrideModal}
+        onClose={() => setShowScoreOverrideModal(false)}
+        matchName={match?.name}
+        pbpTeamScore={pbpTeamScore}
+        pbpOppScore={pbpOppScore}
+        currentOverrideTeamScore={overrideScores?.overrideTeamScore ?? null}
+        currentOverrideOppScore={overrideScores?.overrideOppScore ?? null}
+        onSaveOverride={(t, o) => {
+          saveScoreOverride(match?.name, t, o);
+          setOverrideScores({ overrideTeamScore: t, overrideOppScore: o });
+          if (onUpdateScoreOverride) onUpdateScoreOverride(match?.name, t, o);
+        }}
+        onClearOverride={() => {
+          clearScoreOverride(match?.name);
+          setOverrideScores(null);
+          if (onUpdateScoreOverride) onUpdateScoreOverride(match?.name, null, null);
+        }}
+      />
 
       {/* Metric Decision Guide Modal */}
       {activeMetricGuideKey && (

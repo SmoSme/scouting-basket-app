@@ -47,7 +47,11 @@ export default function LiveGame({
   matchDate: matchDateProp,
   onUpdateMatchDate,
   matchType: matchTypeProp,
-  onUpdateMatchType
+  onUpdateMatchType,
+  overrideTeamScore,
+  overrideOppScore,
+  onSaveScoreOverride,
+  onClearScoreOverride
 }) {
   const isAdmin = authRole === 'admin';
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
@@ -1243,6 +1247,11 @@ export default function LiveGame({
         isAdmin={isAdmin}
         matchDate={matchDate}
         onUpdateMatchDate={handleDateChange}
+        matchName={gameSession}
+        overrideTeamScore={overrideTeamScore}
+        overrideOppScore={overrideOppScore}
+        onSaveScoreOverride={onSaveScoreOverride}
+        onClearScoreOverride={onClearScoreOverride}
       />
 
       {/* Main Nav Sub-Bar & Mobile View Switcher */}

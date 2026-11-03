@@ -5,6 +5,8 @@ import {
   Hash, FileSpreadsheet, Eye
 } from 'lucide-react';
 import MatchReviewModal from '../components/MatchReviewModal';
+import { calculateOpponentScore } from '../utils/basketballAnalytics';
+import { getScoreOverride } from '../utils/scoreOverride';
 
 export default function Archive({ showToast, authRole = 'admin' }) {
   const [matches, setMatches] = useState([]);
@@ -86,14 +88,23 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
           return acc;
         }, 0);
+        const oppPts = calculateOpponentScore(m.events);
 
         const storedType = localStorage.getItem(`match_type_${m.name}`) || 'Official';
         const storedDate = localStorage.getItem(`match_date_${m.name}`) || (m.createdAt ? m.createdAt.split('T')[0] : 'n.a.');
+        const override = getScoreOverride(m.name);
+        const displayedTeamPts = override?.overrideTeamScore !== null && override?.overrideTeamScore !== undefined ? override.overrideTeamScore : teamPts;
+        const displayedOppPts = override?.overrideOppScore !== null && override?.overrideOppScore !== undefined ? override.overrideOppScore : oppPts;
+        const isScoreOverridden = override !== null && (override.overrideTeamScore !== null || override.overrideOppScore !== null);
 
         return {
           name: m.name,
           eventCount: m.events.length,
           pts: teamPts,
+          oppPts,
+          displayedTeamPts,
+          displayedOppPts,
+          isScoreOverridden,
           createdAt: m.createdAt,
           matchType: storedType,
           matchDate: storedDate,
@@ -127,6 +138,19 @@ export default function Archive({ showToast, authRole = 'admin' }) {
     if (reviewMatch && reviewMatch.name === matchName) {
       setReviewMatch(prev => ({ ...prev, matchType: newType }));
     }
+  };
+
+  const handleUpdateScoreOverride = (matchName, tScore, oScore) => {
+    setMatches(prev => prev.map(m => {
+      if (m.name !== matchName) return m;
+      const isOver = tScore !== null || oScore !== null;
+      return {
+        ...m,
+        displayedTeamPts: tScore !== null ? tScore : m.pts,
+        displayedOppPts: oScore !== null ? oScore : m.oppPts,
+        isScoreOverridden: isOver
+      };
+    }));
   };
 
   // Action: Open Match Review Modal
@@ -332,9 +356,18 @@ export default function Archive({ showToast, authRole = 'admin' }) {
                       {m.matchType || 'Official'}
                     </span>
                   </div>
-                  <span className="bg-slate-950 border border-slate-800 text-slate-300 font-extrabold text-xs px-2.5 py-1 rounded">
-                    {m.pts} PTS
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-slate-950 border border-slate-800 text-slate-300 font-mono font-black text-xs px-2.5 py-1 rounded flex items-center gap-1">
+                      <span className="text-amber-400">{m.displayedTeamPts !== undefined ? m.displayedTeamPts : m.pts}</span>
+                      <span className="text-slate-500 font-bold">-</span>
+                      <span className="text-slate-200">{m.displayedOppPts !== undefined ? m.displayedOppPts : (m.oppPts || 0)}</span>
+                    </span>
+                    {m.isScoreOverridden && (
+                      <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded" title={`Official Table Override (PBP: ${m.pts}-${m.oppPts})`}>
+                        SYNCED
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-slate-400 mb-4 font-semibold">
@@ -396,6 +429,7 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           onDownloadCSV={handleDownloadCSV}
           onUpdateMatchDate={handleUpdateMatchDate}
           onUpdateMatchType={handleUpdateMatchType}
+          onUpdateScoreOverride={handleUpdateScoreOverride}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
-import React from 'react';
-import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus, Calendar, Edit3 } from 'lucide-react';
 import { calculateTeamScore, calculateOpponentScore } from '../utils/basketballAnalytics';
+import ScoreOverrideModal from './ScoreOverrideModal';
 
 export default function ScoreboardHeader({
   selectedPlayer,
@@ -13,14 +14,24 @@ export default function ScoreboardHeader({
   plusMinusMap = {},
   isAdmin = true,
   matchDate,
-  onUpdateMatchDate
+  onUpdateMatchDate,
+  matchName = '',
+  overrideTeamScore = null,
+  overrideOppScore = null,
+  onSaveScoreOverride,
+  onClearScoreOverride
 }) {
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
   const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');
 
   const teamPts = calculateTeamScore(events);
   const oppPts = calculateOpponentScore(events);
-  const diff = teamPts - oppPts;
+
+  const displayedTeamPts = overrideTeamScore !== null && overrideTeamScore !== undefined ? overrideTeamScore : teamPts;
+  const displayedOppPts = overrideOppScore !== null && overrideOppScore !== undefined ? overrideOppScore : oppPts;
+  const diff = displayedTeamPts - displayedOppPts;
+  const isOverridden = overrideTeamScore !== null || overrideOppScore !== null;
 
   const teamStagger = (events || []).filter(e => getAz(e) === 'Stagger').length;
   const teamGhost = (events || []).filter(e => getAz(e) === 'Ghost').length;
@@ -130,15 +141,15 @@ export default function ScoreboardHeader({
             </div>
           </div>
 
-          {/* DUAL SCOREBOARD: BBA [Score] - [Opp Score] OPPONENT + Live Differential */}
-          <div className="flex items-center bg-slate-950 px-2 sm:px-3 py-1 rounded-lg border border-slate-750 shadow-md flex-none gap-2 sm:gap-2.5">
+          {/* DUAL SCOREBOARD: BBA [Score] - [Opp Score] OPPONENT + Live Differential + Manual Override */}
+          <div className="flex items-center bg-slate-950 px-2 sm:px-3 py-1 rounded-lg border border-slate-750 shadow-md flex-none gap-2 sm:gap-2.5 relative group">
             {/* BBA Team */}
             <div className="flex flex-col items-center">
               <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider leading-none mb-0.5">
                 BBA
               </span>
               <span className="font-mono text-xl sm:text-2xl font-black text-amber-400 leading-none tabular-nums">
-                {teamPts}
+                {displayedTeamPts}
               </span>
             </div>
 
@@ -162,9 +173,25 @@ export default function ScoreboardHeader({
                 OPP
               </span>
               <span className="font-mono text-xl sm:text-2xl font-black text-slate-100 leading-none tabular-nums">
-                {oppPts}
+                {displayedOppPts}
               </span>
             </div>
+
+            {/* Edit / Pencil Icon for Manual Score Override (Admin Only) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setShowOverrideModal(true)}
+                className={`p-1 rounded transition-all flex items-center justify-center ${
+                  isOverridden 
+                    ? 'text-amber-400 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 shadow-sm' 
+                    : 'text-slate-500 hover:text-amber-400 hover:bg-slate-900'
+                }`}
+                title={isOverridden ? `Official Table Override Active (${displayedTeamPts}-${displayedOppPts}). PBP: (${teamPts}-${oppPts}). Click to edit.` : "Override Official Score (Sync with Table)"}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Undo Button (Admin only) */}
@@ -230,6 +257,23 @@ export default function ScoreboardHeader({
           </span>
         )}
       </div>
+
+      {/* Manual Score Override Modal (Sync with Official Referee Table) */}
+      <ScoreOverrideModal
+        isOpen={showOverrideModal}
+        onClose={() => setShowOverrideModal(false)}
+        matchName={matchName}
+        pbpTeamScore={teamPts}
+        pbpOppScore={oppPts}
+        currentOverrideTeamScore={overrideTeamScore}
+        currentOverrideOppScore={overrideOppScore}
+        onSaveOverride={(tScore, oScore) => {
+          if (onSaveScoreOverride) onSaveScoreOverride(tScore, oScore, matchName);
+        }}
+        onClearOverride={() => {
+          if (onClearScoreOverride) onClearScoreOverride(matchName);
+        }}
+      />
     </div>
   );
 }

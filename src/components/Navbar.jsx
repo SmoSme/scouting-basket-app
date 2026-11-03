@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, Archive as ArchiveIcon, TrendingUp,
+  LayoutDashboard, Archive as ArchiveIcon, TrendingUp, Crosshair,
   Wifi, WifiOff, Edit3, Settings, Shield, User, Lock, LogOut 
 } from 'lucide-react';
 import bbaLogo from '../assets/bba-logo.png';
@@ -95,6 +95,19 @@ export default function Navbar({
         >
           <TrendingUp className="w-3.5 h-3.5 flex-none" />
           <span className="hidden xs:inline">TRENDS</span>
+        </NavLink>
+        <NavLink
+          to="/opponent-scout"
+          className={({ isActive }) =>
+            `flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 text-xs font-semibold rounded transition-colors ${
+              isActive
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`
+          }
+        >
+          <Crosshair className="w-3.5 h-3.5 flex-none" />
+          <span className="hidden xs:inline">OPP</span> SCOUT
         </NavLink>
       </div>
 

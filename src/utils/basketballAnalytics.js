@@ -17,12 +17,26 @@ export const getQtr = (e) => {
 /**
  * Check if an event represents an opponent score (MADE shot or positive point addition)
  * Strictly excludes opponent missed shots (OPP_2PT_MISSED, OPP_3PT_MISSED, OPP_FT_MISSED)
- * and opponent rebounds/turnovers.
+ * and opponent rebounds/turnovers/fouls.
+ * Supports both new situational tags (OPP_FT_MADE, OPP_2PT_MADE, OPP_3PT_MADE)
+ * and legacy tags (+1 OPP, +2 OPP, +3 OPP, OPP_SCORE).
  */
 export const isOpponentScoreEvent = (e) => {
   const cat = String(e?.Category || e?.category || e?.Categoria || e?.categoria || '').toLowerCase();
   const az = getAz(e);
-  const isOpp = cat === 'opponent' || az.toLowerCase().startsWith('opponent') || az.startsWith('OPP_');
+  const azUpper = az.toUpperCase().trim();
+  const num = getNum(e);
+  const player = getGiocatore(e);
+
+  const isOpp = 
+    cat === 'opponent' || 
+    cat.includes('opp') ||
+    azUpper.includes('OPP') || 
+    az.toLowerCase().startsWith('opponent') ||
+    azUpper.startsWith('OPP_') ||
+    num === 'OPP' ||
+    player.toUpperCase() === 'OPPONENT';
+
   if (!isOpp) return false;
 
   const azLower = az.toLowerCase();
@@ -33,7 +47,8 @@ export const isOpponentScoreEvent = (e) => {
     azLower.includes('rimb') ||
     azLower.includes('tov') ||
     azLower.includes('persa') ||
-    azLower.includes('foul')
+    azLower.includes('foul') ||
+    azLower.includes('fallo')
   ) {
     return false;
   }
@@ -42,37 +57,111 @@ export const isOpponentScoreEvent = (e) => {
 };
 
 /**
- * Extract points from opponent score event (+1, +2, +3, OPP_FT_MADE, OPP_2PT_MADE, OPP_3PT_MADE)
- * Returns 0 for missed shots or rebounds.
+ * Extract points from opponent score event:
+ * - New tags: OPP_FT_MADE (=1), OPP_2PT_MADE (=2), OPP_3PT_MADE (=3), OPP_1PT_MADE (=1)
+ * - Legacy tags: +1 OPP, +2 OPP, +3 OPP, OPP_SCORE, Opponent Scored +X
+ * - Score corrections: -1, -2, -3
+ * Returns 0 for missed shots, rebounds, turnovers, or fouls.
  */
 export const getOpponentPoints = (e) => {
   const az = getAz(e);
-  const azLower = az.toLowerCase();
+  const azUpper = az.toUpperCase().trim();
+  const azLower = az.toLowerCase().trim();
 
   // Exclude misses and non-scoring plays
   if (
     azLower.includes('miss') ||
     azLower.includes('sbagliato') ||
     azLower.includes('reb') ||
-    azLower.includes('rimb')
+    azLower.includes('rimb') ||
+    azLower.includes('tov') ||
+    azLower.includes('persa') ||
+    azLower.includes('foul') ||
+    azLower.includes('fallo')
   ) {
     return 0;
   }
 
-  // Score correction negative adjustment
-  if (az.includes('-1') || az.includes('Corrected -1')) return -1;
-  if (az.includes('-2') || az.includes('Corrected -2')) return -2;
-  if (az.includes('-3') || az.includes('Corrected -3')) return -3;
+  // Score correction negative adjustment (explicitly match correction phrasing or -X OPP)
+  if (
+    azUpper.includes('CORRECTED -3') ||
+    azUpper.includes('SCORE CORRECTED -3') ||
+    azUpper.includes('-3 OPP') ||
+    az.startsWith('-3') ||
+    azUpper === '-3'
+  ) {
+    return -3;
+  }
 
-  // New specific Opponent Action schema
-  if (az.includes('OPP_3PT_MADE') || az.includes('3PT Made') || az.includes('3 Pt Made')) return 3;
-  if (az.includes('OPP_2PT_MADE') || az.includes('2PT Made') || az.includes('2 Pt Made')) return 2;
-  if (az.includes('OPP_FT_MADE') || az.includes('OPP_1PT_MADE') || az.includes('1PT Made') || az.includes('1 Pt Made')) return 1;
+  if (
+    azUpper.includes('CORRECTED -2') ||
+    azUpper.includes('SCORE CORRECTED -2') ||
+    azUpper.includes('-2 OPP') ||
+    az.startsWith('-2') ||
+    azUpper === '-2'
+  ) {
+    return -2;
+  }
 
-  // Legacy format: "Opponent Scored +X"
-  if (az.includes('+3')) return 3;
-  if (az.includes('+2')) return 2;
-  if (az.includes('+1')) return 1;
+  if (
+    azUpper.includes('CORRECTED -1') ||
+    azUpper.includes('SCORE CORRECTED -1') ||
+    azUpper.includes('-1 OPP') ||
+    az.startsWith('-1') ||
+    azUpper === '-1'
+  ) {
+    return -1;
+  }
+
+  // 3-point score checks
+  if (
+    azUpper.includes('OPP_3PT_MADE') ||
+    azUpper.includes('3PT MADE') ||
+    azUpper.includes('3 PT MADE') ||
+    azUpper.includes('+3 OPP') ||
+    azUpper.includes('OPP +3') ||
+    azUpper.includes('OPP_SCORE +3') ||
+    azUpper.includes('OPP_SCORE_3') ||
+    azUpper.includes('+3')
+  ) {
+    return 3;
+  }
+
+  // 2-point score checks
+  if (
+    azUpper.includes('OPP_2PT_MADE') ||
+    azUpper.includes('2PT MADE') ||
+    azUpper.includes('2 PT MADE') ||
+    azUpper.includes('+2 OPP') ||
+    azUpper.includes('OPP +2') ||
+    azUpper.includes('OPP_SCORE +2') ||
+    azUpper.includes('OPP_SCORE_2') ||
+    azUpper.includes('+2')
+  ) {
+    return 2;
+  }
+
+  // 1-point score checks (Free Throws)
+  if (
+    azUpper.includes('OPP_FT_MADE') ||
+    azUpper.includes('OPP_1PT_MADE') ||
+    azUpper.includes('FT MADE') ||
+    azUpper.includes('1PT MADE') ||
+    azUpper.includes('1 PT MADE') ||
+    azUpper.includes('+1 OPP') ||
+    azUpper.includes('OPP +1') ||
+    azUpper.includes('OPP_SCORE +1') ||
+    azUpper.includes('OPP_SCORE_1') ||
+    azUpper.includes('+1')
+  ) {
+    return 1;
+  }
+
+  // Generic OPP_SCORE format with regex extraction: OPP_SCORE_X or OPP_SCORE X
+  const match = az.match(/OPP_SCORE[_\s]*([123])/i);
+  if (match) {
+    return parseInt(match[1], 10);
+  }
 
   return 0;
 };
@@ -561,35 +650,26 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
   // =========================================================================
   // OPPONENT ADVANCED SHOT & REBOUND TRACKING
   // =========================================================================
-  const isOppEvent = (e) => isOpponentScoreEvent(e) || String(e?.Category || e?.category || '').toLowerCase() === 'opponent' || getAz(e).startsWith('OPP_');
+  const isOppEvent = (e) => isOpponentScoreEvent(e) || String(e?.Category || e?.category || '').toLowerCase() === 'opponent' || getAz(e).toUpperCase().includes('OPP');
 
-  const opp2pm = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_2PT_MADE' || (isOppEvent(e) && (a.includes('+2') || a === '2PT Made'));
-  }).length;
+  const opp2pm = safeEvents.filter(e => isOpponentScoreEvent(e) && getOpponentPoints(e) === 2).length;
   const opp2pmiss = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_2PT_MISSED' || (isOppEvent(e) && a === '2PT Missed');
+    const a = getAz(e).toUpperCase();
+    return a.includes('OPP_2PT_MISSED') || (isOppEvent(e) && (a.includes('2PT MISSED') || a.includes('2PT SBAGLIATO')));
   }).length;
   const opp2pa = opp2pm + opp2pmiss;
 
-  const opp3pm = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_3PT_MADE' || (isOppEvent(e) && (a.includes('+3') || a === '3PT Made'));
-  }).length;
+  const opp3pm = safeEvents.filter(e => isOpponentScoreEvent(e) && getOpponentPoints(e) === 3).length;
   const opp3pmiss = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_3PT_MISSED' || (isOppEvent(e) && a === '3PT Missed');
+    const a = getAz(e).toUpperCase();
+    return a.includes('OPP_3PT_MISSED') || (isOppEvent(e) && (a.includes('3PT MISSED') || a.includes('3PT SBAGLIATO')));
   }).length;
   const opp3pa = opp3pm + opp3pmiss;
 
-  const oppFtm = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_FT_MADE' || a === 'OPP_1PT_MADE' || (isOppEvent(e) && (a.includes('+1') || a === 'FT Made'));
-  }).length;
+  const oppFtm = safeEvents.filter(e => isOpponentScoreEvent(e) && getOpponentPoints(e) === 1).length;
   const oppFtmiss = safeEvents.filter(e => {
-    const a = getAz(e);
-    return a === 'OPP_FT_MISSED' || a === 'OPP_1PT_MISSED' || (isOppEvent(e) && a === 'FT Missed');
+    const a = getAz(e).toUpperCase();
+    return a.includes('OPP_FT_MISSED') || a.includes('OPP_1PT_MISSED') || (isOppEvent(e) && (a.includes('FT MISSED') || a.includes('TL SBAGLIATO')));
   }).length;
   const oppFta = oppFtm + oppFtmiss;
 

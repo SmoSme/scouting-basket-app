@@ -5,10 +5,12 @@ import Navbar from './components/Navbar';
 import LiveGame from './pages/LiveGame';
 import Archive from './pages/Archive';
 import SeasonTrends from './pages/SeasonTrends';
+import OpponentScout from './pages/OpponentScout';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
 import { calculatePlusMinus, calculateTeamScore, calculateOpponentScore } from './utils/basketballAnalytics';
+import { getScoreOverride, saveScoreOverride, clearScoreOverride } from './utils/scoreOverride';
 import {
   saveToOfflineQueue,
   removeFromOfflineQueue,
@@ -136,6 +138,24 @@ export default function App() {
     return 'Official';
   });
 
+  const [overrideTeamScore, setOverrideTeamScore] = useState(() => {
+    const session = localStorage.getItem('current_game_session');
+    if (session) {
+      const saved = getScoreOverride(session);
+      return saved?.overrideTeamScore ?? null;
+    }
+    return null;
+  });
+
+  const [overrideOppScore, setOverrideOppScore] = useState(() => {
+    const session = localStorage.getItem('current_game_session');
+    if (session) {
+      const saved = getScoreOverride(session);
+      return saved?.overrideOppScore ?? null;
+    }
+    return null;
+  });
+
   const handleUpdateMatchDate = (newDate) => {
     setMatchDate(newDate);
     if (gameSession) {
@@ -154,6 +174,24 @@ export default function App() {
     }
   };
 
+  const handleSaveScoreOverride = (newTeamScore, newOppScore, targetMatch = gameSession) => {
+    saveScoreOverride(targetMatch, newTeamScore, newOppScore);
+    if (targetMatch === gameSession) {
+      setOverrideTeamScore(newTeamScore);
+      setOverrideOppScore(newOppScore);
+    }
+    showToast('⚖️ Official score override saved');
+  };
+
+  const handleClearScoreOverride = (targetMatch = gameSession) => {
+    clearScoreOverride(targetMatch);
+    if (targetMatch === gameSession) {
+      setOverrideTeamScore(null);
+      setOverrideOppScore(null);
+    }
+    showToast('🔄 Reverted to play-by-play calculated score');
+  };
+
   useEffect(() => {
     if (gameSession) {
       const savedDate = localStorage.getItem(`match_date_${gameSession}`);
@@ -169,6 +207,10 @@ export default function App() {
       } else {
         setMatchType('Official');
       }
+
+      const override = getScoreOverride(gameSession);
+      setOverrideTeamScore(override?.overrideTeamScore ?? null);
+      setOverrideOppScore(override?.overrideOppScore ?? null);
     }
   }, [gameSession]);
   const [events, setEvents] = useState(() => {
@@ -1043,6 +1085,10 @@ export default function App() {
                 onUpdateMatchDate={handleUpdateMatchDate}
                 matchType={matchType}
                 onUpdateMatchType={handleUpdateMatchType}
+                overrideTeamScore={overrideTeamScore}
+                overrideOppScore={overrideOppScore}
+                onSaveScoreOverride={handleSaveScoreOverride}
+                onClearScoreOverride={handleClearScoreOverride}
               />
             }
           />
@@ -1053,6 +1099,10 @@ export default function App() {
           <Route
             path="/trends"
             element={<SeasonTrends showToast={showToast} authRole={authRole} />}
+          />
+          <Route
+            path="/opponent-scout"
+            element={<OpponentScout showToast={showToast} />}
           />
         </Routes>
 
