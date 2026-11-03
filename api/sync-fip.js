@@ -415,44 +415,55 @@ query competitionLineupStats($competitionFid: String!, $teamFid: String!) {
 `;
 
 /**
- * Generic GraphQL Query Executor injecting anti-bot mobile headers
+ * Generic GraphQL Query Executor injecting exact raw Proxyman mobile headers
  */
 async function executeGraphQL(endpoint, authToken, packageName, userPremium, operationName, query, variables) {
-  const authHeader = authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`;
+  const authbearertoken = authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`;
 
-  // Strict mobile headers to prevent FIP 500 error
+  // Exact raw intercepted mobile headers
   const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': authHeader,
-    'x-package-name': packageName || 'com.fipstats.app',
+    'Host': 'internal.nbn23.app',
+    'x-package-name': packageName || 'com.nbn23.fipapp',
+    'Accept': '*/*',
     'x-user-premium': String(userPremium ?? 'true'),
-    'x-app-version': '2.0.0',
-    'x-os': 'ios',
-    'User-Agent': 'FIP/2.0.0 (iPhone; iOS 16.0; Scale/3.00)'
+    'Authorization': authbearertoken,
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'it-IT,it;q=0.9',
+    'Content-Type': 'application/json',
+    'User-Agent': 'com.nbn23.fipapp',
+    'x-device-id': 'EC65ADBA-ECE4-5630-8A5B-ED445F854A56',
+    'Connection': 'keep-alive',
+    'x-package-version': '2.14.0'
   };
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      operationName,
-      query,
-      variables
-    })
-  });
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        operationName,
+        query,
+        variables
+      })
+    });
 
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    throw new Error(`HTTP ${response.status} ${response.statusText} - ${errorBody.slice(0, 150)}`);
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      console.error(`[api/sync-fip] Server error response for ${operationName}: HTTP ${response.status} ${response.statusText} - ${errorBody}`);
+      throw new Error(`HTTP ${response.status} ${response.statusText} - ${errorBody.slice(0, 200)}`);
+    }
+
+    const json = await response.json();
+    if (json.errors && json.errors.length > 0) {
+      console.error(`[api/sync-fip] GraphQL errors in ${operationName}:`, JSON.stringify(json.errors));
+      throw new Error(`GraphQL Error: ${json.errors[0].message}`);
+    }
+
+    return json.data;
+  } catch (err) {
+    console.error(`[api/sync-fip] executeGraphQL exception for ${operationName}:`, err.message);
+    throw err;
   }
-
-  const json = await response.json();
-  if (json.errors && json.errors.length > 0) {
-    throw new Error(`GraphQL Error: ${json.errors[0].message}`);
-  }
-
-  return json.data;
 }
 
 /**
@@ -472,7 +483,7 @@ export default async function handler(req, res) {
 
   const endpoint = process.env.FIP_GRAPHQL_ENDPOINT || '';
   const authToken = process.env.FIP_AUTH_TOKEN || '';
-  const packageName = process.env.FIP_PACKAGE_NAME || 'com.fipstats.app';
+  const packageName = process.env.FIP_PACKAGE_NAME || 'com.nbn23.fipapp';
   const userPremium = process.env.FIP_USER_PREMIUM || 'true';
   const competitionId = process.env.FIP_COMPETITION_ID || 'comp_dr2_girf';
   const bbaTeamId = process.env.BBA_TEAM_ID || 'team_bba_academy';

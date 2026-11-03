@@ -27,7 +27,7 @@ const ROSTERS_FILE = path.join(OUTPUT_DIR, 'league_rosters.json');
 // Configuration from .env
 const FIP_GRAPHQL_ENDPOINT = process.env.FIP_GRAPHQL_ENDPOINT || '';
 const FIP_AUTH_TOKEN = process.env.FIP_AUTH_TOKEN || '';
-const FIP_PACKAGE_NAME = process.env.FIP_PACKAGE_NAME || 'com.fipstats.app';
+const FIP_PACKAGE_NAME = process.env.FIP_PACKAGE_NAME || 'com.nbn23.fipapp';
 const FIP_USER_PREMIUM = process.env.FIP_USER_PREMIUM || 'true';
 const FIP_COMPETITION_ID = process.env.FIP_COMPETITION_ID || 'comp_dr2_girf';
 const BBA_TEAM_ID = process.env.BBA_TEAM_ID || 'team_bba_academy';
@@ -445,19 +445,23 @@ query competitionLineupStats($competitionFid: String!, $teamFid: String!) {
  * Generic GraphQL Executor injecting intercepted mobile app headers
  */
 async function executeGraphQL(operationName, query, variables) {
-  const authHeader = FIP_AUTH_TOKEN.startsWith('Bearer ') 
+  const authbearertoken = FIP_AUTH_TOKEN.startsWith('Bearer ') 
     ? FIP_AUTH_TOKEN 
     : `Bearer ${FIP_AUTH_TOKEN}`;
 
   const headers = {
+    'Host': 'internal.nbn23.app',
+    'x-package-name': FIP_PACKAGE_NAME || 'com.nbn23.fipapp',
+    'Accept': '*/*',
+    'x-user-premium': String(FIP_USER_PREMIUM ?? 'true'),
+    'Authorization': authbearertoken,
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'it-IT,it;q=0.9',
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': authHeader,
-    'x-package-name': FIP_PACKAGE_NAME,
-    'x-user-premium': String(FIP_USER_PREMIUM),
-    'User-Agent': 'FIPStats/2.4.1 (iPhone; iOS 17.5.1; Scale/3.00)',
-    'X-App-Platform': 'iOS',
-    'X-App-Version': '2.4.1'
+    'User-Agent': 'com.nbn23.fipapp',
+    'x-device-id': 'EC65ADBA-ECE4-5630-8A5B-ED445F854A56',
+    'Connection': 'keep-alive',
+    'x-package-version': '2.14.0'
   };
 
   const response = await fetch(FIP_GRAPHQL_ENDPOINT, {
