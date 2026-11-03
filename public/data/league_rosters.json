@@ -1,0 +1,313 @@
+{
+  "team_virtus_1960": [
+    {
+      "player": {
+        "fid": "p1_1",
+        "name": "Marco Rossi",
+        "number": 8,
+        "position": "SG"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 18.6,
+        "foulsAVG": 2.1,
+        "inArcThrowsPercentage": 46.2,
+        "outArcThrowsPercentage": 38.5,
+        "inArcThrowsAVG": 4.8,
+        "outArcThrowsAVG": 2.8,
+        "freeThrowsPercentage": 84.1,
+        "plusMinusAVG": 5.4,
+        "reboundsAVG": 3.2,
+        "assistsAVG": 3.6
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_2",
+        "name": "Davide Moretti",
+        "number": 15,
+        "position": "C"
+      },
+      "stats": {
+        "games": 17,
+        "pointsAVG": 14.2,
+        "foulsAVG": 4.1,
+        "inArcThrowsPercentage": 54.8,
+        "outArcThrowsPercentage": 20,
+        "inArcThrowsAVG": 5.6,
+        "outArcThrowsAVG": 0.2,
+        "freeThrowsPercentage": 62.5,
+        "plusMinusAVG": 4.1,
+        "reboundsAVG": 8.9,
+        "assistsAVG": 1.1
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_3",
+        "name": "Lorenzo Santoro",
+        "number": 4,
+        "position": "PG"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 11.8,
+        "foulsAVG": 2.8,
+        "inArcThrowsPercentage": 42,
+        "outArcThrowsPercentage": 36.4,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 1.9,
+        "freeThrowsPercentage": 79,
+        "plusMinusAVG": 6.2,
+        "reboundsAVG": 2.4,
+        "assistsAVG": 5.2
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_4",
+        "name": "Andrea Bianchi",
+        "number": 11,
+        "position": "PF"
+      },
+      "stats": {
+        "games": 16,
+        "pointsAVG": 9.4,
+        "foulsAVG": 3.8,
+        "inArcThrowsPercentage": 48.5,
+        "outArcThrowsPercentage": 25,
+        "inArcThrowsAVG": 3.4,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 68,
+        "plusMinusAVG": 1.8,
+        "reboundsAVG": 6.1,
+        "assistsAVG": 1.4
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_5",
+        "name": "Federico Ferri",
+        "number": 23,
+        "position": "SF"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 10.2,
+        "foulsAVG": 1.9,
+        "inArcThrowsPercentage": 44.1,
+        "outArcThrowsPercentage": 35.8,
+        "inArcThrowsAVG": 2.6,
+        "outArcThrowsAVG": 1.8,
+        "freeThrowsPercentage": 75,
+        "plusMinusAVG": 3.5,
+        "reboundsAVG": 4,
+        "assistsAVG": 1.8
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_6",
+        "name": "Giulio Colasanti",
+        "number": 19,
+        "position": "G"
+      },
+      "stats": {
+        "games": 15,
+        "pointsAVG": 6.5,
+        "foulsAVG": 3.4,
+        "inArcThrowsPercentage": 39.5,
+        "outArcThrowsPercentage": 28,
+        "inArcThrowsAVG": 1.8,
+        "outArcThrowsAVG": 0.7,
+        "freeThrowsPercentage": 71.4,
+        "plusMinusAVG": -0.8,
+        "reboundsAVG": 2.1,
+        "assistsAVG": 1.5
+      }
+    }
+  ],
+  "team_carver": [
+    {
+      "player": {
+        "fid": "p2_1",
+        "name": "Gianluca Martini",
+        "number": 10,
+        "position": "PG"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 21.4,
+        "foulsAVG": 2.3,
+        "inArcThrowsPercentage": 48,
+        "outArcThrowsPercentage": 41.2,
+        "inArcThrowsAVG": 4.2,
+        "outArcThrowsAVG": 3.8,
+        "freeThrowsPercentage": 88.5,
+        "plusMinusAVG": 6.8
+      }
+    },
+    {
+      "player": {
+        "fid": "p2_2",
+        "name": "Roberto De Luca",
+        "number": 14,
+        "position": "C"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 13.5,
+        "foulsAVG": 3.9,
+        "inArcThrowsPercentage": 52,
+        "outArcThrowsPercentage": 18,
+        "inArcThrowsAVG": 5.4,
+        "outArcThrowsAVG": 0.3,
+        "freeThrowsPercentage": 64,
+        "plusMinusAVG": 4.5
+      }
+    },
+    {
+      "player": {
+        "fid": "p2_3",
+        "name": "Alessio Mancini",
+        "number": 7,
+        "position": "SG"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 12.1,
+        "foulsAVG": 3.2,
+        "inArcThrowsPercentage": 43,
+        "outArcThrowsPercentage": 37,
+        "inArcThrowsAVG": 2.8,
+        "outArcThrowsAVG": 2.1,
+        "freeThrowsPercentage": 78,
+        "plusMinusAVG": 3.2
+      }
+    }
+  ],
+  "team_petriana": [
+    {
+      "player": {
+        "fid": "p3_1",
+        "name": "Simone Costa",
+        "number": 7,
+        "position": "SG"
+      },
+      "stats": {
+        "games": 17,
+        "pointsAVG": 16.8,
+        "foulsAVG": 2.4,
+        "inArcThrowsPercentage": 44.5,
+        "outArcThrowsPercentage": 37.1,
+        "inArcThrowsAVG": 3.8,
+        "outArcThrowsAVG": 2.4,
+        "freeThrowsPercentage": 81,
+        "plusMinusAVG": 4.2
+      }
+    },
+    {
+      "player": {
+        "fid": "p3_2",
+        "name": "Claudio Rinaldi",
+        "number": 12,
+        "position": "PF"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 12,
+        "foulsAVG": 3.6,
+        "inArcThrowsPercentage": 49,
+        "outArcThrowsPercentage": 22,
+        "inArcThrowsAVG": 4.6,
+        "outArcThrowsAVG": 0.4,
+        "freeThrowsPercentage": 65,
+        "plusMinusAVG": 2.5
+      }
+    }
+  ],
+  "team_san_paolo": [
+    {
+      "player": {
+        "fid": "p5_1",
+        "name": "Daniele Ricci",
+        "number": 9,
+        "position": "SF"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 15.1,
+        "foulsAVG": 3.5,
+        "inArcThrowsPercentage": 45,
+        "outArcThrowsPercentage": 36,
+        "inArcThrowsAVG": 3.5,
+        "outArcThrowsAVG": 1.9,
+        "freeThrowsPercentage": 74,
+        "plusMinusAVG": 1.1
+      }
+    }
+  ],
+  "team_alfa_omega": [
+    {
+      "player": {
+        "fid": "p6_1",
+        "name": "Fabio Totti",
+        "number": 13,
+        "position": "C"
+      },
+      "stats": {
+        "games": 17,
+        "pointsAVG": 14.5,
+        "foulsAVG": 4.2,
+        "inArcThrowsPercentage": 51,
+        "outArcThrowsPercentage": 10,
+        "inArcThrowsAVG": 5.8,
+        "outArcThrowsAVG": 0.1,
+        "freeThrowsPercentage": 61,
+        "plusMinusAVG": -1.2
+      }
+    }
+  ],
+  "team_vis_nova": [
+    {
+      "player": {
+        "fid": "p7_1",
+        "name": "Stefano Grimaldi",
+        "number": 5,
+        "position": "G"
+      },
+      "stats": {
+        "games": 16,
+        "pointsAVG": 13.2,
+        "foulsAVG": 3.1,
+        "inArcThrowsPercentage": 40,
+        "outArcThrowsPercentage": 35,
+        "inArcThrowsAVG": 2.8,
+        "outArcThrowsAVG": 1.8,
+        "freeThrowsPercentage": 70,
+        "plusMinusAVG": -3.5
+      }
+    }
+  ],
+  "team_frascati": [
+    {
+      "player": {
+        "fid": "p8_1",
+        "name": "Valerio Piras",
+        "number": 6,
+        "position": "G"
+      },
+      "stats": {
+        "games": 18,
+        "pointsAVG": 14,
+        "foulsAVG": 3.7,
+        "inArcThrowsPercentage": 41,
+        "outArcThrowsPercentage": 33,
+        "inArcThrowsAVG": 3.2,
+        "outArcThrowsAVG": 1.6,
+        "freeThrowsPercentage": 69,
+        "plusMinusAVG": -5.4
+      }
+    }
+  ]
+}

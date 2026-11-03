@@ -1,517 +1,548 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Trophy, Crosshair, Target, Upload, FileText, CheckCircle2, 
-  AlertTriangle, Zap, Flame, RefreshCw, Search, 
-  FileCode, ArrowLeft, ArrowRight, Shield, Activity, BarChart2, 
-  ChevronRight, X, User, Calendar, ExternalLink, HelpCircle
+  Trophy, Target, Upload, FileText, AlertTriangle, 
+  RefreshCw, Search, ArrowLeft, Shield, Zap, ChevronRight, 
+  X, User, HelpCircle, Loader2, Terminal, Flame, CheckCircle2
 } from 'lucide-react';
 
-// Comprehensive Divisione Regionale 2 Championship League Dataset
-export const DEFAULT_LEAGUE_DATA = {
-  lastUpdated: "2026-11-03",
-  leagueName: "Divisione Regionale 2 - Girone F",
-  season: "2025/2026",
-  standings: [
-    { id: "t1", rank: 1, name: "Virtus Roma 1960", points: 28, w: 14, l: 4, gp: 18, ppg: 79.4, opp_ppg: 71.2, diff: 8.2, streak: ["W", "W", "L", "W", "W"] },
-    { id: "t2", rank: 2, name: "Carver Cinecittà", points: 26, w: 13, l: 5, gp: 18, ppg: 82.1, opp_ppg: 74.5, diff: 7.6, streak: ["W", "W", "W", "W", "L"] },
-    { id: "t3", rank: 3, name: "Petriana Basket", points: 24, w: 12, l: 6, gp: 18, ppg: 75.8, opp_ppg: 72.0, diff: 3.8, streak: ["L", "W", "W", "L", "W"] },
-    { id: "t4", rank: 4, name: "BBA - Basketball Academy", points: 22, w: 11, l: 7, gp: 18, ppg: 76.5, opp_ppg: 73.1, diff: 3.4, streak: ["W", "L", "W", "W", "W"] },
-    { id: "t5", rank: 5, name: "San Paolo Ostiense", points: 20, w: 10, l: 8, gp: 18, ppg: 73.2, opp_ppg: 72.8, diff: 0.4, streak: ["W", "L", "L", "W", "L"] },
-    { id: "t6", rank: 6, name: "Alfa Omega Ostia", points: 16, w: 8, l: 10, gp: 18, ppg: 71.0, opp_ppg: 74.2, diff: -3.2, streak: ["L", "L", "W", "L", "W"] },
-    { id: "t7", rank: 7, name: "Vis Nova Basket", points: 12, w: 6, l: 12, gp: 18, ppg: 68.4, opp_ppg: 76.0, diff: -7.6, streak: ["L", "L", "L", "W", "L"] },
-    { id: "t8", rank: 8, name: "Basket Frascati", points: 8, w: 4, l: 14, gp: 18, ppg: 65.2, opp_ppg: 77.8, diff: -12.6, streak: ["L", "L", "L", "L", "W"] }
-  ],
-  teams: {
-    "t1": {
-      id: "t1",
-      name: "Virtus Roma 1960",
-      league: "Divisione Regionale 2",
-      city: "Roma (RM)",
-      stats: { ppg: 79.4, opp_ppg: 71.2, diff: 8.2, pace: "Fast / Transition Heavy", homeRecord: "8-1", awayRecord: "6-3" },
-      roster: [
-        {
-          id: "p1_1",
-          number: 8,
-          name: "Marco Rossi",
-          position: "SG",
-          games: 18,
-          ppg: 18.6,
-          fouls: 2.1,
-          threePtAtt: 7.4,
-          pct_3p: 52.0,
-          pct_2p: 32.0,
-          pct_ft: 16.0,
-          fg_pct: 46.2,
-          three_pct: 38.5,
-          ft_pct: 84.1,
-          notes: "Dangerous pull-up shooter in transition; attacks left on high screen-and-rolls.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 24, fouls: 2, threeMade: 5, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 18, fouls: 3, threeMade: 3, date: "2026-10-21" },
-            { opponent: "vs San Paolo", pts: 16, fouls: 1, threeMade: 2, date: "2026-10-14" }
-          ]
-        },
-        {
-          id: "p1_2",
-          number: 15,
-          name: "Davide Moretti",
-          position: "C",
-          games: 17,
-          ppg: 14.2,
-          fouls: 3.8,
-          threePtAtt: 0.5,
-          pct_3p: 3.0,
-          pct_2p: 68.0,
-          pct_ft: 29.0,
-          fg_pct: 56.4,
-          three_pct: 20.0,
-          ft_pct: 61.5,
-          notes: "Aggressive shot blocker prone to early foul trouble on pump fakes and seal-offs.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 12, fouls: 4, threeMade: 0, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 16, fouls: 5, threeMade: 0, date: "2026-10-21" },
-            { opponent: "vs San Paolo", pts: 15, fouls: 3, threeMade: 0, date: "2026-10-14" }
-          ]
-        },
-        {
-          id: "p1_3",
-          number: 23,
-          name: "Matteo Bianchi",
-          position: "PF",
-          games: 18,
-          ppg: 12.8,
-          fouls: 3.6,
-          threePtAtt: 2.1,
-          pct_3p: 18.0,
-          pct_2p: 55.0,
-          pct_ft: 27.0,
-          fg_pct: 51.0,
-          three_pct: 31.0,
-          ft_pct: 70.0,
-          notes: "Physical rebounder; commits blocking fouls when challenged laterally off the dribble.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 14, fouls: 3, threeMade: 1, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 10, fouls: 4, threeMade: 0, date: "2026-10-21" },
-            { opponent: "vs San Paolo", pts: 15, fouls: 4, threeMade: 2, date: "2026-10-14" }
-          ]
-        },
-        {
-          id: "p1_4",
-          number: 4,
-          name: "Lorenzo Conti",
-          position: "PG",
-          games: 16,
-          ppg: 10.5,
-          fouls: 1.9,
-          threePtAtt: 5.8,
-          pct_3p: 62.0,
-          pct_2p: 20.0,
-          pct_ft: 18.0,
-          fg_pct: 42.0,
-          three_pct: 39.2,
-          ft_pct: 88.0,
-          notes: "Corner 3PT specialist and drive-and-kick floor general; rarely commits fouls.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 9, fouls: 2, threeMade: 3, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 12, fouls: 1, threeMade: 4, date: "2026-10-21" },
-            { opponent: "vs San Paolo", pts: 11, fouls: 2, threeMade: 3, date: "2026-10-14" }
-          ]
-        },
-        {
-          id: "p1_5",
-          number: 11,
-          name: "Andrea Ferrari",
-          position: "SF",
-          games: 18,
-          ppg: 9.1,
-          fouls: 2.4,
-          threePtAtt: 3.2,
-          pct_3p: 35.0,
-          pct_2p: 45.0,
-          pct_ft: 20.0,
-          fg_pct: 44.5,
-          three_pct: 33.3,
-          ft_pct: 76.5,
-          notes: "Baseline back-door cutter and secondary transition finisher.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 11, fouls: 2, threeMade: 1, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 8, fouls: 3, threeMade: 1, date: "2026-10-21" },
-            { opponent: "vs San Paolo", pts: 9, fouls: 1, threeMade: 0, date: "2026-10-14" }
-          ]
-        },
-        {
-          id: "p1_6",
-          number: 19,
-          name: "Federico Russo",
-          position: "C",
-          games: 14,
-          ppg: 5.4,
-          fouls: 3.7,
-          threePtAtt: 0.2,
-          pct_3p: 0.0,
-          pct_2p: 72.0,
-          pct_ft: 28.0,
-          fg_pct: 52.0,
-          three_pct: 0.0,
-          ft_pct: 58.0,
-          notes: "Back-up big man; frequently in foul trouble within 5 minutes of entering.",
-          recentGames: [
-            { opponent: "vs Carver", pts: 4, fouls: 4, threeMade: 0, date: "2026-10-28" },
-            { opponent: "@ Petriana", pts: 6, fouls: 4, threeMade: 0, date: "2026-10-21" }
-          ]
-        }
-      ]
-    },
-    "t2": {
-      id: "t2",
-      name: "Carver Cinecittà",
-      league: "Divisione Regionale 2",
-      city: "Roma (RM)",
-      stats: { ppg: 82.1, opp_ppg: 74.5, diff: 7.6, pace: "High Octane / 3PT Oriented", homeRecord: "7-2", awayRecord: "6-3" },
-      roster: [
-        {
-          id: "p2_1",
-          number: 7,
-          name: "Simone Paoletti",
-          position: "PG",
-          games: 18,
-          ppg: 21.4,
-          fouls: 2.3,
-          threePtAtt: 8.5,
-          pct_3p: 58.0,
-          pct_2p: 26.0,
-          pct_ft: 16.0,
-          fg_pct: 48.0,
-          three_pct: 41.2,
-          ft_pct: 86.5,
-          notes: "League leading scorer; lethal step-back 3PT shooter off pick-and-roll.",
-          recentGames: [
-            { opponent: "@ Virtus", pts: 26, fouls: 2, threeMade: 6, date: "2026-10-28" },
-            { opponent: "vs Frascati", pts: 22, fouls: 1, threeMade: 4, date: "2026-10-21" }
-          ]
-        },
-        {
-          id: "p2_2",
-          number: 14,
-          name: "Fabio Marini",
-          position: "PF",
-          games: 18,
-          ppg: 15.6,
-          fouls: 3.9,
-          threePtAtt: 1.2,
-          pct_3p: 12.0,
-          pct_2p: 62.0,
-          pct_ft: 26.0,
-          fg_pct: 54.0,
-          three_pct: 28.0,
-          ft_pct: 68.0,
-          notes: "Aggressive rebounder and physical enforcer; commits frequent offensive fouls on screens.",
-          recentGames: [
-            { opponent: "@ Virtus", pts: 14, fouls: 4, threeMade: 0, date: "2026-10-28" },
-            { opponent: "vs Frascati", pts: 18, fouls: 5, threeMade: 1, date: "2026-10-21" }
-          ]
-        },
-        {
-          id: "p2_3",
-          number: 10,
-          name: "Luca Rinaldi",
-          position: "SF",
-          games: 17,
-          ppg: 13.8,
-          fouls: 2.8,
-          threePtAtt: 6.2,
-          pct_3p: 48.0,
-          pct_2p: 38.0,
-          pct_ft: 14.0,
-          fg_pct: 44.0,
-          three_pct: 36.5,
-          ft_pct: 78.0,
-          notes: "Spot-up shooter trailing in fastbreaks; struggles defending quick wings.",
-          recentGames: [
-            { opponent: "@ Virtus", pts: 15, fouls: 3, threeMade: 3, date: "2026-10-28" }
-          ]
-        }
-      ]
-    },
-    "t3": {
-      id: "t3",
-      name: "Petriana Basket",
-      league: "Divisione Regionale 2",
-      city: "Roma (RM)",
-      stats: { ppg: 75.8, opp_ppg: 72.0, diff: 3.8, pace: "Half-Court Execution", homeRecord: "7-2", awayRecord: "5-4" },
-      roster: [
-        {
-          id: "p3_1",
-          number: 9,
-          name: "Gabriele Mancini",
-          position: "PG",
-          games: 18,
-          ppg: 16.2,
-          fouls: 2.0,
-          threePtAtt: 4.8,
-          pct_3p: 40.0,
-          pct_2p: 42.0,
-          pct_ft: 18.0,
-          fg_pct: 47.0,
-          three_pct: 37.0,
-          ft_pct: 82.0,
-          notes: "Disciplined floor general; runs patient sets and hits clutch mid-range jumpers."
-        },
-        {
-          id: "p3_2",
-          number: 33,
-          name: "Roberto Santoro",
-          position: "C",
-          games: 18,
-          ppg: 13.5,
-          fouls: 3.7,
-          threePtAtt: 0.1,
-          pct_3p: 0.0,
-          pct_2p: 75.0,
-          pct_ft: 25.0,
-          fg_pct: 58.0,
-          three_pct: 0.0,
-          ft_pct: 59.0,
-          notes: "Classic low-post anchor; draws double teams but gets into foul trouble vs spread lineups."
-        }
-      ]
-    },
-    "t4": {
-      id: "t4",
-      name: "BBA - Basketball Academy",
-      league: "Divisione Regionale 2",
-      city: "Roma (RM)",
-      stats: { ppg: 76.5, opp_ppg: 73.1, diff: 3.4, pace: "High Intensity / Pressure Defense", homeRecord: "6-3", awayRecord: "5-4" },
-      roster: [
-        { id: "p4_1", number: 7, name: "Emanuele Cuomo", position: "PG", games: 18, ppg: 15.4, fouls: 2.1, threePtAtt: 4.5, pct_3p: 38.0, pct_2p: 42.0, pct_ft: 20.0, fg_pct: 46.0, three_pct: 36.0, ft_pct: 82.0, notes: "Our floor leader and perimeter creator." },
-        { id: "p4_2", number: 12, name: "Matteo Silvestri", position: "SG", games: 17, ppg: 14.1, fouls: 1.8, threePtAtt: 6.2, pct_3p: 55.0, pct_2p: 30.0, pct_ft: 15.0, fg_pct: 45.0, three_pct: 39.0, ft_pct: 85.0, notes: "Sharpshooter on catch-and-shoot actions." }
-      ]
-    }
+// =========================================================================
+// BASELINE DATA (Divisione Regionale 2 - Girone F)
+// =========================================================================
+export const DEFAULT_STANDINGS = [
+  {
+    rank: 1,
+    teamFid: "team_virtus_1960",
+    team: { fid: "team_virtus_1960", name: "Virtus Roma 1960" },
+    name: "Virtus Roma 1960",
+    points: 28,
+    won: 14,
+    lost: 4,
+    played: 18,
+    pointDiff: 8.2,
+    streak: ["W", "W", "L", "W", "W"]
+  },
+  {
+    rank: 2,
+    teamFid: "team_carver",
+    team: { fid: "team_carver", name: "Carver Cinecittà" },
+    name: "Carver Cinecittà",
+    points: 26,
+    won: 13,
+    lost: 5,
+    played: 18,
+    pointDiff: 7.6,
+    streak: ["W", "W", "W", "W", "L"]
+  },
+  {
+    rank: 3,
+    teamFid: "team_petriana",
+    team: { fid: "team_petriana", name: "Petriana Basket" },
+    name: "Petriana Basket",
+    points: 24,
+    won: 12,
+    lost: 6,
+    played: 18,
+    pointDiff: 3.8,
+    streak: ["L", "W", "W", "L", "W"]
+  },
+  {
+    rank: 4,
+    teamFid: "team_bba_academy",
+    team: { fid: "team_bba_academy", name: "BBA - Basketball Academy" },
+    name: "BBA - Basketball Academy",
+    points: 22,
+    won: 11,
+    lost: 7,
+    played: 18,
+    pointDiff: 3.4,
+    streak: ["W", "L", "W", "W", "W"]
+  },
+  {
+    rank: 5,
+    teamFid: "team_san_paolo",
+    team: { fid: "team_san_paolo", name: "San Paolo Ostiense" },
+    name: "San Paolo Ostiense",
+    points: 20,
+    won: 10,
+    lost: 8,
+    played: 18,
+    pointDiff: 0.4,
+    streak: ["W", "L", "L", "W", "L"]
+  },
+  {
+    rank: 6,
+    teamFid: "team_alfa_omega",
+    team: { fid: "team_alfa_omega", name: "Alfa Omega Ostia" },
+    name: "Alfa Omega Ostia",
+    points: 16,
+    won: 8,
+    lost: 10,
+    played: 18,
+    pointDiff: -3.2,
+    streak: ["L", "L", "W", "L", "W"]
+  },
+  {
+    rank: 7,
+    teamFid: "team_vis_nova",
+    team: { fid: "team_vis_nova", name: "Vis Nova Basket" },
+    name: "Vis Nova Basket",
+    points: 12,
+    won: 6,
+    lost: 12,
+    played: 18,
+    pointDiff: -7.6,
+    streak: ["L", "L", "L", "W", "L"]
+  },
+  {
+    rank: 8,
+    teamFid: "team_frascati",
+    team: { fid: "team_frascati", name: "Basket Frascati" },
+    name: "Basket Frascati",
+    points: 8,
+    won: 4,
+    lost: 14,
+    played: 18,
+    pointDiff: -12.6,
+    streak: ["L", "L", "L", "L", "W"]
   }
+];
+
+export const DEFAULT_ROSTERS = {
+  "team_virtus_1960": [
+    {
+      player: { fid: "p1_1", name: "Marco Rossi", number: 8, position: "SG" },
+      stats: {
+        games: 18,
+        pointsAVG: 18.6,
+        foulsAVG: 2.1,
+        inArcThrowsPercentage: 46.2,
+        outArcThrowsPercentage: 38.5,
+        inArcThrowsAVG: 4.8,
+        outArcThrowsAVG: 2.8, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 84.1,
+        plusMinusAVG: 5.4,
+        reboundsAVG: 3.2,
+        assistsAVG: 3.6
+      }
+    },
+    {
+      player: { fid: "p1_2", name: "Davide Moretti", number: 15, position: "C" },
+      stats: {
+        games: 17,
+        pointsAVG: 14.2,
+        foulsAVG: 4.1, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 54.8,
+        outArcThrowsPercentage: 20.0,
+        inArcThrowsAVG: 5.6,
+        outArcThrowsAVG: 0.2,
+        freeThrowsPercentage: 62.5,
+        plusMinusAVG: 4.1,
+        reboundsAVG: 8.9,
+        assistsAVG: 1.1
+      }
+    },
+    {
+      player: { fid: "p1_3", name: "Lorenzo Santoro", number: 4, position: "PG" },
+      stats: {
+        games: 18,
+        pointsAVG: 11.8,
+        foulsAVG: 2.8,
+        inArcThrowsPercentage: 42.0,
+        outArcThrowsPercentage: 36.4,
+        inArcThrowsAVG: 2.5,
+        outArcThrowsAVG: 1.9, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 79.0,
+        plusMinusAVG: 6.2,
+        reboundsAVG: 2.4,
+        assistsAVG: 5.2
+      }
+    },
+    {
+      player: { fid: "p1_4", name: "Andrea Bianchi", number: 11, position: "PF" },
+      stats: {
+        games: 16,
+        pointsAVG: 9.4,
+        foulsAVG: 3.8, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 48.5,
+        outArcThrowsPercentage: 25.0,
+        inArcThrowsAVG: 3.4,
+        outArcThrowsAVG: 0.5,
+        freeThrowsPercentage: 68.0,
+        plusMinusAVG: 1.8,
+        reboundsAVG: 6.1,
+        assistsAVG: 1.4
+      }
+    },
+    {
+      player: { fid: "p1_5", name: "Federico Ferri", number: 23, position: "SF" },
+      stats: {
+        games: 18,
+        pointsAVG: 10.2,
+        foulsAVG: 1.9,
+        inArcThrowsPercentage: 44.1,
+        outArcThrowsPercentage: 35.8,
+        inArcThrowsAVG: 2.6,
+        outArcThrowsAVG: 1.8, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 75.0,
+        plusMinusAVG: 3.5,
+        reboundsAVG: 4.0,
+        assistsAVG: 1.8
+      }
+    },
+    {
+      player: { fid: "p1_6", name: "Giulio Colasanti", number: 19, position: "G" },
+      stats: {
+        games: 15,
+        pointsAVG: 6.5,
+        foulsAVG: 3.4, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 39.5,
+        outArcThrowsPercentage: 28.0,
+        inArcThrowsAVG: 1.8,
+        outArcThrowsAVG: 0.7,
+        freeThrowsPercentage: 71.4,
+        plusMinusAVG: -0.8,
+        reboundsAVG: 2.1,
+        assistsAVG: 1.5
+      }
+    }
+  ],
+  "team_carver": [
+    {
+      player: { fid: "p2_1", name: "Gianluca Martini", number: 10, position: "PG" },
+      stats: {
+        games: 18,
+        pointsAVG: 21.4,
+        foulsAVG: 2.3,
+        inArcThrowsPercentage: 48.0,
+        outArcThrowsPercentage: 41.2,
+        inArcThrowsAVG: 4.2,
+        outArcThrowsAVG: 3.8, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 88.5,
+        plusMinusAVG: 6.8
+      }
+    },
+    {
+      player: { fid: "p2_2", name: "Roberto De Luca", number: 14, position: "C" },
+      stats: {
+        games: 18,
+        pointsAVG: 13.5,
+        foulsAVG: 3.9, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 52.0,
+        outArcThrowsPercentage: 18.0,
+        inArcThrowsAVG: 5.4,
+        outArcThrowsAVG: 0.3,
+        freeThrowsPercentage: 64.0,
+        plusMinusAVG: 4.5
+      }
+    },
+    {
+      player: { fid: "p2_3", name: "Alessio Mancini", number: 7, position: "SG" },
+      stats: {
+        games: 18,
+        pointsAVG: 12.1,
+        foulsAVG: 3.2, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 43.0,
+        outArcThrowsPercentage: 37.0,
+        inArcThrowsAVG: 2.8,
+        outArcThrowsAVG: 2.1, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 78.0,
+        plusMinusAVG: 3.2
+      }
+    }
+  ],
+  "team_petriana": [
+    {
+      player: { fid: "p3_1", name: "Simone Costa", number: 7, position: "SG" },
+      stats: {
+        games: 17,
+        pointsAVG: 16.8,
+        foulsAVG: 2.4,
+        inArcThrowsPercentage: 44.5,
+        outArcThrowsPercentage: 37.1,
+        inArcThrowsAVG: 3.8,
+        outArcThrowsAVG: 2.4, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 81.0,
+        plusMinusAVG: 4.2
+      }
+    },
+    {
+      player: { fid: "p3_2", name: "Claudio Rinaldi", number: 12, position: "PF" },
+      stats: {
+        games: 18,
+        pointsAVG: 12.0,
+        foulsAVG: 3.6, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 49.0,
+        outArcThrowsPercentage: 22.0,
+        inArcThrowsAVG: 4.6,
+        outArcThrowsAVG: 0.4,
+        freeThrowsPercentage: 65.0,
+        plusMinusAVG: 2.5
+      }
+    }
+  ],
+  "team_san_paolo": [
+    {
+      player: { fid: "p5_1", name: "Daniele Ricci", number: 9, position: "SF" },
+      stats: {
+        games: 18,
+        pointsAVG: 15.1,
+        foulsAVG: 3.5, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 45.0,
+        outArcThrowsPercentage: 36.0,
+        inArcThrowsAVG: 3.5,
+        outArcThrowsAVG: 1.9, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 74.0,
+        plusMinusAVG: 1.1
+      }
+    }
+  ],
+  "team_alfa_omega": [
+    {
+      player: { fid: "p6_1", name: "Fabio Totti", number: 13, position: "C" },
+      stats: {
+        games: 17,
+        pointsAVG: 14.5,
+        foulsAVG: 4.2, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 51.0,
+        outArcThrowsPercentage: 10.0,
+        inArcThrowsAVG: 5.8,
+        outArcThrowsAVG: 0.1,
+        freeThrowsPercentage: 61.0,
+        plusMinusAVG: -1.2
+      }
+    }
+  ],
+  "team_vis_nova": [
+    {
+      player: { fid: "p7_1", name: "Stefano Grimaldi", number: 5, position: "G" },
+      stats: {
+        games: 16,
+        pointsAVG: 13.2,
+        foulsAVG: 3.1, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 40.0,
+        outArcThrowsPercentage: 35.0,
+        inArcThrowsAVG: 2.8,
+        outArcThrowsAVG: 1.8, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 70.0,
+        plusMinusAVG: -3.5
+      }
+    }
+  ],
+  "team_frascati": [
+    {
+      player: { fid: "p8_1", name: "Valerio Piras", number: 6, position: "G" },
+      stats: {
+        games: 18,
+        pointsAVG: 14.0,
+        foulsAVG: 3.7, // > 3.0 High Foul Target
+        inArcThrowsPercentage: 41.0,
+        outArcThrowsPercentage: 33.0,
+        inArcThrowsAVG: 3.2,
+        outArcThrowsAVG: 1.6, // > 1.5 Primary Shooter
+        freeThrowsPercentage: 69.0,
+        plusMinusAVG: -5.4
+      }
+    }
+  ]
 };
 
+// Defensive helper to parse player lineup item
+function normalizeLineupItem(item, idx) {
+  const p = item.player || item;
+  const s = item.stats || item;
+  return {
+    fid: p.fid || `p_${idx}`,
+    name: p.name || `Player #${idx + 1}`,
+    number: p.number ?? (idx + 1),
+    position: p.position || 'N/A',
+    games: s.games ?? s.gp ?? 0,
+    pointsAVG: Number(s.pointsAVG ?? s.ppg ?? 0),
+    foulsAVG: Number(s.foulsAVG ?? s.fouls ?? 0),
+    threePct: Number(s.outArcThrowsPercentage ?? s.three_pct ?? s.pct_3p ?? 0),
+    threeMadeAVG: Number(s.outArcThrowsAVG ?? s.threePtMadeAVG ?? 0),
+    twoPct: Number(s.inArcThrowsPercentage ?? s.two_pct ?? s.pct_2p ?? 0),
+    twoMadeAVG: Number(s.inArcThrowsAVG ?? 0),
+    ftPct: Number(s.freeThrowsPercentage ?? s.ft_pct ?? 0),
+    plusMinusAVG: Number(s.plusMinusAVG ?? s.plus_minus ?? 0),
+    reboundsAVG: Number(s.reboundsAVG ?? 0),
+    assistsAVG: Number(s.assistsAVG ?? 0)
+  };
+}
+
 export default function LeagueHub({ showToast }) {
-  const [leagueData, setLeagueData] = useState(() => {
+  // Navigation State: 'STANDINGS_VIEW' | 'TEAM_DETAIL_VIEW'
+  const [currentView, setCurrentView] = useState('STANDINGS_VIEW');
+  const [selectedTeamFid, setSelectedTeamFid] = useState(null);
+
+  // Data states from JSON files
+  const [standings, setStandings] = useState(() => {
     try {
-      const saved = localStorage.getItem('bba_league_hub_data');
+      const saved = localStorage.getItem('bba_fip_standings');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    return DEFAULT_LEAGUE_DATA;
+    return null;
   });
 
-  // Navigation hierarchy: 'STANDINGS' | 'TEAM_DETAIL'
-  const [currentView, setCurrentView] = useState('STANDINGS');
-  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [rosters, setRosters] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bba_fip_rosters');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+  });
 
-  // Selected Player for Slide-Out Profile Panel
+  const [isLoading, setIsLoading] = useState(!standings);
+  const [fetchError, setFetchError] = useState(null);
+
+  // Selected Player for slide-out inspection
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  // JSON Importer Modal State
-  const [showImporter, setShowImporter] = useState(false);
-  const [jsonInputText, setJsonInputText] = useState('');
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [statusMsg, setStatusMsg] = useState('');
-
-  // Standings Search & Filter
+  // UI Filters & Status
   const [standingsSearch, setStandingsSearch] = useState('');
   const [rosterSearch, setRosterSearch] = useState('');
   const [rosterSortBy, setRosterSortBy] = useState('ppg'); // 'ppg' | 'fouls' | 'three' | 'number'
+  const [statusMsg, setStatusMsg] = useState('');
+  const [showImporter, setShowImporter] = useState(false);
+  const [jsonInputText, setJsonInputText] = useState('');
 
-  // Persist updated league data
-  const handleUpdateLeagueData = (newData) => {
-    setLeagueData(newData);
+  // -------------------------------------------------------------------------
+  // Fetch GraphQL Generated JSONs on Mount
+  // -------------------------------------------------------------------------
+  const fetchFipData = async (isManual = false) => {
+    setIsLoading(true);
+    setFetchError(null);
     try {
-      localStorage.setItem('bba_league_hub_data', JSON.stringify(newData));
-    } catch (e) {}
+      const [standingsRes, rostersRes] = await Promise.all([
+        fetch('/data/league_standings.json', { cache: 'no-store' }),
+        fetch('/data/league_rosters.json', { cache: 'no-store' })
+      ]);
+
+      if (!standingsRes.ok || !rostersRes.ok) {
+        throw new Error(`Data files not found (${standingsRes.status}/${rostersRes.status})`);
+      }
+
+      const standingsData = await standingsRes.json();
+      const rostersData = await rostersRes.json();
+
+      if (Array.isArray(standingsData) && standingsData.length > 0) {
+        setStandings(standingsData);
+        setRosters(rostersData || {});
+        try {
+          localStorage.setItem('bba_fip_standings', JSON.stringify(standingsData));
+          localStorage.setItem('bba_fip_rosters', JSON.stringify(rostersData || {}));
+        } catch (e) {}
+
+        if (isManual) {
+          setStatusMsg('✅ Live FIP GraphQL data synced successfully');
+          if (showToast) showToast('🏀 Standings & Rosters Loaded');
+        }
+      } else {
+        throw new Error('Invalid standings array in /data/league_standings.json');
+      }
+    } catch (err) {
+      console.warn('[League Hub] Fetch error:', err.message);
+      setFetchError(err.message);
+      if (isManual && showToast) {
+        showToast('⚠️ Could not load FIP JSON files');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Safe navigation helpers
-  const handleSelectTeam = (teamId) => {
-    setSelectedTeamId(teamId);
-    setCurrentView('TEAM_DETAIL');
+  useEffect(() => {
+    fetchFipData(false);
+  }, []);
+
+  // Safe navigation handlers
+  const handleSelectTeam = (teamFid) => {
+    setSelectedTeamFid(teamFid);
+    setCurrentView('TEAM_DETAIL_VIEW');
     setSelectedPlayer(null);
     setRosterSearch('');
   };
 
   const handleBackToStandings = () => {
-    setCurrentView('STANDINGS');
-    setSelectedTeamId(null);
+    setCurrentView('STANDINGS_VIEW');
+    setSelectedTeamFid(null);
     setSelectedPlayer(null);
-  };
-
-  // Selected Team Object
-  const currentTeam = useMemo(() => {
-    if (!selectedTeamId || !leagueData?.teams) return null;
-    return leagueData.teams[selectedTeamId] || null;
-  }, [selectedTeamId, leagueData]);
-
-  // Normalize Ingested JSON (supports full league schema OR legacy single-team JSON)
-  const handleIngestJSON = (rawString) => {
-    try {
-      const parsed = JSON.parse(rawString);
-      if (!parsed || typeof parsed !== 'object') {
-        throw new Error('Invalid JSON structure');
-      }
-
-      // Check if it's already a full league schema
-      if (Array.isArray(parsed.standings) && parsed.teams && typeof parsed.teams === 'object') {
-        handleUpdateLeagueData(parsed);
-        setStatusMsg(`✅ Successfully ingested full league: "${parsed.leagueName || 'Championship'}" (${parsed.standings.length} teams)`);
-        if (showToast) showToast('🏆 League data ingested successfully');
-        setShowImporter(false);
-        return;
-      }
-
-      // If it's a single team JSON (like previous Phase 3 shape), gracefully wrap it into the league!
-      if (parsed.team && Array.isArray(parsed.players)) {
-        const teamId = "scouted_team_1";
-        const teamName = parsed.team.name || "Scouted Opponent";
-        const newLeague = {
-          lastUpdated: new Date().toISOString().split('T')[0],
-          leagueName: parsed.team.league || "Divisione Regionale 2",
-          season: parsed.team.season || "2025/2026",
-          standings: [
-            {
-              id: teamId,
-              rank: 1,
-              name: teamName,
-              points: (parsed.team.record?.wins || 0) * 2,
-              w: parsed.team.record?.wins || 0,
-              l: parsed.team.record?.losses || 0,
-              gp: (parsed.team.record?.wins || 0) + (parsed.team.record?.losses || 0),
-              ppg: parsed.team.ppg || 0,
-              opp_ppg: parsed.team.pointsAllowed || 0,
-              diff: parsed.team.netMargin || 0,
-              streak: parsed.team.lastFive || ["W"]
-            }
-          ],
-          teams: {
-            [teamId]: {
-              id: teamId,
-              name: teamName,
-              league: parsed.team.league || "Divisione Regionale 2",
-              stats: {
-                ppg: parsed.team.ppg || 0,
-                opp_ppg: parsed.team.pointsAllowed || 0,
-                diff: parsed.team.netMargin || 0,
-                pace: parsed.team.paceRating || "Standard Pace"
-              },
-              roster: parsed.players.map((p, idx) => ({
-                id: `p_${idx}`,
-                number: p.number ?? (idx + 1),
-                name: p.name || `Player #${idx + 1}`,
-                position: p.position || 'N/A',
-                games: p.games || 0,
-                ppg: p.ppg || 0,
-                fouls: p.foulsPerGame || p.fouls || 0,
-                threePtAtt: p.threePtAttPerGame || p.threePtAtt || 0,
-                pct_3p: p.pctFromThree || p.pct_3p || 0,
-                pct_2p: p.pctFromTwo || p.pct_2p || 0,
-                pct_ft: p.pctFromFt || p.pct_ft || 0,
-                fg_pct: p.fgPct || p.fg_pct || 0,
-                three_pct: p.threePtPct || p.three_pct || 0,
-                ft_pct: p.ftPct || p.ft_pct || 0,
-                notes: p.notes || ''
-              }))
-            }
-          }
-        };
-
-        handleUpdateLeagueData(newLeague);
-        setStatusMsg(`✅ Ingested team "${teamName}" into League Hub!`);
-        if (showToast) showToast(`🎯 Loaded ${teamName}`);
-        handleSelectTeam(teamId);
-        setShowImporter(false);
-        return;
-      }
-
-      throw new Error('Unrecognized JSON format. Expected full league schema or team scout JSON.');
-    } catch (err) {
-      console.error('League JSON ingest error:', err);
-      setStatusMsg(`❌ Error: ${err.message}`);
-      if (showToast) showToast(`❌ Ingest error: ${err.message}`);
-    }
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result;
-      if (typeof content === 'string') handleIngestJSON(content);
-    };
-    reader.readAsText(file);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result;
-      if (typeof content === 'string') handleIngestJSON(content);
-    };
-    reader.readAsText(file);
   };
 
   const handleResetToDefault = () => {
-    handleUpdateLeagueData(DEFAULT_LEAGUE_DATA);
-    setStatusMsg('✅ Restored standard Divisione Regionale 2 championship data');
+    setStandings(DEFAULT_STANDINGS);
+    setRosters(DEFAULT_ROSTERS);
+    setFetchError(null);
+    try {
+      localStorage.setItem('bba_fip_standings', JSON.stringify(DEFAULT_STANDINGS));
+      localStorage.setItem('bba_fip_rosters', JSON.stringify(DEFAULT_ROSTERS));
+    } catch (e) {}
+    setStatusMsg('✅ Loaded baseline Divisione Regionale 2 dataset');
     if (showToast) showToast('🏆 Sample League Loaded');
-    setCurrentView('STANDINGS');
-    setSelectedTeamId(null);
+    setCurrentView('STANDINGS_VIEW');
+    setSelectedTeamFid(null);
     setSelectedPlayer(null);
   };
 
+  // Selected Team Info
+  const currentTeamStanding = useMemo(() => {
+    if (!selectedTeamFid || !standings) return null;
+    return standings.find(s => (s.teamFid || s.team?.fid || s.id) === selectedTeamFid) || null;
+  }, [selectedTeamFid, standings]);
+
+  const rawLineups = useMemo(() => {
+    if (!selectedTeamFid || !rosters) return [];
+    return rosters[selectedTeamFid] || [];
+  }, [selectedTeamFid, rosters]);
+
+  const currentRoster = useMemo(() => {
+    return rawLineups.map((item, idx) => normalizeLineupItem(item, idx));
+  }, [rawLineups]);
+
+  // -------------------------------------------------------------------------
+  // Dynamic Tactical Alerts for Team Detail View
+  // -------------------------------------------------------------------------
+  // Alert 1: High Foul Targets (> 3.0 Fouls/G)
+  const highFoulTargets = useMemo(() => {
+    return currentRoster.filter(p => p.foulsAVG > 3.0);
+  }, [currentRoster]);
+
+  // Alert 2: Primary Shooters (> 1.5 Made Out-of-Arc Throws/G)
+  const primaryShooters = useMemo(() => {
+    return currentRoster.filter(p => p.threeMadeAVG > 1.5);
+  }, [currentRoster]);
+
   // Filtered Standings
   const filteredStandings = useMemo(() => {
-    const list = leagueData?.standings || [];
-    if (!standingsSearch.trim()) return list;
+    if (!Array.isArray(standings)) return [];
+    if (!standingsSearch.trim()) return standings;
     const q = standingsSearch.toLowerCase().trim();
-    return list.filter(t => t.name.toLowerCase().includes(q));
-  }, [leagueData?.standings, standingsSearch]);
+    return standings.filter(s => (s.name || s.team?.name || '').toLowerCase().includes(q));
+  }, [standings, standingsSearch]);
 
-  // Tactical Groups for Current Team Detail
-  const foulTroubleTargets = useMemo(() => {
-    if (!currentTeam?.roster) return [];
-    return currentTeam.roster
-      .filter(p => (p.fouls || p.foulsPerGame || 0) >= 3.5)
-      .sort((a, b) => (b.fouls || 0) - (a.fouls || 0));
-  }, [currentTeam]);
-
-  const perimeterShooters = useMemo(() => {
-    if (!currentTeam?.roster) return [];
-    return currentTeam.roster
-      .filter(p => (p.threePtAtt || p.threePtAttPerGame || 0) >= 4.0 || (p.pct_3p || p.pctFromThree || 0) >= 40.0)
-      .sort((a, b) => (b.threePtAtt || 0) - (a.threePtAtt || 0));
-  }, [currentTeam]);
-
-  // Filtered Roster for Current Team
+  // Filtered Roster
   const filteredRoster = useMemo(() => {
-    let list = currentTeam?.roster || [];
+    let list = currentRoster;
     if (rosterSearch.trim()) {
       const q = rosterSearch.toLowerCase().trim();
       list = list.filter(p => p.name.toLowerCase().includes(q) || String(p.number).includes(q) || p.position.toLowerCase().includes(q));
     }
 
     return [...list].sort((a, b) => {
-      if (rosterSortBy === 'ppg') return (b.ppg || 0) - (a.ppg || 0);
-      if (rosterSortBy === 'fouls') return (b.fouls || 0) - (a.fouls || 0);
-      if (rosterSortBy === 'three') return (b.threePtAtt || 0) - (a.threePtAtt || 0);
+      if (rosterSortBy === 'ppg') return b.pointsAVG - a.pointsAVG;
+      if (rosterSortBy === 'fouls') return b.foulsAVG - a.foulsAVG;
+      if (rosterSortBy === 'three') return b.threeMadeAVG - a.threeMadeAVG;
+      if (rosterSortBy === 'plusMinus') return b.plusMinusAVG - a.plusMinusAVG;
       if (rosterSortBy === 'number') return Number(a.number) - Number(b.number);
       return 0;
     });
-  }, [currentTeam, rosterSearch, rosterSortBy]);
+  }, [currentRoster, rosterSearch, rosterSortBy]);
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-4 max-w-7xl mx-auto w-full space-y-4">
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER & NAVIGATION                                                */}
+      {/* 1. TOP HEADER & GLOBAL CONTROLS                                           */}
       {/* ========================================================================= */}
-      <div className="glass-card p-4 border-slate-700/60 flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-card p-4 border-slate-700/60 flex flex-wrap items-center justify-between gap-3 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-none shadow-inner">
             <Trophy className="w-5 h-5 text-amber-400" />
@@ -520,11 +551,11 @@ export default function LeagueHub({ showToast }) {
             <h1 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
               LEAGUE HUB
               <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">
-                CHAMPIONSHIP EXPLORER
+                FIP GRAPHQL SYNCED
               </span>
             </h1>
             <p className="text-xs text-slate-400 font-semibold">
-              {leagueData.leagueName || 'Regional Championship'} • Season {leagueData.season || '2025/2026'}
+              Divisione Regionale 2 - Girone F • Season 2025/2026
             </p>
           </div>
         </div>
@@ -532,6 +563,18 @@ export default function LeagueHub({ showToast }) {
         {/* Global Controls */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            type="button"
+            onClick={() => fetchFipData(true)}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-indigo-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            title="Reload from /data/league_standings.json & league_rosters.json"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>SYNC GRAPHQL DATA</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleResetToDefault}
             className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
             title="Load default championship league dataset"
@@ -541,21 +584,19 @@ export default function LeagueHub({ showToast }) {
           </button>
 
           <button
-            onClick={() => {
-              setShowImporter(true);
-              setJsonInputText(JSON.stringify(leagueData, null, 2));
-            }}
+            type="button"
+            onClick={() => setShowImporter(true)}
             className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-md active:scale-95"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>IMPORT LEAGUE JSON</span>
+            <span>IMPORT JSON</span>
           </button>
         </div>
       </div>
 
       {/* Status banner */}
       {statusMsg && (
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-between">
+        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-between animate-fade-in">
           <span>{statusMsg}</span>
           <button onClick={() => setStatusMsg('')} className="text-slate-400 hover:text-white">
             <X className="w-4 h-4" />
@@ -564,259 +605,319 @@ export default function LeagueHub({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW A: STANDINGS (MAIN CHAMPIONSHIP OVERVIEW)                            */}
+      {/* 2. LOADING & EMPTY/UNSYNCED STATES                                        */}
       {/* ========================================================================= */}
-      {currentView === 'STANDINGS' && (
-        <div className="space-y-4 animate-fade-in">
-          {/* Quick League Leaders Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="glass-card p-3 border-amber-500/30 bg-slate-900/90 shadow-md">
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-0.5">
-                LEAGUE LEADER
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="text-base font-black text-slate-100">
-                  {leagueData.standings?.[0]?.name || 'N/A'}
-                </span>
-                <span className="font-mono text-sm font-black text-amber-400">
-                  {leagueData.standings?.[0]?.points || 0} PTS
-                </span>
-              </div>
-            </div>
-
-            <div className="glass-card p-3 border-sky-500/30 bg-slate-900/90 shadow-md">
-              <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block mb-0.5">
-                TOP OFFENSE (PPG)
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="text-base font-black text-slate-100">
-                  {leagueData.standings?.reduce((max, t) => t.ppg > (max.ppg || 0) ? t : max, leagueData.standings[0])?.name || 'N/A'}
-                </span>
-                <span className="font-mono text-sm font-black text-sky-400">
-                  {leagueData.standings?.reduce((max, t) => t.ppg > (max.ppg || 0) ? t : max, leagueData.standings[0])?.ppg || 0} PPG
-                </span>
-              </div>
-            </div>
-
-            <div className="glass-card p-3 border-emerald-500/30 bg-slate-900/90 shadow-md">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block mb-0.5">
-                BEST DEFENSE (FEWEST PTS ALLOWED)
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="text-base font-black text-slate-100">
-                  {leagueData.standings?.reduce((min, t) => t.opp_ppg < (min.opp_ppg || 999) ? t : min, leagueData.standings[0])?.name || 'N/A'}
-                </span>
-                <span className="font-mono text-sm font-black text-emerald-400">
-                  {leagueData.standings?.reduce((min, t) => t.opp_ppg < (min.opp_ppg || 999) ? t : min, leagueData.standings[0])?.opp_ppg || 0} OPP
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Standings Table Card */}
-          <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                  CHAMPIONSHIP STANDINGS ({filteredStandings.length} TEAMS)
-                </h3>
-                <p className="text-[11px] text-slate-400">
-                  Click any team row to inspect full scouting report, roster statistics, and tactical target board
-                </p>
-              </div>
-
-              {/* Search filter */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Filter team..."
-                  value={standingsSearch}
-                  onChange={(e) => setStandingsSearch(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-48"
-                />
-              </div>
-            </div>
-
-            {/* Standings Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                    <th className="p-3 w-12 text-center">RANK</th>
-                    <th className="p-3">TEAM</th>
-                    <th className="p-3 text-center">PTS</th>
-                    <th className="p-3 text-center">W</th>
-                    <th className="p-3 text-center">L</th>
-                    <th className="p-3 text-center">GP</th>
-                    <th className="p-3 text-center">WIN%</th>
-                    <th className="p-3 text-center">PPG</th>
-                    <th className="p-3 text-center">OPP</th>
-                    <th className="p-3 text-center">+/-</th>
-                    <th className="p-3 text-center">LAST 5</th>
-                    <th className="p-3 text-right">SCOUT</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80">
-                  {filteredStandings.map((team, idx) => {
-                    const isBBA = team.name.includes('BBA');
-                    const rankNum = team.rank || idx + 1;
-                    const isPlayoff = rankNum <= 4;
-                    const isPlayout = rankNum >= 7;
-
-                    return (
-                      <tr
-                        key={team.id || idx}
-                        onClick={() => handleSelectTeam(team.id)}
-                        className={`cursor-pointer transition-colors ${
-                          isBBA 
-                            ? 'bg-sky-950/20 hover:bg-sky-900/30 border-l-2 border-sky-400' 
-                            : 'hover:bg-slate-800/50'
-                        }`}
-                      >
-                        <td className="p-3 text-center font-mono font-black">
-                          <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-xs ${
-                            isPlayoff
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                              : isPlayout
-                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                                : 'bg-slate-800 text-slate-300'
-                          }`}>
-                            {rankNum}
-                          </span>
-                        </td>
-                        <td className="p-3 font-black text-slate-100 flex items-center gap-2">
-                          <span className="text-sm">{team.name}</span>
-                          {isBBA && (
-                            <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.2 rounded border border-sky-500/40">
-                              OUR TEAM
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-3 text-center font-mono font-black text-amber-400 text-sm">
-                          {team.points}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-200">
-                          {team.w}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-400">
-                          {team.l}
-                        </td>
-                        <td className="p-3 text-center font-mono text-slate-400">
-                          {team.gp || (team.w + team.l)}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-300">
-                          {team.gp > 0 ? `${Math.round((team.w / team.gp) * 100)}%` : '-'}
-                        </td>
-                        <td className="p-3 text-center font-mono font-black text-rose-400">
-                          {team.ppg}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-300">
-                          {team.opp_ppg}
-                        </td>
-                        <td className="p-3 text-center font-mono font-black">
-                          <span className={team.diff > 0 ? 'text-emerald-400' : (team.diff < 0 ? 'text-rose-400' : 'text-slate-400')}>
-                            {team.diff > 0 ? `+${team.diff}` : team.diff}
-                          </span>
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            {Array.isArray(team.streak) && team.streak.map((s, i) => (
-                              <span
-                                key={i}
-                                className={`w-4 h-4 rounded text-[9px] font-mono font-black flex items-center justify-center ${
-                                  s === 'W'
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                    : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                                }`}
-                              >
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); handleSelectTeam(team.id); }}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1"
-                          >
-                            <span>SCOUT</span>
-                            <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {isLoading && (!standings || standings.length === 0) ? (
+        <div className="glass-card p-12 text-center border-slate-800 bg-slate-900/90 rounded-2xl max-w-md mx-auto space-y-3 my-12 animate-pulse shadow-2xl">
+          <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
+          <p className="text-sm font-bold text-slate-300">Loading FIP League Data...</p>
+          <p className="text-xs text-slate-500 font-mono">Fetching /data/league_standings.json & league_rosters.json</p>
         </div>
-      )}
+      ) : (!standings || standings.length === 0) ? (
+        /* Empty / Unsynced State */
+        <div className="glass-card p-8 sm:p-12 text-center border-slate-800 bg-slate-900/90 rounded-2xl max-w-xl mx-auto space-y-5 my-8 shadow-2xl animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-inner">
+            <Trophy className="w-8 h-8" />
+          </div>
 
-      {/* ========================================================================= */}
-      {/* VIEW B: TEAM DETAIL & SCOUTING REPORT                                     */}
-      {/* ========================================================================= */}
-      {currentView === 'TEAM_DETAIL' && (
-        <div className="space-y-4 animate-fade-in">
-          {/* Back Navigation Bar */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="space-y-2">
+            <h2 className="text-lg sm:text-xl font-black text-slate-100 uppercase tracking-wide">
+              League Data Not Synced
+            </h2>
+            <p className="text-sm text-slate-400">
+              League data not synced. Run <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono text-xs border border-slate-800">npm run sync-fip</code> locally to download the latest FIP API data.
+            </p>
+          </div>
+
+          {/* Terminal Command Box */}
+          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-left font-mono text-xs text-slate-300 flex items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <Terminal className="w-4 h-4 text-emerald-400 flex-none" />
+              <span className="text-slate-200">npm run sync-fip</span>
+            </div>
             <button
-              onClick={handleBackToStandings}
-              className="bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-black px-3.5 py-2 rounded-xl text-xs inline-flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+              type="button"
+              onClick={() => {
+                if (navigator?.clipboard?.writeText) {
+                  navigator.clipboard.writeText('npm run sync-fip');
+                }
+                if (showToast) showToast('📋 Copied: npm run sync-fip');
+              }}
+              className="text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 transition-colors flex-none text-[11px] font-sans font-bold active:scale-95"
+              title="Copy command to clipboard"
             >
-              <ArrowLeft className="w-4 h-4 text-amber-400" />
-              <span>BACK TO STANDINGS</span>
+              Copy
+            </button>
+          </div>
+
+          {fetchError && (
+            <p className="text-xs text-slate-400 font-semibold bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl">
+              Status: <span className="text-rose-400">{fetchError}</span>
+            </p>
+          )}
+
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => fetchFipData(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>RETRY SYNC</span>
             </button>
 
-            {/* Quick Team Switcher Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase hidden sm:inline">SWITCH TEAM:</span>
-              <select
-                value={selectedTeamId || ''}
-                onChange={(e) => handleSelectTeam(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold p-2 rounded-xl focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                {leagueData.standings?.map(t => (
-                  <option key={t.id} value={t.id} className="bg-slate-900 text-slate-100">
-                    #{t.rank || '-'} {t.name} ({t.points} pts)
-                  </option>
-                ))}
-              </select>
-            </div>
+            <button
+              type="button"
+              onClick={handleResetToDefault}
+              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-95"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <span>LOAD SAMPLE LEAGUE</span>
+            </button>
           </div>
+        </div>
+      ) : (
+        <>
+          {/* ========================================================================= */}
+          {/* VIEW A: STANDINGS VIEW (DEFAULT)                                          */}
+          {/* ========================================================================= */}
+          {currentView === 'STANDINGS_VIEW' && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Top Leaders Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="glass-card p-3 border-amber-500/30 bg-slate-900/90 shadow-md">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-0.5">
+                    LEAGUE LEADER
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-base font-black text-slate-100">
+                      {standings[0]?.name || standings[0]?.team?.name || 'N/A'}
+                    </span>
+                    <span className="font-mono text-sm font-black text-amber-400">
+                      {standings[0]?.points ?? (standings[0]?.won * 2)} PTS
+                    </span>
+                  </div>
+                </div>
 
-          {!currentTeam ? (
-            <div className="glass-card p-12 text-center border-slate-800 space-y-3">
-              <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto" />
-              <p className="text-slate-300 font-bold text-sm">No detailed roster data found for this team.</p>
-              <button onClick={handleBackToStandings} className="text-xs text-sky-400 hover:underline">
-                Return to Standings
-              </button>
+                <div className="glass-card p-3 border-sky-500/30 bg-slate-900/90 shadow-md">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block mb-0.5">
+                    BEST RECORD
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-base font-black text-slate-100">
+                      {standings[0]?.won}W - {standings[0]?.lost}L
+                    </span>
+                    <span className="font-mono text-sm font-black text-sky-400">
+                      {standings[0]?.played > 0 ? `${Math.round((standings[0].won / standings[0].played) * 100)}% WIN` : ''}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="glass-card p-3 border-emerald-500/30 bg-slate-900/90 shadow-md">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block mb-0.5">
+                    TOP POINT DIFFERENTIAL
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-base font-black text-slate-100">
+                      {standings.reduce((best, s) => (s.pointDiff > (best.pointDiff || -999) ? s : best), standings[0])?.name || 'N/A'}
+                    </span>
+                    <span className="font-mono text-sm font-black text-emerald-400">
+                      +{standings.reduce((best, s) => (s.pointDiff > (best.pointDiff || -999) ? s : best), standings[0])?.pointDiff || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Standings Table Card */}
+              <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                      CHAMPIONSHIP STANDINGS ({filteredStandings.length} TEAMS)
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Click any team row to inspect roster stats, shooting splits, and dynamic scouting alerts
+                    </p>
+                  </div>
+
+                  {/* Search Filter */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Filter team..."
+                      value={standingsSearch}
+                      onChange={(e) => setStandingsSearch(e.target.value)}
+                      className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-48"
+                    />
+                  </div>
+                </div>
+
+                {/* Standings Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
+                        <th className="p-3 w-12 text-center">RANK</th>
+                        <th className="p-3">TEAM</th>
+                        <th className="p-3 text-center">PTS (WON × 2)</th>
+                        <th className="p-3 text-center">W - L RECORD</th>
+                        <th className="p-3 text-center">GP</th>
+                        <th className="p-3 text-center">WIN%</th>
+                        <th className="p-3 text-center">DIFF</th>
+                        <th className="p-3 text-center">LAST 5</th>
+                        <th className="p-3 text-right">SCOUT</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80">
+                      {filteredStandings.map((st, idx) => {
+                        const tFid = st.teamFid || st.team?.fid || st.id || `team_${idx + 1}`;
+                        const tName = st.name || st.team?.name || `Team #${idx + 1}`;
+                        const isBBA = tName.includes('BBA') || tFid === 'team_bba_academy';
+                        const rankNum = st.rank || (idx + 1);
+                        const isPlayoff = rankNum <= 4;
+                        const isPlayout = rankNum >= 7;
+
+                        const ptsVal = st.points ?? ((st.won ?? 0) * 2);
+                        const gpVal = st.played ?? ((st.won ?? 0) + (st.lost ?? 0));
+                        const winPct = gpVal > 0 ? Math.round(((st.won ?? 0) / gpVal) * 100) : 0;
+
+                        return (
+                          <tr
+                            key={tFid}
+                            onClick={() => handleSelectTeam(tFid)}
+                            className={`cursor-pointer transition-colors ${
+                              isBBA 
+                                ? 'bg-sky-950/20 hover:bg-sky-900/30 border-l-2 border-sky-400' 
+                                : 'hover:bg-slate-800/50'
+                            }`}
+                          >
+                            <td className="p-3 text-center font-mono font-black">
+                              <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-xs ${
+                                isPlayoff
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                  : isPlayout
+                                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                    : 'bg-slate-800 text-slate-300'
+                              }`}>
+                                {rankNum}
+                              </span>
+                            </td>
+                            <td className="p-3 font-black text-slate-100 flex items-center gap-2">
+                              <span className="text-sm">{tName}</span>
+                              {isBBA && (
+                                <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.2 rounded border border-sky-500/40">
+                                  OUR TEAM
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3 text-center font-mono font-black text-amber-400 text-sm">
+                              {ptsVal}
+                            </td>
+                            <td className="p-3 text-center font-mono font-bold text-slate-200">
+                              <span className="text-emerald-400">{st.won ?? 0}</span>
+                              <span className="text-slate-500 mx-1">-</span>
+                              <span className="text-rose-400">{st.lost ?? 0}</span>
+                            </td>
+                            <td className="p-3 text-center font-mono text-slate-400">
+                              {gpVal}
+                            </td>
+                            <td className="p-3 text-center font-mono font-bold text-slate-300">
+                              {gpVal > 0 ? `${winPct}%` : '-'}
+                            </td>
+                            <td className="p-3 text-center font-mono font-black">
+                              <span className={(st.pointDiff ?? 0) > 0 ? 'text-emerald-400' : ((st.pointDiff ?? 0) < 0 ? 'text-rose-400' : 'text-slate-400')}>
+                                {(st.pointDiff ?? 0) > 0 ? `+${st.pointDiff}` : (st.pointDiff ?? 0)}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                {Array.isArray(st.streak) && st.streak.map((s, i) => (
+                                  <span
+                                    key={i}
+                                    className={`w-4 h-4 rounded text-[9px] font-mono font-black flex items-center justify-center ${
+                                      s === 'W'
+                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                                    }`}
+                                  >
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="p-3 text-right">
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleSelectTeam(tFid); }}
+                                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1 shadow-sm active:scale-95"
+                              >
+                                <span>SCOUT</span>
+                                <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          ) : (
-            <>
-              {/* 1. Team Profile Header Card */}
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW B: TEAM DETAIL VIEW (LINEUP STATS & DYNAMIC ALERTS)                  */}
+          {/* ========================================================================= */}
+          {currentView === 'TEAM_DETAIL_VIEW' && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Back Navigation Bar */}
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleBackToStandings}
+                  className="bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-black px-3.5 py-2 rounded-xl text-xs inline-flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+                >
+                  <ArrowLeft className="w-4 h-4 text-amber-400" />
+                  <span>← BACK TO STANDINGS</span>
+                </button>
+
+                {/* Team Switcher Dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase hidden sm:inline">SWITCH TEAM:</span>
+                  <select
+                    value={selectedTeamFid || ''}
+                    onChange={(e) => handleSelectTeam(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold p-2 rounded-xl focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    {standings.map(s => {
+                      const fid = s.teamFid || s.team?.fid || s.id;
+                      const name = s.name || s.team?.name;
+                      return (
+                        <option key={fid} value={fid} className="bg-slate-900 text-slate-100">
+                          #{s.rank || '-'} {name} ({s.points ?? (s.won * 2)} pts)
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              {/* Team Profile Header Card */}
               <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h2 className="text-xl sm:text-2xl font-black text-rose-400 uppercase tracking-wider">
-                        {currentTeam.name}
+                        {currentTeamStanding?.name || currentTeamStanding?.team?.name || selectedTeamFid}
                       </h2>
                       <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
-                        {currentTeam.league || 'Divisione Regionale 2'}
+                        Divisione Regionale 2
                       </span>
-                      {currentTeam.stats?.pace && (
-                        <span className="text-[10px] bg-amber-500/20 text-amber-300 font-black px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1">
-                          <Zap className="w-3 h-3 text-amber-400" />
-                          {currentTeam.stats.pace}
-                        </span>
-                      )}
                     </div>
                     <p className="text-xs text-slate-400 font-medium">
-                      Opponent Scouting Profile • {currentTeam.roster?.length || 0} active roster players tracked
+                      Opponent Scouting Profile • {currentRoster.length} players tracked from FIP competitionLineupStats
                     </p>
                   </div>
 
@@ -826,9 +927,9 @@ export default function LeagueHub({ showToast }) {
                       CHAMPIONSHIP RANK
                     </span>
                     <div className="font-mono text-xl font-black text-amber-400">
-                      {leagueData.standings?.find(s => s.id === currentTeam.id)?.points || 0} PTS
+                      {currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2)} PTS
                       <span className="text-xs text-slate-300 font-semibold ml-1.5">
-                        (#{leagueData.standings?.find(s => s.id === currentTeam.id)?.rank || '-'})
+                        (#{currentTeamStanding?.rank || '-'})
                       </span>
                     </div>
                   </div>
@@ -838,292 +939,255 @@ export default function LeagueHub({ showToast }) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-slate-800/80">
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      POINTS SCORED (PPG)
-                    </span>
-                    <span className="font-mono text-xl font-black text-rose-400">
-                      {currentTeam.stats?.ppg || 0}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      POINTS ALLOWED (OPP)
+                      RECORD
                     </span>
                     <span className="font-mono text-xl font-black text-slate-200">
-                      {currentTeam.stats?.opp_ppg || 0}
+                      {currentTeamStanding?.won ?? 0}W - {currentTeamStanding?.lost ?? 0}L
                     </span>
                   </div>
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      NET SCORING MARGIN
-                    </span>
-                    <span className={`font-mono text-xl font-black ${
-                      (currentTeam.stats?.diff || 0) > 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      {(currentTeam.stats?.diff || 0) > 0 ? `+${currentTeam.stats.diff}` : currentTeam.stats?.diff || 0}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      ROSTER DEPTH
+                      WIN RATE
                     </span>
                     <span className="font-mono text-xl font-black text-sky-400">
-                      {currentTeam.roster?.length || 0} Players
+                      {(currentTeamStanding?.played ?? 0) > 0 
+                        ? `${Math.round(((currentTeamStanding?.won ?? 0) / currentTeamStanding.played) * 100)}%` 
+                        : '-'}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+                      POINT DIFFERENTIAL
+                    </span>
+                    <span className={`font-mono text-xl font-black ${
+                      (currentTeamStanding?.pointDiff ?? 0) > 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {(currentTeamStanding?.pointDiff ?? 0) > 0 ? `+${currentTeamStanding.pointDiff}` : (currentTeamStanding?.pointDiff ?? 0)}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+                      ROSTER SIZE
+                    </span>
+                    <span className="font-mono text-xl font-black text-amber-400">
+                      {currentRoster.length} Players
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* 2. Target Board: Tactical Matchup Alerts */}
+              {/* ===================================================================== */}
+              {/* DYNAMIC ALERTS: SUMMARY BADGES ABOVE ROSTER TABLE                     */}
+              {/* ===================================================================== */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Target Board 1: Foul Trouble Targets */}
-                <div className="glass-card p-4 border-amber-500/30 bg-slate-900/90 shadow-xl space-y-3">
+                {/* Alert 1: High Foul Targets (> 3.0 Fouls) */}
+                <div className="glass-card p-4 border-rose-500/40 bg-slate-900/90 shadow-xl space-y-2.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center">
+                        <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      </div>
+                      <h3 className="text-xs font-black text-rose-300 uppercase tracking-wider">
+                        ⚠️ HIGH FOUL TARGETS (&gt;3.0 FOULS/G)
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
+                      {highFoulTargets.length} CANDIDATES
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <strong className="text-slate-200">Coach Strategy:</strong> Attack in the paint early off the dribble to draw fouls, induce penalty, and force bench substitutions.
+                  </p>
+
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    {highFoulTargets.length > 0 ? (
+                      highFoulTargets.map(p => (
+                        <button
+                          key={p.fid}
+                          type="button"
+                          onClick={() => setSelectedPlayer(p)}
+                          className="text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                        >
+                          <span>#{p.number} {p.name}</span>
+                          <span className="font-mono text-rose-400 font-black">({p.foulsAVG.toFixed(1)} F/G)</span>
+                        </button>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400 italic bg-slate-950/60 px-3 py-1.5 rounded-lg w-full text-center">
+                        No players averaging &gt; 3.0 fouls.
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Alert 2: Primary Shooters (> 1.5 Made 3PT/G) */}
+                <div className="glass-card p-4 border-amber-500/40 bg-slate-900/90 shadow-xl space-y-2.5">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        <Target className="w-4 h-4 text-amber-400" />
                       </div>
-                      <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
-                        FOUL TROUBLE CANDIDATES (&gt;3.5 F/G)
+                      <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                        🎯 PRIMARY SHOOTERS (&gt;1.5 MADE 3PT/G)
                       </h3>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-amber-400">
-                      {foulTroubleTargets.length} TARGETS
+                    <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                      {primaryShooters.length} SHOOTERS
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    <strong className="text-slate-200">Coach Strategy:</strong> Attack in the paint early with shot fakes and aggressive drives to force bench rotation or foul out.
+                    <strong className="text-slate-200">Coach Strategy:</strong> Contest tight on catch-and-shoot looks, fight over high ball screens, and do not help off them in corner rotations.
                   </p>
 
-                  <div className="space-y-2">
-                    {foulTroubleTargets.length === 0 ? (
-                      <div className="p-3 text-center text-xs text-slate-500 bg-slate-950/60 rounded-lg">
-                        No players averaging &gt; 3.5 fouls/game.
-                      </div>
-                    ) : (
-                      foulTroubleTargets.map(p => (
-                        <div
-                          key={p.id || p.number}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    {primaryShooters.length > 0 ? (
+                      primaryShooters.map(p => (
+                        <button
+                          key={p.fid}
+                          type="button"
                           onClick={() => setSelectedPlayer(p)}
-                          className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 hover:border-amber-400/50 cursor-pointer transition-all flex items-start justify-between gap-3 group"
+                          className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
                         >
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-black text-amber-400 text-xs">#{p.number}</span>
-                              <span className="font-black text-slate-200 text-xs group-hover:text-amber-300">{p.name}</span>
-                              <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-bold">{p.position}</span>
-                            </div>
-                            {p.notes && <p className="text-[11px] text-slate-400 mt-1 italic">"{p.notes}"</p>}
-                          </div>
-
-                          <div className="text-right flex-none">
-                            <span className="font-mono text-xs font-black text-rose-400 bg-rose-950/60 border border-rose-800/60 px-2 py-0.5 rounded block">
-                              {Number(p.fouls || p.foulsPerGame || 0).toFixed(1)} F/G
-                            </span>
-                            <span className="text-[9px] text-slate-500 font-bold block mt-0.5">{p.ppg} PPG</span>
-                          </div>
-                        </div>
+                          <span>#{p.number} {p.name}</span>
+                          <span className="font-mono text-amber-300 font-black">({p.threeMadeAVG.toFixed(1)} 3PM • {p.threePct}%)</span>
+                        </button>
                       ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Target Board 2: Primary Perimeter Shooters */}
-                <div className="glass-card p-4 border-sky-500/30 bg-slate-900/90 shadow-xl space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center">
-                        <Target className="w-4 h-4 text-sky-400" />
-                      </div>
-                      <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
-                        PRIMARY PERIMETER SHOOTERS
-                      </h3>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-sky-400">
-                      {perimeterShooters.length} SHOOTERS
-                    </span>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    <strong className="text-slate-200">Coach Strategy:</strong> No-help perimeter coverage. Close out aggressive on catch, contest high, force into mid-range pull-ups.
-                  </p>
-
-                  <div className="space-y-2">
-                    {perimeterShooters.length === 0 ? (
-                      <div className="p-3 text-center text-xs text-slate-500 bg-slate-950/60 rounded-lg">
-                        No high-volume 3PT shooters identified in current roster.
-                      </div>
                     ) : (
-                      perimeterShooters.map(p => (
-                        <div
-                          key={p.id || p.number}
-                          onClick={() => setSelectedPlayer(p)}
-                          className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 hover:border-sky-400/50 cursor-pointer transition-all flex items-start justify-between gap-3 group"
-                        >
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-black text-sky-400 text-xs">#{p.number}</span>
-                              <span className="font-black text-slate-200 text-xs group-hover:text-sky-300">{p.name}</span>
-                              <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-bold">{p.position}</span>
-                            </div>
-                            {p.notes && <p className="text-[11px] text-slate-400 mt-1 italic">"{p.notes}"</p>}
-                          </div>
-
-                          <div className="text-right flex-none">
-                            <span className="font-mono text-xs font-black text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2 py-0.5 rounded block">
-                              {Number(p.threePtAtt || p.threePtAttPerGame || 0).toFixed(1)} 3PA/G
-                            </span>
-                            <span className="text-[9px] text-amber-400 font-bold block mt-0.5">
-                              {p.three_pct || p.threePtPct || 0}% 3P
-                            </span>
-                          </div>
-                        </div>
-                      ))
+                      <span className="text-xs text-slate-400 italic bg-slate-950/60 px-3 py-1.5 rounded-lg w-full text-center">
+                        No primary perimeter volume shooters.
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* 3. Interactive Roster Table & Scoring Breakdown */}
-              <div className="glass-card p-4 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+              {/* Roster Table Card */}
+              <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      <BarChart2 className="w-4 h-4 text-rose-400" />
-                      ROSTER PROFILES & SCORING COMPOSITION
+                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                      ROSTER & LINEUP STATISTICS ({filteredRoster.length} PLAYERS)
                     </h3>
                     <p className="text-[11px] text-slate-400">
-                      Click any player row to view detailed shooting profile & recent game logs
+                      Official FIP lineup statistics. Click any row to view individual shooting chart splits.
                     </p>
                   </div>
 
-                  {/* Filter & Sort */}
+                  {/* Filter & Sort Controls */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="relative">
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                       <input
                         type="text"
-                        placeholder="Search roster..."
+                        placeholder="Search player..."
                         value={rosterSearch}
                         onChange={(e) => setRosterSearch(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-400 w-40"
+                        className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-44"
                       />
                     </div>
 
-                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-                      <span className="text-slate-500 font-bold px-1 uppercase">SORT:</span>
-                      {[
-                        { id: 'ppg', label: 'PPG' },
-                        { id: 'three', label: '3PT' },
-                        { id: 'fouls', label: 'FOULS' },
-                        { id: 'number', label: '#' }
-                      ].map(s => (
-                        <button
-                          key={s.id}
-                          onClick={() => setRosterSortBy(s.id)}
-                          className={`px-2 py-0.5 font-bold rounded transition-all ${
-                            rosterSortBy === s.id ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
+                    <select
+                      value={rosterSortBy}
+                      onChange={(e) => setRosterSortBy(e.target.value)}
+                      className="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-bold p-1.5 rounded-lg focus:outline-none focus:border-amber-400 cursor-pointer"
+                    >
+                      <option value="ppg">Sort: PPG</option>
+                      <option value="fouls">Sort: Fouls/G</option>
+                      <option value="three">Sort: 3PM/G</option>
+                      <option value="plusMinus">Sort: Plus/Minus</option>
+                      <option value="number">Sort: Jersey #</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Table */}
+                {/* Roster Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                        <th className="p-2.5">#</th>
-                        <th className="p-2.5">PLAYER</th>
-                        <th className="p-2.5 text-center">POS</th>
-                        <th className="p-2.5 text-center">GP</th>
-                        <th className="p-2.5 text-center">PPG</th>
-                        <th className="p-2.5 w-48 sm:w-64">SCORING BREAKDOWN (% OF PTS)</th>
-                        <th className="p-2.5 text-center">3PA/G</th>
-                        <th className="p-2.5 text-center">3P%</th>
-                        <th className="p-2.5 text-center">FT%</th>
-                        <th className="p-2.5 text-center">FOULS</th>
-                        <th className="p-2.5">SCOUTING TAGS</th>
+                        <th className="p-3 w-12 text-center">#</th>
+                        <th className="p-3">NAME & POSITION</th>
+                        <th className="p-3 text-center">GP</th>
+                        <th className="p-3 text-center">POINTS/G</th>
+                        <th className="p-3 text-center">FOULS/G</th>
+                        <th className="p-3 text-center">3PT% (3PM)</th>
+                        <th className="p-3 text-center">2PT%</th>
+                        <th className="p-3 text-center">FT%</th>
+                        <th className="p-3 text-center">PLUS/MINUS (+/-)</th>
+                        <th className="p-3 text-left">ALERTS</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80">
-                      {filteredRoster.map(p => {
-                        const pct3 = p.pct_3p ?? p.pctFromThree ?? 0;
-                        const pct2 = p.pct_2p ?? p.pctFromTwo ?? 0;
-                        const pctFt = p.pct_ft ?? p.pctFromFt ?? 0;
-                        const threePa = p.threePtAtt ?? p.threePtAttPerGame ?? 0;
-                        const fpg = p.fouls ?? p.foulsPerGame ?? 0;
-                        const isShooter = threePa >= 4.0 || pct3 >= 40;
-                        const isFoulProne = fpg >= 3.5;
+                      {filteredRoster.map((p) => {
+                        const isFoulTarget = p.foulsAVG > 3.0;
+                        const isShooter = p.threeMadeAVG > 1.5;
 
                         return (
                           <tr
-                            key={p.id || p.number}
+                            key={p.fid}
                             onClick={() => setSelectedPlayer(p)}
-                            className="cursor-pointer hover:bg-slate-800/50 transition-colors"
+                            className="hover:bg-slate-800/50 cursor-pointer transition-colors"
                           >
-                            <td className="p-2.5 font-mono font-black text-rose-400">
+                            <td className="p-3 text-center font-mono font-black text-rose-400">
                               #{p.number}
                             </td>
-                            <td className="p-2.5 font-black text-slate-200">
-                              {p.name}
+                            <td className="p-3">
+                              <span className="font-black text-slate-100 block text-xs">{p.name}</span>
+                              <span className="text-[10px] text-slate-400">{p.position}</span>
                             </td>
-                            <td className="p-2.5 text-center font-bold text-slate-400">
-                              {p.position}
+                            <td className="p-3 text-center font-mono text-slate-400">
+                              {p.games}
                             </td>
-                            <td className="p-2.5 text-center font-mono text-slate-300">
-                              {p.games || '-'}
+                            <td className="p-3 text-center font-mono font-black text-rose-400 text-sm">
+                              {p.pointsAVG.toFixed(1)}
                             </td>
-                            <td className="p-2.5 text-center font-mono font-black text-slate-100 text-sm">
-                              {Number(p.ppg || 0).toFixed(1)}
-                            </td>
-                            <td className="p-2.5">
-                              <div className="space-y-1">
-                                <div className="h-3 w-full bg-slate-950 rounded overflow-hidden flex border border-slate-800">
-                                  <div style={{ width: `${pct3}%` }} className="bg-amber-400 h-full" title={`3P: ${pct3}%`} />
-                                  <div style={{ width: `${pct2}%` }} className="bg-sky-400 h-full" title={`2P: ${pct2}%`} />
-                                  <div style={{ width: `${pctFt}%` }} className="bg-emerald-400 h-full" title={`FT: ${pctFt}%`} />
-                                </div>
-                                <div className="flex justify-between text-[9px] font-mono font-bold text-slate-400">
-                                  <span className="text-amber-400">{pct3}% 3P</span>
-                                  <span className="text-sky-400">{pct2}% 2P</span>
-                                  <span className="text-emerald-400">{pctFt}% FT</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="p-2.5 text-center font-mono font-bold text-sky-400">
-                              {Number(threePa).toFixed(1)}
-                            </td>
-                            <td className="p-2.5 text-center font-mono font-bold text-amber-300">
-                              {p.three_pct ?? p.threePtPct ?? 0}%
-                            </td>
-                            <td className="p-2.5 text-center font-mono font-bold text-emerald-300">
-                              {p.ft_pct ?? p.ftPct ?? 0}%
-                            </td>
-                            <td className="p-2.5 text-center font-mono font-black">
-                              <span className={`px-1.5 py-0.5 rounded ${
-                                isFoulProne ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'text-slate-300'
+                            <td className="p-3 text-center font-mono font-bold">
+                              <span className={`px-2 py-0.5 rounded ${
+                                isFoulTarget ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 font-black' : 'text-slate-300'
                               }`}>
-                                {Number(fpg).toFixed(1)}
+                                {p.foulsAVG.toFixed(1)}
                               </span>
                             </td>
-                            <td className="p-2.5">
+                            <td className="p-3 text-center font-mono font-bold">
+                              <span className={isShooter ? 'text-amber-300 font-black' : 'text-slate-300'}>
+                                {p.threePct}%
+                              </span>
+                              <span className="text-[10px] text-slate-500 ml-1">
+                                ({p.threeMadeAVG.toFixed(1)})
+                              </span>
+                            </td>
+                            <td className="p-3 text-center font-mono font-bold text-sky-400">
+                              {p.twoPct}%
+                            </td>
+                            <td className="p-3 text-center font-mono font-bold text-emerald-400">
+                              {p.ftPct}%
+                            </td>
+                            <td className="p-3 text-center font-mono font-black">
+                              <span className={`px-2 py-0.5 rounded ${
+                                p.plusMinusAVG > 0 
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                  : p.plusMinusAVG < 0 
+                                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
+                                    : 'text-slate-400'
+                              }`}>
+                                {p.plusMinusAVG > 0 ? `+${p.plusMinusAVG.toFixed(1)}` : p.plusMinusAVG.toFixed(1)}
+                              </span>
+                            </td>
+                            <td className="p-3">
                               <div className="flex items-center gap-1 flex-wrap">
                                 {isShooter && (
-                                  <span className="text-[9px] font-black bg-sky-500/20 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                                     <Target className="w-2.5 h-2.5" /> SHOOTER
                                   </span>
                                 )}
-                                {isFoulProne && (
-                                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded flex items-center gap-0.5">
-                                    <AlertTriangle className="w-2.5 h-2.5" /> FOUL PRONE
+                                {isFoulTarget && (
+                                  <span className="text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                    <AlertTriangle className="w-2.5 h-2.5" /> FOUL TARGET
                                   </span>
                                 )}
                               </div>
@@ -1135,9 +1199,9 @@ export default function LeagueHub({ showToast }) {
                   </table>
                 </div>
               </div>
-            </>
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* ========================================================================= */}
@@ -1159,11 +1223,12 @@ export default function LeagueHub({ showToast }) {
                   <p className="text-xs text-slate-400 font-semibold flex items-center gap-2">
                     <span>{selectedPlayer.position}</span>
                     <span>•</span>
-                    <span className="text-rose-400">{currentTeam?.name}</span>
+                    <span className="text-rose-400">{currentTeamStanding?.name || selectedTeamFid}</span>
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedPlayer(null)}
                 className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
               >
@@ -1174,76 +1239,71 @@ export default function LeagueHub({ showToast }) {
             {/* Core Stats Strip */}
             <div className="grid grid-cols-4 gap-2 text-center">
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">PPG</span>
-                <span className="font-mono text-lg font-black text-rose-400">{selectedPlayer.ppg}</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">POINTS/G</span>
+                <span className="font-mono text-lg font-black text-rose-400">{selectedPlayer.pointsAVG.toFixed(1)}</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">3PA/G</span>
-                <span className="font-mono text-lg font-black text-sky-400">{selectedPlayer.threePtAtt ?? selectedPlayer.threePtAttPerGame ?? 0}</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">FOULS/G</span>
+                <span className={`font-mono text-lg font-black ${selectedPlayer.foulsAVG > 3.0 ? 'text-rose-400' : 'text-slate-200'}`}>
+                  {selectedPlayer.foulsAVG.toFixed(1)}
+                </span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">3P%</span>
-                <span className="font-mono text-lg font-black text-amber-300">{selectedPlayer.three_pct ?? selectedPlayer.threePtPct ?? 0}%</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">3PT%</span>
+                <span className="font-mono text-lg font-black text-amber-300">{selectedPlayer.threePct}%</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">FOULS</span>
-                <span className="font-mono text-lg font-black text-emerald-400">{selectedPlayer.fouls ?? selectedPlayer.foulsPerGame ?? 0}</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">+/-</span>
+                <span className={`font-mono text-lg font-black ${selectedPlayer.plusMinusAVG > 0 ? 'text-emerald-400' : 'text-slate-200'}`}>
+                  {selectedPlayer.plusMinusAVG > 0 ? `+${selectedPlayer.plusMinusAVG.toFixed(1)}` : selectedPlayer.plusMinusAVG.toFixed(1)}
+                </span>
               </div>
             </div>
 
-            {/* Tactical Scouting Notes */}
-            {selectedPlayer.notes && (
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1">
-                <div className="flex items-center gap-1.5 text-amber-400 font-bold uppercase text-[10px] tracking-wider">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>TACTICAL SCOUTING REPORT</span>
+            {/* Tactical Badges */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {selectedPlayer.threeMadeAVG > 1.5 && (
+                <div className="bg-amber-500/20 text-amber-300 border border-amber-500/40 p-2.5 rounded-xl text-xs w-full flex items-center gap-2">
+                  <Target className="w-4 h-4 text-amber-400 flex-none" />
+                  <div>
+                    <strong className="block font-black">PRIMARY PERIMETER SHOOTER ({selectedPlayer.threeMadeAVG.toFixed(1)} 3PM/G)</strong>
+                    <span className="text-[11px] text-slate-300">High volume threat from outside the arc. Contest tight and deny open look.</span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-300 italic leading-relaxed">
-                  "{selectedPlayer.notes}"
-                </p>
-              </div>
-            )}
+              )}
+              {selectedPlayer.foulsAVG > 3.0 && (
+                <div className="bg-rose-500/20 text-rose-300 border border-rose-500/40 p-2.5 rounded-xl text-xs w-full flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 flex-none" />
+                  <div>
+                    <strong className="block font-black">HIGH FOUL TARGET ({selectedPlayer.foulsAVG.toFixed(1)} FOULS/G)</strong>
+                    <span className="text-[11px] text-slate-300">Vulnerable on pump fakes and aggressive drives. Attack early to draw foul trouble.</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Scoring Distribution */}
+            {/* Shooting Splits */}
             <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
               <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
-                POINT DISTRIBUTION (% OF TOTAL SCORING)
+                SHOOTING ACCURACY SPLITS
               </span>
-              <div className="h-4 w-full bg-slate-900 rounded overflow-hidden flex border border-slate-800">
-                <div style={{ width: `${selectedPlayer.pct_3p ?? selectedPlayer.pctFromThree ?? 0}%` }} className="bg-amber-400 h-full" />
-                <div style={{ width: `${selectedPlayer.pct_2p ?? selectedPlayer.pctFromTwo ?? 0}%` }} className="bg-sky-400 h-full" />
-                <div style={{ width: `${selectedPlayer.pct_ft ?? selectedPlayer.pctFromFt ?? 0}%` }} className="bg-emerald-400 h-full" />
-              </div>
-              <div className="grid grid-cols-3 text-center text-xs font-mono font-bold pt-1">
-                <span className="text-amber-400">{selectedPlayer.pct_3p ?? selectedPlayer.pctFromThree ?? 0}% from 3PT</span>
-                <span className="text-sky-400">{selectedPlayer.pct_2p ?? selectedPlayer.pctFromTwo ?? 0}% from 2PT</span>
-                <span className="text-emerald-400">{selectedPlayer.pct_ft ?? selectedPlayer.pctFromFt ?? 0}% from FT</span>
-              </div>
-            </div>
-
-            {/* Recent Performances (if present) */}
-            {Array.isArray(selectedPlayer.recentGames) && selectedPlayer.recentGames.length > 0 && (
-              <div className="space-y-2">
-                <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
-                  RECENT PERFORMANCES (LAST {selectedPlayer.recentGames.length} GAMES)
-                </span>
-                <div className="space-y-1.5">
-                  {selectedPlayer.recentGames.map((g, idx) => (
-                    <div key={idx} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="font-bold text-slate-200 block">{g.opponent}</span>
-                        <span className="text-[10px] text-slate-500">{g.date}</span>
-                      </div>
-                      <div className="flex items-center gap-3 font-mono font-bold">
-                        <span className="text-rose-400 font-black">{g.pts} PTS</span>
-                        <span className="text-amber-300">{g.threeMade} 3PM</span>
-                        <span className="text-slate-400">{g.fouls} FOULS</span>
-                      </div>
-                    </div>
-                  ))}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                  <span className="text-[9px] text-slate-400 font-bold block">3PT (OUT-ARC)</span>
+                  <span className="font-mono text-sm font-black text-amber-300">{selectedPlayer.threePct}%</span>
+                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.threeMadeAVG.toFixed(1)} made/G</span>
+                </div>
+                <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                  <span className="text-[9px] text-slate-400 font-bold block">2PT (IN-ARC)</span>
+                  <span className="font-mono text-sm font-black text-sky-400">{selectedPlayer.twoPct}%</span>
+                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.twoMadeAVG.toFixed(1)} made/G</span>
+                </div>
+                <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                  <span className="text-[9px] text-slate-400 font-bold block">FREE THROWS</span>
+                  <span className="font-mono text-sm font-black text-emerald-400">{selectedPlayer.ftPct}%</span>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -1252,8 +1312,8 @@ export default function LeagueHub({ showToast }) {
       {/* 4. JSON IMPORTER MODAL                                                    */}
       {/* ========================================================================= */}
       {showImporter && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-2xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center">
@@ -1261,53 +1321,30 @@ export default function LeagueHub({ showToast }) {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
-                    INGEST CHAMPIONSHIP LEAGUE JSON
+                    IMPORT LEAGUE JSON
                   </h3>
                   <p className="text-[11px] text-slate-400">
-                    Load multi-team standings & scouting reports from external Python FIP scraper
+                    Paste raw standings or roster JSON to update the Hub
                   </p>
                 </div>
               </div>
-              <button onClick={() => setShowImporter(false)} className="text-slate-400 hover:text-white p-1">
+              <button
+                type="button"
+                onClick={() => setShowImporter(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-md"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Drag & Drop File Zone */}
-            <div
-              onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-              onDragLeave={() => setIsDragOver(false)}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-5 text-center transition-all ${
-                isDragOver ? 'border-rose-400 bg-rose-500/10' : 'border-slate-700 bg-slate-950/60'
-              }`}
-            >
-              <FileCode className="w-7 h-7 text-rose-400/80 mx-auto mb-1.5" />
-              <p className="text-xs font-bold text-slate-200 mb-1">
-                Drop your <code className="text-rose-300">league_data.json</code> file here
-              </p>
-              <label className="bg-rose-600 hover:bg-rose-500 text-white font-black px-3.5 py-1.5 rounded-lg text-xs cursor-pointer shadow-md inline-flex items-center gap-1.5 active:scale-95 transition-all mt-1">
-                <FileText className="w-3.5 h-3.5" />
-                <span>SELECT JSON FILE</span>
-                <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
-              </label>
-            </div>
+            <textarea
+              value={jsonInputText}
+              onChange={(e) => setJsonInputText(e.target.value)}
+              rows={8}
+              placeholder='[{"rank": 1, "teamFid": "...", "name": "...", "points": 28, "won": 14, "lost": 4}]'
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-400"
+            />
 
-            {/* Raw JSON Paste Area */}
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
-                OR PASTE JSON CODE DIRECTLY:
-              </label>
-              <textarea
-                value={jsonInputText}
-                onChange={(e) => setJsonInputText(e.target.value)}
-                rows={8}
-                placeholder='{"standings": [...], "teams": {...}}'
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-400"
-              />
-            </div>
-
-            {/* Modal Actions */}
             <div className="flex items-center justify-between pt-2 border-t border-slate-800">
               <button
                 type="button"
@@ -1326,10 +1363,27 @@ export default function LeagueHub({ showToast }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleIngestJSON(jsonInputText)}
+                  onClick={() => {
+                    try {
+                      const parsed = JSON.parse(jsonInputText);
+                      if (Array.isArray(parsed)) {
+                        setStandings(parsed);
+                        localStorage.setItem('bba_fip_standings', JSON.stringify(parsed));
+                        setStatusMsg(`✅ Imported ${parsed.length} teams into standings`);
+                        setShowImporter(false);
+                      } else if (typeof parsed === 'object') {
+                        setRosters(parsed);
+                        localStorage.setItem('bba_fip_rosters', JSON.stringify(parsed));
+                        setStatusMsg(`✅ Imported rosters for ${Object.keys(parsed).length} teams`);
+                        setShowImporter(false);
+                      }
+                    } catch (err) {
+                      setStatusMsg(`❌ JSON Error: ${err.message}`);
+                    }
+                  }}
                   className="bg-rose-600 hover:bg-rose-500 text-white font-black px-4 py-1.5 rounded-lg text-xs transition-all shadow-md active:scale-95"
                 >
-                  PARSE & LOAD
+                  LOAD
                 </button>
               </div>
             </div>

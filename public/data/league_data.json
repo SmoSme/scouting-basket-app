@@ -1,0 +1,543 @@
+{
+  "lastUpdated": "2026-11-03",
+  "leagueName": "Divisione Regionale 2 - Girone F",
+  "season": "2025/2026",
+  "standings": [
+    {
+      "id": "t1",
+      "rank": 1,
+      "name": "Virtus Roma 1960",
+      "points": 28,
+      "w": 14,
+      "l": 4,
+      "gp": 18,
+      "ppg": 79.4,
+      "opp_ppg": 71.2,
+      "diff": 8.2,
+      "streak": [
+        "W",
+        "W",
+        "L",
+        "W",
+        "W"
+      ]
+    },
+    {
+      "id": "t2",
+      "rank": 2,
+      "name": "Carver Cinecittà",
+      "points": 26,
+      "w": 13,
+      "l": 5,
+      "gp": 18,
+      "ppg": 82.1,
+      "opp_ppg": 74.5,
+      "diff": 7.6,
+      "streak": [
+        "W",
+        "W",
+        "W",
+        "W",
+        "L"
+      ]
+    },
+    {
+      "id": "t3",
+      "rank": 3,
+      "name": "Petriana Basket",
+      "points": 24,
+      "w": 12,
+      "l": 6,
+      "gp": 18,
+      "ppg": 75.8,
+      "opp_ppg": 72,
+      "diff": 3.8,
+      "streak": [
+        "L",
+        "W",
+        "W",
+        "L",
+        "W"
+      ]
+    },
+    {
+      "id": "t4",
+      "rank": 4,
+      "name": "BBA - Basketball Academy",
+      "points": 22,
+      "w": 11,
+      "l": 7,
+      "gp": 18,
+      "ppg": 76.5,
+      "opp_ppg": 73.1,
+      "diff": 3.4,
+      "streak": [
+        "W",
+        "L",
+        "W",
+        "W",
+        "W"
+      ]
+    },
+    {
+      "id": "t5",
+      "rank": 5,
+      "name": "San Paolo Ostiense",
+      "points": 20,
+      "w": 10,
+      "l": 8,
+      "gp": 18,
+      "ppg": 73.2,
+      "opp_ppg": 72.8,
+      "diff": 0.4,
+      "streak": [
+        "W",
+        "L",
+        "L",
+        "W",
+        "L"
+      ]
+    },
+    {
+      "id": "t6",
+      "rank": 6,
+      "name": "Alfa Omega Ostia",
+      "points": 16,
+      "w": 8,
+      "l": 10,
+      "gp": 18,
+      "ppg": 71,
+      "opp_ppg": 74.2,
+      "diff": -3.2,
+      "streak": [
+        "L",
+        "L",
+        "W",
+        "L",
+        "W"
+      ]
+    },
+    {
+      "id": "t7",
+      "rank": 7,
+      "name": "Vis Nova Basket",
+      "points": 12,
+      "w": 6,
+      "l": 12,
+      "gp": 18,
+      "ppg": 68.4,
+      "opp_ppg": 76,
+      "diff": -7.6,
+      "streak": [
+        "L",
+        "L",
+        "L",
+        "W",
+        "L"
+      ]
+    },
+    {
+      "id": "t8",
+      "rank": 8,
+      "name": "Basket Frascati",
+      "points": 8,
+      "w": 4,
+      "l": 14,
+      "gp": 18,
+      "ppg": 65.2,
+      "opp_ppg": 77.8,
+      "diff": -12.6,
+      "streak": [
+        "L",
+        "L",
+        "L",
+        "L",
+        "W"
+      ]
+    }
+  ],
+  "teams": {
+    "t1": {
+      "id": "t1",
+      "name": "Virtus Roma 1960",
+      "league": "Divisione Regionale 2",
+      "city": "Roma (RM)",
+      "stats": {
+        "ppg": 79.4,
+        "opp_ppg": 71.2,
+        "diff": 8.2,
+        "pace": "Fast / Transition Heavy",
+        "homeRecord": "8-1",
+        "awayRecord": "6-3"
+      },
+      "roster": [
+        {
+          "id": "p1_1",
+          "number": 8,
+          "name": "Marco Rossi",
+          "position": "SG",
+          "games": 18,
+          "ppg": 18.6,
+          "fouls": 2.1,
+          "threePtAtt": 7.4,
+          "pct_3p": 52,
+          "pct_2p": 32,
+          "pct_ft": 16,
+          "fg_pct": 46.2,
+          "three_pct": 38.5,
+          "ft_pct": 84.1,
+          "notes": "Dangerous pull-up shooter in transition; attacks left on high screen-and-rolls.",
+          "recentGames": [
+            {
+              "opponent": "vs Carver",
+              "pts": 24,
+              "fouls": 2,
+              "threeMade": 5,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "@ Petriana",
+              "pts": 18,
+              "fouls": 3,
+              "threeMade": 3,
+              "date": "2026-10-21"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 16,
+              "fouls": 1,
+              "threeMade": 2,
+              "date": "2026-10-14"
+            }
+          ]
+        },
+        {
+          "id": "p1_2",
+          "number": 15,
+          "name": "Davide Moretti",
+          "position": "C",
+          "games": 17,
+          "ppg": 14.2,
+          "fouls": 4.1,
+          "threePtAtt": 0.8,
+          "pct_3p": 5,
+          "pct_2p": 68,
+          "pct_ft": 27,
+          "fg_pct": 54.8,
+          "three_pct": 20,
+          "ft_pct": 62.5,
+          "notes": "Physical rim protector, vulnerable to pump fakes; averages 4.1 fouls/game.",
+          "recentGames": [
+            {
+              "opponent": "vs Carver",
+              "pts": 16,
+              "fouls": 5,
+              "threeMade": 0,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "@ Petriana",
+              "pts": 12,
+              "fouls": 4,
+              "threeMade": 0,
+              "date": "2026-10-21"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 14,
+              "fouls": 4,
+              "threeMade": 1,
+              "date": "2026-10-14"
+            }
+          ]
+        },
+        {
+          "id": "p1_3",
+          "number": 4,
+          "name": "Lorenzo Santoro",
+          "position": "PG",
+          "games": 18,
+          "ppg": 11.8,
+          "fouls": 2.8,
+          "threePtAtt": 4.6,
+          "pct_3p": 48,
+          "pct_2p": 30,
+          "pct_ft": 22,
+          "fg_pct": 42,
+          "three_pct": 36.4,
+          "ft_pct": 79,
+          "notes": "Primary ball handler; shoots high-volume catch-and-shoot 3s.",
+          "recentGames": [
+            {
+              "opponent": "vs Carver",
+              "pts": 13,
+              "fouls": 3,
+              "threeMade": 3,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "@ Petriana",
+              "pts": 9,
+              "fouls": 2,
+              "threeMade": 2,
+              "date": "2026-10-21"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 15,
+              "fouls": 3,
+              "threeMade": 4,
+              "date": "2026-10-14"
+            }
+          ]
+        },
+        {
+          "id": "p1_4",
+          "number": 11,
+          "name": "Andrea Bianchi",
+          "position": "PF",
+          "games": 16,
+          "ppg": 9.4,
+          "fouls": 3.8,
+          "threePtAtt": 1.5,
+          "pct_3p": 12,
+          "pct_2p": 58,
+          "pct_ft": 30,
+          "fg_pct": 48.5,
+          "three_pct": 25,
+          "ft_pct": 68,
+          "notes": "Aggressive rebounder, struggles in lateral 1-on-1 containment.",
+          "recentGames": [
+            {
+              "opponent": "vs Carver",
+              "pts": 8,
+              "fouls": 4,
+              "threeMade": 0,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "@ Petriana",
+              "pts": 11,
+              "fouls": 4,
+              "threeMade": 1,
+              "date": "2026-10-21"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 9,
+              "fouls": 3,
+              "threeMade": 0,
+              "date": "2026-10-14"
+            }
+          ]
+        },
+        {
+          "id": "p1_5",
+          "number": 23,
+          "name": "Federico Ferri",
+          "position": "SF",
+          "games": 18,
+          "ppg": 10.2,
+          "fouls": 1.9,
+          "threePtAtt": 5.2,
+          "pct_3p": 44,
+          "pct_2p": 40,
+          "pct_ft": 16,
+          "fg_pct": 44.1,
+          "three_pct": 35.8,
+          "ft_pct": 75,
+          "notes": "Spot-up corner shooter; runs baseline cuts.",
+          "recentGames": [
+            {
+              "opponent": "vs Carver",
+              "pts": 12,
+              "fouls": 2,
+              "threeMade": 2,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "@ Petriana",
+              "pts": 8,
+              "fouls": 1,
+              "threeMade": 2,
+              "date": "2026-10-21"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 10,
+              "fouls": 2,
+              "threeMade": 2,
+              "date": "2026-10-14"
+            }
+          ]
+        }
+      ]
+    },
+    "t2": {
+      "id": "t2",
+      "name": "Carver Cinecittà",
+      "league": "Divisione Regionale 2",
+      "city": "Roma (RM)",
+      "stats": {
+        "ppg": 82.1,
+        "opp_ppg": 74.5,
+        "diff": 7.6,
+        "pace": "High Octane / 3PT Oriented",
+        "homeRecord": "7-2",
+        "awayRecord": "6-3"
+      },
+      "roster": [
+        {
+          "id": "p2_1",
+          "number": 10,
+          "name": "Gianluca Martini",
+          "position": "PG",
+          "games": 18,
+          "ppg": 21.4,
+          "fouls": 2.3,
+          "threePtAtt": 8.2,
+          "pct_3p": 58,
+          "pct_2p": 26,
+          "pct_ft": 16,
+          "fg_pct": 48,
+          "three_pct": 41.2,
+          "ft_pct": 88.5,
+          "notes": "Championship top scorer. Deep range 3s beyond the arc.",
+          "recentGames": [
+            {
+              "opponent": "@ Virtus",
+              "pts": 22,
+              "fouls": 2,
+              "threeMade": 4,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 25,
+              "fouls": 3,
+              "threeMade": 6,
+              "date": "2026-10-21"
+            }
+          ]
+        },
+        {
+          "id": "p2_2",
+          "number": 14,
+          "name": "Roberto De Luca",
+          "position": "C",
+          "games": 18,
+          "ppg": 13.5,
+          "fouls": 3.9,
+          "threePtAtt": 0.5,
+          "pct_3p": 4,
+          "pct_2p": 66,
+          "pct_ft": 30,
+          "fg_pct": 52,
+          "three_pct": 18,
+          "ft_pct": 64,
+          "notes": "Rim runner, vulnerable in pick-and-roll drop coverage.",
+          "recentGames": [
+            {
+              "opponent": "@ Virtus",
+              "pts": 14,
+              "fouls": 4,
+              "threeMade": 0,
+              "date": "2026-10-28"
+            },
+            {
+              "opponent": "vs San Paolo",
+              "pts": 12,
+              "fouls": 4,
+              "threeMade": 0,
+              "date": "2026-10-21"
+            }
+          ]
+        }
+      ]
+    },
+    "t3": {
+      "id": "t3",
+      "name": "Petriana Basket",
+      "league": "Divisione Regionale 2",
+      "city": "Roma (RM)",
+      "stats": {
+        "ppg": 75.8,
+        "opp_ppg": 72,
+        "diff": 3.8,
+        "pace": "Controlled / Half-Court Execution",
+        "homeRecord": "7-2",
+        "awayRecord": "5-4"
+      },
+      "roster": [
+        {
+          "id": "p3_1",
+          "number": 7,
+          "name": "Simone Costa",
+          "position": "SG",
+          "games": 17,
+          "ppg": 16.8,
+          "fouls": 2.4,
+          "threePtAtt": 6.2,
+          "pct_3p": 48,
+          "pct_2p": 34,
+          "pct_ft": 18,
+          "fg_pct": 44.5,
+          "three_pct": 37.1,
+          "ft_pct": 81,
+          "notes": "Mid-range and catch-and-shoot expert.",
+          "recentGames": [
+            {
+              "opponent": "vs Virtus",
+              "pts": 18,
+              "fouls": 2,
+              "threeMade": 3,
+              "date": "2026-10-21"
+            }
+          ]
+        }
+      ]
+    },
+    "t4": {
+      "id": "t4",
+      "name": "BBA - Basketball Academy",
+      "league": "Divisione Regionale 2",
+      "city": "Roma (RM)",
+      "stats": {
+        "ppg": 76.5,
+        "opp_ppg": 73.1,
+        "diff": 3.4,
+        "pace": "Balanced / High Pressure Defense",
+        "homeRecord": "6-3",
+        "awayRecord": "5-4"
+      },
+      "roster": [
+        {
+          "id": "p4_1",
+          "number": 77,
+          "name": "Matteo Ranieri",
+          "position": "G",
+          "games": 18,
+          "ppg": 17.2,
+          "fouls": 2.2,
+          "threePtAtt": 5.8,
+          "pct_3p": 46,
+          "pct_2p": 38,
+          "pct_ft": 16,
+          "fg_pct": 47.1,
+          "three_pct": 39,
+          "ft_pct": 82,
+          "notes": "Primary playmaker and perimeter threat.",
+          "recentGames": [
+            {
+              "opponent": "@ Vis Nova",
+              "pts": 21,
+              "fouls": 2,
+              "threeMade": 4,
+              "date": "2026-10-29"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

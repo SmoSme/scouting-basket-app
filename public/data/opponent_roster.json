@@ -1,0 +1,180 @@
+{
+  "lastUpdated": "2026-11-03",
+  "team": {
+    "fid": "team_virtus_1960",
+    "name": "Virtus Roma 1960",
+    "competitionFid": "comp_dr2_girf",
+    "competitionName": "Divisione Regionale 2 - Girone F",
+    "season": "2025/2026"
+  },
+  "lineups": [
+    {
+      "player": {
+        "fid": "p1_1",
+        "name": "Marco Rossi",
+        "number": 8,
+        "position": "SG"
+      },
+      "players": [
+        {
+          "fid": "p1_1",
+          "name": "Marco Rossi",
+          "number": 8
+        }
+      ],
+      "stats": {
+        "games": 18,
+        "pointsAVG": 18.6,
+        "foulsAVG": 2.1,
+        "inArcThrowsPercentage": 46.2,
+        "outArcThrowsPercentage": 38.5,
+        "inArcThrowsAVG": 4.8,
+        "outArcThrowsAVG": 2.8,
+        "freeThrowsPercentage": 84.1,
+        "plusMinusAVG": 5.4,
+        "reboundsAVG": 3.2,
+        "assistsAVG": 3.6
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_2",
+        "name": "Davide Moretti",
+        "number": 15,
+        "position": "C"
+      },
+      "players": [
+        {
+          "fid": "p1_2",
+          "name": "Davide Moretti",
+          "number": 15
+        }
+      ],
+      "stats": {
+        "games": 17,
+        "pointsAVG": 14.2,
+        "foulsAVG": 4.1,
+        "inArcThrowsPercentage": 54.8,
+        "outArcThrowsPercentage": 20,
+        "inArcThrowsAVG": 5.6,
+        "outArcThrowsAVG": 0.2,
+        "freeThrowsPercentage": 62.5,
+        "plusMinusAVG": 4.1,
+        "reboundsAVG": 8.9,
+        "assistsAVG": 1.1
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_3",
+        "name": "Lorenzo Santoro",
+        "number": 4,
+        "position": "PG"
+      },
+      "players": [
+        {
+          "fid": "p1_3",
+          "name": "Lorenzo Santoro",
+          "number": 4
+        }
+      ],
+      "stats": {
+        "games": 18,
+        "pointsAVG": 11.8,
+        "foulsAVG": 2.8,
+        "inArcThrowsPercentage": 42,
+        "outArcThrowsPercentage": 36.4,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 1.9,
+        "freeThrowsPercentage": 79,
+        "plusMinusAVG": 6.2,
+        "reboundsAVG": 2.4,
+        "assistsAVG": 5.2
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_4",
+        "name": "Andrea Bianchi",
+        "number": 11,
+        "position": "PF"
+      },
+      "players": [
+        {
+          "fid": "p1_4",
+          "name": "Andrea Bianchi",
+          "number": 11
+        }
+      ],
+      "stats": {
+        "games": 16,
+        "pointsAVG": 9.4,
+        "foulsAVG": 3.8,
+        "inArcThrowsPercentage": 48.5,
+        "outArcThrowsPercentage": 25,
+        "inArcThrowsAVG": 3.4,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 68,
+        "plusMinusAVG": 1.8,
+        "reboundsAVG": 6.1,
+        "assistsAVG": 1.4
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_5",
+        "name": "Federico Ferri",
+        "number": 23,
+        "position": "SF"
+      },
+      "players": [
+        {
+          "fid": "p1_5",
+          "name": "Federico Ferri",
+          "number": 23
+        }
+      ],
+      "stats": {
+        "games": 18,
+        "pointsAVG": 10.2,
+        "foulsAVG": 1.9,
+        "inArcThrowsPercentage": 44.1,
+        "outArcThrowsPercentage": 35.8,
+        "inArcThrowsAVG": 2.6,
+        "outArcThrowsAVG": 1.8,
+        "freeThrowsPercentage": 75,
+        "plusMinusAVG": 3.5,
+        "reboundsAVG": 4,
+        "assistsAVG": 1.8
+      }
+    },
+    {
+      "player": {
+        "fid": "p1_6",
+        "name": "Giulio Colasanti",
+        "number": 19,
+        "position": "G"
+      },
+      "players": [
+        {
+          "fid": "p1_6",
+          "name": "Giulio Colasanti",
+          "number": 19
+        }
+      ],
+      "stats": {
+        "games": 15,
+        "pointsAVG": 6.5,
+        "foulsAVG": 3.4,
+        "inArcThrowsPercentage": 39.5,
+        "outArcThrowsPercentage": 28,
+        "inArcThrowsAVG": 1.8,
+        "outArcThrowsAVG": 0.7,
+        "freeThrowsPercentage": 71.4,
+        "plusMinusAVG": -0.8,
+        "reboundsAVG": 2.1,
+        "assistsAVG": 1.5
+      }
+    }
+  ]
+}
