@@ -374,7 +374,7 @@ export default function LeagueHub({ showToast }) {
   const [currentView, setCurrentView] = useState('STANDINGS_VIEW');
   const [selectedTeamFid, setSelectedTeamFid] = useState(null);
 
-  // Data states from JSON files
+  // Data states
   const [standings, setStandings] = useState(() => {
     try {
       const saved = localStorage.getItem('bba_fip_standings');
@@ -391,6 +391,7 @@ export default function LeagueHub({ showToast }) {
     return null;
   });
 
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(!standings);
   const [fetchError, setFetchError] = useState(null);
 
@@ -406,52 +407,53 @@ export default function LeagueHub({ showToast }) {
   const [jsonInputText, setJsonInputText] = useState('');
 
   // -------------------------------------------------------------------------
-  // Fetch GraphQL Generated JSONs on Mount
+  // Fetch /api/sync-fip (Vercel Serverless Function & Cloud API)
   // -------------------------------------------------------------------------
   const fetchFipData = async (isManual = false) => {
-    setIsLoading(true);
+    setIsSyncing(true);
     setFetchError(null);
     try {
-      const [standingsRes, rostersRes] = await Promise.all([
-        fetch('/data/league_standings.json', { cache: 'no-store' }),
-        fetch('/data/league_rosters.json', { cache: 'no-store' })
-      ]);
-
-      if (!standingsRes.ok || !rostersRes.ok) {
-        throw new Error(`Data files not found (${standingsRes.status}/${rostersRes.status})`);
+      const response = await fetch('/api/sync-fip', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Sync API responded with HTTP ${response.status}`);
       }
 
-      const standingsData = await standingsRes.json();
-      const rostersData = await rostersRes.json();
+      const data = await response.json();
+      const standingsData = data.standings;
+      const rostersData = data.rosters || {};
 
       if (Array.isArray(standingsData) && standingsData.length > 0) {
         setStandings(standingsData);
-        setRosters(rostersData || {});
+        setRosters(rostersData);
         try {
           localStorage.setItem('bba_fip_standings', JSON.stringify(standingsData));
-          localStorage.setItem('bba_fip_rosters', JSON.stringify(rostersData || {}));
+          localStorage.setItem('bba_fip_rosters', JSON.stringify(rostersData));
         } catch (e) {}
 
-        if (isManual) {
-          setStatusMsg('✅ Live FIP GraphQL data synced successfully');
-          if (showToast) showToast('🏀 Standings & Rosters Loaded');
-        }
+        const sourceNote = data.isFallback ? ' (Sample Baseline)' : ' (Live Cloud)';
+        setStatusMsg(`✅ League stats synced${sourceNote}`);
+        if (showToast) showToast(`🏀 FIP Data Synced${sourceNote}`);
       } else {
-        throw new Error('Invalid standings array in /data/league_standings.json');
+        throw new Error(data.error || 'Invalid data received from /api/sync-fip');
       }
     } catch (err) {
-      console.warn('[League Hub] Fetch error:', err.message);
+      console.warn('[League Hub] Sync error:', err.message);
       setFetchError(err.message);
       if (isManual && showToast) {
-        showToast('⚠️ Could not load FIP JSON files');
+        showToast(`⚠️ Sync failed: ${err.message}`);
       }
     } finally {
+      setIsSyncing(false);
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFipData(false);
+    if (!standings || standings.length === 0) {
+      fetchFipData(false);
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   // Safe navigation handlers
@@ -565,12 +567,12 @@ export default function LeagueHub({ showToast }) {
           <button
             type="button"
             onClick={() => fetchFipData(true)}
-            disabled={isLoading}
-            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-indigo-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
-            title="Reload from /data/league_standings.json & league_rosters.json"
+            disabled={isSyncing}
+            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            title="Fetch latest league data from /api/sync-fip"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>SYNC GRAPHQL DATA</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'SYNCING...' : 'SYNC FIP DATA'}</span>
           </button>
 
           <button
@@ -607,11 +609,11 @@ export default function LeagueHub({ showToast }) {
       {/* ========================================================================= */}
       {/* 2. LOADING & EMPTY/UNSYNCED STATES                                        */}
       {/* ========================================================================= */}
-      {isLoading && (!standings || standings.length === 0) ? (
+      {isSyncing && (!standings || standings.length === 0) ? (
         <div className="glass-card p-12 text-center border-slate-800 bg-slate-900/90 rounded-2xl max-w-md mx-auto space-y-3 my-12 animate-pulse shadow-2xl">
           <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
-          <p className="text-sm font-bold text-slate-300">Loading FIP League Data...</p>
-          <p className="text-xs text-slate-500 font-mono">Fetching /data/league_standings.json & league_rosters.json</p>
+          <p className="text-sm font-bold text-slate-300">Syncing FIP League Data...</p>
+          <p className="text-xs text-slate-500 font-mono">Querying cloud serverless endpoint (/api/sync-fip)</p>
         </div>
       ) : (!standings || standings.length === 0) ? (
         /* Empty / Unsynced State */
@@ -625,7 +627,7 @@ export default function LeagueHub({ showToast }) {
               League Data Not Synced
             </h2>
             <p className="text-sm text-slate-400">
-              League data not synced. Run <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono text-xs border border-slate-800">npm run sync-fip</code> locally to download the latest FIP API data.
+              League data not synced. Tap <span className="text-amber-400 font-bold">SYNC FIP DATA</span> to pull the latest standings and scouting reports directly from the cloud, or load the baseline sample.
             </p>
           </div>
 
@@ -661,10 +663,11 @@ export default function LeagueHub({ showToast }) {
             <button
               type="button"
               onClick={() => fetchFipData(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95"
+              disabled={isSyncing}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>RETRY SYNC</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'SYNCING...' : 'SYNC FIP DATA'}</span>
             </button>
 
             <button

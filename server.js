@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import syncFipHandler from './api/sync-fip.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +61,11 @@ function readCSV() {
 // ---------------------------------------------------------
 // REST API Endpoints
 // ---------------------------------------------------------
+
+// GET /api/sync-fip (Vercel Serverless proxy for local dev)
+app.all('/api/sync-fip', (req, res) => {
+  return syncFipHandler(req, res);
+});
 
 // GET /api/events
 app.get('/api/events', (req, res) => {
