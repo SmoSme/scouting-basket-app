@@ -417,25 +417,7 @@ query competitionLineupStats($competitionFid: String!, $teamFid: String!) {
 /**
  * Generic GraphQL Query Executor injecting exact raw Proxyman mobile headers
  */
-async function executeGraphQL(endpoint, authToken, packageName, userPremium, operationName, query, variables) {
-  const authbearertoken = authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`;
-
-  // Exact raw intercepted mobile headers
-  const headers = {
-    'Host': 'internal.nbn23.app',
-    'x-package-name': packageName || 'com.nbn23.fipapp',
-    'Accept': '*/*',
-    'x-user-premium': String(userPremium ?? 'true'),
-    'Authorization': authbearertoken,
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'it-IT,it;q=0.9',
-    'Content-Type': 'application/json',
-    'User-Agent': 'com.nbn23.fipapp',
-    'x-device-id': 'EC65ADBA-ECE4-5630-8A5B-ED445F854A56',
-    'Connection': 'keep-alive',
-    'x-package-version': '2.14.0'
-  };
-
+async function executeGraphQL(endpoint, headers, operationName, query, variables) {
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -481,29 +463,31 @@ export default async function handler(req, res) {
     return;
   }
 
-  const endpoint = process.env.FIP_GRAPHQL_ENDPOINT || '';
-  const authToken = process.env.FIP_AUTH_TOKEN || '';
-  const packageName = process.env.FIP_PACKAGE_NAME || 'com.nbn23.fipapp';
-  const userPremium = process.env.FIP_USER_PREMIUM || 'true';
+  const authHeader = process.env.FIP_AUTH_TOKEN;
+
+  if (!authHeader) {
+    console.error("Missing FIP_AUTH_TOKEN in environment.");
+    return res.status(500).json({ error: "Configuration Error: Missing API Token." });
+  }
+
+  const headers = {
+    'Host': 'internal.nbn23.app',
+    'x-package-name': process.env.FIP_PACKAGE_NAME || 'com.nbn23.fipapp',
+    'Accept': '*/*',
+    'x-user-premium': process.env.FIP_USER_PREMIUM || 'true',
+    'Authorization': authHeader,
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'it-IT,it;q=0.9',
+    'Content-Type': 'application/json',
+    'User-Agent': 'com.nbn23.fipapp',
+    'x-device-id': 'EC65ADBA-ECE4-5630-8A5B-ED445F854A56',
+    'Connection': 'keep-alive',
+    'x-package-version': '2.14.0'
+  };
+
+  const endpoint = process.env.FIP_GRAPHQL_ENDPOINT || 'https://internal.nbn23.app/graphql';
   const competitionId = process.env.FIP_COMPETITION_ID || 'comp_dr2_girf';
   const bbaTeamId = process.env.BBA_TEAM_ID || 'team_bba_academy';
-
-  const hasValidCreds = endpoint && 
-    !endpoint.includes('api.example.com') && 
-    endpoint.startsWith('http') &&
-    authToken && 
-    authToken !== 'your_intercepted_bearer_token';
-
-  // If credentials are not configured, return realistic baseline dataset
-  if (!hasValidCreds) {
-    console.log('[api/sync-fip] No live credentials configured. Serving baseline Divisione Regionale 2 dataset.');
-    return res.status(200).json({
-      standings: BASELINE_STANDINGS,
-      rosters: BASELINE_ROSTERS,
-      isFallback: true,
-      message: 'Serving baseline championship data (FIP credentials not set in environment).'
-    });
-  }
 
   try {
     console.log(`[api/sync-fip] Executing StandingsByTeam query for competition: ${competitionId}`);
@@ -511,9 +495,7 @@ export default async function handler(req, res) {
     // 1. Fetch Standings
     const standingsData = await executeGraphQL(
       endpoint,
-      authToken,
-      packageName,
-      userPremium,
+      headers,
       'StandingsByTeam',
       QUERY_STANDINGS_BY_TEAM,
       {
@@ -565,9 +547,7 @@ export default async function handler(req, res) {
       try {
         const lineupData = await executeGraphQL(
           endpoint,
-          authToken,
-          packageName,
-          userPremium,
+          headers,
           'competitionLineupStats',
           QUERY_LINEUP_STATS,
           {
