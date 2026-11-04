@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Trophy, Target, Upload, FileText, AlertTriangle, 
   RefreshCw, Search, ArrowLeft, Shield, Zap, ChevronRight, 
-  X, User, HelpCircle, Loader2, Terminal, Flame, CheckCircle2
+  X, User, HelpCircle, Loader2, Terminal, Flame, CheckCircle2,
+  Users
 } from 'lucide-react';
 
 // =========================================================================
@@ -14,6 +15,7 @@ export const DEFAULT_STANDINGS = [
     name: "Virtus Roma 1960",
     position: 1,
     clubId: "club_virtus",
+    continuityPct: 75,
     streak: ["W", "W", "W", "L", "W"],
     logo: "",
     stats: {
@@ -31,6 +33,7 @@ export const DEFAULT_STANDINGS = [
     name: "Carver Cinecittà",
     position: 2,
     clubId: "club_carver",
+    continuityPct: 68,
     streak: ["W", "W", "L", "W", "W"],
     logo: "",
     stats: {
@@ -48,6 +51,7 @@ export const DEFAULT_STANDINGS = [
     name: "Petriana Basket",
     position: 3,
     clubId: "club_petriana",
+    continuityPct: 62,
     streak: ["L", "W", "W", "W", "L"],
     logo: "",
     stats: {
@@ -65,6 +69,7 @@ export const DEFAULT_STANDINGS = [
     name: "BBA - Basketball Academy",
     position: 4,
     clubId: "club_bba",
+    continuityPct: 70,
     streak: ["W", "L", "W", "W", "L"],
     logo: "",
     stats: {
@@ -82,6 +87,7 @@ export const DEFAULT_STANDINGS = [
     name: "San Paolo Ostiense",
     position: 5,
     clubId: "club_san_paolo",
+    continuityPct: 58,
     streak: ["W", "W", "L", "L", "W"],
     logo: "",
     stats: {
@@ -99,6 +105,7 @@ export const DEFAULT_STANDINGS = [
     name: "Alfa Omega Ostia",
     position: 6,
     clubId: "club_alfa_omega",
+    continuityPct: 64,
     streak: ["L", "L", "W", "L", "W"],
     logo: "",
     stats: {
@@ -116,6 +123,7 @@ export const DEFAULT_STANDINGS = [
     name: "Vis Nova Basket",
     position: 7,
     clubId: "club_vis_nova",
+    continuityPct: 50,
     streak: ["L", "L", "L", "W", "L"],
     logo: "",
     stats: {
@@ -133,6 +141,7 @@ export const DEFAULT_STANDINGS = [
     name: "Basket Frascati",
     position: 8,
     clubId: "club_frascati",
+    continuityPct: 55,
     streak: ["L", "L", "W", "L", "L"],
     logo: "",
     stats: {
@@ -435,6 +444,23 @@ const formatMedPlusMinus = (stats) => {
   return <span className="text-slate-400">0.0</span>;
 };
 
+// Normalizes team names for continuity comparison
+function normalizeTeamName(name) {
+  if (!name) return '';
+  return name.toLowerCase()
+    .replace(/basket|pallacanestro|asd|pol\.|polisportiva|sports?|bk/gi, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
+function isSameTeam(nameA, nameB) {
+  if (!nameA || !nameB) return false;
+  const a = normalizeTeamName(nameA);
+  const b = normalizeTeamName(nameB);
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+}
+
 // Defensive helper to parse player lineup item
 function normalizeLineupItem(item, idx) {
   const p = item.player || item;
@@ -449,9 +475,63 @@ function normalizeLineupItem(item, idx) {
 
   const uniquePlayer = p.uniquePlayer || item.uniquePlayer || null;
   const upStats = uniquePlayer?.stats || null;
-  const seasonStats = Array.isArray(uniquePlayer?.seasonStats)
-    ? uniquePlayer.seasonStats
-    : (Array.isArray(p.history) ? p.history : []);
+  const playersList = Array.isArray(uniquePlayer?.players) ? uniquePlayer.players : [];
+  const rawSeasonStats = Array.isArray(uniquePlayer?.seasonStats) ? uniquePlayer.seasonStats : [];
+
+  // Build merged history array: map seasonStats to players
+  let history = [];
+  if (Array.isArray(item.history) && item.history.length > 0) {
+    history = item.history;
+  } else if (Array.isArray(uniquePlayer?.history) && uniquePlayer.history.length > 0) {
+    history = uniquePlayer.history;
+  } else if (Array.isArray(p.history) && p.history.length > 0) {
+    history = p.history;
+  } else if (rawSeasonStats.length > 0) {
+    history = rawSeasonStats.map(stat => {
+      const rawSeasonId = stat.seasonId != null ? String(stat.seasonId) : '';
+      const matchedPlayer = playersList.find(pl => String(pl.season?.id) === rawSeasonId);
+      const seasonName = matchedPlayer?.season?.name || stat.seasonName || rawSeasonId || '—';
+      const teamName = (matchedPlayer?.team?.name || stat.teamName || p.team?.name || item.teamName || '—').trim();
+      const games = Number(stat.games || 0);
+      const ppg = stat.pointsPerGame != null 
+        ? Number(stat.pointsPerGame) 
+        : (games > 0 && stat.points != null ? Number((stat.points / games).toFixed(1)) : 0);
+      const twoMade = stat.twoMadePerGame != null 
+        ? Number(stat.twoMadePerGame) 
+        : (stat.inArcThrowsMadePerGame != null ? Number(stat.inArcThrowsMadePerGame) : (games > 0 && stat.inArcThrowsMade != null ? Number((stat.inArcThrowsMade / games).toFixed(1)) : 0));
+      const threeMade = stat.threeMadePerGame != null 
+        ? Number(stat.threeMadePerGame) 
+        : (stat.outArcThrowsMadePerGame != null ? Number(stat.outArcThrowsMadePerGame) : (games > 0 && stat.outArcThrowsMade != null ? Number((stat.outArcThrowsMade / games).toFixed(1)) : 0));
+      const ftPct = stat.freeThrowsPercentage != null ? Number(stat.freeThrowsPercentage) : null;
+
+      return {
+        seasonId: rawSeasonId,
+        seasonName,
+        teamName,
+        games,
+        pointsPerGame: ppg,
+        twoMadePerGame: twoMade,
+        threeMadePerGame: threeMade,
+        freeThrowsPercentage: ftPct
+      };
+    });
+  }
+
+  // Fallback to active season if history is still empty and player has games
+  if (history.length === 0 && Number(s.games ?? s.gp ?? 0) > 0) {
+    history = [
+      {
+        seasonId: '14544',
+        seasonName: '2025/2026',
+        teamName: (p.team?.name || item.teamName || '—').trim(),
+        games: Number(s.games ?? s.gp ?? 0),
+        pointsPerGame: Number(s.pointsPerGame ?? s.pointsAVG ?? s.ppg ?? 0),
+        twoMadePerGame: Number(s.inArcThrowsAVG ?? s.inArcThrowsMadeAVG ?? 0),
+        threeMadePerGame: Number(s.outArcThrowsAVG ?? s.outArcThrowsMadeAVG ?? 0),
+        freeThrowsPercentage: s.freeThrowsPercentage != null ? Number(s.freeThrowsPercentage) : null
+      }
+    ];
+  }
 
   return {
     fid: p.fid || `p_${idx}`,
@@ -466,9 +546,11 @@ function normalizeLineupItem(item, idx) {
     uniquePlayer: {
       id: uniquePlayer?.id || null,
       stats: upStats,
-      seasonStats: seasonStats
+      players: playersList,
+      seasonStats: rawSeasonStats,
+      history: history
     },
-    history: seasonStats,
+    history: history,
     games: Number(s.games ?? s.gp ?? 0),
     pointsAVG: Number(s.pointsPerGame ?? s.pointsAVG ?? s.ppg ?? 0),
     foulsAVG: Number(s.foulsAVG ?? s.fouls ?? 0),
@@ -564,13 +646,18 @@ export const DICTIONARY = {
     modalFt: "TIRI LIBERI",
     modalMadePerGame: "a partita",
     // Career history / Statistiche Totale
+    continuityBadge: "Confermati dal 24/25: {pct}%",
+    statContinuity: "CONTINUITÀ 24/25",
+    colSeason: "STAGIONE",
+    col2pm: "2PT/P",
+    col3pm: "3PT/P",
+    colFtPct: "%TL",
+    historyTableTitle: "CARRIERA / STORICO FIP",
     historyTitle: "CARRIERA",
-    historySeason: "STAGIONE",
-    historyGp: "P",
+    historySeason: "STAGIONI",
     historyMin: "MIN",
     historyPts: "PT",
     historyFt: "TL",
-    historyFtPct: "%TL",
     history2p: "2PT",
     history3p: "3PT",
     historyFouls: "FF",
@@ -663,13 +750,18 @@ export const DICTIONARY = {
     modalFt: "FREE THROWS",
     modalMadePerGame: "made/G",
     // Career history / Statistiche Totale
+    continuityBadge: "Core Retained from 24/25: {pct}%",
+    statContinuity: "CORE CONTINUITY",
+    colSeason: "SEASON",
+    col2pm: "2PM/G",
+    col3pm: "3PM/G",
+    colFtPct: "FT%",
+    historyTableTitle: "CAREER / FIP HISTORY",
     historyTitle: "CAREER",
-    historySeason: "SEASON",
-    historyGp: "P",
+    historySeason: "SEASONS",
     historyMin: "MIN",
     historyPts: "PT",
     historyFt: "TL",
-    historyFtPct: "%TL",
     history2p: "2PT",
     history3p: "3PT",
     historyFouls: "FF",
@@ -879,6 +971,30 @@ export default function LeagueHub({ showToast }) {
   const currentRoster = useMemo(() => {
     return rawLineups.map((item, idx) => normalizeLineupItem(item, idx));
   }, [rawLineups]);
+
+  // Roster Continuity (core retained from 2024/2025)
+  const continuityPct = useMemo(() => {
+    if (currentTeamStanding?.continuityPct != null) {
+      return Number(currentTeamStanding.continuityPct);
+    }
+    if (selectedTeamFid && rosters && rosters[selectedTeamFid]?.continuityPct != null) {
+      return Number(rosters[selectedTeamFid].continuityPct);
+    }
+    if (Array.isArray(currentRoster) && currentRoster.length > 0) {
+      const currentTeamName = currentTeamStanding?.name || '';
+      let retained = 0;
+      for (const player of currentRoster) {
+        const history = player.history || player.uniquePlayer?.history || [];
+        const prevSeason = history.find(h => {
+          const sName = String(h.seasonName || '');
+          return (sName.includes('2024') || sName === '2024/2025') && isSameTeam(h.teamName, currentTeamName);
+        });
+        if (prevSeason) retained++;
+      }
+      return Math.round((retained / currentRoster.length) * 100);
+    }
+    return 65;
+  }, [currentTeamStanding, selectedTeamFid, rosters, currentRoster]);
 
   // -------------------------------------------------------------------------
   // Dynamic Tactical Alerts for Team Detail View
@@ -1360,6 +1476,12 @@ export default function LeagueHub({ showToast }) {
                       <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
                         {t.division}
                       </span>
+                      {continuityPct != null && (
+                        <span className="text-[10px] bg-emerald-500/15 text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+                          <Users className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>{(t.continuityBadge || 'Core Retained from 24/25: {pct}%').replace('{pct}', continuityPct)}</span>
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-400 font-medium">
                       {t.scoutProfileSubtitle} • {currentRoster.length} {t.trackedPlayers}
@@ -1383,7 +1505,7 @@ export default function LeagueHub({ showToast }) {
                 </div>
 
                 {/* Team Stats Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-slate-800/80">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mt-4 pt-4 border-t border-slate-800/80">
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
                       {t.statRecord}
@@ -1428,6 +1550,16 @@ export default function LeagueHub({ showToast }) {
                     </span>
                     <span className="font-mono text-xl font-black text-amber-400">
                       {currentRoster.length} {t.playersCount}
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 col-span-2 sm:col-span-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+                      {t.statContinuity}
+                    </span>
+                    <span className="font-mono text-xl font-black text-emerald-400 flex items-center gap-1.5">
+                      <Users className="w-4 h-4 text-emerald-400" />
+                      {continuityPct}%
                     </span>
                   </div>
                 </div>
@@ -1801,168 +1933,120 @@ export default function LeagueHub({ showToast }) {
               </div>
             </div>
 
-            {/* CARRIERA Data Table modeled after FIP mobile app */}
+            {/* CARRIERA / HISTORY Data Table */}
             {(() => {
               const up = selectedPlayer.uniquePlayer || {};
-              const upStats = up.stats || (selectedPlayer.games > 0 ? {
-                games: selectedPlayer.games,
-                timePlayed: Math.round(selectedPlayer.games * 20 * 60),
-                points: Math.round(selectedPlayer.games * selectedPlayer.pointsAVG),
-                pointsPerGame: selectedPlayer.pointsAVG,
-                freeThrowsMade: 0,
-                freeThrowsPercentage: selectedPlayer.ftPct,
-                inArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.twoMadeAVG),
-                outArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.threeMadeAVG),
-                fouls: Math.round(selectedPlayer.games * selectedPlayer.foulsAVG),
-                plusMinus: Math.round(selectedPlayer.games * selectedPlayer.plusMinusAVG)
-              } : null);
+              let historyList = [];
 
-              const seasonStatsList = Array.isArray(up.seasonStats) ? up.seasonStats : [];
+              if (Array.isArray(selectedPlayer.history) && selectedPlayer.history.length > 0) {
+                historyList = selectedPlayer.history;
+              } else if (Array.isArray(up.history) && up.history.length > 0) {
+                historyList = up.history;
+              } else if (Array.isArray(up.seasonStats) && up.seasonStats.length > 0) {
+                const playersList = Array.isArray(up.players) ? up.players : [];
+                historyList = up.seasonStats.map(stat => {
+                  const rawId = stat.seasonId != null ? String(stat.seasonId) : '';
+                  const matched = playersList.find(pl => String(pl.season?.id) === rawId);
+                  const seasonName = matched?.season?.name || stat.seasonName || rawId || '—';
+                  const teamName = (matched?.team?.name || stat.teamName || selectedPlayer.teamName || currentTeamStanding?.name || '—').trim();
+                  const games = Number(stat.games || 0);
+                  const pointsPerGame = stat.pointsPerGame != null 
+                    ? Number(stat.pointsPerGame) 
+                    : (games > 0 && stat.points != null ? Number((stat.points / games).toFixed(1)) : 0);
+                  const twoMadePerGame = stat.twoMadePerGame != null 
+                    ? Number(stat.twoMadePerGame) 
+                    : (stat.inArcThrowsMadePerGame != null ? Number(stat.inArcThrowsMadePerGame) : (games > 0 && stat.inArcThrowsMade != null ? Number((stat.inArcThrowsMade / games).toFixed(1)) : 0));
+                  const threeMadePerGame = stat.threeMadePerGame != null 
+                    ? Number(stat.threeMadePerGame) 
+                    : (stat.outArcThrowsMadePerGame != null ? Number(stat.outArcThrowsMadePerGame) : (games > 0 && stat.outArcThrowsMade != null ? Number((stat.outArcThrowsMade / games).toFixed(1)) : 0));
+                  const freeThrowsPercentage = stat.freeThrowsPercentage != null ? Number(stat.freeThrowsPercentage) : null;
+                  return {
+                    seasonId: rawId,
+                    seasonName,
+                    teamName,
+                    games,
+                    pointsPerGame,
+                    twoMadePerGame,
+                    threeMadePerGame,
+                    freeThrowsPercentage
+                  };
+                });
+              }
+
+              // Fallback to active season if empty and player has games
+              if (historyList.length === 0 && selectedPlayer.games > 0) {
+                historyList = [
+                  {
+                    seasonId: '14544',
+                    seasonName: '2025/2026',
+                    teamName: (selectedPlayer.teamName || currentTeamStanding?.name || '—').trim(),
+                    games: selectedPlayer.games,
+                    pointsPerGame: selectedPlayer.pointsAVG,
+                    twoMadePerGame: selectedPlayer.twoMadeAVG,
+                    threeMadePerGame: selectedPlayer.threeMadeAVG,
+                    freeThrowsPercentage: selectedPlayer.ftPct
+                  }
+                ];
+              }
 
               return (
                 <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
                   <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
                     <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider flex items-center gap-1.5">
                       <FileText className="w-3.5 h-3.5 text-amber-400" />
-                      {t.historyTitle || 'CARRIERA'}
+                      {t.historyTableTitle || 'CARRIERA / HISTORY'}
                     </span>
-                    {seasonStatsList.length > 0 && (
+                    {historyList.length > 0 && (
                       <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                        {seasonStatsList.length} {t.historySeason || 'STAGIONI'}
+                        {historyList.length} {t.historySeason || 'STAGIONI'}
                       </span>
                     )}
                   </div>
 
-                  {upStats || seasonStatsList.length > 0 ? (
+                  {historyList.length > 0 ? (
                     <div className="overflow-x-auto -mx-1 sm:mx-0">
-                      <table className="w-full text-left text-xs border-collapse font-sans min-w-[520px]">
+                      <table className="w-full text-left text-xs border-collapse font-sans min-w-[500px]">
                         <thead>
                           <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                            <th className="p-2 text-slate-300 font-bold">{t.historyTitle || 'CARRIERA'}</th>
-                            <th className="p-2 text-center" title="Partite Giocate">{t.historyGp || 'P'}</th>
-                            <th className="p-2 text-center" title="Minuti">{t.historyMin || 'MIN'}</th>
-                            <th className="p-2 text-center" title="Punti">{t.historyPts || 'PT'}</th>
-                            <th className="p-2 text-center" title="Tiri Liberi Segnati">{t.historyFt || 'TL'}</th>
-                            <th className="p-2 text-center" title="Percentuale Tiri Liberi">{t.historyFtPct || '%TL'}</th>
-                            <th className="p-2 text-center" title="Tiri da 2">{t.history2p || '2PT'}</th>
-                            <th className="p-2 text-center" title="Tiri da 3">{t.history3p || '3PT'}</th>
-                            <th className="p-2 text-center" title="Falli">{t.historyFouls || 'FF'}</th>
-                            <th className="p-2 text-center" title="Plus/Minus">{t.historyPlusMinus || '+/-'}</th>
+                            <th className="p-2.5 text-slate-300 font-bold">{t.colSeason || 'Season'}</th>
+                            <th className="p-2.5 text-slate-300 font-bold">{t.colTeam || 'Team'}</th>
+                            <th className="p-2.5 text-center" title="Games Played">{t.colGp || 'GP'}</th>
+                            <th className="p-2.5 text-center" title="Points Per Game">{t.colPpg || 'PTS/G'}</th>
+                            <th className="p-2.5 text-center" title="2-Pointers Made Per Game">{t.col2pm || '2PM/G'}</th>
+                            <th className="p-2.5 text-center" title="3-Pointers Made Per Game">{t.col3pm || '3PM/G'}</th>
+                            <th className="p-2.5 text-center" title="Free Throw Percentage">{t.colFtPct || 'FT%'}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
-                          {/* Row 1: MED (Averages across whole career using uniquePlayer.stats) */}
-                          {upStats && (
-                            <tr className="bg-slate-900/40 hover:bg-slate-900/70 transition-colors">
-                              <td className="p-2 font-black text-amber-400 text-xs">
-                                {t.historyMed || 'MED'}
-                              </td>
-                              <td className="p-2 text-center text-slate-500">
-                                —
-                              </td>
-                              <td className="p-2 text-center text-slate-300">
-                                {formatMedMin(upStats)}
-                              </td>
-                              <td className="p-2 text-center font-black text-rose-400">
-                                {upStats.pointsPerGame != null ? Number(upStats.pointsPerGame).toFixed(1) : formatMedVal(upStats.points, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center text-emerald-400">
-                                {formatMedVal(upStats.freeThrowsMade, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center text-emerald-400 font-bold">
-                                {formatFtPct(upStats.freeThrowsPercentage)}
-                              </td>
-                              <td className="p-2 text-center text-sky-400">
-                                {formatMedVal(upStats.inArcThrowsMade, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center text-amber-300">
-                                {formatMedVal(upStats.outArcThrowsMade, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center text-slate-300">
-                                {formatMedVal(upStats.fouls, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center font-semibold">
-                                {formatMedPlusMinus(upStats)}
-                              </td>
-                            </tr>
-                          )}
-
-                          {/* Row 2: Totale (Absolute career totals using uniquePlayer.stats) */}
-                          {upStats && (
-                            <tr className="bg-slate-900/70 font-semibold hover:bg-slate-900/90 transition-colors border-b border-slate-800">
-                              <td className="p-2 font-black text-slate-200 text-xs">
-                                {t.historyTotale || 'Totale'}
-                              </td>
-                              <td className="p-2 text-center text-slate-200">
-                                {upStats.games ?? 0}
-                              </td>
-                              <td className="p-2 text-center text-slate-300">
-                                {formatTotMin(upStats.timePlayed, upStats.games)}
-                              </td>
-                              <td className="p-2 text-center font-black text-rose-400">
-                                {upStats.points != null ? upStats.points : Math.round((upStats.games || 0) * (upStats.pointsPerGame || 0))}
-                              </td>
-                              <td className="p-2 text-center text-emerald-400">
-                                {upStats.freeThrowsMade ?? 0}
-                              </td>
-                              <td className="p-2 text-center text-emerald-400 font-bold">
-                                {formatFtPct(upStats.freeThrowsPercentage)}
-                              </td>
-                              <td className="p-2 text-center text-sky-400">
-                                {upStats.inArcThrowsMade ?? 0}
-                              </td>
-                              <td className="p-2 text-center text-amber-300">
-                                {upStats.outArcThrowsMade ?? 0}
-                              </td>
-                              <td className="p-2 text-center text-slate-300">
-                                {upStats.fouls ?? 0}
-                              </td>
-                              <td className="p-2 text-center font-semibold">
-                                {formatTotPlusMinus(upStats.plusMinus)}
-                              </td>
-                            </tr>
-                          )}
-
-                          {/* Dynamic Season Rows: Map through uniquePlayer.seasonStats using seasonName */}
-                          {seasonStatsList.map((season, sIdx) => {
-                            const sGames = Number(season.games || 0);
-                            const sPoints = season.points != null 
-                              ? season.points 
-                              : (season.pointsPerGame != null && sGames > 0 ? Math.round(season.pointsPerGame * sGames) : 0);
-                            const sFtPct = season.freeThrowsPercentage != null ? season.freeThrowsPercentage : null;
-                            const rowLabel = season.seasonName || season.seasonId || `—`;
+                          {historyList.map((row, rIdx) => {
+                            const sGames = Number(row.games ?? 0);
+                            const sPpg = row.pointsPerGame != null ? Number(row.pointsPerGame).toFixed(1) : '0.0';
+                            const s2pm = row.twoMadePerGame != null ? Number(row.twoMadePerGame).toFixed(1) : '0.0';
+                            const s3pm = row.threeMadePerGame != null ? Number(row.threeMadePerGame).toFixed(1) : '0.0';
+                            const sFtPct = row.freeThrowsPercentage != null ? `${Math.round(Number(row.freeThrowsPercentage))}%` : '—';
 
                             return (
-                              <tr key={sIdx} className="hover:bg-slate-900/40 transition-colors">
-                                <td className="p-2 font-bold text-slate-300 text-xs">
-                                  {rowLabel}
+                              <tr key={rIdx} className="hover:bg-slate-900/50 transition-colors">
+                                <td className="p-2.5 font-bold text-amber-400 text-xs font-sans whitespace-nowrap">
+                                  {row.seasonName || row.seasonId || '—'}
                                 </td>
-                                <td className="p-2 text-center text-slate-300">
+                                <td className="p-2.5 text-slate-200 font-semibold text-xs font-sans whitespace-nowrap">
+                                  {row.teamName || '—'}
+                                </td>
+                                <td className="p-2.5 text-center text-slate-300 font-mono">
                                   {sGames}
                                 </td>
-                                <td className="p-2 text-center text-slate-400">
-                                  {formatTotMin(season.timePlayed, sGames)}
+                                <td className="p-2.5 text-center font-black text-rose-400 font-mono">
+                                  {sPpg}
                                 </td>
-                                <td className="p-2 text-center font-bold text-rose-400">
-                                  {sPoints}
+                                <td className="p-2.5 text-center text-sky-400 font-mono">
+                                  {s2pm}
                                 </td>
-                                <td className="p-2 text-center text-emerald-400">
-                                  {season.freeThrowsMade ?? 0}
+                                <td className="p-2.5 text-center text-amber-300 font-mono">
+                                  {s3pm}
                                 </td>
-                                <td className="p-2 text-center text-emerald-400">
-                                  {formatFtPct(sFtPct)}
-                                </td>
-                                <td className="p-2 text-center text-sky-400">
-                                  {season.inArcThrowsMade ?? 0}
-                                </td>
-                                <td className="p-2 text-center text-amber-300">
-                                  {season.outArcThrowsMade ?? 0}
-                                </td>
-                                <td className="p-2 text-center text-slate-400">
-                                  {season.fouls ?? 0}
-                                </td>
-                                <td className="p-2 text-center font-medium">
-                                  {formatTotPlusMinus(season.plusMinus)}
+                                <td className="p-2.5 text-center text-emerald-400 font-bold font-mono">
+                                  {sFtPct}
                                 </td>
                               </tr>
                             );

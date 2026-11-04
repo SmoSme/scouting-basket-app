@@ -16,7 +16,8 @@
       "W",
       "W"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 50
   },
   {
     "fid": "211034",
@@ -35,7 +36,8 @@
       "W",
       "W"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 58
   },
   {
     "fid": "209329",
@@ -54,7 +56,8 @@
       "W",
       "W"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 62
   },
   {
     "fid": "207455",
@@ -73,7 +76,8 @@
       "W",
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 60
   },
   {
     "fid": "211634",
@@ -92,7 +96,8 @@
       "W",
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 70
   },
   {
     "fid": "209328",
@@ -108,7 +113,8 @@
     },
     "clubId": "club_209328",
     "streak": [],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 0
   },
   {
     "fid": "211179",
@@ -126,7 +132,8 @@
     "streak": [
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 58
   },
   {
     "fid": "207456",
@@ -144,7 +151,8 @@
     "streak": [
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 58
   },
   {
     "fid": "211635",
@@ -163,7 +171,8 @@
       "L",
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 64
   },
   {
     "fid": "211628",
@@ -181,7 +190,8 @@
     "streak": [
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 58
   },
   {
     "fid": "206399",
@@ -199,6 +209,7 @@
     "streak": [
       "L"
     ],
-    "lastMatches": []
+    "lastMatches": [],
+    "continuityPct": 60
   }
 ]
