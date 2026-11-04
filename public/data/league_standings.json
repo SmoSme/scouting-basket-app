@@ -1,170 +1,167 @@
 [
   {
-    "rank": 1,
-    "teamFid": "team_virtus_1960",
-    "team": {
-      "fid": "team_virtus_1960",
-      "name": "Virtus Roma 1960"
+    "fid": "211630",
+    "name": "GG MONTORO ",
+    "position": "1",
+    "logo": null,
+    "stats": {
+      "playedMatches": 2,
+      "wonMatches": 2,
+      "lostMatches": 0,
+      "pointsPerGame": 79.5,
+      "opponentsPointsPerGame": 64,
+      "__typename": "StandingStats"
     },
-    "name": "Virtus Roma 1960",
-    "points": 28,
-    "won": 14,
-    "lost": 4,
-    "played": 18,
-    "pointDiff": 8.2,
-    "streak": [
-      "W",
-      "W",
-      "L",
-      "W",
-      "W"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 2,
-    "teamFid": "team_carver",
-    "team": {
-      "fid": "team_carver",
-      "name": "Carver Cinecittà"
+    "fid": "211034",
+    "name": "PALL. BAIANO 1988",
+    "position": "2",
+    "logo": null,
+    "stats": {
+      "playedMatches": 2,
+      "wonMatches": 2,
+      "lostMatches": 0,
+      "pointsPerGame": 54.5,
+      "opponentsPointsPerGame": 46,
+      "__typename": "StandingStats"
     },
-    "name": "Carver Cinecittà",
-    "points": 26,
-    "won": 13,
-    "lost": 5,
-    "played": 18,
-    "pointDiff": 7.6,
-    "streak": [
-      "W",
-      "W",
-      "W",
-      "W",
-      "L"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 3,
-    "teamFid": "team_petriana",
-    "team": {
-      "fid": "team_petriana",
-      "name": "Petriana Basket"
+    "fid": "209329",
+    "name": "INDOMITA PAGANI ",
+    "position": "3",
+    "logo": null,
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 1,
+      "lostMatches": 0,
+      "pointsPerGame": 71,
+      "opponentsPointsPerGame": 60,
+      "__typename": "StandingStats"
     },
-    "name": "Petriana Basket",
-    "points": 24,
-    "won": 12,
-    "lost": 6,
-    "played": 18,
-    "pointDiff": 3.8,
-    "streak": [
-      "L",
-      "W",
-      "W",
-      "L",
-      "W"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 4,
-    "teamFid": "team_bba_academy",
-    "team": {
-      "fid": "team_bba_academy",
-      "name": "BBA - Basketball Academy"
+    "fid": "207455",
+    "name": "S.L.Z. BASKET SOLOFRA",
+    "position": "4",
+    "logo": null,
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 1,
+      "lostMatches": 0,
+      "pointsPerGame": 57,
+      "opponentsPointsPerGame": 51,
+      "__typename": "StandingStats"
     },
-    "name": "BBA - Basketball Academy",
-    "points": 22,
-    "won": 11,
-    "lost": 7,
-    "played": 18,
-    "pointDiff": 3.4,
-    "streak": [
-      "W",
-      "L",
-      "W",
-      "W",
-      "W"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 5,
-    "teamFid": "team_san_paolo",
-    "team": {
-      "fid": "team_san_paolo",
-      "name": "San Paolo Ostiense"
+    "fid": "209328",
+    "name": "TEKLA SCAFATI",
+    "position": "5",
+    "logo": null,
+    "stats": {
+      "playedMatches": 0,
+      "wonMatches": 0,
+      "lostMatches": 0,
+      "pointsPerGame": 0,
+      "opponentsPointsPerGame": 0,
+      "__typename": "StandingStats"
     },
-    "name": "San Paolo Ostiense",
-    "points": 20,
-    "won": 10,
-    "lost": 8,
-    "played": 18,
-    "pointDiff": 0.4,
-    "streak": [
-      "W",
-      "L",
-      "L",
-      "W",
-      "L"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 6,
-    "teamFid": "team_alfa_omega",
-    "team": {
-      "fid": "team_alfa_omega",
-      "name": "Alfa Omega Ostia"
+    "fid": "211179",
+    "name": "G.S. MINORI PALLACANESTRO",
+    "position": "6",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 0,
+      "wonMatches": 0,
+      "lostMatches": 0,
+      "pointsPerGame": 0,
+      "opponentsPointsPerGame": 0,
+      "__typename": "StandingStats"
     },
-    "name": "Alfa Omega Ostia",
-    "points": 16,
-    "won": 8,
-    "lost": 10,
-    "played": 18,
-    "pointDiff": -3.2,
-    "streak": [
-      "L",
-      "L",
-      "W",
-      "L",
-      "W"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 7,
-    "teamFid": "team_vis_nova",
-    "team": {
-      "fid": "team_vis_nova",
-      "name": "Vis Nova Basket"
+    "fid": "211634",
+    "name": "BARONISSI BASKETBALL ACADEMY",
+    "position": "7",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 0,
+      "lostMatches": 1,
+      "pointsPerGame": 51,
+      "opponentsPointsPerGame": 57,
+      "__typename": "StandingStats"
     },
-    "name": "Vis Nova Basket",
-    "points": 12,
-    "won": 6,
-    "lost": 12,
-    "played": 18,
-    "pointDiff": -7.6,
-    "streak": [
-      "L",
-      "L",
-      "L",
-      "W",
-      "L"
-    ]
+    "__typename": "Standing"
   },
   {
-    "rank": 8,
-    "teamFid": "team_frascati",
-    "team": {
-      "fid": "team_frascati",
-      "name": "Basket Frascati"
+    "fid": "207456",
+    "name": "PONTE BASKET",
+    "position": "8",
+    "logo": null,
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 0,
+      "lostMatches": 1,
+      "pointsPerGame": 70,
+      "opponentsPointsPerGame": 79,
+      "__typename": "StandingStats"
     },
-    "name": "Basket Frascati",
-    "points": 8,
-    "won": 4,
-    "lost": 14,
-    "played": 18,
-    "pointDiff": -12.6,
-    "streak": [
-      "L",
-      "L",
-      "L",
-      "L",
-      "W"
-    ]
+    "__typename": "Standing"
+  },
+  {
+    "fid": "211635",
+    "name": "CITTADELLA DELLO SPORT",
+    "position": "9",
+    "logo": null,
+    "stats": {
+      "playedMatches": 2,
+      "wonMatches": 0,
+      "lostMatches": 2,
+      "pointsPerGame": 51,
+      "opponentsPointsPerGame": 58.5,
+      "__typename": "StandingStats"
+    },
+    "__typename": "Standing"
+  },
+  {
+    "fid": "211628",
+    "name": "VISION SPORTS",
+    "position": "10",
+    "logo": null,
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 0,
+      "lostMatches": 1,
+      "pointsPerGame": 50,
+      "opponentsPointsPerGame": 63,
+      "__typename": "StandingStats"
+    },
+    "__typename": "Standing"
+  },
+  {
+    "fid": "206399",
+    "name": "EZ CRYSTAL BK CAPACCIO PAESTUM",
+    "position": "11",
+    "logo": null,
+    "stats": {
+      "playedMatches": 1,
+      "wonMatches": 0,
+      "lostMatches": 1,
+      "pointsPerGame": 58,
+      "opponentsPointsPerGame": 80,
+      "__typename": "StandingStats"
+    },
+    "__typename": "Standing"
   }
 ]

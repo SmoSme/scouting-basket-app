@@ -2,111 +2,134 @@
  * Vercel Serverless Function: FIP Stats GraphQL Proxy (/api/sync-fip)
  * 
  * Executes intercepted mobile GraphQL queries from the cloud:
- * 1. StandingsByTeam ($competitionFid, $teamFid)
- * 2. competitionLineupStats ($competitionFid, $teamFid) for each opponent team
- * 
- * Injects required mobile anti-bot & versioning headers to prevent 500 errors.
+ * GetStandings ($projectKey, $provider, $groupId)
  */
+import fs from 'fs';
+import path from 'path';
 
 // =========================================================================
 // BASELINE DATA (Divisione Regionale 2 - Girone F)
 // =========================================================================
 const BASELINE_STANDINGS = [
   {
-    rank: 1,
-    teamFid: "team_virtus_1960",
-    team: { fid: "team_virtus_1960", name: "Virtus Roma 1960" },
+    fid: "team_virtus_1960",
     name: "Virtus Roma 1960",
-    points: 28,
-    won: 14,
-    lost: 4,
-    played: 18,
-    pointDiff: 8.2,
-    streak: ["W", "W", "L", "W", "W"]
+    position: 1,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 14,
+      lostMatches: 4,
+      pointsPerGame: 76.5,
+      opponentsPointsPerGame: 68.3,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 2,
-    teamFid: "team_carver",
-    team: { fid: "team_carver", name: "Carver Cinecittà" },
+    fid: "team_carver",
     name: "Carver Cinecittà",
-    points: 26,
-    won: 13,
-    lost: 5,
-    played: 18,
-    pointDiff: 7.6,
-    streak: ["W", "W", "W", "W", "L"]
+    position: 2,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 13,
+      lostMatches: 5,
+      pointsPerGame: 75.2,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 3,
-    teamFid: "team_petriana",
-    team: { fid: "team_petriana", name: "Petriana Basket" },
+    fid: "team_petriana",
     name: "Petriana Basket",
-    points: 24,
-    won: 12,
-    lost: 6,
-    played: 18,
-    pointDiff: 3.8,
-    streak: ["L", "W", "W", "L", "W"]
+    position: 3,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 12,
+      lostMatches: 6,
+      pointsPerGame: 71.4,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 4,
-    teamFid: "team_bba_academy",
-    team: { fid: "team_bba_academy", name: "BBA - Basketball Academy" },
+    fid: "team_bba_academy",
     name: "BBA - Basketball Academy",
-    points: 22,
-    won: 11,
-    lost: 7,
-    played: 18,
-    pointDiff: 3.4,
-    streak: ["W", "L", "W", "W", "W"]
+    position: 4,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 11,
+      lostMatches: 7,
+      pointsPerGame: 72.8,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 5,
-    teamFid: "team_san_paolo",
-    team: { fid: "team_san_paolo", name: "San Paolo Ostiense" },
+    fid: "team_san_paolo",
     name: "San Paolo Ostiense",
-    points: 20,
-    won: 10,
-    lost: 8,
-    played: 18,
-    pointDiff: 0.4,
-    streak: ["W", "L", "L", "W", "L"]
+    position: 5,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 10,
+      lostMatches: 8,
+      pointsPerGame: 68.9,
+      opponentsPointsPerGame: 68.5,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 6,
-    teamFid: "team_alfa_omega",
-    team: { fid: "team_alfa_omega", name: "Alfa Omega Ostia" },
+    fid: "team_alfa_omega",
     name: "Alfa Omega Ostia",
-    points: 16,
-    won: 8,
-    lost: 10,
-    played: 18,
-    pointDiff: -3.2,
-    streak: ["L", "L", "W", "L", "W"]
+    position: 6,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 8,
+      lostMatches: 10,
+      pointsPerGame: 66.2,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 7,
-    teamFid: "team_vis_nova",
-    team: { fid: "team_vis_nova", name: "Vis Nova Basket" },
+    fid: "team_vis_nova",
     name: "Vis Nova Basket",
-    points: 12,
-    won: 6,
-    lost: 12,
-    played: 18,
-    pointDiff: -7.6,
-    streak: ["L", "L", "L", "W", "L"]
+    position: 7,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 6,
+      lostMatches: 12,
+      pointsPerGame: 64.0,
+      opponentsPointsPerGame: 71.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 8,
-    teamFid: "team_frascati",
-    team: { fid: "team_frascati", name: "Basket Frascati" },
+    fid: "team_frascati",
     name: "Basket Frascati",
-    points: 8,
-    won: 4,
-    lost: 14,
-    played: 18,
-    pointDiff: -12.6,
-    streak: ["L", "L", "L", "L", "W"]
+    position: 8,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 4,
+      lostMatches: 14,
+      pointsPerGame: 60.2,
+      opponentsPointsPerGame: 72.8,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   }
 ];
 
@@ -352,67 +375,23 @@ const BASELINE_ROSTERS = {
 // =========================================================================
 // GRAPHQL QUERIES
 // =========================================================================
-const QUERY_STANDINGS_BY_TEAM = `
-query StandingsByTeam($competitionFid: String!, $teamFid: String!) {
-  standingsByTeam(competitionFid: $competitionFid, teamFid: $teamFid) {
-    competitionFid
-    standings {
-      rank
-      points
-      won
-      lost
-      played
-      pointDiff
-      streak
-      team {
-        fid
-        name
-        shortName
-      }
+const QUERY_GET_STANDINGS = `query GetStandings($projectKey: String, $provider: String, $groupId: String) {
+  standing(projectKey: $projectKey, provider: $provider, groupId: $groupId) {
+    fid
+    name
+    position
+    logo
+    stats {
+      playedMatches
+      wonMatches
+      lostMatches
+      pointsPerGame
+      opponentsPointsPerGame
+      __typename
     }
+    __typename
   }
-}
-`;
-
-const QUERY_LINEUP_STATS = `
-query competitionLineupStats($competitionFid: String!, $teamFid: String!) {
-  competitionLineupStats(competitionFid: $competitionFid, teamFid: $teamFid) {
-    team {
-      fid
-      name
-      competitionFid
-      competitionName
-      season
-    }
-    lineups {
-      player {
-        fid
-        name
-        number
-        position
-      }
-      players {
-        fid
-        name
-        number
-      }
-      stats {
-        games
-        pointsAVG
-        foulsAVG
-        inArcThrowsPercentage
-        outArcThrowsPercentage
-        inArcThrowsAVG
-        outArcThrowsAVG
-        freeThrowsPercentage
-        plusMinusAVG
-        reboundsAVG
-        assistsAVG
-      }
-    }
-  }
-}
-`;
+}`;
 
 /**
  * Generic GraphQL Query Executor injecting exact raw Proxyman mobile headers
@@ -486,90 +465,48 @@ export default async function handler(req, res) {
   };
 
   const endpoint = process.env.FIP_GRAPHQL_ENDPOINT || 'https://internal.nbn23.app/graphql';
-  const competitionId = process.env.FIP_COMPETITION_ID || 'comp_dr2_girf';
-  const bbaTeamId = process.env.BBA_TEAM_ID || 'team_bba_academy';
+  const operationName = "GetStandings";
+  const variables = {
+    provider: process.env.FIP_PROVIDER || "fhoster",
+    projectKey: process.env.FIP_PROJECT_KEY || "fip_rcm",
+    groupId: process.env.FIP_GROUP_ID || "85512"
+  };
+  const query = QUERY_GET_STANDINGS;
 
   try {
-    console.log(`[api/sync-fip] Executing StandingsByTeam query for competition: ${competitionId}`);
+    console.log(`[api/sync-fip] Executing GetStandings query for group: ${variables.groupId}`);
     
-    // 1. Fetch Standings
-    const standingsData = await executeGraphQL(
+    const jsonResponse = await executeGraphQL(
       endpoint,
       headers,
-      'StandingsByTeam',
-      QUERY_STANDINGS_BY_TEAM,
-      {
-        competitionFid: competitionId,
-        teamFid: bbaTeamId
-      }
+      operationName,
+      query,
+      variables
     );
 
-    const rawStandings = standingsData?.standingsByTeam?.standings || 
-      standingsData?.standings || 
-      standingsData?.classification || [];
+    const standingsArray = jsonResponse?.data?.standing || jsonResponse?.standing;
 
-    if (!Array.isArray(rawStandings) || rawStandings.length === 0) {
+    if (!Array.isArray(standingsArray) || standingsArray.length === 0) {
       throw new Error('Received empty standings array from FIP GraphQL backend');
     }
 
-    const formattedStandings = rawStandings.map((st, idx) => {
-      const teamFid = st.team?.fid || st.teamFid || st.fid || `team_${idx + 1}`;
-      const name = st.team?.name || st.name || `Team ${idx + 1}`;
-      const won = st.won ?? st.w ?? 0;
-      const lost = st.lost ?? st.l ?? 0;
-      const points = st.points ?? (won * 2);
-      const played = st.played ?? (won + lost);
-      const pointDiff = st.pointDiff ?? st.diff ?? 0;
-      const streak = Array.isArray(st.streak) ? st.streak : ["W"];
-
-      return {
-        rank: st.rank ?? (idx + 1),
-        teamFid: String(teamFid),
-        team: { fid: String(teamFid), name },
-        name,
-        points,
-        won,
-        lost,
-        played,
-        pointDiff,
-        streak
-      };
-    });
-
-    // 2. Fetch Opponent Lineups
-    console.log(`[api/sync-fip] Fetching lineup stats for ${formattedStandings.length} teams...`);
-    const rostersDictionary = {};
-
-    for (const teamItem of formattedStandings) {
-      const tFid = teamItem.teamFid;
-      if (tFid === bbaTeamId) continue; // Skip BBA team
-
-      try {
-        const lineupData = await executeGraphQL(
-          endpoint,
-          headers,
-          'competitionLineupStats',
-          QUERY_LINEUP_STATS,
-          {
-            competitionFid: competitionId,
-            teamFid: tFid
-          }
+    // Try saving directly to public/data/league_standings.json if accessible locally
+    try {
+      const publicDataDir = path.join(process.cwd(), 'public', 'data');
+      if (fs.existsSync(publicDataDir)) {
+        fs.writeFileSync(
+          path.join(publicDataDir, 'league_standings.json'),
+          JSON.stringify(standingsArray, null, 2),
+          'utf-8'
         );
-
-        const lineups = lineupData?.competitionLineupStats?.lineups || 
-          lineupData?.lineups || [];
-
-        rostersDictionary[tFid] = lineups;
-      } catch (lineupErr) {
-        console.warn(`[api/sync-fip] Could not fetch lineup for ${teamItem.name}:`, lineupErr.message);
-        rostersDictionary[tFid] = BASELINE_ROSTERS[tFid] || [];
       }
+    } catch (fsErr) {
+      // Non-fatal on serverless
     }
 
-    console.log('[api/sync-fip] Sync completed successfully.');
+    console.log(`[api/sync-fip] Standings sync completed successfully (${standingsArray.length} teams).`);
     return res.status(200).json({
-      standings: formattedStandings,
-      rosters: rostersDictionary,
+      standings: standingsArray,
       isFallback: false
     });
 
@@ -578,7 +515,6 @@ export default async function handler(req, res) {
     // Graceful error fallback
     return res.status(200).json({
       standings: BASELINE_STANDINGS,
-      rosters: BASELINE_ROSTERS,
       isFallback: true,
       error: err.message
     });

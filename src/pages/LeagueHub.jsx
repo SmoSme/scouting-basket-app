@@ -10,100 +10,124 @@ import {
 // =========================================================================
 export const DEFAULT_STANDINGS = [
   {
-    rank: 1,
-    teamFid: "team_virtus_1960",
-    team: { fid: "team_virtus_1960", name: "Virtus Roma 1960" },
+    fid: "team_virtus_1960",
     name: "Virtus Roma 1960",
-    points: 28,
-    won: 14,
-    lost: 4,
-    played: 18,
-    pointDiff: 8.2,
-    streak: ["W", "W", "L", "W", "W"]
+    position: 1,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 14,
+      lostMatches: 4,
+      pointsPerGame: 76.5,
+      opponentsPointsPerGame: 68.3,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 2,
-    teamFid: "team_carver",
-    team: { fid: "team_carver", name: "Carver Cinecittà" },
+    fid: "team_carver",
     name: "Carver Cinecittà",
-    points: 26,
-    won: 13,
-    lost: 5,
-    played: 18,
-    pointDiff: 7.6,
-    streak: ["W", "W", "W", "W", "L"]
+    position: 2,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 13,
+      lostMatches: 5,
+      pointsPerGame: 75.2,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 3,
-    teamFid: "team_petriana",
-    team: { fid: "team_petriana", name: "Petriana Basket" },
+    fid: "team_petriana",
     name: "Petriana Basket",
-    points: 24,
-    won: 12,
-    lost: 6,
-    played: 18,
-    pointDiff: 3.8,
-    streak: ["L", "W", "W", "L", "W"]
+    position: 3,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 12,
+      lostMatches: 6,
+      pointsPerGame: 71.4,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 4,
-    teamFid: "team_bba_academy",
-    team: { fid: "team_bba_academy", name: "BBA - Basketball Academy" },
+    fid: "team_bba_academy",
     name: "BBA - Basketball Academy",
-    points: 22,
-    won: 11,
-    lost: 7,
-    played: 18,
-    pointDiff: 3.4,
-    streak: ["W", "L", "W", "W", "W"]
+    position: 4,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 11,
+      lostMatches: 7,
+      pointsPerGame: 72.8,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 5,
-    teamFid: "team_san_paolo",
-    team: { fid: "team_san_paolo", name: "San Paolo Ostiense" },
+    fid: "team_san_paolo",
     name: "San Paolo Ostiense",
-    points: 20,
-    won: 10,
-    lost: 8,
-    played: 18,
-    pointDiff: 0.4,
-    streak: ["W", "L", "L", "W", "L"]
+    position: 5,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 10,
+      lostMatches: 8,
+      pointsPerGame: 68.9,
+      opponentsPointsPerGame: 68.5,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 6,
-    teamFid: "team_alfa_omega",
-    team: { fid: "team_alfa_omega", name: "Alfa Omega Ostia" },
+    fid: "team_alfa_omega",
     name: "Alfa Omega Ostia",
-    points: 16,
-    won: 8,
-    lost: 10,
-    played: 18,
-    pointDiff: -3.2,
-    streak: ["L", "L", "W", "L", "W"]
+    position: 6,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 8,
+      lostMatches: 10,
+      pointsPerGame: 66.2,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 7,
-    teamFid: "team_vis_nova",
-    team: { fid: "team_vis_nova", name: "Vis Nova Basket" },
+    fid: "team_vis_nova",
     name: "Vis Nova Basket",
-    points: 12,
-    won: 6,
-    lost: 12,
-    played: 18,
-    pointDiff: -7.6,
-    streak: ["L", "L", "L", "W", "L"]
+    position: 7,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 6,
+      lostMatches: 12,
+      pointsPerGame: 64.0,
+      opponentsPointsPerGame: 71.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 8,
-    teamFid: "team_frascati",
-    team: { fid: "team_frascati", name: "Basket Frascati" },
+    fid: "team_frascati",
     name: "Basket Frascati",
-    points: 8,
-    won: 4,
-    lost: 14,
-    played: 18,
-    pointDiff: -12.6,
-    streak: ["L", "L", "L", "L", "W"]
+    position: 8,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 4,
+      lostMatches: 14,
+      pointsPerGame: 60.2,
+      opponentsPointsPerGame: 72.8,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   }
 ];
 
@@ -407,34 +431,57 @@ export default function LeagueHub({ showToast }) {
   const [jsonInputText, setJsonInputText] = useState('');
 
   // -------------------------------------------------------------------------
-  // Fetch /api/sync-fip (Vercel Serverless Function & Cloud API)
+  // Fetch /data/league_standings.json directly & fallback to /api/sync-fip
   // -------------------------------------------------------------------------
   const fetchFipData = async (isManual = false) => {
     setIsSyncing(true);
     setFetchError(null);
     try {
-      const response = await fetch('/api/sync-fip', { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Sync API responded with HTTP ${response.status}`);
+      let standingsData = null;
+
+      // 1. Fetch /data/league_standings.json directly as requested
+      try {
+        const fileRes = await fetch('/data/league_standings.json', { cache: 'no-store' });
+        if (fileRes.ok) {
+          const json = await fileRes.json();
+          if (Array.isArray(json) && json.length > 0) {
+            standingsData = json;
+          }
+        }
+      } catch (fileErr) {
+        console.warn('[League Hub] /data/league_standings.json fetch note:', fileErr.message);
       }
 
-      const data = await response.json();
-      const standingsData = data.standings;
-      const rostersData = data.rosters || {};
+      // 2. If not found or if user clicked manual sync, call /api/sync-fip
+      if (!standingsData || isManual) {
+        try {
+          const apiRes = await fetch('/api/sync-fip', { cache: 'no-store' });
+          if (apiRes.ok) {
+            const apiData = await apiRes.json();
+            if (Array.isArray(apiData.standings) && apiData.standings.length > 0) {
+              standingsData = apiData.standings;
+            } else if (Array.isArray(apiData) && apiData.length > 0) {
+              standingsData = apiData;
+            }
+          }
+        } catch (apiErr) {
+          console.warn('[League Hub] API sync note:', apiErr.message);
+          if (!standingsData) throw apiErr;
+        }
+      }
 
       if (Array.isArray(standingsData) && standingsData.length > 0) {
         setStandings(standingsData);
-        setRosters(rostersData);
         try {
           localStorage.setItem('bba_fip_standings', JSON.stringify(standingsData));
-          localStorage.setItem('bba_fip_rosters', JSON.stringify(rostersData));
         } catch (e) {}
 
-        const sourceNote = data.isFallback ? ' (Sample Baseline)' : ' (Live Cloud)';
-        setStatusMsg(`✅ League stats synced${sourceNote}`);
-        if (showToast) showToast(`🏀 FIP Data Synced${sourceNote}`);
+        if (isManual) {
+          setStatusMsg('✅ Live FIP standings synced successfully');
+          if (showToast) showToast('🏀 Standings Loaded');
+        }
       } else {
-        throw new Error(data.error || 'Invalid data received from /api/sync-fip');
+        throw new Error('No valid standings data found in /data/league_standings.json');
       }
     } catch (err) {
       console.warn('[League Hub] Sync error:', err.message);
@@ -449,11 +496,7 @@ export default function LeagueHub({ showToast }) {
   };
 
   useEffect(() => {
-    if (!standings || standings.length === 0) {
-      fetchFipData(false);
-    } else {
-      setIsLoading(false);
-    }
+    fetchFipData(false);
   }, []);
 
   // Safe navigation handlers
@@ -488,7 +531,7 @@ export default function LeagueHub({ showToast }) {
   // Selected Team Info
   const currentTeamStanding = useMemo(() => {
     if (!selectedTeamFid || !standings) return null;
-    return standings.find(s => (s.teamFid || s.team?.fid || s.id) === selectedTeamFid) || null;
+    return standings.find(s => (s.fid || s.teamFid || s.id) === selectedTeamFid) || null;
   }, [selectedTeamFid, standings]);
 
   const rawLineups = useMemo(() => {
@@ -698,7 +741,9 @@ export default function LeagueHub({ showToast }) {
                       {standings[0]?.name || standings[0]?.team?.name || 'N/A'}
                     </span>
                     <span className="font-mono text-sm font-black text-amber-400">
-                      {standings[0]?.points ?? (standings[0]?.won * 2)} PTS
+                      {standings[0]?.stats?.wonMatches != null
+                        ? standings[0].stats.wonMatches * 2
+                        : (standings[0]?.points ?? ((standings[0]?.won ?? 0) * 2))} PTS
                     </span>
                   </div>
                 </div>
@@ -709,10 +754,16 @@ export default function LeagueHub({ showToast }) {
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-base font-black text-slate-100">
-                      {standings[0]?.won}W - {standings[0]?.lost}L
+                      {standings[0]?.stats
+                        ? `${standings[0].stats.wonMatches}W - ${standings[0].stats.lostMatches}L`
+                        : `${standings[0]?.won ?? 0}W - ${standings[0]?.lost ?? 0}L`}
                     </span>
                     <span className="font-mono text-sm font-black text-sky-400">
-                      {standings[0]?.played > 0 ? `${Math.round((standings[0].won / standings[0].played) * 100)}% WIN` : ''}
+                      {(() => {
+                        const won = standings[0]?.stats?.wonMatches ?? standings[0]?.won ?? 0;
+                        const played = standings[0]?.stats?.playedMatches ?? standings[0]?.played ?? 0;
+                        return played > 0 ? `${Math.round((won / played) * 100)}% WIN` : '';
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -722,12 +773,26 @@ export default function LeagueHub({ showToast }) {
                     TOP POINT DIFFERENTIAL
                   </span>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-base font-black text-slate-100">
-                      {standings.reduce((best, s) => (s.pointDiff > (best.pointDiff || -999) ? s : best), standings[0])?.name || 'N/A'}
-                    </span>
-                    <span className="font-mono text-sm font-black text-emerald-400">
-                      +{standings.reduce((best, s) => (s.pointDiff > (best.pointDiff || -999) ? s : best), standings[0])?.pointDiff || 0}
-                    </span>
+                    {(() => {
+                      const getDiff = (s) => {
+                        if (s?.stats?.pointsPerGame != null && s?.stats?.opponentsPointsPerGame != null) {
+                          return Number((s.stats.pointsPerGame - s.stats.opponentsPointsPerGame).toFixed(1));
+                        }
+                        return Number(s?.pointDiff ?? -999);
+                      };
+                      const topDiffTeam = standings.reduce((best, s) => (getDiff(s) > getDiff(best) ? s : best), standings[0]);
+                      const diffVal = getDiff(topDiffTeam);
+                      return (
+                        <>
+                          <span className="text-base font-black text-slate-100">
+                            {topDiffTeam?.name || 'N/A'}
+                          </span>
+                          <span className="font-mono text-sm font-black text-emerald-400">
+                            {diffVal > 0 ? `+${diffVal}` : diffVal}
+                          </span>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -765,31 +830,33 @@ export default function LeagueHub({ showToast }) {
                         <th className="p-3 w-12 text-center">RANK</th>
                         <th className="p-3">TEAM</th>
                         <th className="p-3 text-center">PTS (WON × 2)</th>
-                        <th className="p-3 text-center">W - L RECORD</th>
+                        <th className="p-3 text-center">W - L</th>
                         <th className="p-3 text-center">GP</th>
-                        <th className="p-3 text-center">WIN%</th>
                         <th className="p-3 text-center">DIFF</th>
-                        <th className="p-3 text-center">LAST 5</th>
                         <th className="p-3 text-right">SCOUT</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80">
-                      {filteredStandings.map((st, idx) => {
-                        const tFid = st.teamFid || st.team?.fid || st.id || `team_${idx + 1}`;
-                        const tName = st.name || st.team?.name || `Team #${idx + 1}`;
-                        const isBBA = tName.includes('BBA') || tFid === 'team_bba_academy';
-                        const rankNum = st.rank || (idx + 1);
+                      {filteredStandings.map((team, idx) => {
+                        const tFid = team.fid || team.teamFid || `team_${idx + 1}`;
+                        const tName = team.name || `Team #${idx + 1}`;
+                        const isBBA = tName.toLowerCase().includes('bba') || tFid === 'team_bba_academy';
+                        const rankNum = team.position ?? team.rank ?? (idx + 1);
                         const isPlayoff = rankNum <= 4;
                         const isPlayout = rankNum >= 7;
 
-                        const ptsVal = st.points ?? ((st.won ?? 0) * 2);
-                        const gpVal = st.played ?? ((st.won ?? 0) + (st.lost ?? 0));
-                        const winPct = gpVal > 0 ? Math.round(((st.won ?? 0) / gpVal) * 100) : 0;
+                        const won = team.stats?.wonMatches ?? team.won ?? 0;
+                        const lost = team.stats?.lostMatches ?? team.lost ?? 0;
+                        const gp = team.stats?.playedMatches ?? team.played ?? (won + lost);
+                        const pts = won * 2;
+                        const diff = (team.stats?.pointsPerGame != null && team.stats?.opponentsPointsPerGame != null)
+                          ? (team.stats.pointsPerGame - team.stats.opponentsPointsPerGame).toFixed(1)
+                          : (team.pointDiff != null ? Number(team.pointDiff).toFixed(1) : '0.0');
 
                         return (
                           <tr
                             key={tFid}
-                            onClick={() => handleSelectTeam(tFid)}
+                            onClick={() => handleSelectTeam(team.fid || tFid)}
                             className={`cursor-pointer transition-colors ${
                               isBBA 
                                 ? 'bg-sky-950/20 hover:bg-sky-900/30 border-l-2 border-sky-400' 
@@ -808,6 +875,9 @@ export default function LeagueHub({ showToast }) {
                               </span>
                             </td>
                             <td className="p-3 font-black text-slate-100 flex items-center gap-2">
+                              {team.logo && (
+                                <img src={team.logo} alt="" className="w-5 h-5 object-contain rounded-full flex-none" />
+                              )}
                               <span className="text-sm">{tName}</span>
                               {isBBA && (
                                 <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.2 rounded border border-sky-500/40">
@@ -816,44 +886,25 @@ export default function LeagueHub({ showToast }) {
                               )}
                             </td>
                             <td className="p-3 text-center font-mono font-black text-amber-400 text-sm">
-                              {ptsVal}
+                              {pts}
                             </td>
                             <td className="p-3 text-center font-mono font-bold text-slate-200">
-                              <span className="text-emerald-400">{st.won ?? 0}</span>
+                              <span className="text-emerald-400">{won}</span>
                               <span className="text-slate-500 mx-1">-</span>
-                              <span className="text-rose-400">{st.lost ?? 0}</span>
+                              <span className="text-rose-400">{lost}</span>
                             </td>
                             <td className="p-3 text-center font-mono text-slate-400">
-                              {gpVal}
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold text-slate-300">
-                              {gpVal > 0 ? `${winPct}%` : '-'}
+                              {gp}
                             </td>
                             <td className="p-3 text-center font-mono font-black">
-                              <span className={(st.pointDiff ?? 0) > 0 ? 'text-emerald-400' : ((st.pointDiff ?? 0) < 0 ? 'text-rose-400' : 'text-slate-400')}>
-                                {(st.pointDiff ?? 0) > 0 ? `+${st.pointDiff}` : (st.pointDiff ?? 0)}
+                              <span className={Number(diff) > 0 ? 'text-emerald-400' : (Number(diff) < 0 ? 'text-rose-400' : 'text-slate-400')}>
+                                {Number(diff) > 0 ? `+${diff}` : diff}
                               </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                {Array.isArray(st.streak) && st.streak.map((s, i) => (
-                                  <span
-                                    key={i}
-                                    className={`w-4 h-4 rounded text-[9px] font-mono font-black flex items-center justify-center ${
-                                      s === 'W'
-                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                                    }`}
-                                  >
-                                    {s}
-                                  </span>
-                                ))}
-                              </div>
                             </td>
                             <td className="p-3 text-right">
                               <button
                                 type="button"
-                                onClick={(e) => { e.stopPropagation(); handleSelectTeam(tFid); }}
+                                onClick={(e) => { e.stopPropagation(); handleSelectTeam(team.fid || tFid); }}
                                 className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1 shadow-sm active:scale-95"
                               >
                                 <span>SCOUT</span>
@@ -895,11 +946,13 @@ export default function LeagueHub({ showToast }) {
                     className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold p-2 rounded-xl focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     {standings.map(s => {
-                      const fid = s.teamFid || s.team?.fid || s.id;
+                      const fid = s.fid || s.teamFid || s.id;
                       const name = s.name || s.team?.name;
+                      const pts = s.stats?.wonMatches != null ? s.stats.wonMatches * 2 : (s.points ?? ((s.won ?? 0) * 2));
+                      const pos = s.position ?? s.rank ?? '-';
                       return (
                         <option key={fid} value={fid} className="bg-slate-900 text-slate-100">
-                          #{s.rank || '-'} {name} ({s.points ?? (s.won * 2)} pts)
+                          #{pos} {name} ({pts} pts)
                         </option>
                       );
                     })}
@@ -913,7 +966,7 @@ export default function LeagueHub({ showToast }) {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h2 className="text-xl sm:text-2xl font-black text-rose-400 uppercase tracking-wider">
-                        {currentTeamStanding?.name || currentTeamStanding?.team?.name || selectedTeamFid}
+                        {currentTeamStanding?.name || selectedTeamFid}
                       </h2>
                       <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
                         Divisione Regionale 2
@@ -930,9 +983,11 @@ export default function LeagueHub({ showToast }) {
                       CHAMPIONSHIP RANK
                     </span>
                     <div className="font-mono text-xl font-black text-amber-400">
-                      {currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2)} PTS
+                      {currentTeamStanding?.stats?.wonMatches != null 
+                        ? currentTeamStanding.stats.wonMatches * 2 
+                        : (currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2))} PTS
                       <span className="text-xs text-slate-300 font-semibold ml-1.5">
-                        (#{currentTeamStanding?.rank || '-'})
+                        (#{currentTeamStanding?.position ?? currentTeamStanding?.rank ?? '-'})
                       </span>
                     </div>
                   </div>
@@ -945,7 +1000,7 @@ export default function LeagueHub({ showToast }) {
                       RECORD
                     </span>
                     <span className="font-mono text-xl font-black text-slate-200">
-                      {currentTeamStanding?.won ?? 0}W - {currentTeamStanding?.lost ?? 0}L
+                      {currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0}W - {currentTeamStanding?.stats?.lostMatches ?? currentTeamStanding?.lost ?? 0}L
                     </span>
                   </div>
 
@@ -954,9 +1009,11 @@ export default function LeagueHub({ showToast }) {
                       WIN RATE
                     </span>
                     <span className="font-mono text-xl font-black text-sky-400">
-                      {(currentTeamStanding?.played ?? 0) > 0 
-                        ? `${Math.round(((currentTeamStanding?.won ?? 0) / currentTeamStanding.played) * 100)}%` 
-                        : '-'}
+                      {(() => {
+                        const won = currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0;
+                        const played = currentTeamStanding?.stats?.playedMatches ?? currentTeamStanding?.played ?? 0;
+                        return played > 0 ? `${Math.round((won / played) * 100)}%` : '-';
+                      })()}
                     </span>
                   </div>
 
@@ -964,11 +1021,16 @@ export default function LeagueHub({ showToast }) {
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
                       POINT DIFFERENTIAL
                     </span>
-                    <span className={`font-mono text-xl font-black ${
-                      (currentTeamStanding?.pointDiff ?? 0) > 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      {(currentTeamStanding?.pointDiff ?? 0) > 0 ? `+${currentTeamStanding.pointDiff}` : (currentTeamStanding?.pointDiff ?? 0)}
-                    </span>
+                    {(() => {
+                      const diffVal = (currentTeamStanding?.stats?.pointsPerGame != null && currentTeamStanding?.stats?.opponentsPointsPerGame != null)
+                        ? (currentTeamStanding.stats.pointsPerGame - currentTeamStanding.stats.opponentsPointsPerGame).toFixed(1)
+                        : (currentTeamStanding?.pointDiff != null ? Number(currentTeamStanding.pointDiff).toFixed(1) : '0.0');
+                      return (
+                        <span className={`font-mono text-xl font-black ${Number(diffVal) > 0 ? 'text-emerald-400' : (Number(diffVal) < 0 ? 'text-rose-400' : 'text-slate-400')}`}>
+                          {Number(diffVal) > 0 ? `+${diffVal}` : diffVal}
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
