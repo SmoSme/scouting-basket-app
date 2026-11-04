@@ -62,6 +62,14 @@ const headers = {
 // GRAPHQL QUERIES (Verified via schema.json introspection)
 // =========================================================================
 
+// Step 0: Seasons Dictionary Query
+const QUERY_GET_SEASONS = `query GetSeasons {
+  seasons {
+    id
+    name
+  }
+}`;
+
 // Step 1: Standings Query
 const QUERY_GET_STANDINGS = `query GetStandings($projectKey: String, $provider: String, $groupId: String) {
   standing(projectKey: $projectKey, provider: $provider, groupId: $groupId) {
@@ -154,6 +162,7 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         timePlayed
         points
         pointsPerGame
+        freeThrowsMade
         freeThrowsPercentage
         inArcThrowsMade
         outArcThrowsMade
@@ -166,6 +175,7 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         timePlayed
         points
         pointsPerGame
+        freeThrowsMade
         freeThrowsPercentage
         inArcThrowsMade
         outArcThrowsMade
@@ -328,15 +338,24 @@ function deriveFallbackStreak(won, lost) {
 }
 
 /**
- * Normalize and preserve uniquePlayer stats & seasonStats without hardcoded mockups
+ * Normalize and enrich uniquePlayer stats & seasonStats using seasonMap dictionary.
+ * Injects seasonName: seasonMap[stat.seasonId] || stat.seasonId without hardcoded mock years.
  */
-function normalizeUniquePlayer(p, idx) {
+function normalizeUniquePlayer(p, idx, seasonMap = {}) {
   const up = p.uniquePlayer || {};
   let stats = up.stats || null;
-  let seasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
+  let rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
 
-  // Filter out any previous synthetic placeholder strings if present
-  seasonStats = seasonStats.filter(s => s && s.seasonId && !s.seasonId.includes('2023/24') && !s.seasonId.includes('2022/23'));
+  // Map seasonStats with enriched seasonName
+  let seasonStats = rawSeasonStats.map(s => {
+    const rawId = s.seasonId != null ? String(s.seasonId) : '';
+    const seasonName = seasonMap[rawId] || s.seasonName || rawId;
+    return {
+      ...s,
+      seasonId: rawId,
+      seasonName: seasonName
+    };
+  });
 
   // If live uniquePlayer stats is missing or incomplete, compute from player.stats
   if (!stats && p.stats) {
@@ -348,12 +367,14 @@ function normalizeUniquePlayer(p, idx) {
     const foulsAvg = Number(s.foulsAVG || 0);
     const pmAvg = Number(s.plusMinusAVG || 0);
     const ftPct = s.freeThrowsPercentage != null ? Number(s.freeThrowsPercentage) : null;
+    const ftMade = s.freeThrowsMade != null ? Number(s.freeThrowsMade) : 0;
 
     stats = {
       games,
       timePlayed: games * 20 * 60, // in seconds
       points: Math.round(games * ppg),
       pointsPerGame: ppg,
+      freeThrowsMade: ftMade,
       freeThrowsPercentage: ftPct,
       inArcThrowsMade: Math.round(games * twoMade),
       outArcThrowsMade: Math.round(games * threeMade),
@@ -362,15 +383,19 @@ function normalizeUniquePlayer(p, idx) {
     };
   }
 
-  // If seasonStats array is empty and player has games, synthesize current active season row from stats
+  // If seasonStats array is empty and player has games, synthesize active season row using COMPETITION_ID
   if (seasonStats.length === 0 && stats && stats.games > 0) {
+    const activeSeasonId = String(COMPETITION_ID || '14544');
+    const activeSeasonName = seasonMap[activeSeasonId] || activeSeasonId;
     seasonStats = [
       {
-        seasonId: "24/25",
+        seasonId: activeSeasonId,
+        seasonName: activeSeasonName,
         games: stats.games,
         timePlayed: stats.timePlayed,
         points: stats.points,
         pointsPerGame: stats.pointsPerGame,
+        freeThrowsMade: stats.freeThrowsMade ?? 0,
         freeThrowsPercentage: stats.freeThrowsPercentage,
         inArcThrowsMade: stats.inArcThrowsMade,
         outArcThrowsMade: stats.outArcThrowsMade,
@@ -419,6 +444,27 @@ async function buildLeaguePipeline() {
       existingRosters = JSON.parse(fs.readFileSync(rostersFilePath, 'utf-8'));
     }
   } catch (e) {}
+
+  // -----------------------------------------------------------------
+  // STEP 0: Fetch Seasons Dictionary
+  // -----------------------------------------------------------------
+  console.log('\n[0/2] 📅 Fetching Seasons Dictionary...');
+  const seasonMap = {
+    "14544": "2025/2026"
+  };
+
+  try {
+    const seasonsData = await executeGraphQL('GetSeasons', QUERY_GET_SEASONS, {});
+    const seasonsList = seasonsData?.seasons || [];
+    for (const s of seasonsList) {
+      if (s && s.id && s.name) {
+        seasonMap[String(s.id)] = s.name;
+      }
+    }
+    console.log(`  ✅ Loaded ${Object.keys(seasonMap).length} seasons into lookup dictionary.`);
+  } catch (seasonErr) {
+    console.warn(`  ⚠️ Seasons query note: ${seasonErr.message}`);
+  }
 
   // -----------------------------------------------------------------
   // STEP 1: Standings, Streak & Club ID Extraction
@@ -570,7 +616,7 @@ async function buildLeaguePipeline() {
 
     // Enrich players with uniquePlayer and career seasonStats
     const enrichedPlayers = (players || []).map((p, pIdx) => {
-      const up = normalizeUniquePlayer(p, pIdx);
+      const up = normalizeUniquePlayer(p, pIdx, seasonMap);
       return {
         ...p,
         uniquePlayer: up

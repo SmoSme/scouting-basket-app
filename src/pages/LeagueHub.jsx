@@ -569,6 +569,7 @@ export const DICTIONARY = {
     historyGp: "P",
     historyMin: "MIN",
     historyPts: "PT",
+    historyFt: "TL",
     historyFtPct: "%TL",
     history2p: "2PT",
     history3p: "3PT",
@@ -667,6 +668,7 @@ export const DICTIONARY = {
     historyGp: "P",
     historyMin: "MIN",
     historyPts: "PT",
+    historyFt: "TL",
     historyFtPct: "%TL",
     history2p: "2PT",
     history3p: "3PT",
@@ -1807,6 +1809,7 @@ export default function LeagueHub({ showToast }) {
                 timePlayed: Math.round(selectedPlayer.games * 20 * 60),
                 points: Math.round(selectedPlayer.games * selectedPlayer.pointsAVG),
                 pointsPerGame: selectedPlayer.pointsAVG,
+                freeThrowsMade: 0,
                 freeThrowsPercentage: selectedPlayer.ftPct,
                 inArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.twoMadeAVG),
                 outArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.threeMadeAVG),
@@ -1814,26 +1817,7 @@ export default function LeagueHub({ showToast }) {
                 plusMinus: Math.round(selectedPlayer.games * selectedPlayer.plusMinusAVG)
               } : null);
 
-              const rawSeasons = Array.isArray(up.seasonStats) && up.seasonStats.length > 0
-                ? up.seasonStats
-                : (Array.isArray(selectedPlayer.history) ? selectedPlayer.history : []);
-
-              const filteredSeasons = rawSeasons.filter(s => s && s.seasonId && !s.seasonId.includes('2023/24') && !s.seasonId.includes('2022/23'));
-
-              const seasonStatsList = filteredSeasons.length > 0 
-                ? filteredSeasons 
-                : (upStats && upStats.games > 0 ? [{
-                    seasonId: "24/25",
-                    games: upStats.games,
-                    timePlayed: upStats.timePlayed,
-                    points: upStats.points,
-                    pointsPerGame: upStats.pointsPerGame,
-                    freeThrowsPercentage: upStats.freeThrowsPercentage,
-                    inArcThrowsMade: upStats.inArcThrowsMade,
-                    outArcThrowsMade: upStats.outArcThrowsMade,
-                    fouls: upStats.fouls,
-                    plusMinus: upStats.plusMinus
-                  }] : []);
+              const seasonStatsList = Array.isArray(up.seasonStats) ? up.seasonStats : [];
 
               return (
                 <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
@@ -1851,13 +1835,14 @@ export default function LeagueHub({ showToast }) {
 
                   {upStats || seasonStatsList.length > 0 ? (
                     <div className="overflow-x-auto -mx-1 sm:mx-0">
-                      <table className="w-full text-left text-xs border-collapse font-sans min-w-[480px]">
+                      <table className="w-full text-left text-xs border-collapse font-sans min-w-[520px]">
                         <thead>
                           <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase text-[10px] tracking-wider">
                             <th className="p-2 text-slate-300 font-bold">{t.historyTitle || 'CARRIERA'}</th>
                             <th className="p-2 text-center" title="Partite Giocate">{t.historyGp || 'P'}</th>
                             <th className="p-2 text-center" title="Minuti">{t.historyMin || 'MIN'}</th>
                             <th className="p-2 text-center" title="Punti">{t.historyPts || 'PT'}</th>
+                            <th className="p-2 text-center" title="Tiri Liberi Segnati">{t.historyFt || 'TL'}</th>
                             <th className="p-2 text-center" title="Percentuale Tiri Liberi">{t.historyFtPct || '%TL'}</th>
                             <th className="p-2 text-center" title="Tiri da 2">{t.history2p || '2PT'}</th>
                             <th className="p-2 text-center" title="Tiri da 3">{t.history3p || '3PT'}</th>
@@ -1866,7 +1851,7 @@ export default function LeagueHub({ showToast }) {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
-                          {/* Row 1: MED (Per-game averages) */}
+                          {/* Row 1: MED (Averages across whole career using uniquePlayer.stats) */}
                           {upStats && (
                             <tr className="bg-slate-900/40 hover:bg-slate-900/70 transition-colors">
                               <td className="p-2 font-black text-amber-400 text-xs">
@@ -1880,6 +1865,9 @@ export default function LeagueHub({ showToast }) {
                               </td>
                               <td className="p-2 text-center font-black text-rose-400">
                                 {upStats.pointsPerGame != null ? Number(upStats.pointsPerGame).toFixed(1) : formatMedVal(upStats.points, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center text-emerald-400">
+                                {formatMedVal(upStats.freeThrowsMade, upStats.games)}
                               </td>
                               <td className="p-2 text-center text-emerald-400 font-bold">
                                 {formatFtPct(upStats.freeThrowsPercentage)}
@@ -1899,7 +1887,7 @@ export default function LeagueHub({ showToast }) {
                             </tr>
                           )}
 
-                          {/* Row 2: Totale (Absolute career totals) */}
+                          {/* Row 2: Totale (Absolute career totals using uniquePlayer.stats) */}
                           {upStats && (
                             <tr className="bg-slate-900/70 font-semibold hover:bg-slate-900/90 transition-colors border-b border-slate-800">
                               <td className="p-2 font-black text-slate-200 text-xs">
@@ -1913,6 +1901,9 @@ export default function LeagueHub({ showToast }) {
                               </td>
                               <td className="p-2 text-center font-black text-rose-400">
                                 {upStats.points != null ? upStats.points : Math.round((upStats.games || 0) * (upStats.pointsPerGame || 0))}
+                              </td>
+                              <td className="p-2 text-center text-emerald-400">
+                                {upStats.freeThrowsMade ?? 0}
                               </td>
                               <td className="p-2 text-center text-emerald-400 font-bold">
                                 {formatFtPct(upStats.freeThrowsPercentage)}
@@ -1932,18 +1923,19 @@ export default function LeagueHub({ showToast }) {
                             </tr>
                           )}
 
-                          {/* Dynamic Season Rows: Map over uniquePlayer.seasonStats */}
+                          {/* Dynamic Season Rows: Map through uniquePlayer.seasonStats using seasonName */}
                           {seasonStatsList.map((season, sIdx) => {
                             const sGames = Number(season.games || 0);
                             const sPoints = season.points != null 
                               ? season.points 
                               : (season.pointsPerGame != null && sGames > 0 ? Math.round(season.pointsPerGame * sGames) : 0);
                             const sFtPct = season.freeThrowsPercentage != null ? season.freeThrowsPercentage : null;
+                            const rowLabel = season.seasonName || season.seasonId || `—`;
 
                             return (
                               <tr key={sIdx} className="hover:bg-slate-900/40 transition-colors">
                                 <td className="p-2 font-bold text-slate-300 text-xs">
-                                  {season.seasonId || `S${sIdx + 1}`}
+                                  {rowLabel}
                                 </td>
                                 <td className="p-2 text-center text-slate-300">
                                   {sGames}
@@ -1953,6 +1945,9 @@ export default function LeagueHub({ showToast }) {
                                 </td>
                                 <td className="p-2 text-center font-bold text-rose-400">
                                   {sPoints}
+                                </td>
+                                <td className="p-2 text-center text-emerald-400">
+                                  {season.freeThrowsMade ?? 0}
                                 </td>
                                 <td className="p-2 text-center text-emerald-400">
                                   {formatFtPct(sFtPct)}
