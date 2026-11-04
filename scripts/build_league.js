@@ -2,8 +2,8 @@
  * scripts/build_league.js
  * 
  * Master FIP Data Pipeline built on GraphQL Introspection (scripts/schema.json).
- * Extracts official standings, team form streaks, club IDs, and opponent rosters
- * with historical player season stats.
+ * Extracts official standings and opponent rosters with deep historical player
+ * career stats (UniquePlayer cross-referenced with players array).
  * 
  * Usage:
  *   node scripts/build_league.js
@@ -49,7 +49,6 @@ const headers = {
   'Accept': '*/*',
   'x-user-premium': String(process.env.FIP_USER_PREMIUM ?? 'true'),
   'Authorization': AUTH_TOKEN ? (AUTH_TOKEN.startsWith('Bearer ') ? AUTH_TOKEN : `Bearer ${AUTH_TOKEN}`) : '',
-  // 'Accept-Encoding': 'gzip, deflate, br',
   'Accept-Language': 'it-IT,it;q=0.9',
   'Content-Type': 'application/json',
   'User-Agent': 'com.nbn23.fipapp',
@@ -87,51 +86,7 @@ const QUERY_GET_STANDINGS = `query GetStandings($projectKey: String, $provider: 
   }
 }`;
 
-// Query group matches to compute streak & recent form
-const QUERY_GET_GROUP_MATCHES = `query GetMatchesByGroup($projectKey: String!, $competitionFid: String!, $groupFid: String!) {
-  matchByGroup(projectKey: $projectKey, competitionFid: $competitionFid, groupFid: $groupFid) {
-    fid
-    winner
-    status
-    homeTeam {
-      fid
-      name
-      clubId
-    }
-    awayTeam {
-      fid
-      name
-      clubId
-    }
-    score {
-      total {
-        teamFid
-        total
-      }
-    }
-  }
-}`;
-
-// Query team details with clubId and lastMatches
-const QUERY_GET_TEAM = `query GetTeam($projectKey: String!, $competitionFid: String!, $fid: String) {
-  team(projectKey: $projectKey, competitionFid: $competitionFid, fid: $fid) {
-    fid
-    name
-    clubId
-    lastMatches {
-      fid
-      winner
-      score {
-        total {
-          teamFid
-          total
-        }
-      }
-    }
-  }
-}`;
-
-// Step 2a: Opponent Players with uniquePlayer, players and seasonStats
+// Step 2a: Opponent Players Query
 const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competitionFid: String!, $teamFid: String!) {
   playersByTeam(projectKey: $projectKey, competitionFid: $competitionFid, teamFid: $teamFid) {
     fid
@@ -144,17 +99,6 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
     team {
       fid
       name
-      clubId
-      lastMatches {
-        fid
-        winner
-        score {
-          total {
-            teamFid
-            total
-          }
-        }
-      }
     }
     uniquePlayer {
       id
@@ -169,15 +113,6 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         outArcThrowsMade
         fouls
         plusMinus
-      }
-      players {
-        season {
-          id
-          name
-        }
-        team {
-          name
-        }
       }
       seasonStats {
         seasonId
@@ -243,7 +178,7 @@ const QUERY_UNIQUE_PLAYER = `query UniquePlayer($uniquePlayerId: String!, $hideP
  * Execute a GraphQL query with timeout controller and exponential backoff retry.
  * Handles HTTP 503, 502, 429, timeouts, and network stalls stealthily.
  */
-async function executeGraphQL(operationName, query, variables, { maxRetries = 3, baseDelay = 3000, timeoutMs = 8000 } = {}) {
+async function executeGraphQL(operationName, query, variables, { maxRetries = 3, baseDelay = 3000, timeoutMs = 15000 } = {}) {
   let attempt = 0;
 
   while (attempt <= maxRetries) {
@@ -322,83 +257,16 @@ function sleep(ms) {
 }
 
 /**
- * Map match list into a streak of W/L
- */
-function computeStreak(teamFid, matches) {
-  if (!Array.isArray(matches) || matches.length === 0) return [];
-
-  const streak = [];
-  for (const m of matches) {
-    if (!m) continue;
-
-    // Check winner FID
-    if (m.winner != null && m.winner !== '') {
-      if (String(m.winner) === String(teamFid)) {
-        streak.push('W');
-        continue;
-      } else {
-        streak.push('L');
-        continue;
-      }
-    }
-
-    // Check score totals
-    const totals = m.score?.total || [];
-    if (totals.length >= 2) {
-      const myObj = totals.find(t => String(t.teamFid) === String(teamFid));
-      const oppObj = totals.find(t => String(t.teamFid) !== String(teamFid));
-      if (myObj && oppObj) {
-        if (Number(myObj.total) > Number(oppObj.total)) {
-          streak.push('W');
-        } else {
-          streak.push('L');
-        }
-        continue;
-      }
-    }
-  }
-
-  return streak.slice(-5);
-}
-
-/**
- * Fallback streak generation based on won/lost matches
- */
-function deriveFallbackStreak(won, lost) {
-  const w = Number(won || 0);
-  const l = Number(lost || 0);
-  const res = [];
-  for (let i = 0; i < w; i++) res.push('W');
-  for (let i = 0; i < l; i++) res.push('L');
-  return res.slice(-5);
-}
-
-/**
- * Normalizes team names for continuity comparison
- */
-function normalizeTeamName(name) {
-  if (!name) return '';
-  return name.toLowerCase()
-    .replace(/basket|pallacanestro|asd|pol\.|polisportiva|sports?|bk/gi, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim();
-}
-
-function isSameTeam(nameA, nameB) {
-  if (!nameA || !nameB) return false;
-  const a = normalizeTeamName(nameA);
-  const b = normalizeTeamName(nameB);
-  if (!a || !b) return false;
-  return a === b || a.includes(b) || b.includes(a);
-}
-
-/**
- * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history
+ * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history.
+ * Strictly cross-references seasonId from seasonStats with the players array
+ * to extract actual text season.name and team.name.
+ * NO artificial/hallucinated fallbacks!
+ * 
  * Schema per item:
  * {
  *   seasonId: string,
  *   seasonName: string, // e.g. "2025/2026"
- *   teamName: string,   // e.g. "VIRTUS BARONISSI"
+ *   teamName: string,   // e.g. "GG MONTORO"
  *   games: number,      // GP
  *   pointsPerGame: number, // PTS/G
  *   twoMadePerGame: number, // 2PM/G
@@ -411,7 +279,8 @@ function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {})
   const rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
   const playersList = Array.isArray(up.players) ? up.players : [];
 
-  return rawSeasonStats.map(stat => {
+  return rawSeasonStats.filter(Boolean).map(stat => {
+    if (!stat) return null;
     const rawId = stat.seasonId != null ? String(stat.seasonId) : '';
     // Match seasonId in uniquePlayer.players
     const matchedPlayer = playersList.find(p => String(p.season?.id) === rawId);
@@ -449,35 +318,12 @@ function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {})
       threeMadePerGame,
       freeThrowsPercentage
     };
-  });
+  }).filter(Boolean);
 }
 
 /**
- * Calculates Roster Continuity: percentage of current 25/26 players
- * who were on this same team in 2024/2025.
- */
-function calculateRosterContinuity(players, currentTeamName) {
-  if (!Array.isArray(players) || players.length === 0) return 0;
-
-  let retainedCount = 0;
-  for (const p of players) {
-    const history = p.history || p.uniquePlayer?.history || [];
-    const prevSeasonEntry = history.find(h => {
-      const sName = String(h.seasonName || '');
-      return (sName.includes('2024') || sName === '2024/2025') && isSameTeam(h.teamName, currentTeamName);
-    });
-
-    if (prevSeasonEntry) {
-      retainedCount++;
-    }
-  }
-
-  return Math.round((retainedCount / players.length) * 100);
-}
-
-/**
- * Normalize and enrich uniquePlayer stats & seasonStats using seasonMap dictionary.
- * Maps uniquePlayer.seasonStats to uniquePlayer.players to extract season name and team name.
+ * Normalizes player career data strictly from merged API data.
+ * No hardcoded years, no synthetic "BASKET BELLIZZI" or artificial 2024/2025 rows.
  */
 function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
   const up = p.uniquePlayer || {};
@@ -485,121 +331,57 @@ function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
   let rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
   let playersList = Array.isArray(up.players) ? up.players : [];
 
-  // If live uniquePlayer stats is missing or incomplete, compute from player.stats
+  // Se mancano le stats live globali, le calcoliamo dalle stats di quest'anno
   if (!stats && p.stats) {
     const s = p.stats;
     const games = Number(s.games || 0);
     const ppg = Number(s.pointsPerGame || s.pointsAVG || 0);
-    const twoMade = Number(s.inArcThrowsAVG || s.inArcThrowsMadeAVG || 0);
-    const threeMade = Number(s.outArcThrowsAVG || s.outArcThrowsMadeAVG || 0);
-    const foulsAvg = Number(s.foulsAVG || 0);
-    const pmAvg = Number(s.plusMinusAVG || 0);
-    const ftPct = s.freeThrowsPercentage != null ? Number(s.freeThrowsPercentage) : null;
-    const ftMade = s.freeThrowsMade != null ? Number(s.freeThrowsMade) : 0;
-
     stats = {
       games,
-      timePlayed: games * 20 * 60, // in seconds
       points: Math.round(games * ppg),
       pointsPerGame: ppg,
-      freeThrowsMade: ftMade,
-      freeThrowsPercentage: ftPct,
-      inArcThrowsMade: Math.round(games * twoMade),
-      outArcThrowsMade: Math.round(games * threeMade),
-      fouls: Math.round(games * foulsAvg),
-      plusMinus: Math.round(games * pmAvg)
+      freeThrowsMade: s.freeThrowsMade != null ? Number(s.freeThrowsMade) : 0,
+      freeThrowsPercentage: s.freeThrowsPercentage != null ? Number(s.freeThrowsPercentage) : null,
+      inArcThrowsMade: Math.round(games * Number(s.inArcThrowsAVG || 0)),
+      outArcThrowsMade: Math.round(games * Number(s.outArcThrowsAVG || 0)),
+      fouls: Math.round(games * Number(s.foulsAVG || 0)),
+      plusMinus: Math.round(games * Number(s.plusMinusAVG || 0))
     };
   }
 
-  // Map seasonStats with enriched seasonName
-  let seasonStats = rawSeasonStats.map(s => {
+  // Cross-reference seasonId with players array to resolve seasonName
+  // NOTE: Added filter(Boolean) and a check to prevent "Cannot read properties of null"
+  let seasonStats = rawSeasonStats.filter(Boolean).map(s => {
+    if (!s) return null;
     const rawId = s.seasonId != null ? String(s.seasonId) : '';
-    const matchedPlayer = playersList.find(pl => String(pl.season?.id) === rawId);
+    const matchedPlayer = playersList.find(pl => pl && pl.season && String(pl.season.id) === rawId);
     const seasonName = matchedPlayer?.season?.name || seasonMap[rawId] || s.seasonName || rawId;
-    return {
-      ...s,
-      seasonId: rawId,
-      seasonName: seasonName
-    };
-  });
+    return { ...s, seasonId: rawId, seasonName };
+  }).filter(Boolean); // Double check to remove any empty maps
 
-  // If seasonStats array is empty and player has games, synthesize active season row using COMPETITION_ID
+  // If player has games in active season but seasonStats was empty, create single current season entry
   if (seasonStats.length === 0 && stats && stats.games > 0) {
     const activeSeasonId = String(COMPETITION_ID || '14544');
-    const activeSeasonName = seasonMap[activeSeasonId] || '2025/2026';
-    seasonStats = [
-      {
-        seasonId: activeSeasonId,
-        seasonName: activeSeasonName,
-        games: stats.games,
-        timePlayed: stats.timePlayed,
-        points: stats.points,
-        pointsPerGame: stats.pointsPerGame,
-        freeThrowsMade: stats.freeThrowsMade ?? 0,
-        freeThrowsPercentage: stats.freeThrowsPercentage,
-        inArcThrowsMade: stats.inArcThrowsMade,
-        inArcThrowsMadePerGame: stats.games > 0 ? Number((stats.inArcThrowsMade / stats.games).toFixed(1)) : 0,
-        outArcThrowsMade: stats.outArcThrowsMade,
-        outArcThrowsMadePerGame: stats.games > 0 ? Number((stats.outArcThrowsMade / stats.games).toFixed(1)) : 0,
-        fouls: stats.fouls,
-        plusMinus: stats.plusMinus
-      }
-    ];
+    const activeSeasonName = seasonMap[activeSeasonId] || activeSeasonId;
+    seasonStats = [{
+      seasonId: activeSeasonId,
+      seasonName: activeSeasonName,
+      games: stats.games,
+      pointsPerGame: stats.pointsPerGame,
+      freeThrowsPercentage: stats.freeThrowsPercentage,
+      inArcThrowsMadePerGame: stats.games > 0 ? Number((stats.inArcThrowsMade / stats.games).toFixed(1)) : 0,
+      outArcThrowsMadePerGame: stats.games > 0 ? Number((stats.outArcThrowsMade / stats.games).toFixed(1)) : 0
+    }];
 
     if (playersList.length === 0) {
-      playersList = [
-        {
-          season: { id: activeSeasonId, name: activeSeasonName },
-          team: { name: fallbackTeamName || p.team?.name || '—' }
-        }
-      ];
+      playersList = [{
+        season: { id: activeSeasonId, name: activeSeasonName },
+        team: { name: fallbackTeamName || p.team?.name || '—' }
+      }];
     }
   }
 
-  // Ensure 2024/2025 prior season exists so continuity and history can be verified
-  if (seasonStats.length === 1 && (seasonStats[0].seasonName?.includes('2025') || seasonStats[0].seasonId === '14544')) {
-    const s0 = seasonStats[0];
-    const prevSeasonId = "13800";
-    const prevSeasonName = "2024/2025";
-    // Core retention logic: ~65% retained on same team, 35% from other clubs
-    const isRetained = (idx % 3 !== 0);
-    const prevTeamName = isRetained ? (fallbackTeamName || p.team?.name || '—') : (idx % 2 === 0 ? "BASKET BELLIZZI" : "POL. FOLGORE");
-    const prevGames = Math.max(12, Math.min(22, Math.round(s0.games * 16 + (idx * 2) % 6)));
-    const prevPpg = Math.max(2.5, Number((s0.pointsPerGame * (0.85 + (idx % 4) * 0.1)).toFixed(1)));
-    const prev2pm = Math.max(0.5, Number(((s0.inArcThrowsMadePerGame || 1.5) * (0.9 + (idx % 3) * 0.1)).toFixed(1)));
-    const prev3pm = Math.max(0, Number(((s0.outArcThrowsMadePerGame || 0.5) * (0.8 + (idx % 3) * 0.15)).toFixed(1)));
-    const prevFtPct = s0.freeThrowsPercentage != null ? Math.max(45, Math.min(88, Math.round(s0.freeThrowsPercentage - 3 + (idx % 7)))) : 65;
-
-    seasonStats.push({
-      seasonId: prevSeasonId,
-      seasonName: prevSeasonName,
-      games: prevGames,
-      timePlayed: prevGames * 20 * 60,
-      points: Math.round(prevGames * prevPpg),
-      pointsPerGame: prevPpg,
-      freeThrowsMade: Math.round(prevGames * 1.5),
-      freeThrowsPercentage: prevFtPct,
-      inArcThrowsMade: Math.round(prevGames * prev2pm),
-      inArcThrowsMadePerGame: prev2pm,
-      outArcThrowsMade: Math.round(prevGames * prev3pm),
-      outArcThrowsMadePerGame: prev3pm,
-      fouls: Math.round(prevGames * 2),
-      plusMinus: Math.round(prevGames * 1.2)
-    });
-
-    playersList = [
-      {
-        season: { id: s0.seasonId, name: s0.seasonName },
-        team: { name: fallbackTeamName || p.team?.name || '—' }
-      },
-      {
-        season: { id: prevSeasonId, name: prevSeasonName },
-        team: { name: prevTeamName }
-      }
-    ];
-  }
-
-  // Build merged history array with exact required schema
+  // Build history strictly from merged API data
   const history = buildPlayerHistory({ seasonStats, players: playersList }, fallbackTeamName, seasonMap);
 
   return {
@@ -616,7 +398,7 @@ function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
  */
 async function buildLeaguePipeline() {
   console.log('=====================================================');
-  console.log('🏀 FIP STATS MASTER DATA EXTRACTION PIPELINE (v3.2)');
+  console.log('🏀 FIP STATS MASTER DATA EXTRACTION PIPELINE');
   console.log('=====================================================');
   console.log(`Endpoint:        ${ENDPOINT}`);
   console.log(`Project Key:     ${PROJECT_KEY}`);
@@ -666,26 +448,9 @@ async function buildLeaguePipeline() {
   }
 
   // -----------------------------------------------------------------
-  // STEP 1: Standings, Streak & Club ID Extraction
+  // STEP 1: Standings Extraction (Direct GetStandings query)
   // -----------------------------------------------------------------
-  console.log('\n[1/2] 📊 Fetching League Standings & Recent Form...');
-
-  let groupMatches = [];
-  try {
-    const matchData = await executeGraphQL(
-      'GetMatchesByGroup',
-      QUERY_GET_GROUP_MATCHES,
-      {
-        projectKey: PROJECT_KEY,
-        competitionFid: COMPETITION_ID,
-        groupFid: GROUP_ID
-      }
-    );
-    groupMatches = matchData?.matchByGroup || [];
-    console.log(`  ✅ Extracted ${groupMatches.length} group matches for streak calculation.`);
-  } catch (matchErr) {
-    console.warn(`  ⚠️ Note on group matches query: ${matchErr.message}`);
-  }
+  console.log('\n[1/2] 📊 Fetching League Standings...');
 
   try {
     const standingsData = await executeGraphQL(
@@ -712,53 +477,25 @@ async function buildLeaguePipeline() {
     }
   }
 
-  // Enrich standings with lastMatches, streak and clubId
-  const enrichedStandings = standings.map(team => {
-    const teamFid = String(team.fid);
-    
-    // Find matches involving this team
-    const teamMatches = groupMatches.filter(m => {
-      return String(m.homeTeam?.fid) === teamFid || String(m.awayTeam?.fid) === teamFid;
-    });
+  // Save the basic GetStandings data directly to league_standings.json
+  const basicStandings = standings.map(team => ({
+    fid: String(team.fid),
+    name: team.name,
+    position: team.position,
+    logo: team.logo || '',
+    stats: team.stats || {}
+  }));
 
-    let streak = computeStreak(teamFid, teamMatches);
-    if (streak.length === 0) {
-      streak = deriveFallbackStreak(team.stats?.wonMatches, team.stats?.lostMatches);
-    }
-
-    // Extract clubId
-    let clubId = team.clubId;
-    if (!clubId) {
-      const matchWithClub = teamMatches.find(m => 
-        (String(m.homeTeam?.fid) === teamFid && m.homeTeam?.clubId) ||
-        (String(m.awayTeam?.fid) === teamFid && m.awayTeam?.clubId)
-      );
-      if (matchWithClub) {
-        clubId = String(matchWithClub.homeTeam?.fid) === teamFid ? matchWithClub.homeTeam.clubId : matchWithClub.awayTeam.clubId;
-      }
-    }
-    if (!clubId) {
-      clubId = `club_${teamFid}`;
-    }
-
-    return {
-      ...team,
-      clubId,
-      streak,
-      lastMatches: teamMatches.length > 0 ? teamMatches.slice(-5) : (team.lastMatches || [])
-    };
-  });
-
-  fs.writeFileSync(standingsFilePath, JSON.stringify(enrichedStandings, null, 2), 'utf-8');
-  console.log(`  ✅ Extracted & enriched ${enrichedStandings.length} teams with streak & clubId.`);
-  console.log(`  💾 Saved to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
+  fs.writeFileSync(standingsFilePath, JSON.stringify(basicStandings, null, 2), 'utf-8');
+  console.log(`  ✅ Extracted ${basicStandings.length} teams.`);
+  console.log(`  💾 Saved directly to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
 
   // -----------------------------------------------------------------
-  // STEP 2: Opponent Rosters & Historical Season Stats
+  // STEP 2: Opponent Rosters & Deep UniquePlayer Historical Career Stats
   // -----------------------------------------------------------------
-  console.log('\n[2/2] 👥 Fetching Opponent Rosters & Historical Player Stats...');
+  console.log('\n[2/2] 👥 Fetching Opponent Rosters & Deep UniquePlayer Career Stats...');
 
-  const opponents = enrichedStandings.filter(team => {
+  const opponents = basicStandings.filter(team => {
     const isBba = String(team.fid) === String(BBA_TEAM_ID) || 
                   (team.name && team.name.toLowerCase().includes('bba')) ||
                   (team.name && team.name.toLowerCase().includes('baronissi'));
@@ -780,29 +517,52 @@ async function buildLeaguePipeline() {
     let players = [];
     try {
       if (i > 0) {
-        console.log(`    ⏳ Stealth pacing: waiting 1500ms between teams...`);
+        console.log(`    ⏳ Pacing: attesa 1500ms tra squadre...`);
         await sleep(1500);
       }
 
+      // Estrae il roster di base
       const playersData = await executeGraphQL(
         'GetPlayersByTeam',
         QUERY_GET_PLAYERS,
-        {
-          projectKey: PROJECT_KEY,
-          competitionFid: COMPETITION_ID,
-          teamFid: teamFid
-        },
-        { maxRetries: 3, baseDelay: 3000, timeoutMs: 8000 }
+        { projectKey: PROJECT_KEY, competitionFid: COMPETITION_ID, teamFid: teamFid },
+        { maxRetries: 3, baseDelay: 3000, timeoutMs: 15000 }
       );
 
-      const livePlayers = playersData?.playersByTeam;
-      if (Array.isArray(livePlayers) && livePlayers.length > 0) {
+      const livePlayers = playersData?.playersByTeam || [];
+
+      // Estrae la storia profonda di OGNI giocatore incrociando lo UniquePlayer
+      for (let pIdx = 0; pIdx < livePlayers.length; pIdx++) {
+        const p = livePlayers[pIdx];
+        const upId = p.uniquePlayer?.id;
+        
+        if (upId) {
+          await sleep(300); // Pausa leggera per non farsi bloccare dal server
+          try {
+            const deepUpData = await executeGraphQL(
+              'UniquePlayer',
+              QUERY_UNIQUE_PLAYER,
+              { uniquePlayerId: String(upId), hidePersonalData: false },
+              { maxRetries: 2, baseDelay: 1000, timeoutMs: 8000 }
+            );
+            
+            // Inietta i dati storici reali nel giocatore
+            if (deepUpData?.uniquePlayer) {
+              p.uniquePlayer.players = deepUpData.uniquePlayer.players || [];
+              p.uniquePlayer.seasonStats = deepUpData.uniquePlayer.seasonStats || [];
+            }
+          } catch (upErr) {
+            console.warn(`      ⚠️ Storico fallito per ${p.name} ${p.lastName}: ${upErr.message}`);
+          }
+        }
+      }
+
+      if (livePlayers.length > 0) {
         players = livePlayers;
       }
     } catch (teamErr) {
-      console.warn(`    ⚠️ Skipping live query for team "${teamName}" (FID: ${teamFid}) after retries: ${teamErr.message}`);
+      console.warn(`    ⚠️ Roster fallito per "${teamName}": ${teamErr.message}`);
       if (existingRosters[teamFid] && existingRosters[teamFid].length > 0) {
-        console.log(`    🔄 Preserving cached roster for "${teamName}" (${existingRosters[teamFid].length} players).`);
         players = existingRosters[teamFid];
       }
     }
@@ -823,37 +583,19 @@ async function buildLeaguePipeline() {
       };
     });
 
-    // Calculate Roster Continuity percentage for this team
-    const continuityPct = calculateRosterContinuity(enrichedPlayers, opponent.name);
-    opponent.continuityPct = continuityPct;
-    console.log(`    📊 Roster Continuity (from 24/25): ${continuityPct}%`);
-
     rostersDictionary[teamFid] = enrichedPlayers;
     totalPlayersProcessed += enrichedPlayers.length;
     console.log(`    ✅ Stored ${enrichedPlayers.length} players with historical career splits & history array.`);
   }
 
-  // Also inject continuity for our BBA team (70% core retention)
-  const bbaTeam = enrichedStandings.find(t => 
-    String(t.fid) === String(BBA_TEAM_ID) || 
-    (t.name && t.name.toLowerCase().includes('baronissi'))
-  );
-  if (bbaTeam) {
-    bbaTeam.continuityPct = 70;
-  }
-
-  // Re-save enriched standings with continuityPct
-  fs.writeFileSync(standingsFilePath, JSON.stringify(enrichedStandings, null, 2), 'utf-8');
-  console.log(`\n💾 Re-saved standings with Roster Continuity to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
-
   // Save the full rosters dictionary
   fs.writeFileSync(rostersFilePath, JSON.stringify(rostersDictionary, null, 2), 'utf-8');
-  console.log(`💾 Saved ${totalPlayersProcessed} players across ${Object.keys(rostersDictionary).length} opponent rosters.`);
+  console.log(`\n💾 Saved ${totalPlayersProcessed} players across ${Object.keys(rostersDictionary).length} opponent rosters.`);
   console.log(`   Saved to: ${path.relative(ROOT_DIR, rostersFilePath)}`);
 
   console.log('\n=====================================================');
   console.log('🎉 PIPELINE COMPLETED SUCCESSFULLY!');
-  console.log(`   Standings: ${enrichedStandings.length} teams (with streak & clubId)`);
+  console.log(`   Standings: ${basicStandings.length} teams`);
   console.log(`   Opponent Rosters: ${Object.keys(rostersDictionary).length} teams`);
   console.log(`   Total Players: ${totalPlayersProcessed} players (with uniquePlayer.seasonStats)`);
   console.log('=====================================================\n');
