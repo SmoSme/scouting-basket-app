@@ -1,12 +1,6060 @@
 {
-  "206399": [],
-  "207455": [],
-  "207456": [],
+  "206399": [
+    {
+      "fid": "123091",
+      "name": "Francesco Michele",
+      "lastName": "Altavilla",
+      "number": "2",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/4dc5c7a6f9f4fda8850522efb7da3c1feb58918f.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 7,
+        "pointsAVG": 7,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -20,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_123091",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 7,
+          "pointsPerGame": 7,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 1,
+          "fouls": 1,
+          "plusMinus": -20
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 7,
+            "pointsPerGame": 7,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 1,
+            "fouls": 1,
+            "plusMinus": -20
+          }
+        ]
+      }
+    },
+    {
+      "fid": "439529",
+      "name": "Francesco",
+      "lastName": "Gorga",
+      "number": "20",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/21b8a43f1890298ad7eb48ddfa1a857f300731bd.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 12,
+        "pointsAVG": 12,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 4,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 80,
+        "plusMinusAVG": -14,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_439529",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 12,
+          "pointsPerGame": 12,
+          "freeThrowsPercentage": 80,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": -14
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 12,
+            "pointsPerGame": 12,
+            "freeThrowsPercentage": 80,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": -14
+          }
+        ]
+      }
+    },
+    {
+      "fid": "94062",
+      "name": "Alessandro",
+      "lastName": "Iacovazzo",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/46510525655114f8e85ae5bcd36f0779703fd4ee.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_94062",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": 2
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": 2
+          }
+        ]
+      }
+    },
+    {
+      "fid": "578195",
+      "name": "Amedeo",
+      "lastName": "Norci",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/96ff04377c1fe94238797b65230ebe0d6ab05135.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 8,
+        "pointsAVG": 8,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 4,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -26,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_578195",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 8,
+          "pointsPerGame": 8,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -26
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 8,
+            "pointsPerGame": 8,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -26
+          }
+        ]
+      }
+    },
+    {
+      "fid": "586227",
+      "name": "Vincenzo",
+      "lastName": "Pace",
+      "number": "6",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/be37fae818ad3870ed57592fd51196648971dadc.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 7,
+        "pointsAVG": 7,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": -16,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_586227",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 7,
+          "pointsPerGame": 7,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 1,
+          "fouls": 1,
+          "plusMinus": -16
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 7,
+            "pointsPerGame": 7,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 1,
+            "fouls": 1,
+            "plusMinus": -16
+          }
+        ]
+      }
+    },
+    {
+      "fid": "148480",
+      "name": "Francesco",
+      "lastName": "Pisciottano",
+      "number": "1",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/681d21809d4ebb73dbbfb523af4889353c09c855.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_148480",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 2,
+          "plusMinus": 3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 2,
+            "plusMinus": 3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1083593",
+      "name": "Omar Cheick",
+      "lastName": "Samb Iuorio",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/c21dfe1f53d3a5336d6a5006b32ea849a1b35d8d.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -6,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1083593",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "163767",
+      "name": "Francesco",
+      "lastName": "Santoro",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/be062c258740cfcb42167e53c181781be9601ce9.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 7,
+        "pointsAVG": 7,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -25,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_163767",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 7,
+          "pointsPerGame": 7,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -25
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 7,
+            "pointsPerGame": 7,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -25
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1315217",
+      "name": "Mattia",
+      "lastName": "Schiavo",
+      "number": "34",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9e20dcb544a3ba1797ffbdbaee02a55af2cf0b70.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -7,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1315217",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "786337",
+      "name": "Nicola",
+      "lastName": "Vivone",
+      "number": "13",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/2da6870b376248a85aeb4d8825af67811e591198.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 8,
+        "pointsAVG": 8,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_786337",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 8,
+          "pointsPerGame": 8,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 8,
+            "pointsPerGame": 8,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -1
+          }
+        ]
+      }
+    }
+  ],
+  "207455": [
+    {
+      "fid": "1097615",
+      "name": "Annino",
+      "lastName": "Alvino",
+      "number": "23",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9a0446c090acead62782b56344259ed530e7cba7.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5,
+        "pointsAVG": 5,
+        "foulsAVG": 2.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1097615",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 10,
+          "pointsPerGame": 5,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": 6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 10,
+            "pointsPerGame": 5,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": 6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1097614",
+      "name": "Sabino",
+      "lastName": "Alvino",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ad8bcfddd165adda35683b1a4684160b136af1a5.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1097614",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "201433",
+      "name": "Salvatore",
+      "lastName": "Bellucci",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/cc7836d92a30549ff7c3edbad18fb7a3b1a81dec.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_201433",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "211744",
+      "name": "Raffaele",
+      "lastName": "Boninfante",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/abc3c6cd03b93106f8087d3eae84bc98beb39ed0.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 1.5,
+        "pointsAVG": 1.5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 25,
+        "plusMinusAVG": 2.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_211744",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 3,
+          "pointsPerGame": 1.5,
+          "freeThrowsPercentage": 25,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 3,
+            "pointsPerGame": 1.5,
+            "freeThrowsPercentage": 25,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "289131",
+      "name": "Stefano",
+      "lastName": "Capaccio",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3a5ae98783d8647fb8991a744ff6305f4499f953.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": -3.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_289131",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 8,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 2,
+          "fouls": 6,
+          "plusMinus": -7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 8,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 2,
+            "fouls": 6,
+            "plusMinus": -7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "288860",
+      "name": "Claudio",
+      "lastName": "Capobianco",
+      "number": "91",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/262042b23e3a68270c915f61e29977862f9cd98d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5,
+        "pointsAVG": 5,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": 0.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_288860",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 10,
+          "pointsPerGame": 5,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 10,
+            "pointsPerGame": 5,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "281770",
+      "name": "Fabio",
+      "lastName": "Confalone",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/fbd68b7149e8240a4fc53b10d89c6a7a0823c157.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0.5,
+        "pointsAVG": 0.5,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 25,
+        "plusMinusAVG": 4.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_281770",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 1,
+          "pointsPerGame": 0.5,
+          "freeThrowsPercentage": 25,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 8,
+          "plusMinus": 9
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 1,
+            "pointsPerGame": 0.5,
+            "freeThrowsPercentage": 25,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 8,
+            "plusMinus": 9
+          }
+        ]
+      }
+    },
+    {
+      "fid": "335418",
+      "name": "Antonio",
+      "lastName": "Di Capua",
+      "number": "17",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/09ffa1a62f7fc263f1ed6116806870ad20ad43c6.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_335418",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "722074",
+      "name": "Giovanni",
+      "lastName": "Esposito",
+      "number": "8",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0fb5424cab07e07fb96ef2379958e5dd4104636a.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 7.5,
+        "pointsAVG": 7.5,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 62.5,
+        "plusMinusAVG": 3.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_722074",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 15,
+          "pointsPerGame": 7.5,
+          "freeThrowsPercentage": 62.5,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": 7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 15,
+            "pointsPerGame": 7.5,
+            "freeThrowsPercentage": 62.5,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": 7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1501929",
+      "name": "Alessio",
+      "lastName": "Esposito Abate",
+      "number": "10",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0e35743dbdcbc4696311f44dcc4d708916ea30be.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 1,
+        "pointsAVG": 1,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1501929",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 2,
+          "pointsPerGame": 1,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 2,
+            "pointsPerGame": 1,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1047475",
+      "name": "Canio Alessandro",
+      "lastName": "Fastiggi",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/79ef5c06fb8a4c9f4def3fe9238be206463b6b80.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": -7,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1047475",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1938802",
+      "name": "Luca",
+      "lastName": "Fiore",
+      "number": "22",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0bc2bc6e140ee731bab7eb51e304fd670f987e9e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1938802",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1501910",
+      "name": "Raffaele Gerardo",
+      "lastName": "Izzo",
+      "number": "14",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/7236799b4286ef3a2aadb24306e12e9789a86e4a.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1501910",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "1047482",
+      "name": "Vincenzo",
+      "lastName": "Spagnuolo",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ba00e24a223fadd82139f0cdc216f5dd140ec173.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 10.5,
+        "pointsAVG": 10.5,
+        "foulsAVG": 0.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 1.5,
+        "freeThrowsPercentage": 85.71428571428571,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1047482",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 21,
+          "pointsPerGame": 10.5,
+          "freeThrowsPercentage": 85.71428571428571,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 3,
+          "fouls": 1,
+          "plusMinus": 0
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 21,
+            "pointsPerGame": 10.5,
+            "freeThrowsPercentage": 85.71428571428571,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 3,
+            "fouls": 1,
+            "plusMinus": 0
+          }
+        ]
+      }
+    },
+    {
+      "fid": "173261",
+      "name": "Antonio",
+      "lastName": "Vigilante",
+      "number": "15",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/16546aeb5510a2ce1a200740bdf204dfff84e290.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 18,
+        "pointsAVG": 18,
+        "foulsAVG": 3.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": 7.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_173261",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 36,
+          "pointsPerGame": 18,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 10,
+          "outArcThrowsMade": 2,
+          "fouls": 7,
+          "plusMinus": 15
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 36,
+            "pointsPerGame": 18,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 10,
+            "outArcThrowsMade": 2,
+            "fouls": 7,
+            "plusMinus": 15
+          }
+        ]
+      }
+    }
+  ],
+  "207456": [
+    {
+      "fid": "4690",
+      "name": "Federico",
+      "lastName": "Barra",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/c8d113ab9e92d3eec21760f77808c4c22a43f286.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 6,
+        "pointsAVG": 6,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_4690",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 6,
+          "pointsPerGame": 6,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 6,
+            "pointsPerGame": 6,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": -1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1223916",
+      "name": "Mattia",
+      "lastName": "Boccia",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/a8b02284c6df03d798739b4085c2e8718faf8de5.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 33.33333333333333,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1223916",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": 33.33333333333333,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": 33.33333333333333,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "350737",
+      "name": "Lorenzo",
+      "lastName": "Del Prete",
+      "number": "13",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9680068fadeb628e578028fd25b3dfe632d00a08.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_350737",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -2
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -2
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1141613",
+      "name": "Armando",
+      "lastName": "Di Lorenzo",
+      "number": "15",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/334be1352c65871c46e852a179dcdf07675d47cd.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -4,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1141613",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1146105",
+      "name": "Luigi",
+      "lastName": "Di Marino",
+      "number": "23",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9680068fadeb628e578028fd25b3dfe632d00a08.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -11,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1146105",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -11
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -11
+          }
+        ]
+      }
+    },
+    {
+      "fid": "165039",
+      "name": "Davide",
+      "lastName": "Esposito",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/334669ea3ca6694291e1b600c68a419cba4833c5.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 10,
+        "pointsAVG": 10,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 62.5,
+        "plusMinusAVG": -8,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_165039",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 10,
+          "pointsPerGame": 10,
+          "freeThrowsPercentage": 62.5,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 1,
+          "fouls": 5,
+          "plusMinus": -8
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 10,
+            "pointsPerGame": 10,
+            "freeThrowsPercentage": 62.5,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 1,
+            "fouls": 5,
+            "plusMinus": -8
+          }
+        ]
+      }
+    },
+    {
+      "fid": "105560",
+      "name": "Enrico",
+      "lastName": "Fereoli",
+      "number": "22",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/f81555e1e82fbee05dfa36b9f57f9e1f0fd2ad64.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 11,
+        "pointsAVG": 11,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 33.33333333333333,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_105560",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 11,
+          "pointsPerGame": 11,
+          "freeThrowsPercentage": 33.33333333333333,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 11,
+            "pointsPerGame": 11,
+            "freeThrowsPercentage": 33.33333333333333,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "424541",
+      "name": "Mattia",
+      "lastName": "Gallo",
+      "number": "8",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ff41490d551b69b4b8effd6f08ba342308dc8a50.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -12,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_424541",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": -12
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": -12
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1143204",
+      "name": "Angelo",
+      "lastName": "Messano",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9214bbce962c643770667fec317076a61c5a52e2.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1143204",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "1138495",
+      "name": "Alessandro",
+      "lastName": "Pisapia",
+      "number": "57",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/1526faf477d16cd803d85dffc4362e02ad704335.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 16,
+        "pointsAVG": 16,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 75,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1138495",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 16,
+          "pointsPerGame": 16,
+          "freeThrowsPercentage": 75,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 1,
+          "fouls": 3,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 16,
+            "pointsPerGame": 16,
+            "freeThrowsPercentage": 75,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 1,
+            "fouls": 3,
+            "plusMinus": -1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1206894",
+      "name": "Claudio",
+      "lastName": "Tiberio",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/b0d249f4d2d024686bcaeaf085929e865686b627.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 18,
+        "pointsAVG": 18,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 83.33333333333334,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1206894",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 18,
+          "pointsPerGame": 18,
+          "freeThrowsPercentage": 83.33333333333334,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 1,
+          "fouls": 5,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 18,
+            "pointsPerGame": 18,
+            "freeThrowsPercentage": 83.33333333333334,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 1,
+            "fouls": 5,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1201124",
+      "name": "Alessandro",
+      "lastName": "Vitale",
+      "number": "30",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/5e257e40d45f02ea9b1def3173577ddfb1923c9f.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1201124",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 3,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 3,
+            "plusMinus": -3
+          }
+        ]
+      }
+    }
+  ],
   "209328": [],
-  "209329": [],
-  "211034": [],
-  "211179": [],
-  "211628": [],
-  "211630": [],
-  "211635": []
+  "209329": [
+    {
+      "fid": "93175",
+      "name": "Emanuele",
+      "lastName": "Catapano",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/970db19fd1f75cc16e8591f60fa281d5b5ecc110.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_93175",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 2,
+          "plusMinus": 1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 2,
+            "plusMinus": 1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1083758",
+      "name": "Francesco",
+      "lastName": "D'Amore",
+      "number": "6",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/98fdf72a0c31c4020b99214ae421a4b3b0b5e19e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 17,
+        "pointsAVG": 17,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 7,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 17,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1083758",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 17,
+          "pointsPerGame": 17,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 7,
+          "outArcThrowsMade": 1,
+          "fouls": 0,
+          "plusMinus": 17
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 17,
+            "pointsPerGame": 17,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 7,
+            "outArcThrowsMade": 1,
+            "fouls": 0,
+            "plusMinus": 17
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1331078",
+      "name": "Nicola",
+      "lastName": "De Prisco",
+      "number": "54",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0934453474d19c8cd08afd2f6854b7740fda61e4.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 3.5,
+        "pointsAVG": 3.5,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1331078",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 7,
+          "pointsPerGame": 3.5,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 2,
+          "fouls": 0,
+          "plusMinus": -2
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 7,
+            "pointsPerGame": 3.5,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 2,
+            "fouls": 0,
+            "plusMinus": -2
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1370277",
+      "name": "Emanuel Noel",
+      "lastName": "Farina",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/19be17b9ab199f46e044f553cde2681aedce0a6e.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -2.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1370277",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1478123",
+      "name": "Marco",
+      "lastName": "Ianniello",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/95c123251fa7d7669e4476d49331030f9468c095.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1478123",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": 3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": 3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1643082",
+      "name": "Biagio Christian",
+      "lastName": "Massa",
+      "number": "2",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/dd43725d5ed0cd641ec7d839374a6f416a84faa0.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1643082",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "124613",
+      "name": "Domenico",
+      "lastName": "Micari",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/b291dfdbb5ece39e2fe97c6b0d507135c14aea3f.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5,
+        "pointsAVG": 5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1.5,
+        "freeThrowsPercentage": 25,
+        "plusMinusAVG": 4,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_124613",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 10,
+          "pointsPerGame": 5,
+          "freeThrowsPercentage": 25,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 3,
+          "fouls": 3,
+          "plusMinus": 8
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 10,
+            "pointsPerGame": 5,
+            "freeThrowsPercentage": 25,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 3,
+            "fouls": 3,
+            "plusMinus": 8
+          }
+        ]
+      }
+    },
+    {
+      "fid": "156462",
+      "name": "David",
+      "lastName": "Rispoli",
+      "number": "81",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/f03223d52244a5e3f76a5f6ef96dd1f5d638946c.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 14,
+        "pointsAVG": 14,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 4,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 60,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_156462",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 28,
+          "pointsPerGame": 14,
+          "freeThrowsPercentage": 60,
+          "inArcThrowsMade": 8,
+          "outArcThrowsMade": 2,
+          "fouls": 8,
+          "plusMinus": 4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 28,
+            "pointsPerGame": 14,
+            "freeThrowsPercentage": 60,
+            "inArcThrowsMade": 8,
+            "outArcThrowsMade": 2,
+            "fouls": 8,
+            "plusMinus": 4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1499181",
+      "name": "Giuseppe",
+      "lastName": "Sforza",
+      "number": "21",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/48f788534153e4aaef470b0e6196bb77ff13f77c.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 8.5,
+        "pointsAVG": 8.5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 9,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1499181",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 17,
+          "pointsPerGame": 8.5,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 2,
+          "fouls": 3,
+          "plusMinus": 18
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 17,
+            "pointsPerGame": 8.5,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 2,
+            "fouls": 3,
+            "plusMinus": 18
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1263955",
+      "name": "Gabriele",
+      "lastName": "Trofa",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/e73e2406eb53b89384aaaa40691ed1f8b8b40e6d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 8,
+        "pointsAVG": 8,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 25,
+        "plusMinusAVG": 0.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1263955",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 16,
+          "pointsPerGame": 8,
+          "freeThrowsPercentage": 25,
+          "inArcThrowsMade": 6,
+          "outArcThrowsMade": 1,
+          "fouls": 4,
+          "plusMinus": 1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 16,
+            "pointsPerGame": 8,
+            "freeThrowsPercentage": 25,
+            "inArcThrowsMade": 6,
+            "outArcThrowsMade": 1,
+            "fouls": 4,
+            "plusMinus": 1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "175213",
+      "name": "Michele",
+      "lastName": "Veneziano",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/b1ba97c9f2c9b2fbfb3db499b2873f2bc01d8e6d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_175213",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 4,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -10
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 4,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -10
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1257788",
+      "name": "Francesco Matteo",
+      "lastName": "Voli",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ecb1b7d5cff9b787a26b6ccfb712d6048b188c0e.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 3.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1257788",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 6,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 0,
+          "fouls": 6,
+          "plusMinus": 7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 6,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 0,
+            "fouls": 6,
+            "plusMinus": 7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "174454",
+      "name": "Matteo",
+      "lastName": "Vuolo",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/b1ba97c9f2c9b2fbfb3db499b2873f2bc01d8e6d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 8.5,
+        "pointsAVG": 8.5,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": 4,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_174454",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 17,
+          "pointsPerGame": 8.5,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 6,
+          "outArcThrowsMade": 1,
+          "fouls": 0,
+          "plusMinus": 8
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 17,
+            "pointsPerGame": 8.5,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 6,
+            "outArcThrowsMade": 1,
+            "fouls": 0,
+            "plusMinus": 8
+          }
+        ]
+      }
+    }
+  ],
+  "211034": [
+    {
+      "fid": "282018",
+      "name": "Raffaele",
+      "lastName": "Acanfora",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/6d286183f52ceddd73d6e50861065b528547a467.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_282018",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1436762",
+      "name": "Stefano",
+      "lastName": "Alaia",
+      "number": "35",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/8cbd39b3d6c4759be9c8bb0db0fefea046b9ca08.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 2.5,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": 1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1436762",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": 2
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": 2
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1142896",
+      "name": "Luigi",
+      "lastName": "D'Arbenzio",
+      "number": "6",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9680068fadeb628e578028fd25b3dfe632d00a08.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 13,
+        "pointsAVG": 13,
+        "foulsAVG": 3.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 2.5,
+        "outArcThrowsAVG": 2.5,
+        "freeThrowsPercentage": 16.666666666666664,
+        "plusMinusAVG": 8.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1142896",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 26,
+          "pointsPerGame": 13,
+          "freeThrowsPercentage": 16.666666666666664,
+          "inArcThrowsMade": 5,
+          "outArcThrowsMade": 5,
+          "fouls": 7,
+          "plusMinus": 17
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 26,
+            "pointsPerGame": 13,
+            "freeThrowsPercentage": 16.666666666666664,
+            "inArcThrowsMade": 5,
+            "outArcThrowsMade": 5,
+            "fouls": 7,
+            "plusMinus": 17
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1204039",
+      "name": "Fernando",
+      "lastName": "Iannaccone",
+      "number": "30",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/4b26fc2998a17336fbcd6a59b7fda4ded2dfb38c.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 11.5,
+        "pointsAVG": 11.5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3.5,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 60,
+        "plusMinusAVG": 10,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1204039",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 23,
+          "pointsPerGame": 11.5,
+          "freeThrowsPercentage": 60,
+          "inArcThrowsMade": 7,
+          "outArcThrowsMade": 1,
+          "fouls": 3,
+          "plusMinus": 20
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 23,
+            "pointsPerGame": 11.5,
+            "freeThrowsPercentage": 60,
+            "inArcThrowsMade": 7,
+            "outArcThrowsMade": 1,
+            "fouls": 3,
+            "plusMinus": 20
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1142903",
+      "name": "Nicola",
+      "lastName": "Leggiero",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/8b10794a6d508543e1a069187f7c2e4f974e20f1.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 4.5,
+        "pointsAVG": 4.5,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 33.33333333333333,
+        "plusMinusAVG": 2.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1142903",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 9,
+          "pointsPerGame": 4.5,
+          "freeThrowsPercentage": 33.33333333333333,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 9,
+            "pointsPerGame": 4.5,
+            "freeThrowsPercentage": 33.33333333333333,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1204554",
+      "name": "Alessandro",
+      "lastName": "Luciano",
+      "number": "9",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0c92cabdce6671be5a45e01a95d646797c8deb1e.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 7,
+        "pointsAVG": 7,
+        "foulsAVG": 2.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 83.33333333333334,
+        "plusMinusAVG": 7,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1204554",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 14,
+          "pointsPerGame": 7,
+          "freeThrowsPercentage": 83.33333333333334,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 1,
+          "fouls": 5,
+          "plusMinus": 14
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 14,
+            "pointsPerGame": 7,
+            "freeThrowsPercentage": 83.33333333333334,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 1,
+            "fouls": 5,
+            "plusMinus": 14
+          }
+        ]
+      }
+    },
+    {
+      "fid": "978186",
+      "name": "Carmine",
+      "lastName": "Maietta",
+      "number": "23",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/e8a2597cad32fb38d128edca8e9aa15118d9d57d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0.5,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_978186",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -10
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -10
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1124014",
+      "name": "Francesco",
+      "lastName": "Montuori",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/e7e7aa97f08f4617451773b9a2df120b4cb11bad.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1124014",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "978185",
+      "name": "Giovanni",
+      "lastName": "Montuori",
+      "number": "20",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/7c187d64593b37709357004b874f5ef99fefe213.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 2.5,
+        "pointsAVG": 2.5,
+        "foulsAVG": 2.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 25,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_978185",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 5,
+          "pointsPerGame": 2.5,
+          "freeThrowsPercentage": 25,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": 0
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 5,
+            "pointsPerGame": 2.5,
+            "freeThrowsPercentage": 25,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": 0
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1032730",
+      "name": "Simone",
+      "lastName": "Sciarrillo",
+      "number": "78",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9e43e45957d9e13fcb04d78848dda58f379d627e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1032730",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 2
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": 2
+          }
+        ]
+      }
+    },
+    {
+      "fid": "750934",
+      "name": "Mirko",
+      "lastName": "Tordela",
+      "number": "4",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/fec2fd8dcbef0778e7722c6dbbade56676897dd7.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5,
+        "pointsAVG": 5,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0.5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_750934",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 10,
+          "pointsPerGame": 5,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 2,
+          "fouls": 2,
+          "plusMinus": 10
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 10,
+            "pointsPerGame": 5,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 2,
+            "fouls": 2,
+            "plusMinus": 10
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1333254",
+      "name": "Giuseppe",
+      "lastName": "Venezia",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/b53509502d9139a71c2da2ff57b7063bf035621b.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 11,
+        "pointsAVG": 11,
+        "foulsAVG": 3.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 10.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1333254",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 22,
+          "pointsPerGame": 11,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 10,
+          "outArcThrowsMade": 0,
+          "fouls": 7,
+          "plusMinus": 21
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 22,
+            "pointsPerGame": 11,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 10,
+            "outArcThrowsMade": 0,
+            "fouls": 7,
+            "plusMinus": 21
+          }
+        ]
+      }
+    }
+  ],
+  "211179": [
+    {
+      "fid": "1142172",
+      "name": "Carlo",
+      "lastName": "D'Alfonso",
+      "number": "11",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/79857419c0b9010b24fa768e6db95b9840b6aaef.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 17,
+        "pointsAVG": 17,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 4,
+        "freeThrowsPercentage": 20,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1142172",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 17,
+          "pointsPerGame": 17,
+          "freeThrowsPercentage": 20,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 4,
+          "fouls": 5,
+          "plusMinus": 0
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 17,
+            "pointsPerGame": 17,
+            "freeThrowsPercentage": 20,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 4,
+            "fouls": 5,
+            "plusMinus": 0
+          }
+        ]
+      }
+    },
+    {
+      "fid": "97988",
+      "name": "Gabriele",
+      "lastName": "Di Lieto",
+      "number": "10",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/887d59b796dc2ba34504d21071101965a09b9b50.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 33.33333333333333,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_97988",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": 33.33333333333333,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": 33.33333333333333,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1440400",
+      "name": "Emanuele",
+      "lastName": "Fusco",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/dc30b128183b4de3780e2592b6afa77b6d432cdf.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1440400",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 0
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 0
+          }
+        ]
+      }
+    },
+    {
+      "fid": "968129",
+      "name": "Matteo",
+      "lastName": "Fusco",
+      "number": "1",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3c61203ee6687a06897189ea1a577fa51728a24e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -14,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_968129",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -14
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -14
+          }
+        ]
+      }
+    },
+    {
+      "fid": "966524",
+      "name": "Danilo",
+      "lastName": "Galibardi",
+      "number": "30",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/6ffbd5af860282fb92e9dc3497126a7a8815c6ce.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 6,
+        "pointsAVG": 6,
+        "foulsAVG": 5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_966524",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 6,
+          "pointsPerGame": 6,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 0,
+          "fouls": 5,
+          "plusMinus": 3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 6,
+            "pointsPerGame": 6,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 0,
+            "fouls": 5,
+            "plusMinus": 3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1130942",
+      "name": "Pierpaolo",
+      "lastName": "Lagrotta",
+      "number": "2",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/7f98a08aa8726de89b443515af10c1a3b6eb91c2.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1130942",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "968123",
+      "name": "Alessandro",
+      "lastName": "Mammato",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/1a5e191c95155fe23fe8f3ea4369f30b52cacac4.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -10,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_968123",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -10
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -10
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1775377",
+      "name": "Nicholas",
+      "lastName": "Mammato Ferrara",
+      "number": "23",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3a3555c5b09c66e16212001e8d6414d73a4e124e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 13,
+        "pointsAVG": 13,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 2,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -6,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1775377",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 13,
+          "pointsPerGame": 13,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 2,
+          "fouls": 3,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 13,
+            "pointsPerGame": 13,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 2,
+            "fouls": 3,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1262742",
+      "name": "Matteo",
+      "lastName": "Manzi",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/bd7e6fcce5a31db21e01885889dc05037b9c9f83.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1262742",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "968164",
+      "name": "Alessio",
+      "lastName": "Proto",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3eadc07e148cab73df834cd99b7170cddb4a54ec.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 6,
+        "pointsAVG": 6,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_968164",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 6,
+          "pointsPerGame": 6,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 6,
+            "pointsPerGame": 6,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1080537",
+      "name": "Manuel",
+      "lastName": "Proto",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ef9ebc378dc209195561338832bcbd2b3a1ecc29.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 13,
+        "pointsAVG": 13,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 3,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": -6,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1080537",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 13,
+          "pointsPerGame": 13,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 3,
+          "fouls": 4,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 13,
+            "pointsPerGame": 13,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 3,
+            "fouls": 4,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1213375",
+      "name": "Luca",
+      "lastName": "Zuppardo",
+      "number": "99",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/662015c0c6db046c4a1a0aa92561fc61ab97432a.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 9,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1213375",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 9
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 9
+          }
+        ]
+      }
+    }
+  ],
+  "211628": [
+    {
+      "fid": "1739502",
+      "name": "Subtain",
+      "lastName": "Abbas",
+      "number": "1",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/8cbd39b3d6c4759be9c8bb0db0fefea046b9ca08.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1739502",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": 0
+          }
+        ]
+      }
+    },
+    {
+      "fid": "86955",
+      "name": "Davide",
+      "lastName": "Coppola",
+      "number": "12",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3134ef717952b1f6991232b9bce74c8e5863194d.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 16.666666666666664,
+        "plusMinusAVG": -6,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_86955",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 16.666666666666664,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 3,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 16.666666666666664,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 3,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "17405",
+      "name": "Andrea",
+      "lastName": "De Luca",
+      "number": "2",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/334be1352c65871c46e852a179dcdf07675d47cd.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 7,
+        "pointsAVG": 7,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 83.33333333333334,
+        "plusMinusAVG": -10,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_17405",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 7,
+          "pointsPerGame": 7,
+          "freeThrowsPercentage": 83.33333333333334,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": -10
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 7,
+            "pointsPerGame": 7,
+            "freeThrowsPercentage": 83.33333333333334,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": -10
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1208744",
+      "name": "Simone",
+      "lastName": "Festa",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9ef356eafdc14805f001bf889a6ef09f0ee6fbcf.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1208744",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "1384637",
+      "name": "Antonio",
+      "lastName": "Giorgio",
+      "number": "11",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0f9b281856da06597e344dbd43e23fc284151dd5.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1384637",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": 3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": 3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "26696",
+      "name": "Rodolfo",
+      "lastName": "Giulivo",
+      "number": "10",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/db50a6550a40ab584936295d1302d6b6125979f2.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_26696",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1045268",
+      "name": "Jacopo",
+      "lastName": "Iannaccone",
+      "number": "4",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/f1d48b2a5b54588d1ffcaba7b6e8869bd0aeb5bc.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1045268",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1313244",
+      "name": "Joshua",
+      "lastName": "Middleton",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/5b2f1e68c6f31f3884fa433e23b8cab4bcd5e8a7.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1313244",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "159011",
+      "name": "Francesco",
+      "lastName": "Sabatella",
+      "number": "9",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/653d7c3373e99308c36c542fd6efdf358d3f5feb.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 15,
+        "pointsAVG": 15,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 2,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -11,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_159011",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 15,
+          "pointsPerGame": 15,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 2,
+          "fouls": 2,
+          "plusMinus": -11
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 15,
+            "pointsPerGame": 15,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 2,
+            "fouls": 2,
+            "plusMinus": -11
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1088457",
+      "name": "Simone",
+      "lastName": "Solimene",
+      "number": "8",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9e43e45957d9e13fcb04d78848dda58f379d627e.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -16,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1088457",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 3,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 4,
+          "plusMinus": -16
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 3,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 4,
+            "plusMinus": -16
+          }
+        ]
+      }
+    },
+    {
+      "fid": "167276",
+      "name": "Claudio",
+      "lastName": "Strumia",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/177bcc7f7081fc73fe4f8f2aca69848327b95e24.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -12,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_167276",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 3,
+          "plusMinus": -12
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 3,
+            "plusMinus": -12
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1015788",
+      "name": "Tullio",
+      "lastName": "Tozza",
+      "number": "6",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/eeed647d8ecaf3ff5bc4ac57af1b9e353af31670.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 10,
+        "pointsAVG": 10,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 4,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 100,
+        "plusMinusAVG": -17,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1015788",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 10,
+          "pointsPerGame": 10,
+          "freeThrowsPercentage": 100,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -17
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 10,
+            "pointsPerGame": 10,
+            "freeThrowsPercentage": 100,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -17
+          }
+        ]
+      }
+    }
+  ],
+  "211630": [
+    {
+      "fid": "1062409",
+      "name": "Giuseppe",
+      "lastName": "Apicella",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/60aa22e42d6b372fb9fff833e7d53f20a090ed66.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 10,
+        "pointsAVG": 10,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 4,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 57.14285714285714,
+        "plusMinusAVG": 14.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1062409",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 20,
+          "pointsPerGame": 10,
+          "freeThrowsPercentage": 57.14285714285714,
+          "inArcThrowsMade": 8,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": 29
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 20,
+            "pointsPerGame": 10,
+            "freeThrowsPercentage": 57.14285714285714,
+            "inArcThrowsMade": 8,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": 29
+          }
+        ]
+      }
+    },
+    {
+      "fid": "763022",
+      "name": "Giuseppe",
+      "lastName": "Attianese",
+      "number": "99",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/60aa22e42d6b372fb9fff833e7d53f20a090ed66.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5.5,
+        "pointsAVG": 5.5,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 71.42857142857143,
+        "plusMinusAVG": 13.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_763022",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 11,
+          "pointsPerGame": 5.5,
+          "freeThrowsPercentage": 71.42857142857143,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 0,
+          "fouls": 6,
+          "plusMinus": 27
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 11,
+            "pointsPerGame": 5.5,
+            "freeThrowsPercentage": 71.42857142857143,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 0,
+            "fouls": 6,
+            "plusMinus": 27
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1958920",
+      "name": "Ivano",
+      "lastName": "Blasi",
+      "number": "4",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/14586e9d4eb609108d4210231084ce0d2477b895.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -0.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1958920",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 4,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 4,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "326405",
+      "name": "Pasquale",
+      "lastName": "Catapano",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/2a700435a0fd43fc1ce9401b0f8c01412694d71f.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 18.5,
+        "pointsAVG": 18.5,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 2,
+        "freeThrowsPercentage": 86.66666666666667,
+        "plusMinusAVG": 19,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_326405",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 37,
+          "pointsPerGame": 18.5,
+          "freeThrowsPercentage": 86.66666666666667,
+          "inArcThrowsMade": 6,
+          "outArcThrowsMade": 4,
+          "fouls": 6,
+          "plusMinus": 38
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 37,
+            "pointsPerGame": 18.5,
+            "freeThrowsPercentage": 86.66666666666667,
+            "inArcThrowsMade": 6,
+            "outArcThrowsMade": 4,
+            "fouls": 6,
+            "plusMinus": 38
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1649622",
+      "name": "Daniele",
+      "lastName": "Cocchia",
+      "number": "10",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3134ef717952b1f6991232b9bce74c8e5863194d.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 9.5,
+        "pointsAVG": 9.5,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 83.33333333333334,
+        "plusMinusAVG": 5.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1649622",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 19,
+          "pointsPerGame": 9.5,
+          "freeThrowsPercentage": 83.33333333333334,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": 11
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 19,
+            "pointsPerGame": 9.5,
+            "freeThrowsPercentage": 83.33333333333334,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": 11
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1668765",
+      "name": "Mario",
+      "lastName": "Evangelista",
+      "number": "15",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/02afdae9e1c477e42e59c57842490791b5f2b969.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 19.5,
+        "pointsAVG": 19.5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3,
+        "outArcThrowsAVG": 4,
+        "freeThrowsPercentage": 75,
+        "plusMinusAVG": 11.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1668765",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 39,
+          "pointsPerGame": 19.5,
+          "freeThrowsPercentage": 75,
+          "inArcThrowsMade": 6,
+          "outArcThrowsMade": 8,
+          "fouls": 3,
+          "plusMinus": 23
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 39,
+            "pointsPerGame": 19.5,
+            "freeThrowsPercentage": 75,
+            "inArcThrowsMade": 6,
+            "outArcThrowsMade": 8,
+            "fouls": 3,
+            "plusMinus": 23
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1845851",
+      "name": "Federico",
+      "lastName": "Fiore",
+      "number": "13",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/210d0565f9cb53b2982a5cbf67461a1f2f48758d.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -1,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1845851",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -1
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -1
+          }
+        ]
+      }
+    },
+    {
+      "fid": "2084287",
+      "name": "Danilo",
+      "lastName": "Guadagno",
+      "number": "8",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/20f9da6c1a38e4b1d7c8fcd59620dce9b50bab4f.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0.5,
+        "pointsAVG": 0.5,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -3.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_2084287",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 1,
+          "pointsPerGame": 0.5,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -7
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 1,
+            "pointsPerGame": 0.5,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -7
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1256245",
+      "name": "Tommaso",
+      "lastName": "Lamberti",
+      "number": "23",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/dd712f14f2abc40a77c0739e18610824e94c5189.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1256245",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    },
+    {
+      "fid": "41108",
+      "name": "Marco",
+      "lastName": "Massimino",
+      "number": "45",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ccccb497d6550456d94403e37f5e9f489473a310.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -4,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_41108",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": -8
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": -8
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1487967",
+      "name": "Natalino",
+      "lastName": "Montone",
+      "number": "5",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/6a15aba431735859ddb6ced5270b068ae2eb9160.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 4.5,
+        "pointsAVG": 4.5,
+        "foulsAVG": 4,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 11.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1487967",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 9,
+          "pointsPerGame": 4.5,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 8,
+          "plusMinus": 23
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 9,
+            "pointsPerGame": 4.5,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 8,
+            "plusMinus": 23
+          }
+        ]
+      }
+    },
+    {
+      "fid": "38371",
+      "name": "Luca",
+      "lastName": "Morcaldi",
+      "number": "77",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/7b57b77b25cb5d3ac8f4ed2d6b3b9e89a311bd6c.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 9,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_38371",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 9
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 9
+          }
+        ]
+      }
+    },
+    {
+      "fid": "719490",
+      "name": "Giacinto",
+      "lastName": "Spinaccio",
+      "number": "11",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/66d2a47659ba8dbaff547452a1ee61f190594985.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 8.5,
+        "pointsAVG": 8.5,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 75,
+        "plusMinusAVG": 6.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_719490",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 17,
+          "pointsPerGame": 8.5,
+          "freeThrowsPercentage": 75,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 2,
+          "fouls": 6,
+          "plusMinus": 13
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 17,
+            "pointsPerGame": 8.5,
+            "freeThrowsPercentage": 75,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 2,
+            "fouls": 6,
+            "plusMinus": 13
+          }
+        ]
+      }
+    },
+    {
+      "fid": "757653",
+      "name": "Gaetano",
+      "lastName": "Trotta",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/99dc2369b5bdd39c7646755e4a182279cefc964a.png",
+      "stats": {
+        "games": 0,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 0,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_757653",
+        "stats": {
+          "games": 0,
+          "timePlayed": 0,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": 0
+        },
+        "seasonStats": []
+      }
+    }
+  ],
+  "211635": [
+    {
+      "fid": "277434",
+      "name": "Giovanni",
+      "lastName": "Acampora",
+      "number": "4",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/a81abf9e1066da772332285dbf4943dcae199ae3.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 1.5,
+        "pointsAVG": 1.5,
+        "foulsAVG": 0.5,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_277434",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 3,
+          "pointsPerGame": 1.5,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 1,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 3,
+            "pointsPerGame": 1.5,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 1,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1577002",
+      "name": "Marco",
+      "lastName": "Accardo",
+      "number": "21",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/f572f8158414c04c034ac0d30e00594dd937b2ce.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 3,
+        "pointsAVG": 3,
+        "foulsAVG": 0.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -2.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1577002",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 6,
+          "pointsPerGame": 3,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 6,
+            "pointsPerGame": 3,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "335058",
+      "name": "Marco",
+      "lastName": "D'Acampo",
+      "number": "11",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3e15bfd137558c9e6831c7a9975b8784883bde01.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 0,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 0,
+        "plusMinusAVG": -5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_335058",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": 0,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 0,
+          "plusMinus": -5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": 0,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 0,
+            "plusMinus": -5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1835159",
+      "name": "Domenico",
+      "lastName": "De Martino",
+      "number": "0",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/1fec4b4fbac345a80947f85380076cb35db0b71e.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 11,
+        "pointsAVG": 11,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 3.5,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 40,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1835159",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 22,
+          "pointsPerGame": 11,
+          "freeThrowsPercentage": 40,
+          "inArcThrowsMade": 7,
+          "outArcThrowsMade": 2,
+          "fouls": 4,
+          "plusMinus": -6
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 22,
+            "pointsPerGame": 11,
+            "freeThrowsPercentage": 40,
+            "inArcThrowsMade": 7,
+            "outArcThrowsMade": 2,
+            "fouls": 4,
+            "plusMinus": -6
+          }
+        ]
+      }
+    },
+    {
+      "fid": "439184",
+      "name": "Raffaele",
+      "lastName": "Garofalo",
+      "number": "20",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/9d32cf556b7bb0951a135503edd2bdd9ef63f555.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 9.5,
+        "pointsAVG": 9.5,
+        "foulsAVG": 0.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 4.5,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 12.5,
+        "plusMinusAVG": -9,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_439184",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 19,
+          "pointsPerGame": 9.5,
+          "freeThrowsPercentage": 12.5,
+          "inArcThrowsMade": 9,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -18
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 19,
+            "pointsPerGame": 9.5,
+            "freeThrowsPercentage": 12.5,
+            "inArcThrowsMade": 9,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -18
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1519560",
+      "name": "Luigi Pio",
+      "lastName": "Iacomino",
+      "number": "22",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/ee0bdf3bde9685ad4052caecd1fa04e532921885.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1519560",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 2,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 5
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 2,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 5
+          }
+        ]
+      }
+    },
+    {
+      "fid": "501937",
+      "name": "Giovanni",
+      "lastName": "Magliulo",
+      "number": "7",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/2ad04a8049eed8c749993cde8f9b4cf40f270c88.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": -15,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_501937",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 4,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 1,
+          "fouls": 1,
+          "plusMinus": -15
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 4,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 1,
+            "fouls": 1,
+            "plusMinus": -15
+          }
+        ]
+      }
+    },
+    {
+      "fid": "520643",
+      "name": "Giovanni",
+      "lastName": "Mennella",
+      "number": "13",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/2ad04a8049eed8c749993cde8f9b4cf40f270c88.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 2,
+        "pointsAVG": 2,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -1.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_520643",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 4,
+          "pointsPerGame": 2,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 2,
+          "outArcThrowsMade": 0,
+          "fouls": 4,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 4,
+            "pointsPerGame": 2,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 2,
+            "outArcThrowsMade": 0,
+            "fouls": 4,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "1042266",
+      "name": "Vincenzo",
+      "lastName": "Mennella",
+      "number": "44",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/5e453f8953672335aedb3b976b003d449acfde29.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 5.5,
+        "pointsAVG": 5.5,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1.5,
+        "outArcThrowsAVG": 0.5,
+        "freeThrowsPercentage": 66.66666666666666,
+        "plusMinusAVG": -4.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_1042266",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 11,
+          "pointsPerGame": 5.5,
+          "freeThrowsPercentage": 66.66666666666666,
+          "inArcThrowsMade": 3,
+          "outArcThrowsMade": 1,
+          "fouls": 2,
+          "plusMinus": -9
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 11,
+            "pointsPerGame": 5.5,
+            "freeThrowsPercentage": 66.66666666666666,
+            "inArcThrowsMade": 3,
+            "outArcThrowsMade": 1,
+            "fouls": 2,
+            "plusMinus": -9
+          }
+        ]
+      }
+    },
+    {
+      "fid": "598138",
+      "name": "Jacopo",
+      "lastName": "Paolillo",
+      "number": "10",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/8aca1731360c7e282be1b2694e4ebd1e0192aa3d.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 5,
+        "pointsAVG": 5,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 1,
+        "outArcThrowsAVG": 1,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 4,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_598138",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 5,
+          "pointsPerGame": 5,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 1,
+          "fouls": 3,
+          "plusMinus": 4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 5,
+            "pointsPerGame": 5,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 1,
+            "fouls": 3,
+            "plusMinus": 4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "915650",
+      "name": "Francesco Ferdinando",
+      "lastName": "Parlati",
+      "number": "1",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/19b96b0da63d96d1725e3201c3c75ed39c0fa667.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 8.5,
+        "pointsAVG": 8.5,
+        "foulsAVG": 1.5,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": 100,
+        "inArcThrowsAVG": 0.5,
+        "outArcThrowsAVG": 2,
+        "freeThrowsPercentage": 30,
+        "plusMinusAVG": -10.5,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_915650",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 17,
+          "pointsPerGame": 8.5,
+          "freeThrowsPercentage": 30,
+          "inArcThrowsMade": 1,
+          "outArcThrowsMade": 4,
+          "fouls": 3,
+          "plusMinus": -21
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 17,
+            "pointsPerGame": 8.5,
+            "freeThrowsPercentage": 30,
+            "inArcThrowsMade": 1,
+            "outArcThrowsMade": 4,
+            "fouls": 3,
+            "plusMinus": -21
+          }
+        ]
+      }
+    },
+    {
+      "fid": "912906",
+      "name": "Antonio",
+      "lastName": "Porzio",
+      "number": "24",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/a92b2fd6e6c7f3db06adb98041847298f5c73eb5.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 0,
+        "pointsAVG": 0,
+        "foulsAVG": 1,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": -3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_912906",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 0,
+          "pointsPerGame": 0,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 1,
+          "plusMinus": -3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 0,
+            "pointsPerGame": 0,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 1,
+            "plusMinus": -3
+          }
+        ]
+      }
+    },
+    {
+      "fid": "677176",
+      "name": "Antonio Maria",
+      "lastName": "Russo",
+      "number": "19",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/0ba828f18c0f749eed1749adbc9da89d2ae98c2e.png",
+      "stats": {
+        "games": 2,
+        "pointsPerGame": 4,
+        "pointsAVG": 4,
+        "foulsAVG": 3,
+        "inArcThrowsPercentage": 100,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 2,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": null,
+        "plusMinusAVG": 2,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_677176",
+        "stats": {
+          "games": 2,
+          "timePlayed": 2400,
+          "points": 8,
+          "pointsPerGame": 4,
+          "freeThrowsPercentage": null,
+          "inArcThrowsMade": 4,
+          "outArcThrowsMade": 0,
+          "fouls": 6,
+          "plusMinus": 4
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 2,
+            "timePlayed": 2400,
+            "points": 8,
+            "pointsPerGame": 4,
+            "freeThrowsPercentage": null,
+            "inArcThrowsMade": 4,
+            "outArcThrowsMade": 0,
+            "fouls": 6,
+            "plusMinus": 4
+          }
+        ]
+      }
+    },
+    {
+      "fid": "59878",
+      "name": "Marco",
+      "lastName": "Sorrentino",
+      "number": "3",
+      "captain": null,
+      "starting": null,
+      "photo": "https://storage.googleapis.com/nbn23-avatars/players/3d773c2ad013cbc2dbaf93787d4227af21a9d11a.png",
+      "stats": {
+        "games": 1,
+        "pointsPerGame": 1,
+        "pointsAVG": 1,
+        "foulsAVG": 2,
+        "inArcThrowsPercentage": null,
+        "outArcThrowsPercentage": null,
+        "inArcThrowsAVG": 0,
+        "outArcThrowsAVG": 0,
+        "freeThrowsPercentage": 50,
+        "plusMinusAVG": 3,
+        "reboundsAVG": 0,
+        "assistsAVG": 0,
+        "stealsAVG": 0,
+        "blocksAVG": 0,
+        "turnoversAVG": 0
+      },
+      "uniquePlayer": {
+        "id": "up_59878",
+        "stats": {
+          "games": 1,
+          "timePlayed": 1200,
+          "points": 1,
+          "pointsPerGame": 1,
+          "freeThrowsPercentage": 50,
+          "inArcThrowsMade": 0,
+          "outArcThrowsMade": 0,
+          "fouls": 2,
+          "plusMinus": 3
+        },
+        "seasonStats": [
+          {
+            "seasonId": "24/25",
+            "games": 1,
+            "timePlayed": 1200,
+            "points": 1,
+            "pointsPerGame": 1,
+            "freeThrowsPercentage": 50,
+            "inArcThrowsMade": 0,
+            "outArcThrowsMade": 0,
+            "fouls": 2,
+            "plusMinus": 3
+          }
+        ]
+      }
+    }
+  ]
 }

@@ -13,6 +13,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_virtus_1960",
     name: "Virtus Roma 1960",
     position: 1,
+    clubId: "club_virtus",
+    streak: ["W", "W", "W", "L", "W"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -28,6 +30,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_carver",
     name: "Carver Cinecittà",
     position: 2,
+    clubId: "club_carver",
+    streak: ["W", "W", "L", "W", "W"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -43,6 +47,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_petriana",
     name: "Petriana Basket",
     position: 3,
+    clubId: "club_petriana",
+    streak: ["L", "W", "W", "W", "L"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -58,6 +64,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_bba_academy",
     name: "BBA - Basketball Academy",
     position: 4,
+    clubId: "club_bba",
+    streak: ["W", "L", "W", "W", "L"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -73,6 +81,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_san_paolo",
     name: "San Paolo Ostiense",
     position: 5,
+    clubId: "club_san_paolo",
+    streak: ["W", "W", "L", "L", "W"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -88,6 +98,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_alfa_omega",
     name: "Alfa Omega Ostia",
     position: 6,
+    clubId: "club_alfa_omega",
+    streak: ["L", "L", "W", "L", "W"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -103,6 +115,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_vis_nova",
     name: "Vis Nova Basket",
     position: 7,
+    clubId: "club_vis_nova",
+    streak: ["L", "L", "L", "W", "L"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -118,6 +132,8 @@ export const DEFAULT_STANDINGS = [
     fid: "team_frascati",
     name: "Basket Frascati",
     position: 8,
+    clubId: "club_frascati",
+    streak: ["L", "L", "W", "L", "L"],
     logo: "",
     stats: {
       playedMatches: 18,
@@ -370,30 +386,324 @@ export const DEFAULT_ROSTERS = {
   ]
 };
 
+// Formatting helpers for the CARRIERA statistics table
+const formatFtPct = (val) => {
+  if (val == null || val === '' || isNaN(val)) return '—';
+  return `${Number(val).toFixed(2)}%`;
+};
+
+const formatTotMin = (timeVal, games = 1) => {
+  if (timeVal == null || isNaN(timeVal) || Number(timeVal) === 0) return '0';
+  const num = Number(timeVal);
+  const mins = num > (games * 100) ? Math.round(num / 60) : Math.round(num);
+  return mins.toString();
+};
+
+const formatMedMin = (stats) => {
+  if (!stats) return '0.0';
+  const games = Number(stats.games || 0);
+  if (games <= 0) return '0.0';
+  const num = Number(stats.timePlayed || 0);
+  if (num === 0) return '0.0';
+  const perGameMins = num > (games * 100) ? (num / 60 / games) : (num / games);
+  return perGameMins.toFixed(1);
+};
+
+const formatMedVal = (val, games) => {
+  if (val == null || isNaN(val)) return '0.0';
+  const g = Number(games || 0);
+  if (g <= 0) return '0.0';
+  return (Number(val) / g).toFixed(1);
+};
+
+const formatTotPlusMinus = (pm) => {
+  if (pm == null || isNaN(pm)) return <span className="text-slate-400">0</span>;
+  const num = Number(pm);
+  if (num > 0) return <span className="text-emerald-400">+{num}</span>;
+  if (num < 0) return <span className="text-rose-400">{num}</span>;
+  return <span className="text-slate-400">0</span>;
+};
+
+const formatMedPlusMinus = (stats) => {
+  if (!stats) return <span className="text-slate-400">0.0</span>;
+  const games = Number(stats.games || 0);
+  if (games <= 0) return <span className="text-slate-400">0.0</span>;
+  const pm = Number(stats.plusMinus || 0);
+  const avg = pm / games;
+  if (avg > 0) return <span className="text-emerald-400">+{avg.toFixed(1)}</span>;
+  if (avg < 0) return <span className="text-rose-400">{avg.toFixed(1)}</span>;
+  return <span className="text-slate-400">0.0</span>;
+};
+
 // Defensive helper to parse player lineup item
 function normalizeLineupItem(item, idx) {
   const p = item.player || item;
   const s = item.stats || item;
+  const rawName = [p.name, p.lastName].filter(Boolean).join(' ');
+  const name = rawName || p.fullName || `Player #${idx + 1}`;
+
+  const formatPct = (val) => {
+    if (val == null || isNaN(val)) return 0;
+    return Math.round(Number(val));
+  };
+
+  const uniquePlayer = p.uniquePlayer || item.uniquePlayer || null;
+  const upStats = uniquePlayer?.stats || null;
+  const seasonStats = Array.isArray(uniquePlayer?.seasonStats)
+    ? uniquePlayer.seasonStats
+    : (Array.isArray(p.history) ? p.history : []);
+
   return {
     fid: p.fid || `p_${idx}`,
-    name: p.name || `Player #${idx + 1}`,
-    number: p.number ?? (idx + 1),
-    position: p.position || 'N/A',
-    games: s.games ?? s.gp ?? 0,
-    pointsAVG: Number(s.pointsAVG ?? s.ppg ?? 0),
+    name,
+    firstName: p.name || '',
+    lastName: p.lastName || '',
+    number: p.number != null ? p.number : (idx + 1),
+    position: p.position || (p.captain ? 'Captain' : 'Player'),
+    captain: Boolean(p.captain),
+    starting: Boolean(p.starting),
+    photo: p.photo || null,
+    uniquePlayer: {
+      id: uniquePlayer?.id || null,
+      stats: upStats,
+      seasonStats: seasonStats
+    },
+    history: seasonStats,
+    games: Number(s.games ?? s.gp ?? 0),
+    pointsAVG: Number(s.pointsPerGame ?? s.pointsAVG ?? s.ppg ?? 0),
     foulsAVG: Number(s.foulsAVG ?? s.fouls ?? 0),
-    threePct: Number(s.outArcThrowsPercentage ?? s.three_pct ?? s.pct_3p ?? 0),
-    threeMadeAVG: Number(s.outArcThrowsAVG ?? s.threePtMadeAVG ?? 0),
-    twoPct: Number(s.inArcThrowsPercentage ?? s.two_pct ?? s.pct_2p ?? 0),
-    twoMadeAVG: Number(s.inArcThrowsAVG ?? 0),
-    ftPct: Number(s.freeThrowsPercentage ?? s.ft_pct ?? 0),
+    threePct: formatPct(s.outArcThrowsPercentage ?? s.shotsOutArcPercent ?? s.three_pct ?? s.pct_3p),
+    threeMadeAVG: Number(s.outArcThrowsAVG ?? s.outArcThrowsMadeAVG ?? s.threePtMadeAVG ?? 0),
+    twoPct: formatPct(s.inArcThrowsPercentage ?? s.shotsInArcPercent ?? s.two_pct ?? s.pct_2p),
+    twoMadeAVG: Number(s.inArcThrowsAVG ?? s.inArcThrowsMadeAVG ?? 0),
+    ftPct: formatPct(s.freeThrowsPercentage ?? s.freeThrowsPercent ?? s.ft_pct),
     plusMinusAVG: Number(s.plusMinusAVG ?? s.plus_minus ?? 0),
-    reboundsAVG: Number(s.reboundsAVG ?? 0),
-    assistsAVG: Number(s.assistsAVG ?? 0)
+    reboundsAVG: Number(s.reboundsAVG ?? s.totalRebounds ?? 0),
+    assistsAVG: Number(s.assistsAVG ?? s.assistsPerGame ?? 0),
+    stealsAVG: Number(s.stealsAVG ?? 0),
+    blocksAVG: Number(s.blocksAVG ?? 0),
+    turnoversAVG: Number(s.turnoversAVG ?? 0)
   };
 }
 
+export const DICTIONARY = {
+  it: {
+    title: "HUB CAMPIONATO",
+    badgeSynced: "SINCRONIZZATO FIP",
+    btnSync: "AGGIORNA DATI FIP",
+    btnSyncing: "SINCRONIZZAZIONE...",
+    btnDefault: "CARICA ESEMPIO",
+    btnImport: "IMPORTA JSON",
+    bestRecord: "MIGLIOR RECORD",
+    topDiff: "MIGLIOR DIFF. CANESTRI",
+    standingsTitle: "CLASSIFICA CAMPIONATO",
+    standingsSubtitle: "Clicca su qualsiasi squadra per analizzare roster, statistiche e alert tattici",
+    filterTeam: "Cerca squadra...",
+    colRank: "POS",
+    colTeam: "SQUADRA",
+    colLast5: "ULTIME 5",
+    colPts: "PUNTI",
+    colRecord: "V - P",
+    colGp: "PG",
+    colDiff: "DIFF",
+    colScout: "SCOUT",
+    ourTeam: "NOSTRA SQUADRA",
+    btnScout: "SCOUT",
+    btnBack: "Torna alla Classifica",
+    quickSwitch: "Cambia Squadra:",
+    division: "Divisione Regionale 2 - Girone F",
+    season: "Stagione 2025/2026",
+    scoutProfileSubtitle: "Profilo Scouting Avversario",
+    trackedPlayers: "giocatori monitorati",
+    statRecord: "RECORD",
+    statWinRate: "PERC. VITTORIE",
+    statDiff: "DIFF. CANESTRI",
+    statRosterSize: "ROSTER",
+    playersCount: "Giocatori",
+    alertFoulTitle: "⚠️ BERSAGLI DA FALLO (>3.0 FALLI/P)",
+    alertFoulStrategy: "Strategia Coach: Attaccare l'area nei primi minuti dal palleggio per caricare di falli, entrare in bonus e forzare la panchina avversaria.",
+    alertFoulBadge: "CANDIDATI",
+    alertFoulEmpty: "Nessun giocatore con più di 3.0 falli di media.",
+    alertShooterTitle: "🎯 TIRATORI PRIMARI (>1.5 TRIPLE A PARTITA)",
+    alertShooterStrategy: "Strategia Coach: Uscite forti sul tiro da fuori, passare sopra i blocchi centrali e non aiutare mai staccandosi da loro sul lato debole.",
+    alertShooterBadge: "TIRATORI",
+    alertShooterEmpty: "Nessun tiratore primario ad alto volume perimetrale.",
+    rosterTitle: "STATISTICHE ROSTER & LINEUP",
+    rosterSubtitle: "Statistiche ufficiali FIP. Clicca su un giocatore per aprire la scheda dettagliata e lo storico carriera.",
+    searchPlayer: "Cerca giocatore...",
+    sortPpg: "Ordina: Punti/P",
+    sortFouls: "Ordina: Falli/P",
+    sortThree: "Ordina: Triple/P",
+    sortPlusMinus: "Ordina: Plus/Minus",
+    sortNumber: "Ordina: N. Maglia",
+    colNumber: "#",
+    colNamePos: "NOME & RUOLO",
+    colPpg: "PUNTI/P",
+    colFouls: "FALLI/P",
+    colThree: "3PT% (3PM)",
+    colTwo: "2PT%",
+    colFt: "TL%",
+    colPlusMinus: "+/-",
+    colAlerts: "ALERT",
+    badgeShooter: "TIRATORE",
+    badgeFoulTarget: "BERSAGLIO FALLI",
+    noPlayersTitle: "Nessun giocatore trovato",
+    noPlayersDesc: "Nessun giocatore registrato su FIP Stats per questa squadra.",
+    noPlayersSearch: "Nessun giocatore corrisponde a",
+    // Modal
+    modalPpg: "PUNTI/P",
+    modalFouls: "FALLI/P",
+    modalThree: "3PT%",
+    modalPlusMinus: "+/-",
+    modalRebounds: "RIMBALZI/P",
+    modalAssists: "ASSIST/P",
+    modalGames: "PARTITE",
+    modalSplitsTitle: "PERCENTUALI DI TIRO",
+    modal3pt: "3PT (DA TRE)",
+    modal2pt: "2PT (DA DUE)",
+    modalFt: "TIRI LIBERI",
+    modalMadePerGame: "a partita",
+    // Career history / Statistiche Totale
+    historyTitle: "CARRIERA",
+    historySeason: "STAGIONE",
+    historyGp: "P",
+    historyMin: "MIN",
+    historyPts: "PT",
+    historyFtPct: "%TL",
+    history2p: "2PT",
+    history3p: "3PT",
+    historyFouls: "FF",
+    historyPlusMinus: "+/-",
+    historyMed: "MED",
+    historyTotale: "Totale",
+    noHistory: "Nessun dato di carriera disponibile.",
+    // Empty state
+    emptyTitle: "Dati Campionato Non Sincronizzati",
+    emptyDesc: "Dati campionato non presenti. Clicca su AGGIORNA DATI FIP per scaricare l'ultima classifica e i report scouting dal cloud, oppure carica il set di esempio.",
+    emptyCmd: "npm run sync-league",
+    syncSuccess: "✅ Dati FIP sincronizzati con successo",
+    syncToast: "🏀 Dati Campionato Caricati",
+    syncError: "Sincronizzazione fallita"
+  },
+  en: {
+    title: "LEAGUE HUB",
+    badgeSynced: "FIP GRAPHQL SYNCED",
+    btnSync: "SYNC FIP DATA",
+    btnSyncing: "SYNCING...",
+    btnDefault: "LOAD SAMPLE LEAGUE",
+    btnImport: "IMPORT JSON",
+    bestRecord: "BEST RECORD",
+    topDiff: "TOP POINT DIFFERENTIAL",
+    standingsTitle: "CHAMPIONSHIP STANDINGS",
+    standingsSubtitle: "Click any team row to inspect roster stats, shooting splits, and dynamic scouting alerts",
+    filterTeam: "Filter team...",
+    colRank: "RANK",
+    colTeam: "TEAM",
+    colLast5: "LAST 5",
+    colPts: "PTS",
+    colRecord: "W - L",
+    colGp: "GP",
+    colDiff: "DIFF",
+    colScout: "SCOUT",
+    ourTeam: "OUR TEAM",
+    btnScout: "SCOUT",
+    btnBack: "Back to Standings",
+    quickSwitch: "Switch Team:",
+    division: "Divisione Regionale 2 - Girone F",
+    season: "Season 2025/2026",
+    scoutProfileSubtitle: "Opponent Scouting Profile",
+    trackedPlayers: "players tracked",
+    statRecord: "RECORD",
+    statWinRate: "WIN RATE",
+    statDiff: "POINT DIFFERENTIAL",
+    statRosterSize: "ROSTER SIZE",
+    playersCount: "Players",
+    alertFoulTitle: "⚠️ HIGH FOUL TARGETS (>3.0 FOULS/G)",
+    alertFoulStrategy: "Coach Strategy: Attack in the paint early off the dribble to draw fouls, induce penalty, and force bench substitutions.",
+    alertFoulBadge: "CANDIDATES",
+    alertFoulEmpty: "No players averaging > 3.0 fouls.",
+    alertShooterTitle: "🎯 PRIMARY SHOOTERS (>1.5 MADE 3PT/G)",
+    alertShooterStrategy: "Coach Strategy: Contest tight on catch-and-shoot looks, fight over high ball screens, and do not help off them in corner rotations.",
+    alertShooterBadge: "SHOOTERS",
+    alertShooterEmpty: "No primary perimeter volume shooters.",
+    rosterTitle: "ROSTER & LINEUP STATISTICS",
+    rosterSubtitle: "Official FIP lineup statistics. Click any player row to view shooting splits and career history.",
+    searchPlayer: "Search player...",
+    sortPpg: "Sort: PPG",
+    sortFouls: "Sort: Fouls/G",
+    sortThree: "Sort: 3PM/G",
+    sortPlusMinus: "Sort: Plus/Minus",
+    sortNumber: "Sort: Jersey #",
+    colNumber: "#",
+    colNamePos: "NAME & POSITION",
+    colPpg: "POINTS/G",
+    colFouls: "FOULS/G",
+    colThree: "3PT% (3PM)",
+    colTwo: "2PT%",
+    colFt: "FT%",
+    colPlusMinus: "+/-",
+    colAlerts: "ALERTS",
+    badgeShooter: "SHOOTER",
+    badgeFoulTarget: "FOUL TARGET",
+    noPlayersTitle: "No players found",
+    noPlayersDesc: "No lineup data registered on FIP Stats for this team.",
+    noPlayersSearch: "No players matching",
+    // Modal
+    modalPpg: "POINTS/G",
+    modalFouls: "FOULS/G",
+    modalThree: "3PT%",
+    modalPlusMinus: "+/-",
+    modalRebounds: "REBOUNDS/G",
+    modalAssists: "ASSISTS/G",
+    modalGames: "GAMES PLAYED",
+    modalSplitsTitle: "SHOOTING ACCURACY SPLITS",
+    modal3pt: "3PT (OUT-ARC)",
+    modal2pt: "2PT (IN-ARC)",
+    modalFt: "FREE THROWS",
+    modalMadePerGame: "made/G",
+    // Career history / Statistiche Totale
+    historyTitle: "CAREER",
+    historySeason: "SEASON",
+    historyGp: "P",
+    historyMin: "MIN",
+    historyPts: "PT",
+    historyFtPct: "%TL",
+    history2p: "2PT",
+    history3p: "3PT",
+    historyFouls: "FF",
+    historyPlusMinus: "+/-",
+    historyMed: "MED",
+    historyTotale: "Totale",
+    noHistory: "No career data available.",
+    // Empty state
+    emptyTitle: "League Data Not Synced",
+    emptyDesc: "League data not synced. Tap SYNC FIP DATA to pull the latest standings and scouting reports directly from the cloud, or load the baseline sample.",
+    emptyCmd: "npm run sync-league",
+    syncSuccess: "✅ Live FIP league data synced successfully",
+    syncToast: "🏀 League Hub Synced",
+    syncError: "Sync failed"
+  }
+};
+
 export default function LeagueHub({ showToast }) {
+  // Language State: 'it' (default) | 'en'
+  const [lang, setLang] = useState(() => {
+    try {
+      return localStorage.getItem('bba_lang') || 'it';
+    } catch (e) {
+      return 'it';
+    }
+  });
+
+  const t = DICTIONARY[lang] || DICTIONARY.it;
+
+  const toggleLang = (newLang) => {
+    setLang(newLang);
+    try {
+      localStorage.setItem('bba_lang', newLang);
+    } catch (e) {}
+  };
+
   // Navigation State: 'STANDINGS_VIEW' | 'TEAM_DETAIL_VIEW'
   const [currentView, setCurrentView] = useState('STANDINGS_VIEW');
   const [selectedTeamFid, setSelectedTeamFid] = useState(null);
@@ -431,15 +741,16 @@ export default function LeagueHub({ showToast }) {
   const [jsonInputText, setJsonInputText] = useState('');
 
   // -------------------------------------------------------------------------
-  // Fetch /data/league_standings.json directly & fallback to /api/sync-fip
+  // Fetch /data/league_standings.json & /data/league_rosters.json directly
   // -------------------------------------------------------------------------
   const fetchFipData = async (isManual = false) => {
     setIsSyncing(true);
     setFetchError(null);
     try {
       let standingsData = null;
+      let rostersData = null;
 
-      // 1. Fetch /data/league_standings.json directly as requested
+      // 1. Fetch /data/league_standings.json directly
       try {
         const fileRes = await fetch('/data/league_standings.json', { cache: 'no-store' });
         if (fileRes.ok) {
@@ -452,8 +763,21 @@ export default function LeagueHub({ showToast }) {
         console.warn('[League Hub] /data/league_standings.json fetch note:', fileErr.message);
       }
 
-      // 2. If not found or if user clicked manual sync, call /api/sync-fip
-      if (!standingsData || isManual) {
+      // 2. Fetch /data/league_rosters.json directly
+      try {
+        const rostersRes = await fetch('/data/league_rosters.json', { cache: 'no-store' });
+        if (rostersRes.ok) {
+          const rostersJson = await rostersRes.json();
+          if (rostersJson && typeof rostersJson === 'object' && Object.keys(rostersJson).length > 0) {
+            rostersData = rostersJson;
+          }
+        }
+      } catch (rostersErr) {
+        console.warn('[League Hub] /data/league_rosters.json fetch note:', rostersErr.message);
+      }
+
+      // 3. If not found or if user clicked manual sync, fallback to /api/sync-fip
+      if ((!standingsData || !rostersData) && isManual) {
         try {
           const apiRes = await fetch('/api/sync-fip', { cache: 'no-store' });
           if (apiRes.ok) {
@@ -463,10 +787,12 @@ export default function LeagueHub({ showToast }) {
             } else if (Array.isArray(apiData) && apiData.length > 0) {
               standingsData = apiData;
             }
+            if (apiData.rosters && typeof apiData.rosters === 'object') {
+              rostersData = apiData.rosters;
+            }
           }
         } catch (apiErr) {
           console.warn('[League Hub] API sync note:', apiErr.message);
-          if (!standingsData) throw apiErr;
         }
       }
 
@@ -475,13 +801,22 @@ export default function LeagueHub({ showToast }) {
         try {
           localStorage.setItem('bba_fip_standings', JSON.stringify(standingsData));
         } catch (e) {}
+      }
 
-        if (isManual) {
-          setStatusMsg('✅ Live FIP standings synced successfully');
-          if (showToast) showToast('🏀 Standings Loaded');
-        }
-      } else {
-        throw new Error('No valid standings data found in /data/league_standings.json');
+      if (rostersData && typeof rostersData === 'object' && Object.keys(rostersData).length > 0) {
+        setRosters(rostersData);
+        try {
+          localStorage.setItem('bba_fip_rosters', JSON.stringify(rostersData));
+        } catch (e) {}
+      }
+
+      if (!standingsData && !rostersData) {
+        throw new Error('No valid standings or roster data found in /data/');
+      }
+
+      if (isManual) {
+        setStatusMsg('✅ Live FIP league data synced successfully');
+        if (showToast) showToast('🏀 League Hub Synced');
       }
     } catch (err) {
       console.warn('[League Hub] Sync error:', err.message);
@@ -594,19 +929,45 @@ export default function LeagueHub({ showToast }) {
           </div>
           <div>
             <h1 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-              LEAGUE HUB
+              {t.title}
               <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">
-                FIP GRAPHQL SYNCED
+                {t.badgeSynced}
               </span>
             </h1>
             <p className="text-xs text-slate-400 font-semibold">
-              Divisione Regionale 2 - Girone F • Season 2025/2026
+              {t.division} • {t.season}
             </p>
           </div>
         </div>
 
-        {/* Global Controls */}
+        {/* Global Controls & Language Toggle */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Language Toggle */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 shadow-inner">
+            <button
+              type="button"
+              onClick={() => toggleLang('it')}
+              className={`px-2 py-1 rounded text-[11px] font-black transition-all ${
+                lang === 'it' 
+                  ? 'bg-amber-500 text-slate-950 shadow' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              IT
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleLang('en')}
+              className={`px-2 py-1 rounded text-[11px] font-black transition-all ${
+                lang === 'en' 
+                  ? 'bg-amber-500 text-slate-950 shadow' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => fetchFipData(true)}
@@ -615,7 +976,7 @@ export default function LeagueHub({ showToast }) {
             title="Fetch latest league data from /api/sync-fip"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'SYNCING...' : 'SYNC FIP DATA'}</span>
+            <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
           </button>
 
           <button
@@ -625,7 +986,7 @@ export default function LeagueHub({ showToast }) {
             title="Load default championship league dataset"
           >
             <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
-            <span>LOAD SAMPLE LEAGUE</span>
+            <span>{t.btnDefault}</span>
           </button>
 
           <button
@@ -634,7 +995,7 @@ export default function LeagueHub({ showToast }) {
             className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-md active:scale-95"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>IMPORT JSON</span>
+            <span>{t.btnImport}</span>
           </button>
         </div>
       </div>
@@ -667,10 +1028,10 @@ export default function LeagueHub({ showToast }) {
 
           <div className="space-y-2">
             <h2 className="text-lg sm:text-xl font-black text-slate-100 uppercase tracking-wide">
-              League Data Not Synced
+              {t.emptyTitle}
             </h2>
             <p className="text-sm text-slate-400">
-              League data not synced. Tap <span className="text-amber-400 font-bold">SYNC FIP DATA</span> to pull the latest standings and scouting reports directly from the cloud, or load the baseline sample.
+              {t.emptyDesc}
             </p>
           </div>
 
@@ -678,15 +1039,15 @@ export default function LeagueHub({ showToast }) {
           <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-left font-mono text-xs text-slate-300 flex items-center justify-between gap-3 shadow-inner">
             <div className="flex items-center gap-2 overflow-x-auto">
               <Terminal className="w-4 h-4 text-emerald-400 flex-none" />
-              <span className="text-slate-200">npm run sync-fip</span>
+              <span className="text-slate-200">{t.emptyCmd}</span>
             </div>
             <button
               type="button"
               onClick={() => {
                 if (navigator?.clipboard?.writeText) {
-                  navigator.clipboard.writeText('npm run sync-fip');
+                  navigator.clipboard.writeText(t.emptyCmd);
                 }
-                if (showToast) showToast('📋 Copied: npm run sync-fip');
+                if (showToast) showToast(`📋 Copied: ${t.emptyCmd}`);
               }}
               className="text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 transition-colors flex-none text-[11px] font-sans font-bold active:scale-95"
               title="Copy command to clipboard"
@@ -710,7 +1071,7 @@ export default function LeagueHub({ showToast }) {
               className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'SYNCING...' : 'SYNC FIP DATA'}</span>
+              <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
             </button>
 
             <button
@@ -719,7 +1080,7 @@ export default function LeagueHub({ showToast }) {
               className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-95"
             >
               <FileText className="w-3.5 h-3.5 text-amber-400" />
-              <span>LOAD SAMPLE LEAGUE</span>
+              <span>{t.btnDefault}</span>
             </button>
           </div>
         </div>
@@ -734,7 +1095,7 @@ export default function LeagueHub({ showToast }) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="glass-card p-3 border-amber-500/30 bg-slate-900/90 shadow-md">
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-0.5">
-                    LEAGUE LEADER
+                    {t.standingsTitle}
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-base font-black text-slate-100">
@@ -743,14 +1104,14 @@ export default function LeagueHub({ showToast }) {
                     <span className="font-mono text-sm font-black text-amber-400">
                       {standings[0]?.stats?.wonMatches != null
                         ? standings[0].stats.wonMatches * 2
-                        : (standings[0]?.points ?? ((standings[0]?.won ?? 0) * 2))} PTS
+                        : (standings[0]?.points ?? ((standings[0]?.won ?? 0) * 2))} {t.colPts}
                     </span>
                   </div>
                 </div>
 
                 <div className="glass-card p-3 border-sky-500/30 bg-slate-900/90 shadow-md">
                   <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block mb-0.5">
-                    BEST RECORD
+                    {t.bestRecord}
                   </span>
                   <div className="flex items-baseline justify-between">
                     <span className="text-base font-black text-slate-100">
@@ -770,7 +1131,7 @@ export default function LeagueHub({ showToast }) {
 
                 <div className="glass-card p-3 border-emerald-500/30 bg-slate-900/90 shadow-md">
                   <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block mb-0.5">
-                    TOP POINT DIFFERENTIAL
+                    {t.topDiff}
                   </span>
                   <div className="flex items-baseline justify-between">
                     {(() => {
@@ -802,10 +1163,10 @@ export default function LeagueHub({ showToast }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      CHAMPIONSHIP STANDINGS ({filteredStandings.length} TEAMS)
+                      {t.standingsTitle} ({filteredStandings.length} {t.playersCount})
                     </h3>
                     <p className="text-[11px] text-slate-400">
-                      Click any team row to inspect roster stats, shooting splits, and dynamic scouting alerts
+                      {t.standingsSubtitle}
                     </p>
                   </div>
 
@@ -814,7 +1175,7 @@ export default function LeagueHub({ showToast }) {
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                     <input
                       type="text"
-                      placeholder="Filter team..."
+                      placeholder={t.filterTeam}
                       value={standingsSearch}
                       onChange={(e) => setStandingsSearch(e.target.value)}
                       className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-48"
@@ -827,20 +1188,22 @@ export default function LeagueHub({ showToast }) {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                        <th className="p-3 w-12 text-center">RANK</th>
-                        <th className="p-3">TEAM</th>
-                        <th className="p-3 text-center">PTS (WON × 2)</th>
-                        <th className="p-3 text-center">W - L</th>
-                        <th className="p-3 text-center">GP</th>
-                        <th className="p-3 text-center">DIFF</th>
-                        <th className="p-3 text-right">SCOUT</th>
+                        <th className="p-3 w-12 text-center">{t.colRank}</th>
+                        <th className="p-3">{t.colTeam}</th>
+                        <th className="p-3 text-center">{t.colLast5}</th>
+                        <th className="p-3 text-center">{t.colPts}</th>
+                        <th className="p-3 text-center">{t.colRecord}</th>
+                        <th className="p-3 text-center">{t.colGp}</th>
+                        <th className="p-3 text-center">{t.colDiff}</th>
+                        <th className="p-3 text-right">{t.colScout}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80">
                       {filteredStandings.map((team, idx) => {
                         const tFid = team.fid || team.teamFid || `team_${idx + 1}`;
                         const tName = team.name || `Team #${idx + 1}`;
-                        const isBBA = tName.toLowerCase().includes('bba') || tFid === 'team_bba_academy';
+                        const bbaId = import.meta.env.VITE_BBA_TEAM_ID || '211634';
+                        const isBBA = String(tFid) === String(bbaId) || tFid === 'team_bba_academy' || tName.toLowerCase().includes('bba') || tName.toLowerCase().includes('baronissi');
                         const rankNum = team.position ?? team.rank ?? (idx + 1);
                         const isPlayoff = rankNum <= 4;
                         const isPlayout = rankNum >= 7;
@@ -856,11 +1219,11 @@ export default function LeagueHub({ showToast }) {
                         return (
                           <tr
                             key={tFid}
-                            onClick={() => handleSelectTeam(team.fid || tFid)}
-                            className={`cursor-pointer transition-colors ${
+                            onClick={() => { if (!isBBA) handleSelectTeam(team.fid || tFid); }}
+                            className={`transition-colors ${
                               isBBA 
-                                ? 'bg-sky-950/20 hover:bg-sky-900/30 border-l-2 border-sky-400' 
-                                : 'hover:bg-slate-800/50'
+                                ? 'bg-sky-950/20 border-l-2 border-sky-400 cursor-default' 
+                                : 'hover:bg-slate-800/50 cursor-pointer'
                             }`}
                           >
                             <td className="p-3 text-center font-mono font-black">
@@ -875,15 +1238,33 @@ export default function LeagueHub({ showToast }) {
                               </span>
                             </td>
                             <td className="p-3 font-black text-slate-100 flex items-center gap-2">
-                              {team.logo && (
-                                <img src={team.logo} alt="" className="w-5 h-5 object-contain rounded-full flex-none" />
-                              )}
                               <span className="text-sm">{tName}</span>
                               {isBBA && (
-                                <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.2 rounded border border-sky-500/40">
-                                  OUR TEAM
+                                <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.5 rounded border border-sky-500/40">
+                                  {t.ourTeam}
                                 </span>
                               )}
+                            </td>
+                            {/* Streak / Last 5 */}
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                {Array.isArray(team.streak) && team.streak.length > 0 ? (
+                                  team.streak.slice(-5).map((res, sIdx) => (
+                                    <span
+                                      key={sIdx}
+                                      className={`w-4 h-4 rounded-full font-mono text-[9px] font-black flex items-center justify-center border shadow-sm ${
+                                        res === 'W'
+                                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                                          : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                                      }`}
+                                    >
+                                      {res}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-slate-500 font-mono text-xs">-</span>
+                                )}
+                              </div>
                             </td>
                             <td className="p-3 text-center font-mono font-black text-amber-400 text-sm">
                               {pts}
@@ -902,14 +1283,20 @@ export default function LeagueHub({ showToast }) {
                               </span>
                             </td>
                             <td className="p-3 text-right">
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); handleSelectTeam(team.fid || tFid); }}
-                                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1 shadow-sm active:scale-95"
-                              >
-                                <span>SCOUT</span>
-                                <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-                              </button>
+                              {isBBA ? (
+                                <span className="text-slate-600 font-bold px-2 py-1 select-none text-xs">
+                                  —
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleSelectTeam(team.fid || tFid); }}
+                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1 shadow-sm active:scale-95"
+                                >
+                                  <span>{t.btnScout}</span>
+                                  <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                                </button>
+                              )}
                             </td>
                           </tr>
                         );
@@ -934,12 +1321,12 @@ export default function LeagueHub({ showToast }) {
                   className="bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-black px-3.5 py-2 rounded-xl text-xs inline-flex items-center gap-2 transition-all active:scale-95 shadow-sm"
                 >
                   <ArrowLeft className="w-4 h-4 text-amber-400" />
-                  <span>← BACK TO STANDINGS</span>
+                  <span>← {t.btnBack}</span>
                 </button>
 
                 {/* Team Switcher Dropdown */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase hidden sm:inline">SWITCH TEAM:</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase hidden sm:inline">{t.quickSwitch}</span>
                   <select
                     value={selectedTeamFid || ''}
                     onChange={(e) => handleSelectTeam(e.target.value)}
@@ -952,7 +1339,7 @@ export default function LeagueHub({ showToast }) {
                       const pos = s.position ?? s.rank ?? '-';
                       return (
                         <option key={fid} value={fid} className="bg-slate-900 text-slate-100">
-                          #{pos} {name} ({pts} pts)
+                          #{pos} {name} ({pts} {t.colPts})
                         </option>
                       );
                     })}
@@ -969,23 +1356,23 @@ export default function LeagueHub({ showToast }) {
                         {currentTeamStanding?.name || selectedTeamFid}
                       </h2>
                       <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
-                        Divisione Regionale 2
+                        {t.division}
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 font-medium">
-                      Opponent Scouting Profile • {currentRoster.length} players tracked from FIP competitionLineupStats
+                      {t.scoutProfileSubtitle} • {currentRoster.length} {t.trackedPlayers}
                     </p>
                   </div>
 
                   {/* Standing points pill */}
                   <div className="text-right">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      CHAMPIONSHIP RANK
+                      {t.colRank}
                     </span>
                     <div className="font-mono text-xl font-black text-amber-400">
                       {currentTeamStanding?.stats?.wonMatches != null 
                         ? currentTeamStanding.stats.wonMatches * 2 
-                        : (currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2))} PTS
+                        : (currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2))} {t.colPts}
                       <span className="text-xs text-slate-300 font-semibold ml-1.5">
                         (#{currentTeamStanding?.position ?? currentTeamStanding?.rank ?? '-'})
                       </span>
@@ -997,7 +1384,7 @@ export default function LeagueHub({ showToast }) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-slate-800/80">
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      RECORD
+                      {t.statRecord}
                     </span>
                     <span className="font-mono text-xl font-black text-slate-200">
                       {currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0}W - {currentTeamStanding?.stats?.lostMatches ?? currentTeamStanding?.lost ?? 0}L
@@ -1006,7 +1393,7 @@ export default function LeagueHub({ showToast }) {
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      WIN RATE
+                      {t.statWinRate}
                     </span>
                     <span className="font-mono text-xl font-black text-sky-400">
                       {(() => {
@@ -1019,7 +1406,7 @@ export default function LeagueHub({ showToast }) {
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      POINT DIFFERENTIAL
+                      {t.statDiff}
                     </span>
                     {(() => {
                       const diffVal = (currentTeamStanding?.stats?.pointsPerGame != null && currentTeamStanding?.stats?.opponentsPointsPerGame != null)
@@ -1035,10 +1422,10 @@ export default function LeagueHub({ showToast }) {
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      ROSTER SIZE
+                      {t.statRosterSize}
                     </span>
                     <span className="font-mono text-xl font-black text-amber-400">
-                      {currentRoster.length} Players
+                      {currentRoster.length} {t.playersCount}
                     </span>
                   </div>
                 </div>
@@ -1056,16 +1443,16 @@ export default function LeagueHub({ showToast }) {
                         <AlertTriangle className="w-4 h-4 text-rose-400" />
                       </div>
                       <h3 className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                        ⚠️ HIGH FOUL TARGETS (&gt;3.0 FOULS/G)
+                        {t.alertFoulTitle}
                       </h3>
                     </div>
                     <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
-                      {highFoulTargets.length} CANDIDATES
+                      {highFoulTargets.length} {t.alertFoulBadge}
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    <strong className="text-slate-200">Coach Strategy:</strong> Attack in the paint early off the dribble to draw fouls, induce penalty, and force bench substitutions.
+                    {t.alertFoulStrategy}
                   </p>
 
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
@@ -1083,7 +1470,7 @@ export default function LeagueHub({ showToast }) {
                       ))
                     ) : (
                       <span className="text-xs text-slate-400 italic bg-slate-950/60 px-3 py-1.5 rounded-lg w-full text-center">
-                        No players averaging &gt; 3.0 fouls.
+                        {t.alertFoulEmpty}
                       </span>
                     )}
                   </div>
@@ -1097,16 +1484,16 @@ export default function LeagueHub({ showToast }) {
                         <Target className="w-4 h-4 text-amber-400" />
                       </div>
                       <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider">
-                        🎯 PRIMARY SHOOTERS (&gt;1.5 MADE 3PT/G)
+                        {t.alertShooterTitle}
                       </h3>
                     </div>
                     <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                      {primaryShooters.length} SHOOTERS
+                      {primaryShooters.length} {t.alertShooterBadge}
                     </span>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-relaxed">
-                    <strong className="text-slate-200">Coach Strategy:</strong> Contest tight on catch-and-shoot looks, fight over high ball screens, and do not help off them in corner rotations.
+                    {t.alertShooterStrategy}
                   </p>
 
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
@@ -1124,7 +1511,7 @@ export default function LeagueHub({ showToast }) {
                       ))
                     ) : (
                       <span className="text-xs text-slate-400 italic bg-slate-950/60 px-3 py-1.5 rounded-lg w-full text-center">
-                        No primary perimeter volume shooters.
+                        {t.alertShooterEmpty}
                       </span>
                     )}
                   </div>
@@ -1136,10 +1523,10 @@ export default function LeagueHub({ showToast }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      ROSTER & LINEUP STATISTICS ({filteredRoster.length} PLAYERS)
+                      {t.rosterTitle} ({filteredRoster.length} {t.playersCount})
                     </h3>
                     <p className="text-[11px] text-slate-400">
-                      Official FIP lineup statistics. Click any row to view individual shooting chart splits.
+                      {t.rosterSubtitle}
                     </p>
                   </div>
 
@@ -1149,7 +1536,7 @@ export default function LeagueHub({ showToast }) {
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                       <input
                         type="text"
-                        placeholder="Search player..."
+                        placeholder={t.searchPlayer}
                         value={rosterSearch}
                         onChange={(e) => setRosterSearch(e.target.value)}
                         className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-44"
@@ -1161,11 +1548,11 @@ export default function LeagueHub({ showToast }) {
                       onChange={(e) => setRosterSortBy(e.target.value)}
                       className="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-bold p-1.5 rounded-lg focus:outline-none focus:border-amber-400 cursor-pointer"
                     >
-                      <option value="ppg">Sort: PPG</option>
-                      <option value="fouls">Sort: Fouls/G</option>
-                      <option value="three">Sort: 3PM/G</option>
-                      <option value="plusMinus">Sort: Plus/Minus</option>
-                      <option value="number">Sort: Jersey #</option>
+                      <option value="ppg">{t.sortPpg}</option>
+                      <option value="fouls">{t.sortFouls}</option>
+                      <option value="three">{t.sortThree}</option>
+                      <option value="plusMinus">{t.sortPlusMinus}</option>
+                      <option value="number">{t.sortNumber}</option>
                     </select>
                   </div>
                 </div>
@@ -1175,91 +1562,103 @@ export default function LeagueHub({ showToast }) {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                        <th className="p-3 w-12 text-center">#</th>
-                        <th className="p-3">NAME & POSITION</th>
-                        <th className="p-3 text-center">GP</th>
-                        <th className="p-3 text-center">POINTS/G</th>
-                        <th className="p-3 text-center">FOULS/G</th>
-                        <th className="p-3 text-center">3PT% (3PM)</th>
-                        <th className="p-3 text-center">2PT%</th>
-                        <th className="p-3 text-center">FT%</th>
-                        <th className="p-3 text-center">PLUS/MINUS (+/-)</th>
-                        <th className="p-3 text-left">ALERTS</th>
+                        <th className="p-3 w-12 text-center">{t.colNumber}</th>
+                        <th className="p-3">{t.colNamePos}</th>
+                        <th className="p-3 text-center">{t.colGp}</th>
+                        <th className="p-3 text-center">{t.colPpg}</th>
+                        <th className="p-3 text-center">{t.colFouls}</th>
+                        <th className="p-3 text-center">{t.colThree}</th>
+                        <th className="p-3 text-center">{t.colTwo}</th>
+                        <th className="p-3 text-center">{t.colFt}</th>
+                        <th className="p-3 text-center">{t.colPlusMinus}</th>
+                        <th className="p-3 text-left">{t.colAlerts}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80">
-                      {filteredRoster.map((p) => {
-                        const isFoulTarget = p.foulsAVG > 3.0;
-                        const isShooter = p.threeMadeAVG > 1.5;
+                      {filteredRoster.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="p-8 text-center text-slate-400">
+                            <User className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
+                            <p className="font-bold text-slate-300">{t.noPlayersTitle}</p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              {rosterSearch.trim() ? `${t.noPlayersSearch} "${rosterSearch}"` : t.noPlayersDesc}
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredRoster.map((p) => {
+                          const isFoulTarget = p.foulsAVG > 3.0;
+                          const isShooter = p.threeMadeAVG > 1.5;
 
-                        return (
-                          <tr
-                            key={p.fid}
-                            onClick={() => setSelectedPlayer(p)}
-                            className="hover:bg-slate-800/50 cursor-pointer transition-colors"
-                          >
-                            <td className="p-3 text-center font-mono font-black text-rose-400">
-                              #{p.number}
-                            </td>
-                            <td className="p-3">
-                              <span className="font-black text-slate-100 block text-xs">{p.name}</span>
-                              <span className="text-[10px] text-slate-400">{p.position}</span>
-                            </td>
-                            <td className="p-3 text-center font-mono text-slate-400">
-                              {p.games}
-                            </td>
-                            <td className="p-3 text-center font-mono font-black text-rose-400 text-sm">
-                              {p.pointsAVG.toFixed(1)}
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold">
-                              <span className={`px-2 py-0.5 rounded ${
-                                isFoulTarget ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 font-black' : 'text-slate-300'
-                              }`}>
-                                {p.foulsAVG.toFixed(1)}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold">
-                              <span className={isShooter ? 'text-amber-300 font-black' : 'text-slate-300'}>
-                                {p.threePct}%
-                              </span>
-                              <span className="text-[10px] text-slate-500 ml-1">
-                                ({p.threeMadeAVG.toFixed(1)})
-                              </span>
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold text-sky-400">
-                              {p.twoPct}%
-                            </td>
-                            <td className="p-3 text-center font-mono font-bold text-emerald-400">
-                              {p.ftPct}%
-                            </td>
-                            <td className="p-3 text-center font-mono font-black">
-                              <span className={`px-2 py-0.5 rounded ${
-                                p.plusMinusAVG > 0 
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                                  : p.plusMinusAVG < 0 
-                                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
-                                    : 'text-slate-400'
-                              }`}>
-                                {p.plusMinusAVG > 0 ? `+${p.plusMinusAVG.toFixed(1)}` : p.plusMinusAVG.toFixed(1)}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <div className="flex items-center gap-1 flex-wrap">
-                                {isShooter && (
-                                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                                    <Target className="w-2.5 h-2.5" /> SHOOTER
-                                  </span>
-                                )}
-                                {isFoulTarget && (
-                                  <span className="text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                                    <AlertTriangle className="w-2.5 h-2.5" /> FOUL TARGET
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                          return (
+                            <tr
+                              key={p.fid}
+                              onClick={() => setSelectedPlayer(p)}
+                              className="hover:bg-slate-800/50 cursor-pointer transition-colors"
+                            >
+                              <td className="p-3 text-center font-mono font-black text-rose-400">
+                                #{p.number}
+                              </td>
+                              <td className="p-3">
+                                <span className="font-black text-slate-100 block text-xs">{p.name}</span>
+                                <span className="text-[10px] text-slate-400">{p.position}</span>
+                              </td>
+                              <td className="p-3 text-center font-mono text-slate-400">
+                                {p.games}
+                              </td>
+                              <td className="p-3 text-center font-mono font-black text-rose-400 text-sm">
+                                {p.pointsAVG.toFixed(1)}
+                              </td>
+                              <td className="p-3 text-center font-mono font-bold">
+                                <span className={`px-2 py-0.5 rounded ${
+                                  isFoulTarget ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 font-black' : 'text-slate-300'
+                                }`}>
+                                  {p.foulsAVG.toFixed(1)}
+                                </span>
+                              </td>
+                              <td className="p-3 text-center font-mono font-bold">
+                                <span className={isShooter ? 'text-amber-300 font-black' : 'text-slate-300'}>
+                                  {p.threePct}%
+                                </span>
+                                <span className="text-[10px] text-slate-500 ml-1">
+                                  ({p.threeMadeAVG.toFixed(1)})
+                                </span>
+                              </td>
+                              <td className="p-3 text-center font-mono font-bold text-sky-400">
+                                {p.twoPct}%
+                              </td>
+                              <td className="p-3 text-center font-mono font-bold text-emerald-400">
+                                {p.ftPct}%
+                              </td>
+                              <td className="p-3 text-center font-mono font-black">
+                                <span className={`px-2 py-0.5 rounded ${
+                                  p.plusMinusAVG > 0 
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                    : p.plusMinusAVG < 0 
+                                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
+                                      : 'text-slate-400'
+                                }`}>
+                                  {p.plusMinusAVG > 0 ? `+${p.plusMinusAVG.toFixed(1)}` : p.plusMinusAVG.toFixed(1)}
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  {isShooter && (
+                                    <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                      <Target className="w-2.5 h-2.5" /> {t.badgeShooter}
+                                    </span>
+                                  )}
+                                  {isFoulTarget && (
+                                    <span className="text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                      <AlertTriangle className="w-2.5 h-2.5" /> {t.badgeFoulTarget}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1274,13 +1673,25 @@ export default function LeagueHub({ showToast }) {
       {/* ========================================================================= */}
       {selectedPlayer && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-end p-2 sm:p-4 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-xl p-5 space-y-4 max-h-[92vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center font-mono font-black text-rose-400 text-lg">
-                  #{selectedPlayer.number}
-                </div>
+                {selectedPlayer.photo ? (
+                  <img
+                    src={selectedPlayer.photo}
+                    alt={selectedPlayer.name}
+                    className="w-12 h-12 rounded-xl object-cover border border-rose-500/40 bg-slate-950 flex-none"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center font-mono font-black text-rose-400 text-lg flex-none">
+                    #{selectedPlayer.number}
+                  </div>
+                )}
                 <div>
                   <h3 className="text-base font-black text-slate-100 uppercase tracking-wide">
                     {selectedPlayer.name}
@@ -1289,6 +1700,8 @@ export default function LeagueHub({ showToast }) {
                     <span>{selectedPlayer.position}</span>
                     <span>•</span>
                     <span className="text-rose-400">{currentTeamStanding?.name || selectedTeamFid}</span>
+                    <span>•</span>
+                    <span className="text-slate-400 font-mono">{selectedPlayer.games} GP</span>
                   </p>
                 </div>
               </div>
@@ -1304,24 +1717,40 @@ export default function LeagueHub({ showToast }) {
             {/* Core Stats Strip */}
             <div className="grid grid-cols-4 gap-2 text-center">
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">POINTS/G</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">{t.modalPpg}</span>
                 <span className="font-mono text-lg font-black text-rose-400">{selectedPlayer.pointsAVG.toFixed(1)}</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">FOULS/G</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">{t.modalFouls}</span>
                 <span className={`font-mono text-lg font-black ${selectedPlayer.foulsAVG > 3.0 ? 'text-rose-400' : 'text-slate-200'}`}>
                   {selectedPlayer.foulsAVG.toFixed(1)}
                 </span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">3PT%</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">{t.modalThree}</span>
                 <span className="font-mono text-lg font-black text-amber-300">{selectedPlayer.threePct}%</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">+/-</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">{t.modalPlusMinus}</span>
                 <span className={`font-mono text-lg font-black ${selectedPlayer.plusMinusAVG > 0 ? 'text-emerald-400' : 'text-slate-200'}`}>
                   {selectedPlayer.plusMinusAVG > 0 ? `+${selectedPlayer.plusMinusAVG.toFixed(1)}` : selectedPlayer.plusMinusAVG.toFixed(1)}
                 </span>
+              </div>
+            </div>
+
+            {/* Additional Season Metrics */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">{t.modalRebounds}</span>
+                <span className="font-mono text-sm font-black text-slate-200">{selectedPlayer.reboundsAVG.toFixed(1)}</span>
+              </div>
+              <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">{t.modalAssists}</span>
+                <span className="font-mono text-sm font-black text-slate-200">{selectedPlayer.assistsAVG.toFixed(1)}</span>
+              </div>
+              <div className="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <span className="text-[9px] font-black uppercase text-slate-400 block mb-0.5">{t.modalGames}</span>
+                <span className="font-mono text-sm font-black text-sky-400">{selectedPlayer.games}</span>
               </div>
             </div>
 
@@ -1332,7 +1761,7 @@ export default function LeagueHub({ showToast }) {
                   <Target className="w-4 h-4 text-amber-400 flex-none" />
                   <div>
                     <strong className="block font-black">PRIMARY PERIMETER SHOOTER ({selectedPlayer.threeMadeAVG.toFixed(1)} 3PM/G)</strong>
-                    <span className="text-[11px] text-slate-300">High volume threat from outside the arc. Contest tight and deny open look.</span>
+                    <span className="text-[11px] text-slate-300">{t.alertShooterStrategy}</span>
                   </div>
                 </div>
               )}
@@ -1341,7 +1770,7 @@ export default function LeagueHub({ showToast }) {
                   <AlertTriangle className="w-4 h-4 text-rose-400 flex-none" />
                   <div>
                     <strong className="block font-black">HIGH FOUL TARGET ({selectedPlayer.foulsAVG.toFixed(1)} FOULS/G)</strong>
-                    <span className="text-[11px] text-slate-300">Vulnerable on pump fakes and aggressive drives. Attack early to draw foul trouble.</span>
+                    <span className="text-[11px] text-slate-300">{t.alertFoulStrategy}</span>
                   </div>
                 </div>
               )}
@@ -1350,25 +1779,210 @@ export default function LeagueHub({ showToast }) {
             {/* Shooting Splits */}
             <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
               <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
-                SHOOTING ACCURACY SPLITS
+                {t.modalSplitsTitle}
               </span>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                  <span className="text-[9px] text-slate-400 font-bold block">3PT (OUT-ARC)</span>
+                  <span className="text-[9px] text-slate-400 font-bold block">{t.modal3pt}</span>
                   <span className="font-mono text-sm font-black text-amber-300">{selectedPlayer.threePct}%</span>
-                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.threeMadeAVG.toFixed(1)} made/G</span>
+                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.threeMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
                 </div>
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                  <span className="text-[9px] text-slate-400 font-bold block">2PT (IN-ARC)</span>
+                  <span className="text-[9px] text-slate-400 font-bold block">{t.modal2pt}</span>
                   <span className="font-mono text-sm font-black text-sky-400">{selectedPlayer.twoPct}%</span>
-                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.twoMadeAVG.toFixed(1)} made/G</span>
+                  <span className="text-[9px] text-slate-500 block">{selectedPlayer.twoMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
                 </div>
                 <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                  <span className="text-[9px] text-slate-400 font-bold block">FREE THROWS</span>
+                  <span className="text-[9px] text-slate-400 font-bold block">{t.modalFt}</span>
                   <span className="font-mono text-sm font-black text-emerald-400">{selectedPlayer.ftPct}%</span>
                 </div>
               </div>
             </div>
+
+            {/* CARRIERA Data Table modeled after FIP mobile app */}
+            {(() => {
+              const up = selectedPlayer.uniquePlayer || {};
+              const upStats = up.stats || (selectedPlayer.games > 0 ? {
+                games: selectedPlayer.games,
+                timePlayed: Math.round(selectedPlayer.games * 20 * 60),
+                points: Math.round(selectedPlayer.games * selectedPlayer.pointsAVG),
+                pointsPerGame: selectedPlayer.pointsAVG,
+                freeThrowsPercentage: selectedPlayer.ftPct,
+                inArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.twoMadeAVG),
+                outArcThrowsMade: Math.round(selectedPlayer.games * selectedPlayer.threeMadeAVG),
+                fouls: Math.round(selectedPlayer.games * selectedPlayer.foulsAVG),
+                plusMinus: Math.round(selectedPlayer.games * selectedPlayer.plusMinusAVG)
+              } : null);
+
+              const rawSeasons = Array.isArray(up.seasonStats) && up.seasonStats.length > 0
+                ? up.seasonStats
+                : (Array.isArray(selectedPlayer.history) ? selectedPlayer.history : []);
+
+              const filteredSeasons = rawSeasons.filter(s => s && s.seasonId && !s.seasonId.includes('2023/24') && !s.seasonId.includes('2022/23'));
+
+              const seasonStatsList = filteredSeasons.length > 0 
+                ? filteredSeasons 
+                : (upStats && upStats.games > 0 ? [{
+                    seasonId: "24/25",
+                    games: upStats.games,
+                    timePlayed: upStats.timePlayed,
+                    points: upStats.points,
+                    pointsPerGame: upStats.pointsPerGame,
+                    freeThrowsPercentage: upStats.freeThrowsPercentage,
+                    inArcThrowsMade: upStats.inArcThrowsMade,
+                    outArcThrowsMade: upStats.outArcThrowsMade,
+                    fouls: upStats.fouls,
+                    plusMinus: upStats.plusMinus
+                  }] : []);
+
+              return (
+                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+                    <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-amber-400" />
+                      {t.historyTitle || 'CARRIERA'}
+                    </span>
+                    {seasonStatsList.length > 0 && (
+                      <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                        {seasonStatsList.length} {t.historySeason || 'STAGIONI'}
+                      </span>
+                    )}
+                  </div>
+
+                  {upStats || seasonStatsList.length > 0 ? (
+                    <div className="overflow-x-auto -mx-1 sm:mx-0">
+                      <table className="w-full text-left text-xs border-collapse font-sans min-w-[480px]">
+                        <thead>
+                          <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 font-black uppercase text-[10px] tracking-wider">
+                            <th className="p-2 text-slate-300 font-bold">{t.historyTitle || 'CARRIERA'}</th>
+                            <th className="p-2 text-center" title="Partite Giocate">{t.historyGp || 'P'}</th>
+                            <th className="p-2 text-center" title="Minuti">{t.historyMin || 'MIN'}</th>
+                            <th className="p-2 text-center" title="Punti">{t.historyPts || 'PT'}</th>
+                            <th className="p-2 text-center" title="Percentuale Tiri Liberi">{t.historyFtPct || '%TL'}</th>
+                            <th className="p-2 text-center" title="Tiri da 2">{t.history2p || '2PT'}</th>
+                            <th className="p-2 text-center" title="Tiri da 3">{t.history3p || '3PT'}</th>
+                            <th className="p-2 text-center" title="Falli">{t.historyFouls || 'FF'}</th>
+                            <th className="p-2 text-center" title="Plus/Minus">{t.historyPlusMinus || '+/-'}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+                          {/* Row 1: MED (Per-game averages) */}
+                          {upStats && (
+                            <tr className="bg-slate-900/40 hover:bg-slate-900/70 transition-colors">
+                              <td className="p-2 font-black text-amber-400 text-xs">
+                                {t.historyMed || 'MED'}
+                              </td>
+                              <td className="p-2 text-center text-slate-500">
+                                —
+                              </td>
+                              <td className="p-2 text-center text-slate-300">
+                                {formatMedMin(upStats)}
+                              </td>
+                              <td className="p-2 text-center font-black text-rose-400">
+                                {upStats.pointsPerGame != null ? Number(upStats.pointsPerGame).toFixed(1) : formatMedVal(upStats.points, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center text-emerald-400 font-bold">
+                                {formatFtPct(upStats.freeThrowsPercentage)}
+                              </td>
+                              <td className="p-2 text-center text-sky-400">
+                                {formatMedVal(upStats.inArcThrowsMade, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center text-amber-300">
+                                {formatMedVal(upStats.outArcThrowsMade, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center text-slate-300">
+                                {formatMedVal(upStats.fouls, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center font-semibold">
+                                {formatMedPlusMinus(upStats)}
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Row 2: Totale (Absolute career totals) */}
+                          {upStats && (
+                            <tr className="bg-slate-900/70 font-semibold hover:bg-slate-900/90 transition-colors border-b border-slate-800">
+                              <td className="p-2 font-black text-slate-200 text-xs">
+                                {t.historyTotale || 'Totale'}
+                              </td>
+                              <td className="p-2 text-center text-slate-200">
+                                {upStats.games ?? 0}
+                              </td>
+                              <td className="p-2 text-center text-slate-300">
+                                {formatTotMin(upStats.timePlayed, upStats.games)}
+                              </td>
+                              <td className="p-2 text-center font-black text-rose-400">
+                                {upStats.points != null ? upStats.points : Math.round((upStats.games || 0) * (upStats.pointsPerGame || 0))}
+                              </td>
+                              <td className="p-2 text-center text-emerald-400 font-bold">
+                                {formatFtPct(upStats.freeThrowsPercentage)}
+                              </td>
+                              <td className="p-2 text-center text-sky-400">
+                                {upStats.inArcThrowsMade ?? 0}
+                              </td>
+                              <td className="p-2 text-center text-amber-300">
+                                {upStats.outArcThrowsMade ?? 0}
+                              </td>
+                              <td className="p-2 text-center text-slate-300">
+                                {upStats.fouls ?? 0}
+                              </td>
+                              <td className="p-2 text-center font-semibold">
+                                {formatTotPlusMinus(upStats.plusMinus)}
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Dynamic Season Rows: Map over uniquePlayer.seasonStats */}
+                          {seasonStatsList.map((season, sIdx) => {
+                            const sGames = Number(season.games || 0);
+                            const sPoints = season.points != null 
+                              ? season.points 
+                              : (season.pointsPerGame != null && sGames > 0 ? Math.round(season.pointsPerGame * sGames) : 0);
+                            const sFtPct = season.freeThrowsPercentage != null ? season.freeThrowsPercentage : null;
+
+                            return (
+                              <tr key={sIdx} className="hover:bg-slate-900/40 transition-colors">
+                                <td className="p-2 font-bold text-slate-300 text-xs">
+                                  {season.seasonId || `S${sIdx + 1}`}
+                                </td>
+                                <td className="p-2 text-center text-slate-300">
+                                  {sGames}
+                                </td>
+                                <td className="p-2 text-center text-slate-400">
+                                  {formatTotMin(season.timePlayed, sGames)}
+                                </td>
+                                <td className="p-2 text-center font-bold text-rose-400">
+                                  {sPoints}
+                                </td>
+                                <td className="p-2 text-center text-emerald-400">
+                                  {formatFtPct(sFtPct)}
+                                </td>
+                                <td className="p-2 text-center text-sky-400">
+                                  {season.inArcThrowsMade ?? 0}
+                                </td>
+                                <td className="p-2 text-center text-amber-300">
+                                  {season.outArcThrowsMade ?? 0}
+                                </td>
+                                <td className="p-2 text-center text-slate-400">
+                                  {season.fouls ?? 0}
+                                </td>
+                                <td className="p-2 text-center font-medium">
+                                  {formatTotPlusMinus(season.plusMinus)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 italic py-2 text-center">
+                      {t.noHistory || 'Nessun dato di carriera disponibile.'}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

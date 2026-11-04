@@ -9,10 +9,14 @@
       "wonMatches": 2,
       "lostMatches": 0,
       "pointsPerGame": 79.5,
-      "opponentsPointsPerGame": 64,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 64
     },
-    "__typename": "Standing"
+    "clubId": "club_211630",
+    "streak": [
+      "W",
+      "W"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "211034",
@@ -24,10 +28,14 @@
       "wonMatches": 2,
       "lostMatches": 0,
       "pointsPerGame": 54.5,
-      "opponentsPointsPerGame": 46,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 46
     },
-    "__typename": "Standing"
+    "clubId": "club_211034",
+    "streak": [
+      "W",
+      "W"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "209329",
@@ -35,14 +43,18 @@
     "position": "3",
     "logo": null,
     "stats": {
-      "playedMatches": 1,
-      "wonMatches": 1,
+      "playedMatches": 2,
+      "wonMatches": 2,
       "lostMatches": 0,
-      "pointsPerGame": 71,
-      "opponentsPointsPerGame": 60,
-      "__typename": "StandingStats"
+      "pointsPerGame": 68,
+      "opponentsPointsPerGame": 60.5
     },
-    "__typename": "Standing"
+    "clubId": "club_209329",
+    "streak": [
+      "W",
+      "W"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "207455",
@@ -50,59 +62,71 @@
     "position": "4",
     "logo": null,
     "stats": {
-      "playedMatches": 1,
+      "playedMatches": 2,
       "wonMatches": 1,
-      "lostMatches": 0,
-      "pointsPerGame": 57,
-      "opponentsPointsPerGame": 51,
-      "__typename": "StandingStats"
+      "lostMatches": 1,
+      "pointsPerGame": 59,
+      "opponentsPointsPerGame": 58
     },
-    "__typename": "Standing"
+    "clubId": "club_207455",
+    "streak": [
+      "W",
+      "L"
+    ],
+    "lastMatches": []
+  },
+  {
+    "fid": "211634",
+    "name": "BARONISSI BASKETBALL ACADEMY",
+    "position": "5",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 2,
+      "wonMatches": 1,
+      "lostMatches": 1,
+      "pointsPerGame": 58.5,
+      "opponentsPointsPerGame": 58
+    },
+    "clubId": "club_211634",
+    "streak": [
+      "W",
+      "L"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "209328",
     "name": "TEKLA SCAFATI",
-    "position": "5",
+    "position": "6",
     "logo": null,
     "stats": {
       "playedMatches": 0,
       "wonMatches": 0,
       "lostMatches": 0,
       "pointsPerGame": 0,
-      "opponentsPointsPerGame": 0,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 0
     },
-    "__typename": "Standing"
+    "clubId": "club_209328",
+    "streak": [],
+    "lastMatches": []
   },
   {
     "fid": "211179",
     "name": "G.S. MINORI PALLACANESTRO",
-    "position": "6",
-    "logo": "N/A",
-    "stats": {
-      "playedMatches": 0,
-      "wonMatches": 0,
-      "lostMatches": 0,
-      "pointsPerGame": 0,
-      "opponentsPointsPerGame": 0,
-      "__typename": "StandingStats"
-    },
-    "__typename": "Standing"
-  },
-  {
-    "fid": "211634",
-    "name": "BARONISSI BASKETBALL ACADEMY",
     "position": "7",
     "logo": "N/A",
     "stats": {
       "playedMatches": 1,
       "wonMatches": 0,
       "lostMatches": 1,
-      "pointsPerGame": 51,
-      "opponentsPointsPerGame": 57,
-      "__typename": "StandingStats"
+      "pointsPerGame": 59,
+      "opponentsPointsPerGame": 66
     },
-    "__typename": "Standing"
+    "clubId": "club_211179",
+    "streak": [
+      "L"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "207456",
@@ -114,10 +138,13 @@
       "wonMatches": 0,
       "lostMatches": 1,
       "pointsPerGame": 70,
-      "opponentsPointsPerGame": 79,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 79
     },
-    "__typename": "Standing"
+    "clubId": "club_207456",
+    "streak": [
+      "L"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "211635",
@@ -129,10 +156,14 @@
       "wonMatches": 0,
       "lostMatches": 2,
       "pointsPerGame": 51,
-      "opponentsPointsPerGame": 58.5,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 58.5
     },
-    "__typename": "Standing"
+    "clubId": "club_211635",
+    "streak": [
+      "L",
+      "L"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "211628",
@@ -144,10 +175,13 @@
       "wonMatches": 0,
       "lostMatches": 1,
       "pointsPerGame": 50,
-      "opponentsPointsPerGame": 63,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 63
     },
-    "__typename": "Standing"
+    "clubId": "club_211628",
+    "streak": [
+      "L"
+    ],
+    "lastMatches": []
   },
   {
     "fid": "206399",
@@ -159,9 +193,12 @@
       "wonMatches": 0,
       "lostMatches": 1,
       "pointsPerGame": 58,
-      "opponentsPointsPerGame": 80,
-      "__typename": "StandingStats"
+      "opponentsPointsPerGame": 80
     },
-    "__typename": "Standing"
+    "clubId": "club_206399",
+    "streak": [
+      "L"
+    ],
+    "lastMatches": []
   }
 ]

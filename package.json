@@ -8,8 +8,8 @@
     "dev": "vite",
     "server": "node server.js",
     "build": "vite build",
-    "sync-fip": "node scripts/sync_fip_data.js",
-    "sync-league": "node scripts/sync_fip_data.js",
+    "sync-fip": "node scripts/build_league.js",
+    "sync-league": "node scripts/build_league.js",
     "scrape": "node scripts/sync_fip_data.js",
     "start": "node server.js"
   },

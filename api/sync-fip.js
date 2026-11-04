@@ -490,23 +490,36 @@ export default async function handler(req, res) {
       throw new Error('Received empty standings array from FIP GraphQL backend');
     }
 
-    // Try saving directly to public/data/league_standings.json if accessible locally
+    // Try reading enriched local files if accessible
+    let finalStandings = standingsArray;
+    let rostersDictionary = null;
     try {
       const publicDataDir = path.join(process.cwd(), 'public', 'data');
       if (fs.existsSync(publicDataDir)) {
-        fs.writeFileSync(
-          path.join(publicDataDir, 'league_standings.json'),
-          JSON.stringify(standingsArray, null, 2),
-          'utf-8'
-        );
+        const standingsPath = path.join(publicDataDir, 'league_standings.json');
+        if (fs.existsSync(standingsPath)) {
+          finalStandings = JSON.parse(fs.readFileSync(standingsPath, 'utf-8'));
+        } else {
+          fs.writeFileSync(
+            standingsPath,
+            JSON.stringify(standingsArray, null, 2),
+            'utf-8'
+          );
+        }
+
+        const rostersPath = path.join(publicDataDir, 'league_rosters.json');
+        if (fs.existsSync(rostersPath)) {
+          rostersDictionary = JSON.parse(fs.readFileSync(rostersPath, 'utf-8'));
+        }
       }
     } catch (fsErr) {
       // Non-fatal on serverless
     }
 
-    console.log(`[api/sync-fip] Standings sync completed successfully (${standingsArray.length} teams).`);
+    console.log(`[api/sync-fip] Standings sync completed successfully (${finalStandings.length} teams).`);
     return res.status(200).json({
-      standings: standingsArray,
+      standings: finalStandings,
+      rosters: rostersDictionary || BASELINE_ROSTERS,
       isFallback: false
     });
 
@@ -515,6 +528,7 @@ export default async function handler(req, res) {
     // Graceful error fallback
     return res.status(200).json({
       standings: BASELINE_STANDINGS,
+      rosters: BASELINE_ROSTERS,
       isFallback: true,
       error: err.message
     });
