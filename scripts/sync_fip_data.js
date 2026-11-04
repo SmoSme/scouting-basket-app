@@ -25,10 +25,13 @@ const STANDINGS_FILE = path.join(OUTPUT_DIR, 'league_standings.json');
 const ROSTERS_FILE = path.join(OUTPUT_DIR, 'league_rosters.json');
 
 // Configuration from .env
-const FIP_GRAPHQL_ENDPOINT = process.env.FIP_GRAPHQL_ENDPOINT || '';
+const FIP_GRAPHQL_ENDPOINT = process.env.FIP_GRAPHQL_ENDPOINT || 'https://internal.nbn23.app/graphql';
 const FIP_AUTH_TOKEN = process.env.FIP_AUTH_TOKEN || '';
 const FIP_PACKAGE_NAME = process.env.FIP_PACKAGE_NAME || 'com.nbn23.fipapp';
 const FIP_USER_PREMIUM = process.env.FIP_USER_PREMIUM || 'true';
+const FIP_GROUP_ID = process.env.FIP_GROUP_ID || '85512';
+const FIP_PROVIDER = process.env.FIP_PROVIDER || 'fhoster';
+const FIP_PROJECT_KEY = process.env.FIP_PROJECT_KEY || 'fip_rcm';
 const FIP_COMPETITION_ID = process.env.FIP_COMPETITION_ID || 'comp_dr2_girf';
 const BBA_TEAM_ID = process.env.BBA_TEAM_ID || 'team_bba_academy';
 
@@ -40,100 +43,124 @@ const isMockMode = args.includes('--mock') || args.includes('--demo');
 // =========================================================================
 const BASELINE_STANDINGS = [
   {
-    rank: 1,
-    teamFid: "team_virtus_1960",
-    team: { fid: "team_virtus_1960", name: "Virtus Roma 1960" },
+    fid: "team_virtus_1960",
     name: "Virtus Roma 1960",
-    points: 28,
-    won: 14,
-    lost: 4,
-    played: 18,
-    pointDiff: 8.2,
-    streak: ["W", "W", "L", "W", "W"]
+    position: 1,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 14,
+      lostMatches: 4,
+      pointsPerGame: 76.5,
+      opponentsPointsPerGame: 68.3,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 2,
-    teamFid: "team_carver",
-    team: { fid: "team_carver", name: "Carver Cinecittà" },
+    fid: "team_carver",
     name: "Carver Cinecittà",
-    points: 26,
-    won: 13,
-    lost: 5,
-    played: 18,
-    pointDiff: 7.6,
-    streak: ["W", "W", "W", "W", "L"]
+    position: 2,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 13,
+      lostMatches: 5,
+      pointsPerGame: 75.2,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 3,
-    teamFid: "team_petriana",
-    team: { fid: "team_petriana", name: "Petriana Basket" },
+    fid: "team_petriana",
     name: "Petriana Basket",
-    points: 24,
-    won: 12,
-    lost: 6,
-    played: 18,
-    pointDiff: 3.8,
-    streak: ["L", "W", "W", "L", "W"]
+    position: 3,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 12,
+      lostMatches: 6,
+      pointsPerGame: 71.4,
+      opponentsPointsPerGame: 67.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 4,
-    teamFid: "team_bba_academy",
-    team: { fid: "team_bba_academy", name: "BBA - Basketball Academy" },
+    fid: "team_bba_academy",
     name: "BBA - Basketball Academy",
-    points: 22,
-    won: 11,
-    lost: 7,
-    played: 18,
-    pointDiff: 3.4,
-    streak: ["W", "L", "W", "W", "W"]
+    position: 4,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 11,
+      lostMatches: 7,
+      pointsPerGame: 72.8,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 5,
-    teamFid: "team_san_paolo",
-    team: { fid: "team_san_paolo", name: "San Paolo Ostiense" },
+    fid: "team_san_paolo",
     name: "San Paolo Ostiense",
-    points: 20,
-    won: 10,
-    lost: 8,
-    played: 18,
-    pointDiff: 0.4,
-    streak: ["W", "L", "L", "W", "L"]
+    position: 5,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 10,
+      lostMatches: 8,
+      pointsPerGame: 68.9,
+      opponentsPointsPerGame: 68.5,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 6,
-    teamFid: "team_alfa_omega",
-    team: { fid: "team_alfa_omega", name: "Alfa Omega Ostia" },
+    fid: "team_alfa_omega",
     name: "Alfa Omega Ostia",
-    points: 16,
-    won: 8,
-    lost: 10,
-    played: 18,
-    pointDiff: -3.2,
-    streak: ["L", "L", "W", "L", "W"]
+    position: 6,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 8,
+      lostMatches: 10,
+      pointsPerGame: 66.2,
+      opponentsPointsPerGame: 69.4,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 7,
-    teamFid: "team_vis_nova",
-    team: { fid: "team_vis_nova", name: "Vis Nova Basket" },
+    fid: "team_vis_nova",
     name: "Vis Nova Basket",
-    points: 12,
-    won: 6,
-    lost: 12,
-    played: 18,
-    pointDiff: -7.6,
-    streak: ["L", "L", "L", "W", "L"]
+    position: 7,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 6,
+      lostMatches: 12,
+      pointsPerGame: 64.0,
+      opponentsPointsPerGame: 71.6,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   },
   {
-    rank: 8,
-    teamFid: "team_frascati",
-    team: { fid: "team_frascati", name: "Basket Frascati" },
+    fid: "team_frascati",
     name: "Basket Frascati",
-    points: 8,
-    won: 4,
-    lost: 14,
-    played: 18,
-    pointDiff: -12.6,
-    streak: ["L", "L", "L", "L", "W"]
+    position: 8,
+    logo: "",
+    stats: {
+      playedMatches: 18,
+      wonMatches: 4,
+      lostMatches: 14,
+      pointsPerGame: 60.2,
+      opponentsPointsPerGame: 72.8,
+      __typename: "StandingStats"
+    },
+    __typename: "Standing"
   }
 ];
 
@@ -379,27 +406,23 @@ const BASELINE_ROSTERS = {
 // =========================================================================
 // 2. GRAPHQL QUERIES
 // =========================================================================
-const QUERY_STANDINGS_BY_TEAM = `
-query StandingsByTeam($competitionFid: String!, $teamFid: String!) {
-  standingsByTeam(competitionFid: $competitionFid, teamFid: $teamFid) {
-    competitionFid
-    standings {
-      rank
-      points
-      won
-      lost
-      played
-      pointDiff
-      streak
-      team {
-        fid
-        name
-        shortName
-      }
+const QUERY_GET_STANDINGS = `query GetStandings($projectKey: String, $provider: String, $groupId: String) {
+  standing(projectKey: $projectKey, provider: $provider, groupId: $groupId) {
+    fid
+    name
+    position
+    logo
+    stats {
+      playedMatches
+      wonMatches
+      lostMatches
+      pointsPerGame
+      opponentsPointsPerGame
+      __typename
     }
+    __typename
   }
-}
-`;
+}`;
 
 const QUERY_LINEUP_STATS = `
 query competitionLineupStats($competitionFid: String!, $teamFid: String!) {
@@ -525,8 +548,9 @@ async function runPipeline() {
       console.log('   Required in .env:');
       console.log('   • FIP_GRAPHQL_ENDPOINT = Intercepted GraphQL URL');
       console.log('   • FIP_AUTH_TOKEN       = Bearer Token from Charles/Proxyman');
-      console.log('   • FIP_COMPETITION_ID   = Competition FID');
-      console.log('   • BBA_TEAM_ID          = Our Team FID');
+      console.log('   • FIP_GROUP_ID         = DR2 Group ID (e.g. 85512)');
+      console.log('   • FIP_PROVIDER         = Provider (e.g. fhoster)');
+      console.log('   • FIP_PROJECT_KEY      = Project key (e.g. fip_rcm)');
       console.log('');
       console.log('🚀 Generating baseline Divisione Regionale 2 dataset...');
     }
@@ -541,50 +565,25 @@ async function runPipeline() {
     // -------------------------------------------------------------
     // Step 1: Standings Extraction
     // -------------------------------------------------------------
-    console.log(`📡 [Step 1] Executing StandingsByTeam query...`);
-    console.log(`   Competition FID: ${FIP_COMPETITION_ID}`);
-    console.log(`   Our Team FID:    ${BBA_TEAM_ID}`);
+    const operationName = "GetStandings";
+    const variables = {
+      provider: process.env.FIP_PROVIDER || "fhoster",
+      projectKey: process.env.FIP_PROJECT_KEY || "fip_rcm",
+      groupId: process.env.FIP_GROUP_ID || "85512"
+    };
+    const query = QUERY_GET_STANDINGS;
 
-    const standingsData = await executeGraphQL('StandingsByTeam', QUERY_STANDINGS_BY_TEAM, {
-      competitionFid: FIP_COMPETITION_ID,
-      teamFid: BBA_TEAM_ID
-    });
+    console.log(`📡 [Step 1] Executing GetStandings query for group: ${variables.groupId}...`);
 
-    const rawStandings = standingsData?.standingsByTeam?.standings || 
-      standingsData?.standings || 
-      standingsData?.classification || [];
+    const jsonResponse = await executeGraphQL(operationName, query, variables);
+    const standingsArray = jsonResponse?.data?.standing || jsonResponse?.standing;
 
-    if (!Array.isArray(rawStandings) || rawStandings.length === 0) {
+    if (!Array.isArray(standingsArray) || standingsArray.length === 0) {
       throw new Error('Received empty standings array from GraphQL response');
     }
 
-    // Normalize standings array
-    const formattedStandings = rawStandings.map((st, idx) => {
-      const teamFid = st.team?.fid || st.teamFid || st.fid || `team_${idx + 1}`;
-      const name = st.team?.name || st.name || `Team ${idx + 1}`;
-      const won = st.won ?? st.w ?? 0;
-      const lost = st.lost ?? st.l ?? 0;
-      const points = st.points ?? (won * 2);
-      const played = st.played ?? (won + lost);
-      const pointDiff = st.pointDiff ?? st.diff ?? 0;
-      const streak = Array.isArray(st.streak) ? st.streak : ["W"];
-
-      return {
-        rank: st.rank ?? (idx + 1),
-        teamFid: String(teamFid),
-        team: { fid: String(teamFid), name },
-        name,
-        points,
-        won,
-        lost,
-        played,
-        pointDiff,
-        streak
-      };
-    });
-
-    writeJson(STANDINGS_FILE, formattedStandings);
-    console.log(`✅ Extracted ${formattedStandings.length} teams into league_standings.json`);
+    writeJson(STANDINGS_FILE, standingsArray);
+    console.log(`✅ Extracted ${standingsArray.length} teams directly into league_standings.json`);
 
     // -------------------------------------------------------------
     // Step 2: Opponent Rosters Extraction
@@ -592,8 +591,8 @@ async function runPipeline() {
     console.log(`\n📋 [Step 2] Executing competitionLineupStats for opponent teams...`);
     const rostersDictionary = {};
 
-    for (const teamItem of formattedStandings) {
-      const tFid = teamItem.teamFid;
+    for (const teamItem of standingsArray) {
+      const tFid = teamItem.fid;
       // Skip our team if it matches BBA_TEAM_ID
       if (tFid === BBA_TEAM_ID) {
         console.log(`   ⏭️ Skipping our team: ${teamItem.name} (${tFid})`);
