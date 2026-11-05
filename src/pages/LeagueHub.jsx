@@ -1062,8 +1062,8 @@ export const DICTIONARY = {
     modalMadePerGame: "a partita",
     backToRoster: "Torna al Roster",
     // Career history / Statistiche Totale
-    continuityBadge: "Confermati dal 24/25: {pct}%",
-    statContinuity: "CONTINUITÀ 24/25",
+    continuityBadge: "Confermati dal {season}: {pct}%",
+    statContinuity: "CONTINUITÀ {season}",
     colSeason: "STAGIONE",
     col2pm: "2PT/P",
     col3pm: "3PT/P",
@@ -1201,7 +1201,7 @@ export const DICTIONARY = {
     modalMadePerGame: "made/G",
     backToRoster: "Back to Team Roster",
     // Career history / Statistiche Totale
-    continuityBadge: "Core Retained from 24/25: {pct}%",
+    continuityBadge: "Core Retained from {season}: {pct}%",
     statContinuity: "CORE CONTINUITY",
     colSeason: "SEASON",
     col2pm: "2PM/G",
@@ -1498,7 +1498,28 @@ export default function LeagueHub({ showToast }) {
     return rawLineups.map((item, idx) => normalizeLineupItem(item, idx));
   }, [rawLineups]);
 
-  // Roster Continuity (core retained from 2024/2025)
+  // Dynamic active season & previous season detection from current roster history
+  const activeSeasonInfo = useMemo(() => {
+    let activeSeason = '';
+    if (Array.isArray(currentRoster)) {
+      for (const p of currentRoster) {
+        const history = p.history || p.uniquePlayer?.history || [];
+        if (history.length > 0 && history[0].seasonName) {
+          activeSeason = history[0].seasonName;
+          break;
+        }
+      }
+    }
+    if (!activeSeason || !activeSeason.includes('/')) {
+      return { activeSeason: '2026/2027', prevSeason: '2025/2026', prevShort: '25/26' };
+    }
+    const [startYear, endYear] = activeSeason.split('/').map(Number);
+    const prevSeason = `${startYear - 1}/${endYear - 1}`;
+    const prevShort = `${String(startYear - 1).slice(-2)}/${String(endYear - 1).slice(-2)}`;
+    return { activeSeason, prevSeason, prevShort };
+  }, [currentRoster]);
+
+  // Roster Continuity (core retained from previous season)
   const continuityPct = useMemo(() => {
     if (currentTeamStanding?.continuityPct != null) {
       return Number(currentTeamStanding.continuityPct);
@@ -1508,19 +1529,26 @@ export default function LeagueHub({ showToast }) {
     }
     if (Array.isArray(currentRoster) && currentRoster.length > 0) {
       const currentTeamName = currentTeamStanding?.name || '';
+      const prevSeasonName = activeSeasonInfo.prevSeason;
       let retained = 0;
       for (const player of currentRoster) {
         const history = player.history || player.uniquePlayer?.history || [];
         const prevSeason = history.find(h => {
-          const sName = String(h.seasonName || '');
-          return (sName.includes('2024') || sName === '2024/2025') && isSameTeam(h.teamName, currentTeamName);
+          const isPrevSeason = String(h.seasonName || '') === prevSeasonName;
+          let matchedTeam = false;
+          if (h.teams && Array.isArray(h.teams)) {
+            matchedTeam = h.teams.some(t => isSameTeam(t.teamName, currentTeamName));
+          } else {
+            matchedTeam = isSameTeam(h.teamName, currentTeamName);
+          }
+          return isPrevSeason && matchedTeam;
         });
         if (prevSeason) retained++;
       }
       return Math.round((retained / currentRoster.length) * 100);
     }
     return 65;
-  }, [currentTeamStanding, selectedTeamFid, rosters, currentRoster]);
+  }, [currentTeamStanding, selectedTeamFid, rosters, currentRoster, activeSeasonInfo]);
 
   // -------------------------------------------------------------------------
   // Dynamic Tactical Alerts & Team-Scope Threat Groups
@@ -2081,7 +2109,11 @@ export default function LeagueHub({ showToast }) {
                       {continuityPct != null && (
                         <span className="text-[10px] bg-emerald-500/15 text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
                           <Users className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>{(t.continuityBadge || 'Core Retained from 24/25: {pct}%').replace('{pct}', continuityPct)}</span>
+                          <span>
+                            {(t.continuityBadge || 'Confermati dal {season}: {pct}%')
+                              .replace('{season}', activeSeasonInfo.prevShort)
+                              .replace('{pct}', continuityPct)}
+                          </span>
                         </span>
                       )}
                     </div>
@@ -2157,7 +2189,7 @@ export default function LeagueHub({ showToast }) {
 
                   <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 col-span-2 sm:col-span-1">
                     <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.statContinuity}
+                      {(t.statContinuity || 'CONTINUITÀ {season}').replace('{season}', activeSeasonInfo.prevShort)}
                     </span>
                     <span className="font-mono text-xl font-black text-emerald-400 flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-emerald-400" />
