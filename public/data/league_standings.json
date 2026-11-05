@@ -10,7 +10,8 @@
       "lostMatches": 0,
       "pointsPerGame": 79.5,
       "opponentsPointsPerGame": 64
-    }
+    },
+    "continuityPct": 0
   },
   {
     "fid": "211034",
@@ -23,7 +24,8 @@
       "lostMatches": 0,
       "pointsPerGame": 54.5,
       "opponentsPointsPerGame": 46
-    }
+    },
+    "continuityPct": 75
   },
   {
     "fid": "209329",
@@ -36,7 +38,8 @@
       "lostMatches": 0,
       "pointsPerGame": 68,
       "opponentsPointsPerGame": 60.5
-    }
+    },
+    "continuityPct": 0
   },
   {
     "fid": "207455",
@@ -49,7 +52,8 @@
       "lostMatches": 1,
       "pointsPerGame": 59,
       "opponentsPointsPerGame": 58
-    }
+    },
+    "continuityPct": 47
   },
   {
     "fid": "211634",
@@ -62,7 +66,8 @@
       "lostMatches": 1,
       "pointsPerGame": 58.5,
       "opponentsPointsPerGame": 58
-    }
+    },
+    "continuityPct": 70
   },
   {
     "fid": "209328",
@@ -75,7 +80,8 @@
       "lostMatches": 0,
       "pointsPerGame": 0,
       "opponentsPointsPerGame": 0
-    }
+    },
+    "continuityPct": 0
   },
   {
     "fid": "211179",
@@ -88,20 +94,22 @@
       "lostMatches": 1,
       "pointsPerGame": 59,
       "opponentsPointsPerGame": 66
-    }
+    },
+    "continuityPct": 83
   },
   {
     "fid": "207456",
     "name": "PONTE BASKET",
     "position": "8",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 1,
       "wonMatches": 0,
       "lostMatches": 1,
       "pointsPerGame": 70,
       "opponentsPointsPerGame": 79
-    }
+    },
+    "continuityPct": 25
   },
   {
     "fid": "211635",
@@ -114,20 +122,22 @@
       "lostMatches": 2,
       "pointsPerGame": 51,
       "opponentsPointsPerGame": 58.5
-    }
+    },
+    "continuityPct": 0
   },
   {
     "fid": "211628",
     "name": "VISION SPORTS",
     "position": "10",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 1,
       "wonMatches": 0,
       "lostMatches": 1,
       "pointsPerGame": 50,
       "opponentsPointsPerGame": 63
-    }
+    },
+    "continuityPct": 50
   },
   {
     "fid": "206399",
@@ -140,6 +150,7 @@
       "lostMatches": 1,
       "pointsPerGame": 58,
       "opponentsPointsPerGame": 80
-    }
+    },
+    "continuityPct": 0
   }
 ]

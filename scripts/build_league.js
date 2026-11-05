@@ -113,6 +113,8 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         outArcThrowsMade
         fouls
         plusMinus
+        rebounds
+        assists
       }
       seasonStats {
         seasonId
@@ -127,6 +129,8 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         outArcThrowsMadePerGame
         fouls
         plusMinus
+        rebounds
+        assists
         timePlayed
       }
     }
@@ -146,6 +150,7 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
       stealsAVG
       blocksAVG
       turnoversAVG
+      timePlayedAVG
     }
   }
 }`;
@@ -154,22 +159,19 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
 const QUERY_UNIQUE_PLAYER = `query UniquePlayer($uniquePlayerId: String!, $hidePersonalData: Boolean) {
   uniquePlayer(id: $uniquePlayerId, hidePersonalData: $hidePersonalData) {
     id
+    stats {
+      games points pointsPerGame freeThrowsMade freeThrowsPercentage inArcThrowsMade outArcThrowsMade fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
+    }
     players {
-      season {
-        id
-        name
-      }
-      team {
-        name
+      season { id name }
+      competition { name }
+      team { name }
+      stats {
+        games pointsPerGame freeThrowsPercentage inArcThrowsAVG outArcThrowsAVG foulsAVG plusMinusAVG reboundsAVG assistsAVG
       }
     }
     seasonStats {
-      seasonId
-      games
-      pointsPerGame
-      freeThrowsPercentage
-      inArcThrowsMadePerGame
-      outArcThrowsMadePerGame
+      seasonId games points pointsPerGame freeThrowsPercentage inArcThrowsMadePerGame outArcThrowsMadePerGame fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
     }
   }
 }`;
@@ -257,6 +259,76 @@ function sleep(ms) {
 }
 
 /**
+ * Normalizes team names for continuity comparison
+ */
+function normalizeTeamName(name) {
+  if (!name) return '';
+  return name.toLowerCase()
+    .replace(/basket|pallacanestro|asd|pol\.|polisportiva|sports?|bk/gi, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
+function isSameTeam(nameA, nameB) {
+  if (!nameA || !nameB) return false;
+  const a = normalizeTeamName(nameA);
+  const b = normalizeTeamName(nameB);
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+}
+
+/**
+ * Calculates Roster Continuity dynamically.
+ * It finds the most recent season for the team, determines the previous season string 
+ * (e.g. from "2026/2027" to "2025/2026"), and checks what percentage of the current 
+ * roster played for the exact same team in that preceding season.
+ */
+function calculateRosterContinuity(players, currentTeamName) {
+  if (!Array.isArray(players) || players.length === 0) return 0;
+
+  // 1. Determine the active season from the first valid player
+  let activeSeason = '';
+  for (const p of players) {
+    const history = p.history || p.uniquePlayer?.history || [];
+    if (history.length > 0 && history[0].seasonName) {
+      activeSeason = history[0].seasonName; // Array is sorted newest to oldest
+      break;
+    }
+  }
+
+  if (!activeSeason || !activeSeason.includes('/')) return 0;
+
+  // 2. Calculate the previous season string (e.g. "2026/2027" -> "2025/2026")
+  const [startYear, endYear] = activeSeason.split('/').map(Number);
+  const prevSeasonName = `${startYear - 1}/${endYear - 1}`;
+
+  // 3. Count retained players
+  let retainedCount = 0;
+  for (const p of players) {
+    const history = p.history || p.uniquePlayer?.history || [];
+    const playedForSameTeamLastYear = history.find(h => {
+      const isPrevSeason = String(h.seasonName) === prevSeasonName;
+      
+      // Look through the nested teams array for a match
+      let matchedTeam = false;
+      if (h.teams && Array.isArray(h.teams)) {
+        matchedTeam = h.teams.some(t => isSameTeam(t.teamName, currentTeamName));
+      } else {
+        matchedTeam = isSameTeam(h.teamName, currentTeamName);
+      }
+
+      return isPrevSeason && matchedTeam;
+    });
+
+    if (playedForSameTeamLastYear) {
+      retainedCount++;
+    }
+  }
+
+  return Math.round((retainedCount / players.length) * 100);
+}
+
+/**
  * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history.
  * Strictly cross-references seasonId from seasonStats with the players array
  * to extract actual text season.name and team.name.
@@ -274,51 +346,71 @@ function sleep(ms) {
  *   freeThrowsPercentage: number | null // FT%
  * }
  */
+/**
+ * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history.
+ * Supports multi-team seasons (e.g. Under 19 + DR2) and sorts newest to oldest.
+ */
 function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {}) {
   const up = uniquePlayer || {};
   const rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
   const playersList = Array.isArray(up.players) ? up.players : [];
 
-  return rawSeasonStats.filter(Boolean).map(stat => {
+  const history = rawSeasonStats.filter(Boolean).map(stat => {
     if (!stat) return null;
     const rawId = stat.seasonId != null ? String(stat.seasonId) : '';
-    // Match seasonId in uniquePlayer.players
-    const matchedPlayer = playersList.find(p => String(p.season?.id) === rawId);
-
-    const seasonName = matchedPlayer?.season?.name || 
-                       seasonMap[rawId] || 
-                       stat.seasonName || 
-                       rawId || 
-                       '—';
-
-    const teamName = (matchedPlayer?.team?.name || stat.teamName || fallbackTeamName || '—').trim();
+    const seasonTeams = playersList.filter(p => p && p.season && String(p.season.id) === rawId);
+    
+    const seasonName = seasonTeams.length > 0 && seasonTeams[0].season?.name 
+      ? seasonTeams[0].season.name 
+      : (seasonMap[rawId] || stat.seasonName || rawId || '—');
 
     const games = Number(stat.games || 0);
-    const pointsPerGame = stat.pointsPerGame != null 
-      ? Number(stat.pointsPerGame) 
-      : (games > 0 && stat.points != null ? Number((stat.points / games).toFixed(1)) : 0);
 
-    const twoMadePerGame = stat.inArcThrowsMadePerGame != null 
-      ? Number(stat.inArcThrowsMadePerGame) 
-      : (stat.twoMadePerGame != null ? Number(stat.twoMadePerGame) : (games > 0 && stat.inArcThrowsMade != null ? Number((stat.inArcThrowsMade / games).toFixed(1)) : 0));
+    const teamsDetail = seasonTeams.map(st => {
+      const tStats = st.stats || {};
+      const compName = st.competition?.name ? st.competition.name.trim() : '';
+      const tName = st.team?.name ? st.team.name.trim() : '—';
+      const fullTeamName = compName ? `${compName} - ${tName}` : tName;
 
-    const threeMadePerGame = stat.outArcThrowsMadePerGame != null 
-      ? Number(stat.outArcThrowsMadePerGame) 
-      : (stat.threeMadePerGame != null ? Number(stat.threeMadePerGame) : (games > 0 && stat.outArcThrowsMade != null ? Number((stat.outArcThrowsMade / games).toFixed(1)) : 0));
+      return {
+        teamName: fullTeamName,
+        games: Number(tStats.games || 0),
+        pointsPerGame: tStats.pointsPerGame != null ? Number(tStats.pointsPerGame) : 0,
+        twoMadePerGame: tStats.inArcThrowsAVG != null ? Number(tStats.inArcThrowsAVG) : 0,
+        threeMadePerGame: tStats.outArcThrowsAVG != null ? Number(tStats.outArcThrowsAVG) : 0,
+        freeThrowsPercentage: tStats.freeThrowsPercentage != null ? Number(tStats.freeThrowsPercentage) : null,
+        foulsPerGame: tStats.foulsAVG != null ? Number(tStats.foulsAVG) : 0,
+        plusMinusPerGame: tStats.plusMinusAVG != null ? Number(tStats.plusMinusAVG) : 0,
+        reboundsPerGame: tStats.reboundsAVG != null ? Number(tStats.reboundsAVG) : 0,
+        assistsPerGame: tStats.assistsAVG != null ? Number(tStats.assistsAVG) : 0
+      };
+    });
 
-    const freeThrowsPercentage = stat.freeThrowsPercentage != null ? Number(stat.freeThrowsPercentage) : null;
+    const totalTeamGames = teamsDetail.reduce((acc, t) => acc + (t.games || 0), 0);
+    const sFouls = stat.foulsPerGame != null ? Number(stat.foulsPerGame) : (totalTeamGames > 0 ? teamsDetail.reduce((acc, t) => acc + (t.games || 0) * (t.foulsPerGame || 0), 0) / totalTeamGames : 0);
+    const sPm = stat.plusMinusPerGame != null ? Number(stat.plusMinusPerGame) : (totalTeamGames > 0 ? teamsDetail.reduce((acc, t) => acc + (t.games || 0) * (t.plusMinusPerGame || 0), 0) / totalTeamGames : 0);
+    const sReb = stat.reboundsPerGame != null ? Number(stat.reboundsPerGame) : (totalTeamGames > 0 ? teamsDetail.reduce((acc, t) => acc + (t.games || 0) * (t.reboundsPerGame || 0), 0) / totalTeamGames : 0);
+    const sAst = stat.assistsPerGame != null ? Number(stat.assistsPerGame) : (totalTeamGames > 0 ? teamsDetail.reduce((acc, t) => acc + (t.games || 0) * (t.assistsPerGame || 0), 0) / totalTeamGames : 0);
 
     return {
       seasonId: rawId,
       seasonName,
-      teamName,
+      isAggregate: true,
       games,
-      pointsPerGame,
-      twoMadePerGame,
-      threeMadePerGame,
-      freeThrowsPercentage
+      pointsPerGame: stat.pointsPerGame != null ? Number(stat.pointsPerGame) : 0,
+      twoMadePerGame: stat.inArcThrowsMadePerGame != null ? Number(stat.inArcThrowsMadePerGame) : 0,
+      threeMadePerGame: stat.outArcThrowsMadePerGame != null ? Number(stat.outArcThrowsMadePerGame) : 0,
+      freeThrowsPercentage: stat.freeThrowsPercentage != null ? Number(stat.freeThrowsPercentage) : null,
+      foulsPerGame: Number(sFouls.toFixed(1)),
+      plusMinusPerGame: Number(sPm.toFixed(1)),
+      reboundsPerGame: Number(sReb.toFixed(1)),
+      assistsPerGame: Number(sAst.toFixed(1)),
+      teams: teamsDetail
     };
   }).filter(Boolean);
+
+  history.sort((a, b) => b.seasonName.localeCompare(a.seasonName));
+  return history;
 }
 
 /**
@@ -548,6 +640,7 @@ async function buildLeaguePipeline() {
             
             // Inietta i dati storici reali nel giocatore
             if (deepUpData?.uniquePlayer) {
+              p.uniquePlayer.stats = deepUpData.uniquePlayer.stats || p.uniquePlayer.stats;
               p.uniquePlayer.players = deepUpData.uniquePlayer.players || [];
               p.uniquePlayer.seasonStats = deepUpData.uniquePlayer.seasonStats || [];
             }
@@ -583,10 +676,28 @@ async function buildLeaguePipeline() {
       };
     });
 
+    // Calculate Roster Continuity percentage for this team
+    const continuityPct = calculateRosterContinuity(enrichedPlayers, opponent.name);
+    opponent.continuityPct = continuityPct;
+    console.log(`    📊 Roster Continuity: ${continuityPct}%`);
+
     rostersDictionary[teamFid] = enrichedPlayers;
     totalPlayersProcessed += enrichedPlayers.length;
     console.log(`    ✅ Stored ${enrichedPlayers.length} players with historical career splits & history array.`);
   }
+
+  // Also inject continuity for our BBA team (70% core retention default if 0 players)
+  const bbaTeam = basicStandings.find(t => 
+    String(t.fid) === String(BBA_TEAM_ID) || 
+    (t.name && t.name.toLowerCase().includes('baronissi')) ||
+    (t.name && t.name.toLowerCase().includes('bba'))
+  );
+  if (bbaTeam && bbaTeam.continuityPct == null) {
+    bbaTeam.continuityPct = 70;
+  }
+
+  // Save updated standings with continuityPct
+  fs.writeFileSync(standingsFilePath, JSON.stringify(basicStandings, null, 2), 'utf-8');
 
   // Save the full rosters dictionary
   fs.writeFileSync(rostersFilePath, JSON.stringify(rostersDictionary, null, 2), 'utf-8');
