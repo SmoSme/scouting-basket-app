@@ -63,50 +63,50 @@ export default function ScoreOverrideModal({
   const hasActiveOverride = currentOverrideTeamScore !== null || currentOverrideOppScore !== null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-5 space-y-4">
+    <div className="fixed inset-0 z-50 bg-[#022D32]/70 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+      <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-5 space-y-4 text-[#022D32]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-              <Edit3 className="w-4 h-4 text-amber-400" />
+            <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+              <Edit3 className="w-4 h-4 text-[#0CA17A]" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
+              <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider">
                 OVERRIDE OFFICIAL SCORE
               </h3>
-              <p className="text-[11px] text-slate-400">
-                Sync scoreboard with official referee table
+              <p className="text-[11px] text-[#022D32]/70">
+                Sincronizza il tabellone con il referto ufficiale del tavolo
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+            className="text-[#022D32]/60 hover:text-[#022D32] p-1 rounded-md transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Info Note */}
-        <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 space-y-1">
-          <div className="flex items-center gap-1.5 text-sky-400 font-bold uppercase tracking-wider text-[10px]">
-            <Shield className="w-3.5 h-3.5" />
+        <div className="bg-[#DDF3E9] p-3.5 rounded-xl border border-[#C6E8DB] text-[11px] text-[#022D32] space-y-1">
+          <div className="flex items-center gap-1.5 text-[#022D32] font-black uppercase tracking-wider text-[10px]">
+            <Shield className="w-3.5 h-3.5 text-[#0CA17A]" />
             <span>PLAY-BY-PLAY GROUND TRUTH PRESERVED</span>
           </div>
-          <p className="text-slate-400 leading-relaxed">
-            This override synchronizes the official match result without modifying or deleting your detailed play-by-play event log.
+          <p className="text-[#022D32]/80 leading-relaxed">
+            Questo override sincronizza il risultato finale senza modificare o cancellare il dettaglio delle singole azioni registrate.
           </p>
-          <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 mt-1.5">
-            <span>Calculated from logged plays:</span>
-            <span className="font-mono font-black text-amber-400">
+          <div className="pt-1.5 text-[11px] text-[#022D32]/70 flex items-center justify-between border-t border-[#C6E8DB] mt-1.5">
+            <span>Calcolato dal campo:</span>
+            <span className="font-mono font-black text-[#022D32]">
               BBA {pbpTeamScore} - {pbpOppScore} OPP
             </span>
           </div>
         </div>
 
         {errorMsg && (
-          <div className="bg-rose-950/60 border border-rose-700/60 text-rose-300 p-2 rounded-lg text-xs flex items-center gap-2">
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-2.5 rounded-xl text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-none" />
             <span>{errorMsg}</span>
           </div>
@@ -116,7 +116,7 @@ export default function ScoreOverrideModal({
         <form onSubmit={handleSave} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-wider text-amber-400 mb-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-[#022D32] mb-1">
                 BBA SCORE (OURS)
               </label>
               <input
@@ -125,14 +125,14 @@ export default function ScoreOverrideModal({
                 step="1"
                 value={teamInput}
                 onChange={(e) => setTeamInput(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 text-amber-400 font-mono font-black text-xl p-2.5 rounded-xl text-center focus:outline-none shadow-inner"
+                className="w-full bg-[#F8F9FA] border border-[#DDF3E9] focus:border-[#0CA17A] text-[#022D32] font-mono font-black text-xl p-2.5 rounded-xl text-center focus:outline-none shadow-xs"
                 placeholder={String(pbpTeamScore)}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-[#022D32]/70 mb-1">
                 OPPONENT SCORE
               </label>
               <input
@@ -141,7 +141,7 @@ export default function ScoreOverrideModal({
                 step="1"
                 value={oppInput}
                 onChange={(e) => setOppInput(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 text-slate-100 font-mono font-black text-xl p-2.5 rounded-xl text-center focus:outline-none shadow-inner"
+                className="w-full bg-[#F8F9FA] border border-[#DDF3E9] focus:border-[#0CA17A] text-[#022D32] font-mono font-black text-xl p-2.5 rounded-xl text-center focus:outline-none shadow-xs"
                 placeholder={String(pbpOppScore)}
                 required
               />
@@ -154,20 +154,20 @@ export default function ScoreOverrideModal({
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-rose-400 font-black py-2.5 px-3 rounded-xl text-xs transition-all active:scale-95 border border-slate-700"
-                title="Remove override and revert to calculated play-by-play score"
+                className="flex items-center justify-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-2.5 px-3 rounded-xl text-xs transition-all active:scale-95 border border-rose-200 cursor-pointer"
+                title="Rimuovi override e ripristina calcolo play-by-play"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>CLEAR</span>
+                <span>RIPRISTINA</span>
               </button>
             )}
 
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs transition-all shadow-md active:scale-95"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>SAVE OVERRIDE</span>
+              <span>SALVA RISULTATO</span>
             </button>
           </div>
         </form>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Info, AlertTriangle, TrendingUp, BookOpen 
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const METRIC_GUIDES = {
   pillars: {
@@ -262,6 +263,7 @@ export const METRIC_GUIDES = {
 };
 
 export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSelectMetric }) {
+  const { t, language } = useLanguage();
   const [currentKey, setCurrentKey] = useState(activeKey || 'pillars');
 
   useEffect(() => {
@@ -278,35 +280,37 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/90 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden my-auto">
+    <div className="fixed inset-0 z-50 bg-[#022D32]/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in">
+      <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden my-auto">
         
         {/* Modal Header */}
-        <div className="p-3.5 sm:p-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between flex-none">
+        <div className="p-3.5 sm:p-4 border-b border-[#022D32]/10 bg-[#022D32] flex items-center justify-between flex-none text-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center flex-none">
-              <BookOpen className="w-4 h-4 text-sky-400" />
+            <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/20 border border-[#0CA17A]/40 flex items-center justify-center flex-none text-[#0CA17A]">
+              <BookOpen className="w-4 h-4 text-[#0CA17A]" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
-                METRIC GUIDE & DECISION BENCHMARKS
+              <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                {t('guide_title')}
               </h3>
-              <p className="text-[11px] text-slate-400 font-semibold">
-                Formulas, definitions, reference values, and tracking reliability
+              <p className="text-[11px] text-[#A7F3D0] font-semibold">
+                {language === 'it' 
+                  ? 'Formule, definizioni, valori di riferimento e interpretazione pratica' 
+                  : 'Formulas, definitions, reference values, and tracking reliability'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all"
-            title="Close Guide"
+            className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
+            title={t('close')}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Metric Quick Switcher Horizontal Tabs */}
-        <div className="flex border-b border-slate-800 bg-slate-950/60 p-2 gap-1.5 overflow-x-auto no-scrollbar flex-none">
+        <div className="flex border-b border-[#DDF3E9] bg-[#F8F9FA] p-2 gap-1.5 overflow-x-auto no-scrollbar flex-none">
           {Object.values(METRIC_GUIDES).filter(m => !m.hidden).map(m => {
             const isSelected = m.key === currentKey || (currentKey === 'fourfactors' && m.key === 'pillars');
             return (
@@ -315,8 +319,8 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
                 onClick={() => handleSelect(m.key)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 flex-none border ${
                   isSelected
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black scale-105'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-850'
+                    ? 'bg-[#0CA17A] text-white border-[#0CA17A] shadow-md font-black scale-105'
+                    : 'bg-white text-[#022D32]/70 border-[#DDF3E9] hover:text-[#022D32] hover:bg-[#DDF3E9]/40'
                 }`}
               >
                 <span>{m.shortLabel || m.key.toUpperCase()}</span>
@@ -326,47 +330,47 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 bg-[#F8F9FA]">
           {/* Title & Formula Badge */}
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <div className="bg-white p-3.5 rounded-xl border border-[#DDF3E9] shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
-              <h4 className="text-base font-black text-sky-400">
+              <h4 className="text-base font-black text-[#022D32]">
                 {guide.title}
               </h4>
             </div>
-            <div className="inline-block bg-slate-900 border border-slate-700/80 text-amber-400 font-mono font-bold text-xs px-2.5 py-1 rounded-md">
+            <div className="inline-block bg-[#022D32] border border-[#022D32] text-[#A7F3D0] font-mono font-bold text-xs px-2.5 py-1 rounded-md">
               Formula: {guide.formula}
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed mt-2.5 font-medium">
+            <p className="text-xs text-[#022D32]/80 leading-relaxed mt-2.5 font-medium">
               {guide.description}
             </p>
           </div>
 
           {/* Decision Benchmarks */}
           <div className="space-y-2">
-            <div className="text-xs font-black text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              <span>DECISION BENCHMARKS & REFERENCE VALUES:</span>
+            <div className="text-xs font-black text-[#022D32] uppercase tracking-wider flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-[#0CA17A]" />
+              <span>{t('benchmarks')}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {guide.benchmarks.map((b, idx) => (
-                <div key={idx} className="bg-slate-950 p-3 rounded-xl border border-slate-850 flex flex-col justify-between">
+                <div key={idx} className="bg-white p-3 rounded-xl border border-[#DDF3E9] shadow-sm flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                        b.color === 'emerald' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                        b.color === 'amber' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
-                        b.color === 'rose' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
-                        'bg-slate-800 text-slate-300'
+                        b.color === 'emerald' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                        b.color === 'amber' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                        b.color === 'rose' ? 'bg-rose-50 text-rose-800 border border-rose-200' :
+                        'bg-gray-100 text-[#022D32]'
                       }`}>
                         {b.level}
                       </span>
                     </div>
-                    <div className="font-mono text-lg font-black text-slate-100 my-1">
+                    <div className="font-mono text-lg font-black text-[#022D32] my-1">
                       {b.range}
                     </div>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium border-t border-slate-850 pt-1.5 mt-1">
+                  <div className="text-[10px] text-[#022D32]/70 font-medium border-t border-[#DDF3E9] pt-1.5 mt-1">
                     {b.desc}
                   </div>
                 </div>
@@ -375,27 +379,27 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
           </div>
 
           {/* Practical Coaching Interpretation */}
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-black text-sky-400 uppercase tracking-wider">
-              <Info className="w-3.5 h-3.5 text-sky-400" />
-              <span>PRACTICAL COACHING INTERPRETATION:</span>
+          <div className="bg-[#DDF3E9]/60 p-3.5 rounded-xl border border-[#0CA17A]/30 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-black text-[#022D32] uppercase tracking-wider">
+              <Info className="w-3.5 h-3.5 text-[#0CA17A]" />
+              <span>{t('interpretation')}</span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+            <p className="text-xs text-[#022D32]/80 leading-relaxed font-medium">
               {guide.warning}
             </p>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 flex items-center justify-between flex-none">
-          <span className="text-[11px] text-slate-500 font-medium">
+        <div className="p-3 border-t border-[#DDF3E9] bg-white flex items-center justify-between flex-none">
+          <span className="text-[11px] text-[#022D32]/60 font-medium">
             BBA Courtside Scouting Intelligence Engine
           </span>
           <button
             onClick={onClose}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-1.5 rounded-lg text-xs transition-colors border border-slate-700"
+            className="bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors border border-[#022D32]"
           >
-            CLOSE
+            {t('close')}
           </button>
         </div>
       </div>

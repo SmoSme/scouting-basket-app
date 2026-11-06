@@ -6,8 +6,8 @@ import { calculatePlusMinus, computeZoneStats } from '../utils/basketballAnalyti
 export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   if (!events || events.length === 0) {
     return (
-      <div className="glass-card p-8 text-center border-slate-700/60">
-        <p className="text-slate-400 font-bold text-sm">
+      <div className="bg-white p-8 text-center border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
+        <p className="text-[#022D32]/70 font-bold text-sm">
           No play events logged in the match yet. Use the Live Tracking Dashboard to record match plays.
         </p>
       </div>
@@ -103,20 +103,20 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   return (
     <div className="grid grid-cols-12 gap-4">
       {/* Box Score Table */}
-      <div className="col-span-12 lg:col-span-8 glass-card p-4 overflow-x-auto border-slate-800">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
-          <Trophy className="w-4 h-4 text-sky-400" />
-          <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+      <div className="col-span-12 lg:col-span-8 bg-white p-4 sm:p-5 overflow-x-auto border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
+        <div className="flex items-center gap-2 border-b border-[#DDF3E9] pb-3 mb-3">
+          <Trophy className="w-4 h-4 text-[#0CA17A]" />
+          <h2 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
             OFFICIAL FIBA BOX SCORE
           </h2>
         </div>
         
         <table className="w-full text-left text-xs font-semibold">
           <thead>
-            <tr className="border-b border-slate-700/80 text-slate-400">
+            <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider">
               <th className="py-2.5 px-2">N°</th>
               <th className="py-2.5 px-2">PLAYER</th>
-              <th className="py-2.5 px-2 text-amber-400 font-bold">PTS</th>
+              <th className="py-2.5 px-2 text-[#022D32] font-black">PTS</th>
               <th className="py-2.5 px-2">2PM/A</th>
               <th className="py-2.5 px-2">2P%</th>
               <th className="py-2.5 px-2">3PM/A</th>
@@ -125,35 +125,35 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
               <th className="py-2.5 px-2">FT%</th>
               <th className="py-2.5 px-2">REB</th>
               <th className="py-2.5 px-2">AST</th>
-              <th className="py-2.5 px-2 text-sky-400">STL</th>
-              <th className="py-2.5 px-2 text-rose-400">TOV</th>
+              <th className="py-2.5 px-2 text-[#022D32] font-black">STL</th>
+              <th className="py-2.5 px-2 text-rose-700 font-black">TOV</th>
               <th className="py-2.5 px-2">PF</th>
-              <th className="py-2.5 px-2 text-emerald-400 font-bold">PIR</th>
-              <th className="py-2.5 px-2 text-cyan-400 font-bold">+/-</th>
+              <th className="py-2.5 px-2 text-emerald-800 font-black">PIR</th>
+              <th className="py-2.5 px-2 text-[#022D32] font-black">+/-</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(r => (
-              <tr key={r.number} className="border-b border-slate-800/50 hover:bg-slate-800/40 transition-colors">
-                <td className="py-2.5 px-2 font-bold text-sky-400 font-mono">#{r.number}</td>
-                <td className="py-2.5 px-2 text-slate-100 font-bold">{r.name} ({r.pos})</td>
-                <td className="py-2.5 px-2 text-amber-400 font-black text-sm">{r.pts}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.fg2}</td>
-                <td className="py-2.5 px-2 text-slate-300">{r.pct2p}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.fg3}</td>
-                <td className="py-2.5 px-2 text-slate-300">{r.pct3p}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.ft}</td>
-                <td className="py-2.5 px-2 text-slate-300">{r.pctFt}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.reb}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.ast}</td>
-                <td className="py-2.5 px-2 text-sky-400 font-bold">{r.stl}</td>
-                <td className="py-2.5 px-2 text-rose-400 font-bold">{r.tov}</td>
-                <td className="py-2.5 px-2 text-slate-200">{r.pf}</td>
-                <td className="py-2.5 px-2 text-emerald-400 font-black">{r.pir}</td>
-                <td className={`py-2.5 px-2 font-mono font-bold ${
-                  (r.plusMinus || 0) > 0 ? 'text-emerald-400' :
-                  (r.plusMinus || 0) < 0 ? 'text-rose-400' :
-                  'text-slate-400'
+              <tr key={r.number} className="border-b border-[#DDF3E9] hover:bg-[#DDF3E9]/30 transition-colors">
+                <td className="py-2.5 px-2 font-black text-[#022D32] font-mono">#{r.number}</td>
+                <td className="py-2.5 px-2 text-[#022D32] font-bold">{r.name} ({r.pos})</td>
+                <td className="py-2.5 px-2 text-[#022D32] font-black text-sm">{r.pts}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.fg2}</td>
+                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct2p}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.fg3}</td>
+                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct3p}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.ft}</td>
+                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pctFt}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.reb}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.ast}</td>
+                <td className="py-2.5 px-2 text-[#022D32] font-bold">{r.stl}</td>
+                <td className="py-2.5 px-2 text-rose-700 font-black">{r.tov}</td>
+                <td className="py-2.5 px-2 text-[#022D32]">{r.pf}</td>
+                <td className="py-2.5 px-2 text-emerald-800 font-black">{r.pir}</td>
+                <td className={`py-2.5 px-2 font-mono font-black ${
+                  (r.plusMinus || 0) > 0 ? 'text-emerald-700' :
+                  (r.plusMinus || 0) < 0 ? 'text-rose-700' :
+                  'text-[#022D32]'
                 }`}>
                   {(r.plusMinus || 0) > 0 ? `+${r.plusMinus}` : (r.plusMinus || 0)}
                 </td>
@@ -166,34 +166,34 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
       {/* Right Column: Team Tactical Metrics & Shot Zone Efficiency */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         {/* Team Tactical Metrics Card */}
-        <div className="glass-card p-4 border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+        <div className="bg-white p-4 border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
+          <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3 mb-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-[#0CA17A]" />
+              <h2 className="text-xs font-bold text-[#022D32] uppercase tracking-wider">
                 TEAM TACTICAL METRICS
               </h2>
             </div>
-            <span className="text-[10px] font-bold text-slate-300 bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded">
+            <span className="text-[10px] bg-[#DDF3E9] border border-[#0CA17A]/30 text-[#022D32] px-2.5 py-0.5 rounded-md font-black">
               TOTAL: {totalTactics}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-slate-900 border border-slate-800 rounded p-2.5 flex items-center justify-between">
+            <div className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-violet-400" />
-                <span className="text-xs font-semibold text-slate-200">STAGGER</span>
+                <Layers className="w-4 h-4 text-purple-700" />
+                <span className="text-xs font-bold text-[#022D32]">STAGGER</span>
               </div>
-              <span className="text-base font-bold text-violet-300 font-mono">{staggerEvents.length}</span>
+              <span className="text-base font-black text-purple-800 font-mono">{staggerEvents.length}</span>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded p-2.5 flex items-center justify-between">
+            <div className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Ghost className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-semibold text-slate-200">GHOST</span>
+                <Ghost className="w-4 h-4 text-teal-700" />
+                <span className="text-xs font-bold text-[#022D32]">GHOST</span>
               </div>
-              <span className="text-base font-bold text-cyan-300 font-mono">{ghostEvents.length}</span>
+              <span className="text-base font-black text-teal-800 font-mono">{ghostEvents.length}</span>
             </div>
           </div>
 
@@ -201,20 +201,20 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
           {tacticsByQuarter.length > 0 && (
             <table className="w-full text-left text-xs font-semibold">
               <thead>
-                <tr className="border-b border-slate-700/80 text-slate-400 text-[11px]">
+                <tr className="border-b border-[#DDF3E9] text-[#022D32]/70 text-[11px] font-black">
                   <th className="py-1.5 px-2">PERIOD</th>
-                  <th className="py-1.5 px-2 text-violet-400">STAGGER</th>
-                  <th className="py-1.5 px-2 text-cyan-400">GHOST</th>
-                  <th className="py-1.5 px-2 text-right">TOTAL</th>
+                  <th className="py-1.5 px-2 text-purple-800 font-black">STAGGER</th>
+                  <th className="py-1.5 px-2 text-teal-800 font-black">GHOST</th>
+                  <th className="py-1.5 px-2 text-right text-[#022D32] font-black">TOTAL</th>
                 </tr>
               </thead>
               <tbody>
                 {tacticsByQuarter.map(t => (
-                  <tr key={t.quarter} className="border-b border-slate-800/40 hover:bg-slate-800/30">
-                    <td className="py-1.5 px-2 text-slate-300 font-mono font-bold">{t.quarter}</td>
-                    <td className="py-1.5 px-2 text-violet-300 font-mono">{t.stagger}</td>
-                    <td className="py-1.5 px-2 text-cyan-300 font-mono">{t.ghost}</td>
-                    <td className="py-1.5 px-2 text-right text-slate-200 font-bold font-mono">{t.total}</td>
+                  <tr key={t.quarter} className="border-b border-[#DDF3E9]/40 hover:bg-[#DDF3E9]/30">
+                    <td className="py-1.5 px-2 text-[#022D32] font-mono font-black">{t.quarter}</td>
+                    <td className="py-1.5 px-2 text-purple-800 font-mono font-black">{t.stagger}</td>
+                    <td className="py-1.5 px-2 text-teal-800 font-mono font-black">{t.ghost}</td>
+                    <td className="py-1.5 px-2 text-right text-[#022D32] font-black font-mono">{t.total}</td>
                   </tr>
                 ))}
               </tbody>
@@ -223,28 +223,28 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
         </div>
 
         {/* Shot Zone Efficiency Table */}
-        <div className="glass-card p-4 border-slate-800">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-3">
-            <BarChart2 className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+        <div className="bg-white p-4 border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
+          <div className="flex items-center gap-2 border-b border-[#DDF3E9] pb-3 mb-3">
+            <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
+            <h2 className="text-xs font-bold text-[#022D32] uppercase tracking-wider">
               SHOT ZONE EFFICIENCY CHART
             </h2>
           </div>
           
           <table className="w-full text-left text-xs font-semibold">
             <thead>
-              <tr className="border-b border-slate-700/80 text-slate-400">
+              <tr className="border-b border-[#DDF3E9] text-[#022D32]/70 font-black">
                 <th className="py-2.5 px-2">COURT ZONE</th>
                 <th className="py-2.5 px-2">MADE / ATT</th>
-                <th className="py-2.5 px-2 text-emerald-400 font-bold">FG %</th>
+                <th className="py-2.5 px-2 text-[#022D32] font-black">FG %</th>
               </tr>
             </thead>
             <tbody>
               {zoneSummary.map(z => (
-                <tr key={z.name} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                  <td className="py-2.5 px-2 text-slate-200 font-bold">{z.name} ({z.type})</td>
-                  <td className="py-2.5 px-2 text-slate-300">{z.made}/{z.attempts}</td>
-                  <td className="py-2.5 px-2 text-emerald-400 font-black">{z.pct}</td>
+                <tr key={z.name} className="border-b border-[#DDF3E9]/50 hover:bg-[#DDF3E9]/30">
+                  <td className="py-2.5 px-2 text-[#022D32] font-bold">{z.name} ({z.type})</td>
+                  <td className="py-2.5 px-2 text-[#022D32] font-medium">{z.made}/{z.attempts}</td>
+                  <td className="py-2.5 px-2 text-emerald-700 font-black font-mono">{z.pct}</td>
                 </tr>
               ))}
             </tbody>

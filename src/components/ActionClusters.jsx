@@ -14,7 +14,7 @@ export default function ActionClusters({
       {/* CLUSTER 1: FIELD GOALS */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <Target className="w-3 h-3 text-sky-400" />
+          <Target className="w-3 h-3 text-[#0CA17A]" />
           1. FIELD GOAL — TARGET ZONE: {currentZone.name.toUpperCase()} ({currentZone.type})
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -38,7 +38,7 @@ export default function ActionClusters({
       {/* CLUSTER 2: FREE THROWS */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <Crosshair className="w-3 h-3 text-emerald-400" />
+          <Crosshair className="w-3 h-3 text-[#0CA17A]" />
           2. FREE THROWS (FT)
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -62,7 +62,7 @@ export default function ActionClusters({
       {/* CLUSTER 3: POSSESSION & DEFENSE */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <Zap className="w-3 h-3 text-sky-400" />
+          <Zap className="w-3 h-3 text-[#0CA17A]" />
           3. POSSESSION & DEFENSE
         </div>
         <div className="grid grid-cols-3 gap-1.5">
@@ -90,7 +90,7 @@ export default function ActionClusters({
       {/* CLUSTER 4: REBOUNDS */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <Shield className="w-3 h-3 text-amber-400" />
+          <Shield className="w-3 h-3 text-amber-700" />
           4. REBOUNDS
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -112,7 +112,7 @@ export default function ActionClusters({
       {/* CLUSTER 5: FOULS */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <AlertCircle className="w-3 h-3 text-rose-400" />
+          <AlertCircle className="w-3 h-3 text-rose-700" />
           5. FOULS & DRAWN FOULS
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -134,7 +134,7 @@ export default function ActionClusters({
       {/* CLUSTER 6: TACTICAL TECHNIQUES */}
       <div className="cluster-panel-dense">
         <div className="cluster-header-title">
-          <Sparkles className="w-3 h-3 text-purple-400" />
+          <Sparkles className="w-3 h-3 text-purple-700" />
           6. TACTICAL TECHNIQUES
         </div>
         <div className="grid grid-cols-2 gap-1.5">

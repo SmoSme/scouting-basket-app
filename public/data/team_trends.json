@@ -1,0 +1,1193 @@
+{
+  "206399": {
+    "global": {
+      "games": 1,
+      "pointsScored": 58,
+      "pointsConceded": 80,
+      "wins": 0,
+      "losses": 1
+    },
+    "home": {
+      "games": 0,
+      "pointsScored": 0,
+      "pointsConceded": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 58,
+      "pointsConceded": 80,
+      "wins": 0,
+      "losses": 1
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 10,
+        "conceded": 18
+      },
+      "Q2": {
+        "scored": 22,
+        "conceded": 22
+      },
+      "Q3": {
+        "scored": 13,
+        "conceded": 23
+      },
+      "Q4": {
+        "scored": 13,
+        "conceded": 17
+      }
+    },
+    "streak": [
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786123",
+        "date": "2026-10-31T18:00:00.000Z",
+        "round": "2",
+        "homeTeam": "GG MONTORO ",
+        "awayTeam": "EZ CRYSTAL BK CAPACCIO PAESTUM",
+        "homeScore": 80,
+        "awayScore": 58,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 18,
+            "awayScore": 10,
+            "period": 1
+          },
+          {
+            "homeScore": 22,
+            "awayScore": 22,
+            "period": 2
+          },
+          {
+            "homeScore": 23,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 13,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 10,
+        "concededAvg": 18,
+        "diff": -8
+      },
+      "Q2": {
+        "scoredAvg": 22,
+        "concededAvg": 22,
+        "diff": 0
+      },
+      "Q3": {
+        "scoredAvg": 13,
+        "concededAvg": 23,
+        "diff": -10
+      },
+      "Q4": {
+        "scoredAvg": 13,
+        "concededAvg": 17,
+        "diff": -4
+      }
+    }
+  },
+  "207455": {
+    "global": {
+      "games": 2,
+      "pointsScored": 113,
+      "pointsConceded": 107,
+      "wins": 1,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 56,
+      "pointsConceded": 56,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 57,
+      "pointsConceded": 51,
+      "wins": 1,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 28,
+        "conceded": 29
+      },
+      "Q2": {
+        "scored": 22,
+        "conceded": 21
+      },
+      "Q3": {
+        "scored": 34,
+        "conceded": 24
+      },
+      "Q4": {
+        "scored": 29,
+        "conceded": 33
+      }
+    },
+    "streak": [
+      "V",
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786119",
+        "date": "2026-11-02T20:00:00.000Z",
+        "round": "2",
+        "homeTeam": "S.L.Z. BASKET SOLOFRA",
+        "awayTeam": "INDOMITA PAGANI ",
+        "homeScore": 56,
+        "awayScore": 56,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 11,
+            "awayScore": 15,
+            "period": 1
+          },
+          {
+            "homeScore": 11,
+            "awayScore": 11,
+            "period": 2
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 14,
+            "period": 3
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786116",
+        "date": "2026-10-24T15:00:00.000Z",
+        "round": "1",
+        "homeTeam": "BARONISSI BASKETBALL ACADEMY",
+        "awayTeam": "S.L.Z. BASKET SOLOFRA",
+        "homeScore": 51,
+        "awayScore": 57,
+        "isWin": true,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 14,
+            "awayScore": 17,
+            "period": 1
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 11,
+            "period": 2
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 14,
+        "concededAvg": 14.5,
+        "diff": -0.5
+      },
+      "Q2": {
+        "scoredAvg": 11,
+        "concededAvg": 10.5,
+        "diff": 0.5
+      },
+      "Q3": {
+        "scoredAvg": 17,
+        "concededAvg": 12,
+        "diff": 5
+      },
+      "Q4": {
+        "scoredAvg": 14.5,
+        "concededAvg": 16.5,
+        "diff": -2
+      }
+    }
+  },
+  "207456": {
+    "global": {
+      "games": 2,
+      "pointsScored": 125,
+      "pointsConceded": 146,
+      "wins": 0,
+      "losses": 2
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 70,
+      "pointsConceded": 79,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 55,
+      "pointsConceded": 67,
+      "wins": 0,
+      "losses": 1
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 35,
+        "conceded": 32
+      },
+      "Q2": {
+        "scored": 31,
+        "conceded": 48
+      },
+      "Q3": {
+        "scored": 36,
+        "conceded": 28
+      },
+      "Q4": {
+        "scored": 23,
+        "conceded": 38
+      }
+    },
+    "streak": [
+      "P",
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786122",
+        "date": "2026-11-04T20:15:00.000Z",
+        "round": "2",
+        "homeTeam": "VISION SPORTS",
+        "awayTeam": "PONTE BASKET",
+        "homeScore": 67,
+        "awayScore": 55,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 8,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 25,
+            "awayScore": 13,
+            "period": 2
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 18,
+            "period": 3
+          },
+          {
+            "homeScore": 20,
+            "awayScore": 10,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786117",
+        "date": "2026-10-25T18:00:00.000Z",
+        "round": "1",
+        "homeTeam": "PONTE BASKET",
+        "awayTeam": "GG MONTORO ",
+        "homeScore": 70,
+        "awayScore": 79,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 21,
+            "awayScore": 24,
+            "period": 1
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 23,
+            "period": 2
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 14,
+            "period": 3
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 17.5,
+        "concededAvg": 16,
+        "diff": 1.5
+      },
+      "Q2": {
+        "scoredAvg": 15.5,
+        "concededAvg": 24,
+        "diff": -8.5
+      },
+      "Q3": {
+        "scoredAvg": 18,
+        "concededAvg": 14,
+        "diff": 4
+      },
+      "Q4": {
+        "scoredAvg": 11.5,
+        "concededAvg": 19,
+        "diff": -7.5
+      }
+    }
+  },
+  "209328": {
+    "global": {
+      "games": 0,
+      "pointsScored": 0,
+      "pointsConceded": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    "home": {
+      "games": 0,
+      "pointsScored": 0,
+      "pointsConceded": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    "away": {
+      "games": 0,
+      "pointsScored": 0,
+      "pointsConceded": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 0,
+        "conceded": 0
+      },
+      "Q2": {
+        "scored": 0,
+        "conceded": 0
+      },
+      "Q3": {
+        "scored": 0,
+        "conceded": 0
+      },
+      "Q4": {
+        "scored": 0,
+        "conceded": 0
+      }
+    },
+    "streak": [],
+    "log": [],
+    "quarterAverages": {}
+  },
+  "209329": {
+    "global": {
+      "games": 2,
+      "pointsScored": 127,
+      "pointsConceded": 116,
+      "wins": 1,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 71,
+      "pointsConceded": 60,
+      "wins": 1,
+      "losses": 0
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 56,
+      "pointsConceded": 56,
+      "wins": 0,
+      "losses": 1
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 31,
+        "conceded": 27
+      },
+      "Q2": {
+        "scored": 32,
+        "conceded": 28
+      },
+      "Q3": {
+        "scored": 33,
+        "conceded": 30
+      },
+      "Q4": {
+        "scored": 31,
+        "conceded": 31
+      }
+    },
+    "streak": [
+      "V",
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786119",
+        "date": "2026-11-02T20:00:00.000Z",
+        "round": "2",
+        "homeTeam": "S.L.Z. BASKET SOLOFRA",
+        "awayTeam": "INDOMITA PAGANI ",
+        "homeScore": 56,
+        "awayScore": 56,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 11,
+            "awayScore": 15,
+            "period": 1
+          },
+          {
+            "homeScore": 11,
+            "awayScore": 11,
+            "period": 2
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 14,
+            "period": 3
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786114",
+        "date": "2026-10-24T17:30:00.000Z",
+        "round": "1",
+        "homeTeam": "INDOMITA PAGANI ",
+        "awayTeam": "CITTADELLA DELLO SPORT",
+        "homeScore": 71,
+        "awayScore": 60,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 16,
+            "awayScore": 16,
+            "period": 1
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 17,
+            "period": 2
+          },
+          {
+            "homeScore": 19,
+            "awayScore": 9,
+            "period": 3
+          },
+          {
+            "homeScore": 15,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 15.5,
+        "concededAvg": 13.5,
+        "diff": 2
+      },
+      "Q2": {
+        "scoredAvg": 16,
+        "concededAvg": 14,
+        "diff": 2
+      },
+      "Q3": {
+        "scoredAvg": 16.5,
+        "concededAvg": 15,
+        "diff": 1.5
+      },
+      "Q4": {
+        "scoredAvg": 15.5,
+        "concededAvg": 15.5,
+        "diff": 0
+      }
+    }
+  },
+  "211034": {
+    "global": {
+      "games": 2,
+      "pointsScored": 109,
+      "pointsConceded": 92,
+      "wins": 2,
+      "losses": 0
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 63,
+      "pointsConceded": 50,
+      "wins": 1,
+      "losses": 0
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 46,
+      "pointsConceded": 42,
+      "wins": 1,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 32,
+        "conceded": 23
+      },
+      "Q2": {
+        "scored": 21,
+        "conceded": 20
+      },
+      "Q3": {
+        "scored": 30,
+        "conceded": 20
+      },
+      "Q4": {
+        "scored": 26,
+        "conceded": 29
+      }
+    },
+    "streak": [
+      "V",
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786121",
+        "date": "2026-11-01T18:30:00.000Z",
+        "round": "2",
+        "homeTeam": "CITTADELLA DELLO SPORT",
+        "awayTeam": "PALL. BAIANO 1988",
+        "homeScore": 42,
+        "awayScore": 46,
+        "isWin": true,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 8,
+            "awayScore": 13,
+            "period": 1
+          },
+          {
+            "homeScore": 6,
+            "awayScore": 13,
+            "period": 2
+          },
+          {
+            "homeScore": 7,
+            "awayScore": 10,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 10,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786115",
+        "date": "2026-10-25T17:30:00.000Z",
+        "round": "1",
+        "homeTeam": "PALL. BAIANO 1988",
+        "awayTeam": "VISION SPORTS",
+        "homeScore": 63,
+        "awayScore": 50,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 19,
+            "awayScore": 15,
+            "period": 1
+          },
+          {
+            "homeScore": 8,
+            "awayScore": 14,
+            "period": 2
+          },
+          {
+            "homeScore": 20,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 16,
+            "awayScore": 8,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 16,
+        "concededAvg": 11.5,
+        "diff": 4.5
+      },
+      "Q2": {
+        "scoredAvg": 10.5,
+        "concededAvg": 10,
+        "diff": 0.5
+      },
+      "Q3": {
+        "scoredAvg": 15,
+        "concededAvg": 10,
+        "diff": 5
+      },
+      "Q4": {
+        "scoredAvg": 13,
+        "concededAvg": 14.5,
+        "diff": -1.5
+      }
+    }
+  },
+  "211179": {
+    "global": {
+      "games": 1,
+      "pointsScored": 59,
+      "pointsConceded": 66,
+      "wins": 0,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 59,
+      "pointsConceded": 66,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 0,
+      "pointsScored": 0,
+      "pointsConceded": 0,
+      "wins": 0,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 19,
+        "conceded": 10
+      },
+      "Q2": {
+        "scored": 15,
+        "conceded": 8
+      },
+      "Q3": {
+        "scored": 17,
+        "conceded": 18
+      },
+      "Q4": {
+        "scored": 8,
+        "conceded": 30
+      }
+    },
+    "streak": [
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786120",
+        "date": "2026-11-03T20:00:00.000Z",
+        "round": "2",
+        "homeTeam": "G.S. MINORI PALLACANESTRO",
+        "awayTeam": "BARONISSI BASKETBALL ACADEMY",
+        "homeScore": 59,
+        "awayScore": 66,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 19,
+            "awayScore": 10,
+            "period": 1
+          },
+          {
+            "homeScore": 15,
+            "awayScore": 8,
+            "period": 2
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 18,
+            "period": 3
+          },
+          {
+            "homeScore": 8,
+            "awayScore": 30,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 19,
+        "concededAvg": 10,
+        "diff": 9
+      },
+      "Q2": {
+        "scoredAvg": 15,
+        "concededAvg": 8,
+        "diff": 7
+      },
+      "Q3": {
+        "scoredAvg": 17,
+        "concededAvg": 18,
+        "diff": -1
+      },
+      "Q4": {
+        "scoredAvg": 8,
+        "concededAvg": 30,
+        "diff": -22
+      }
+    }
+  },
+  "211628": {
+    "global": {
+      "games": 2,
+      "pointsScored": 117,
+      "pointsConceded": 118,
+      "wins": 1,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 67,
+      "pointsConceded": 55,
+      "wins": 1,
+      "losses": 0
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 50,
+      "pointsConceded": 63,
+      "wins": 0,
+      "losses": 1
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 23,
+        "conceded": 33
+      },
+      "Q2": {
+        "scored": 39,
+        "conceded": 21
+      },
+      "Q3": {
+        "scored": 27,
+        "conceded": 38
+      },
+      "Q4": {
+        "scored": 28,
+        "conceded": 26
+      }
+    },
+    "streak": [
+      "P",
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786122",
+        "date": "2026-11-04T20:15:00.000Z",
+        "round": "2",
+        "homeTeam": "VISION SPORTS",
+        "awayTeam": "PONTE BASKET",
+        "homeScore": 67,
+        "awayScore": 55,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 8,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 25,
+            "awayScore": 13,
+            "period": 2
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 18,
+            "period": 3
+          },
+          {
+            "homeScore": 20,
+            "awayScore": 10,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786115",
+        "date": "2026-10-25T17:30:00.000Z",
+        "round": "1",
+        "homeTeam": "PALL. BAIANO 1988",
+        "awayTeam": "VISION SPORTS",
+        "homeScore": 63,
+        "awayScore": 50,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 19,
+            "awayScore": 15,
+            "period": 1
+          },
+          {
+            "homeScore": 8,
+            "awayScore": 14,
+            "period": 2
+          },
+          {
+            "homeScore": 20,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 16,
+            "awayScore": 8,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 11.5,
+        "concededAvg": 16.5,
+        "diff": -5
+      },
+      "Q2": {
+        "scoredAvg": 19.5,
+        "concededAvg": 10.5,
+        "diff": 9
+      },
+      "Q3": {
+        "scoredAvg": 13.5,
+        "concededAvg": 19,
+        "diff": -5.5
+      },
+      "Q4": {
+        "scoredAvg": 14,
+        "concededAvg": 13,
+        "diff": 1
+      }
+    }
+  },
+  "211630": {
+    "global": {
+      "games": 2,
+      "pointsScored": 159,
+      "pointsConceded": 128,
+      "wins": 2,
+      "losses": 0
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 80,
+      "pointsConceded": 58,
+      "wins": 1,
+      "losses": 0
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 79,
+      "pointsConceded": 70,
+      "wins": 1,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 42,
+        "conceded": 31
+      },
+      "Q2": {
+        "scored": 45,
+        "conceded": 40
+      },
+      "Q3": {
+        "scored": 37,
+        "conceded": 31
+      },
+      "Q4": {
+        "scored": 35,
+        "conceded": 26
+      }
+    },
+    "streak": [
+      "V",
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786123",
+        "date": "2026-10-31T18:00:00.000Z",
+        "round": "2",
+        "homeTeam": "GG MONTORO ",
+        "awayTeam": "EZ CRYSTAL BK CAPACCIO PAESTUM",
+        "homeScore": 80,
+        "awayScore": 58,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 18,
+            "awayScore": 10,
+            "period": 1
+          },
+          {
+            "homeScore": 22,
+            "awayScore": 22,
+            "period": 2
+          },
+          {
+            "homeScore": 23,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 13,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786117",
+        "date": "2026-10-25T18:00:00.000Z",
+        "round": "1",
+        "homeTeam": "PONTE BASKET",
+        "awayTeam": "GG MONTORO ",
+        "homeScore": 70,
+        "awayScore": 79,
+        "isWin": true,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 21,
+            "awayScore": 24,
+            "period": 1
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 23,
+            "period": 2
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 14,
+            "period": 3
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 21,
+        "concededAvg": 15.5,
+        "diff": 5.5
+      },
+      "Q2": {
+        "scoredAvg": 22.5,
+        "concededAvg": 20,
+        "diff": 2.5
+      },
+      "Q3": {
+        "scoredAvg": 18.5,
+        "concededAvg": 15.5,
+        "diff": 3
+      },
+      "Q4": {
+        "scoredAvg": 17.5,
+        "concededAvg": 13,
+        "diff": 4.5
+      }
+    }
+  },
+  "211635": {
+    "global": {
+      "games": 2,
+      "pointsScored": 102,
+      "pointsConceded": 117,
+      "wins": 0,
+      "losses": 2
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 42,
+      "pointsConceded": 46,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 60,
+      "pointsConceded": 71,
+      "wins": 0,
+      "losses": 1
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 24,
+        "conceded": 29
+      },
+      "Q2": {
+        "scored": 23,
+        "conceded": 34
+      },
+      "Q3": {
+        "scored": 16,
+        "conceded": 29
+      },
+      "Q4": {
+        "scored": 39,
+        "conceded": 25
+      }
+    },
+    "streak": [
+      "P",
+      "P"
+    ],
+    "log": [
+      {
+        "matchFid": "1786121",
+        "date": "2026-11-01T18:30:00.000Z",
+        "round": "2",
+        "homeTeam": "CITTADELLA DELLO SPORT",
+        "awayTeam": "PALL. BAIANO 1988",
+        "homeScore": 42,
+        "awayScore": 46,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 8,
+            "awayScore": 13,
+            "period": 1
+          },
+          {
+            "homeScore": 6,
+            "awayScore": 13,
+            "period": 2
+          },
+          {
+            "homeScore": 7,
+            "awayScore": 10,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 10,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786114",
+        "date": "2026-10-24T17:30:00.000Z",
+        "round": "1",
+        "homeTeam": "INDOMITA PAGANI ",
+        "awayTeam": "CITTADELLA DELLO SPORT",
+        "homeScore": 71,
+        "awayScore": 60,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 16,
+            "awayScore": 16,
+            "period": 1
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 17,
+            "period": 2
+          },
+          {
+            "homeScore": 19,
+            "awayScore": 9,
+            "period": 3
+          },
+          {
+            "homeScore": 15,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 12,
+        "concededAvg": 14.5,
+        "diff": -2.5
+      },
+      "Q2": {
+        "scoredAvg": 11.5,
+        "concededAvg": 17,
+        "diff": -5.5
+      },
+      "Q3": {
+        "scoredAvg": 8,
+        "concededAvg": 14.5,
+        "diff": -6.5
+      },
+      "Q4": {
+        "scoredAvg": 19.5,
+        "concededAvg": 12.5,
+        "diff": 7
+      }
+    }
+  }
+}

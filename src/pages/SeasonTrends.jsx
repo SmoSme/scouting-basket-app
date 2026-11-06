@@ -11,8 +11,10 @@ import {
 import { supabase } from '../services/supabase';
 import { aggregateSeasonStats } from '../utils/seasonAggregator';
 import MatchReviewModal from '../components/MatchReviewModal';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SeasonTrends({ showToast, authRole = 'admin' }) {
+  const { language, t } = useLanguage();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchTypeFilter, setMatchTypeFilter] = useState('ALL'); // 'ALL' | 'OFFICIAL' | 'FRIENDLY' | 'SCRIMMAGE'
@@ -182,31 +184,31 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     if (!dataPoint) return null;
 
     return (
-      <div className="bg-slate-900/95 border border-slate-700/90 rounded-xl p-3 shadow-2xl backdrop-blur-md text-xs space-y-1.5 z-50">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5">
-          <div className="font-black text-slate-200">
+      <div className="bg-white/95 border border-[#DDF3E9] rounded-xl p-3 shadow-xl backdrop-blur-md text-xs space-y-1.5 z-50 text-[#022D32]">
+        <div className="flex items-center justify-between gap-3 border-b border-[#DDF3E9] pb-1.5">
+          <div className="font-black text-[#022D32]">
             {dataPoint.chartLabel || dataPoint.matchName}
           </div>
           <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
             dataPoint.isWin 
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
-              : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
+              : 'bg-rose-50 text-rose-800 border border-rose-300'
           }`}>
             {dataPoint.resultText} ({dataPoint.pts} - {dataPoint.oppPts})
           </span>
         </div>
-        <div className="text-[11px] text-slate-400 flex items-center justify-between">
-          <span>Date:</span>
-          <span className="font-semibold text-slate-300">{dataPoint.date}</span>
+        <div className="text-[11px] text-[#022D32]/70 flex items-center justify-between">
+          <span>Data:</span>
+          <span className="font-semibold text-[#022D32]">{dataPoint.date}</span>
         </div>
         <div className="space-y-1 pt-1">
           {payload.map((entry, idx) => (
             <div key={idx} className="flex items-center justify-between gap-4">
-              <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+              <span className="flex items-center gap-1.5 text-[#022D32]/80 font-medium">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: entry.color }} />
                 {entry.name}:
               </span>
-              <span className="font-mono font-black text-slate-100">
+              <span className="font-mono font-black text-[#022D32]">
                 {entry.value}{entry.name.includes('%') || entry.name.includes('eFG') || entry.name.includes('DRB') ? '%' : ''}
               </span>
             </div>
@@ -217,24 +219,25 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
   };
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-4 max-w-7xl mx-auto w-full space-y-4">
+    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-5 bg-[#F8F9FA] text-[#022D32]">
       {/* ========================================================================= */}
       {/* 1. HEADER BAR                                                             */}
       {/* ========================================================================= */}
-      <div className="glass-card p-4 border-slate-700/60 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-none shadow-inner">
-            <TrendingUp className="w-5 h-5 text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none shadow-inner">
+            <TrendingUp className="w-5 h-5 text-[#0CA17A]" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-              SEASON TRENDS & ANALYTICS
-              <span className="text-[10px] bg-amber-400/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-400/40">
+            <h1 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1.5 h-4.5 bg-[#0CA17A] rounded-full inline-block" />
+              <span>{t('trends_title')}</span>
+              <span className="text-[10px] bg-[#DDF3E9] text-[#0CA17A] font-bold px-2 py-0.5 rounded border border-[#0CA17A]/30">
                 MULTI-MATCH
               </span>
             </h1>
-            <p className="text-xs text-slate-400 font-semibold">
-              Track team efficiency curves, ball control, and rebounding dominance over time
+            <p className="text-xs text-[#022D32]/70 font-semibold mt-0.5">
+              {t('trends_subtitle')}
             </p>
           </div>
         </div>
@@ -242,43 +245,43 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
         <button
           onClick={fetchMatches}
           disabled={loading}
-          className="flex items-center gap-2 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm"
+          className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-          <span>REFRESH</span>
+          <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${loading ? 'animate-spin' : ''}`} />
+          <span>{language === 'it' ? 'AGGIORNA' : 'REFRESH'}</span>
         </button>
       </div>
 
       {/* ========================================================================= */}
       {/* 2. GLOBAL FILTER BAR                                                      */}
       {/* ========================================================================= */}
-      <div className="glass-card p-3 border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-3.5 rounded-2xl border border-[#DDF3E9] shadow-xs flex flex-wrap items-center justify-between gap-3">
         {/* Match Type Pills */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider mr-1 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5 text-amber-400" />
-            TYPE:
+          <span className="text-[11px] font-black text-[#022D32] uppercase tracking-wider mr-1 flex items-center gap-1">
+            <Filter className="w-3.5 h-3.5 text-[#0CA17A]" />
+            {language === 'it' ? 'TIPO:' : 'TYPE:'}
           </span>
           {[
-            { id: 'ALL', label: 'All Matches', count: typeCounts?.ALL || 0 },
-            { id: 'OFFICIAL', label: 'Official', count: typeCounts?.OFFICIAL || 0 },
-            { id: 'FRIENDLY', label: 'Friendly', count: typeCounts?.FRIENDLY || 0 },
-            { id: 'SCRIMMAGE', label: 'Scrimmage', count: typeCounts?.SCRIMMAGE || 0 }
+            { id: 'ALL', label: language === 'it' ? 'Tutte le Partite' : 'All Matches', count: typeCounts?.ALL || 0 },
+            { id: 'OFFICIAL', label: language === 'it' ? 'Ufficiali' : 'Official', count: typeCounts?.OFFICIAL || 0 },
+            { id: 'FRIENDLY', label: language === 'it' ? 'Amichevoli' : 'Friendly', count: typeCounts?.FRIENDLY || 0 },
+            { id: 'SCRIMMAGE', label: language === 'it' ? 'Allenamenti' : 'Scrimmage', count: typeCounts?.SCRIMMAGE || 0 }
           ].map((tab) => {
             const isActive = matchTypeFilter === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setMatchTypeFilter(tab.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-amber-500 text-slate-950 shadow-md scale-100'
-                    : 'bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-[#0CA17A] text-white shadow-sm scale-100'
+                    : 'bg-[#F8F9FA] text-[#022D32]/70 hover:text-[#022D32] hover:bg-[#DDF3E9] border border-[#DDF3E9]'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  isActive ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'
+                  isActive ? 'bg-[#022D32] text-[#A7F3D0]' : 'bg-[#DDF3E9] text-[#022D32]'
                 }`}>
                   {tab.count}
                 </span>
@@ -288,22 +291,22 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
         </div>
 
         {/* Chronological Split / Range */}
-        <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
-          <span className="text-[10px] font-bold text-slate-400 px-2 uppercase">SPLIT:</span>
+        <div className="flex items-center gap-1 bg-[#F8F9FA] p-1 rounded-xl border border-[#DDF3E9]">
+          <span className="text-[10px] font-bold text-[#022D32]/60 px-2 uppercase">SPLIT:</span>
           {[
-            { id: 'ALL', label: 'All Time' },
-            { id: 'LAST_5', label: 'Last 5' },
-            { id: 'LAST_10', label: 'Last 10' }
+            { id: 'ALL', label: language === 'it' ? 'Tutte' : 'All' },
+            { id: 'LAST_5', label: language === 'it' ? 'Ultime 5' : 'Last 5' },
+            { id: 'LAST_10', label: language === 'it' ? 'Ultime 10' : 'Last 10' }
           ].map(s => {
             const isActive = splitFilter === s.id;
             return (
               <button
                 key={s.id}
                 onClick={() => setSplitFilter(s.id)}
-                className={`px-2.5 py-1 text-xs font-bold rounded transition-all ${
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
                   isActive
-                    ? 'bg-sky-500 text-slate-950 font-black shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#0CA17A] text-white font-black shadow-xs'
+                    : 'text-[#022D32]/70 hover:text-[#022D32]'
                 }`}
               >
                 {s.label}
@@ -314,135 +317,135 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       </div>
 
       {loading ? (
-        <div className="glass-card p-16 text-center border-slate-800 space-y-3">
-          <RefreshCw className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
-          <p className="text-slate-300 font-bold text-sm">Aggregating historical match performance...</p>
+        <div className="bg-white p-16 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+          <RefreshCw className="w-8 h-8 text-[#0CA17A] animate-spin mx-auto" />
+          <p className="text-[#022D32] font-black text-sm">{language === 'it' ? 'Aggregazione andamento storico partite...' : 'Aggregating season analytics...'}</p>
         </div>
       ) : gamesPlayed === 0 ? (
-        <div className="glass-card p-12 text-center border-slate-800 space-y-3">
-          <AlertCircle className="w-10 h-10 text-amber-400/70 mx-auto" />
-          <h3 className="text-slate-200 font-black text-base uppercase">No Matches Found</h3>
-          <p className="text-slate-400 font-semibold text-xs max-w-md mx-auto">
-            No matches found matching the selected filter ({matchTypeFilter}). Try switching filters or start a new match session from the Live Game tab.
+        <div className="bg-white p-12 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+          <AlertCircle className="w-10 h-10 text-[#0CA17A]/70 mx-auto" />
+          <h3 className="text-[#022D32] font-black text-base uppercase">{language === 'it' ? 'Nessuna Partita Trovata' : 'No Matches Found'}</h3>
+          <p className="text-[#022D32]/70 font-semibold text-xs max-w-md mx-auto">
+            {language === 'it' ? `Nessuna partita corrisponde al filtro selezionato (${matchTypeFilter}).` : `No matches match the selected filter (${matchTypeFilter}).`}
           </p>
         </div>
       ) : (
         <>
           {/* ========================================================================= */}
-          {/* 3. AGGREGATE 4-CARD KPI STRIP                                             */}
+          {/* 3. AGGREGATE 4-CARD PRIMARY KPI STRIP                                     */}
           {/* ========================================================================= */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* CARD 1: RECORD & NET MARGIN */}
-            <div className="glass-card p-3.5 border-slate-800 bg-slate-900/90 flex flex-col justify-between shadow-lg">
+            <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                  RECORD & MARGIN
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <Trophy className="w-3.5 h-3.5 text-[#0CA17A]" />
+                  {t('rec_margin_title')}
                 </span>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
                   record.winRate >= 60 
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                    ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]'
                     : record.winRate >= 40 
-                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-                      : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                      ? 'bg-amber-500/30 text-amber-300 border-amber-400'
+                      : 'bg-rose-500/30 text-rose-300 border-rose-400'
                 }`}>
                   {record.winRate}% WIN
                 </span>
               </div>
               <div className="my-1">
-                <div className="text-2xl sm:text-3xl font-black text-slate-100 font-mono tracking-tight flex items-baseline gap-2">
+                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight flex items-baseline gap-2">
                   <span>{record.wins}W - {record.losses}L</span>
-                  {record.ties > 0 && <span className="text-sm text-slate-400">({record.ties}T)</span>}
+                  {record.ties > 0 && <span className="text-sm text-white/50">({record.ties}T)</span>}
                 </div>
               </div>
-              <div className="text-[11px] font-semibold text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                <span>PPG: <strong className="text-slate-200">{scoring.avgPts}</strong> vs <strong className="text-slate-400">{scoring.avgOppPts}</strong></span>
-                <span className={`font-mono font-black ${scoring.avgDiff > 0 ? 'text-emerald-400' : (scoring.avgDiff < 0 ? 'text-rose-400' : 'text-slate-400')}`}>
+              <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                <span>PPG: <strong className="text-white">{scoring.avgPts}</strong> vs <strong className="text-white/70">{scoring.avgOppPts}</strong></span>
+                <span className={`font-mono font-black ${scoring.avgDiff > 0 ? 'text-[#A7F3D0]' : (scoring.avgDiff < 0 ? 'text-rose-300' : 'text-white')}`}>
                   {scoring.avgDiff > 0 ? `+${scoring.avgDiff}` : scoring.avgDiff} Net
                 </span>
               </div>
             </div>
 
             {/* CARD 2: SHOOTING EFFICIENCY */}
-            <div className="glass-card p-3.5 border-slate-800 bg-slate-900/90 flex flex-col justify-between shadow-lg">
+            <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Target className="w-3.5 h-3.5 text-sky-400" />
-                  SHOOTING (eFG%)
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
+                  {t('shooting_eff_title')}
                 </span>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
                   shooting.efgPct >= 50 
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
-                    : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                    ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
+                    : 'bg-amber-500/30 text-amber-300 border-amber-400'
                 }`}>
-                  {shooting.efgPct >= 50 ? 'TARGET MET' : 'SUB-50%'}
+                  {shooting.efgPct >= 50 ? 'TARGET' : (language === 'it' ? 'SOTTO 50%' : 'UNDER 50%')}
                 </span>
               </div>
               <div className="my-1">
-                <div className="text-2xl sm:text-3xl font-black text-sky-400 font-mono tracking-tight">
-                  {shooting.efgPct}% <span className="text-xs font-bold text-slate-400">eFG</span>
+                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                  {shooting.efgPct}% <span className="text-xs font-bold text-[#A7F3D0]">eFG</span>
                 </div>
               </div>
-              <div className="text-[11px] font-semibold text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                <span>2P: <strong className="text-slate-200">{shooting.fg2Pct}%</strong></span>
-                <span>3P: <strong className="text-slate-200">{shooting.fg3Pct}%</strong></span>
-                <span>FT: <strong className="text-slate-200">{shooting.ftPct}%</strong></span>
+              <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                <span>2P: <strong className="text-white">{shooting.fg2Pct}%</strong></span>
+                <span>3P: <strong className="text-white">{shooting.fg3Pct}%</strong></span>
+                <span>{language === 'it' ? 'TL' : 'FT'}: <strong className="text-white">{shooting.ftPct}%</strong></span>
               </div>
             </div>
 
             {/* CARD 3: DEFENSIVE REBOUNDING */}
-            <div className="glass-card p-3.5 border-slate-800 bg-slate-900/90 flex flex-col justify-between shadow-lg">
+            <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                  DEFENSIVE GLASS
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-[#0CA17A]" />
+                  {t('glass_title')}
                 </span>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
                   rebounding.drbPct >= 70 
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
-                    : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                    ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
+                    : 'bg-amber-500/30 text-amber-300 border-amber-400'
                 }`}>
                   {rebounding.drbPct !== null ? `${rebounding.drbPct}% DRB` : 'N/A'}
                 </span>
               </div>
               <div className="my-1">
-                <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
                   {rebounding.drbPct !== null ? `${rebounding.drbPct}%` : 'N/A'}
                 </div>
               </div>
-              <div className="text-[11px] font-semibold text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                <span>DREB: <strong className="text-slate-200">{rebounding.avgDreb}</strong>/g</span>
-                <span>OREB: <strong className="text-slate-200">{rebounding.avgOreb}</strong>/g</span>
-                <span>Share: <strong className="text-slate-300">{rebounding.orebShare}%</strong></span>
+              <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                <span>DREB: <strong className="text-white">{rebounding.avgDreb}</strong>/g</span>
+                <span>OREB: <strong className="text-white">{rebounding.avgOreb}</strong>/g</span>
+                <span>{language === 'it' ? 'Quota' : 'Share'}: <strong className="text-white">{rebounding.orebShare}%</strong></span>
               </div>
             </div>
 
             {/* CARD 4: BALL SECURITY & RATIO */}
-            <div className="glass-card p-3.5 border-slate-800 bg-slate-900/90 flex flex-col justify-between shadow-lg">
+            <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-amber-400" />
-                  BALL SECURITY
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-[#0CA17A]" />
+                  {t('ball_care_title')}
                 </span>
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
                   ballControl.astTovRatio >= 1.3 
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
+                    ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
                     : ballControl.astTovRatio >= 1.0 
-                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-                      : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                      ? 'bg-amber-500/30 text-amber-300 border-amber-400'
+                      : 'bg-rose-500/30 text-rose-300 border-rose-400'
                 }`}>
-                  {ballControl.astTovRatio >= 1.0 ? 'POSITIVE' : 'NEGATIVE'}
+                  {ballControl.astTovRatio >= 1.0 ? 'POSITIVO' : 'NEGATIVO'}
                 </span>
               </div>
               <div className="my-1">
-                <div className="text-2xl sm:text-3xl font-black text-amber-300 font-mono tracking-tight">
-                  {ballControl.astTovRatio} <span className="text-xs font-bold text-slate-400">AST/TOV</span>
+                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                  {ballControl.astTovRatio} <span className="text-xs font-bold text-[#A7F3D0]">AST/TOV</span>
                 </div>
               </div>
-              <div className="text-[11px] font-semibold text-slate-400 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                <span>APG: <strong className="text-slate-200">{ballControl.avgAst}</strong></span>
-                <span>TOPG: <strong className="text-slate-200">{ballControl.avgTov}</strong></span>
-                <span>SPG: <strong className="text-slate-300">{ballControl.avgStl}</strong></span>
+              <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                <span>APG: <strong className="text-white">{ballControl.avgAst}</strong></span>
+                <span>TOPG: <strong className="text-white">{ballControl.avgTov}</strong></span>
+                <span>SPG: <strong className="text-white">{ballControl.avgStl}</strong></span>
               </div>
             </div>
           </div>
@@ -450,33 +453,34 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           {/* ========================================================================= */}
           {/* 4. VISUALIZATION 1: EFFICIENCY TREND (LINE CHART)                         */}
           {/* ========================================================================= */}
-          <div className="glass-card p-4 border-slate-800 bg-slate-900/80 shadow-xl space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center">
-                  <Flame className="w-4 h-4 text-sky-400" />
+                <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                  <Flame className="w-4 h-4 text-[#0CA17A]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
-                    OFFENSIVE EFFICIENCY & SCORING FLOW
+                  <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                    <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
+                    <span>EFFICIENZA OFFENSIVA & FLUSSO PUNTI</span>
                   </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Points Scored (left axis) vs. Effective FG% (right axis) chronologically
+                  <p className="text-[11px] text-[#022D32]/70">
+                    Punti segnati (asse sinistro) vs. Percentuale effettiva eFG% (asse destro)
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1.5 text-sky-400 font-bold">
-                  <span className="w-3 h-0.5 bg-sky-400 inline-block" />
-                  <span>Points Scored</span>
+                <div className="flex items-center gap-1.5 text-[#022D32] font-bold">
+                  <span className="w-3 h-0.5 bg-[#022D32] inline-block" />
+                  <span>Punti Segnati</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-amber-400 font-bold">
-                  <span className="w-3 h-0.5 bg-amber-400 inline-block" />
+                <div className="flex items-center gap-1.5 text-[#0CA17A] font-bold">
+                  <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" />
                   <span>eFG%</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-emerald-400 font-bold hidden sm:flex">
-                  <span className="w-3 h-0.5 border-b border-dashed border-emerald-400 inline-block" />
+                <div className="flex items-center gap-1.5 text-amber-600 font-bold hidden sm:flex">
+                  <span className="w-3 h-0.5 border-b border-dashed border-amber-500 inline-block" />
                   <span>50% Target Benchmark</span>
                 </div>
               </div>
@@ -485,23 +489,23 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             <div className="h-72 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={timeline} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
                   <XAxis 
                     dataKey="gameLabel" 
-                    stroke="#94a3b8" 
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }}
+                    stroke="#022D32" 
+                    tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
                   />
                   <YAxis 
                     yAxisId="left"
-                    stroke="#38bdf8"
-                    tick={{ fill: '#38bdf8', fontSize: 11 }}
+                    stroke="#022D32"
+                    tick={{ fill: '#022D32', fontSize: 11 }}
                     domain={['auto', 'auto']}
                   />
                   <YAxis 
                     yAxisId="right" 
                     orientation="right" 
-                    stroke="#f59e0b"
-                    tick={{ fill: '#f59e0b', fontSize: 11 }}
+                    stroke="#0CA17A"
+                    tick={{ fill: '#0CA17A', fontSize: 11 }}
                     domain={[20, 80]}
                     tickFormatter={(v) => `${v}%`}
                   />
@@ -509,19 +513,19 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <ReferenceLine 
                     yAxisId="right" 
                     y={50} 
-                    stroke="#10b981" 
+                    stroke="#D97706" 
                     strokeDasharray="4 4" 
                     strokeWidth={1.5}
-                    label={{ value: '50% Target', position: 'insideTopRight', fill: '#10b981', fontSize: 10, fontWeight: 'bold' }}
+                    label={{ value: '50% Target', position: 'insideTopRight', fill: '#D97706', fontSize: 10, fontWeight: 'bold' }}
                   />
                   <Line 
                     yAxisId="left"
                     type="monotone" 
                     dataKey="pts" 
-                    name="Points Scored"
-                    stroke="#38bdf8" 
+                    name="Punti Segnati"
+                    stroke="#022D32" 
                     strokeWidth={3}
-                    dot={{ fill: '#0284c7', r: 4, stroke: '#38bdf8', strokeWidth: 1.5 }}
+                    dot={{ fill: '#022D32', r: 4, stroke: '#0CA17A', strokeWidth: 1.5 }}
                     activeDot={{ r: 6 }}
                   />
                   <Line 
@@ -529,9 +533,9 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     type="monotone" 
                     dataKey="efgPct" 
                     name="Effective FG%"
-                    stroke="#f59e0b" 
+                    stroke="#0CA17A" 
                     strokeWidth={2.5}
-                    dot={{ fill: '#d97706', r: 4, stroke: '#f59e0b', strokeWidth: 1.5 }}
+                    dot={{ fill: '#0CA17A', r: 4, stroke: '#022D32', strokeWidth: 1.5 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -540,35 +544,36 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           </div>
 
           {/* ========================================================================= */}
-          {/* 5. VISUALIZATION 2 & 3: BALL SECURITY (COMBO) & REBOUND BATTLE (AREA)     */}
+          {/* 5. VISUALIZATION 2 & 3: BALL SECURITY & REBOUND BATTLE                    */}
           {/* ========================================================================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* CHART 2: BALL SECURITY (AST vs TOV) */}
-            <div className="glass-card p-4 border-slate-800 bg-slate-900/80 shadow-xl space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                    <Activity className="w-4 h-4 text-amber-400" />
+                  <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-[#0CA17A]" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase tracking-wider">
-                      BALL CONTROL: ASSISTS VS. TURNOVERS
+                    <h3 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
+                      <span>CONTROLLO PALLA: ASSIST VS. PERSE</span>
                     </h3>
-                    <p className="text-[11px] text-slate-400">
-                      Assists (AST), Turnovers (TOV), and AST/TOV ratio
+                    <p className="text-[11px] text-[#022D32]/70">
+                      Assist (AST), Palle Perse (TOV) e rapporto AST/TOV
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-1 text-sky-400 font-bold">
-                    <span className="w-2.5 h-2.5 rounded bg-sky-400 inline-block" /> AST
+                  <span className="flex items-center gap-1 text-[#022D32] font-bold">
+                    <span className="w-2.5 h-2.5 rounded bg-[#022D32] inline-block" /> AST
                   </span>
-                  <span className="flex items-center gap-1 text-rose-400 font-bold">
-                    <span className="w-2.5 h-2.5 rounded bg-rose-400 inline-block" /> TOV
+                  <span className="flex items-center gap-1 text-rose-600 font-bold">
+                    <span className="w-2.5 h-2.5 rounded bg-rose-600 inline-block" /> TOV
                   </span>
-                  <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                    <span className="w-3 h-0.5 bg-emerald-400 inline-block" /> Ratio
+                  <span className="flex items-center gap-1 text-[#0CA17A] font-bold">
+                    <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" /> Ratio
                   </span>
                 </div>
               </div>
@@ -576,35 +581,35 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
               <div className="h-64 w-full pt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
                     <XAxis 
                       dataKey="gameLabel" 
-                      stroke="#94a3b8" 
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }}
+                      stroke="#022D32" 
+                      tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
                     />
                     <YAxis 
                       yAxisId="left"
-                      stroke="#94a3b8"
-                      tick={{ fill: '#94a3b8', fontSize: 11 }}
+                      stroke="#022D32"
+                      tick={{ fill: '#022D32', fontSize: 11 }}
                     />
                     <YAxis 
                       yAxisId="right"
                       orientation="right"
-                      stroke="#10b981"
-                      tick={{ fill: '#10b981', fontSize: 11 }}
+                      stroke="#0CA17A"
+                      tick={{ fill: '#0CA17A', fontSize: 11 }}
                       domain={[0, 'auto']}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar yAxisId="left" dataKey="ast" name="Assists" fill="#38bdf8" radius={[3, 3, 0, 0]} />
-                    <Bar yAxisId="left" dataKey="tov" name="Turnovers" fill="#f43f5e" radius={[3, 3, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="ast" name="Assist" fill="#022D32" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="tov" name="Palle Perse" fill="#F43F5E" radius={[4, 4, 0, 0]} />
                     <Line 
                       yAxisId="right" 
                       type="monotone" 
                       dataKey="astTovRatio" 
                       name="AST/TOV Ratio" 
-                      stroke="#10b981" 
+                      stroke="#0CA17A" 
                       strokeWidth={2.5}
-                      dot={{ fill: '#059669', r: 3 }}
+                      dot={{ fill: '#0CA17A', r: 3 }}
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -612,28 +617,29 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             </div>
 
             {/* CHART 3: REBOUNDING BATTLE (DRB% AREA) */}
-            <div className="glass-card p-4 border-slate-800 bg-slate-900/80 shadow-xl space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-emerald-400" />
+                  <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-[#0CA17A]" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase tracking-wider">
-                      DEFENSIVE GLASS DOMINANCE (DRB%)
+                    <h3 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
+                      <span>DOMINIO A RIMBALZO (DRB%)</span>
                     </h3>
-                    <p className="text-[11px] text-slate-400">
-                      Defensive Rebound % vs. Regional 70% Target Benchmark
+                    <p className="text-[11px] text-[#022D32]/70">
+                      Percentuale rimbalzi difensivi vs. target benchmark 70%
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                    <span className="w-2.5 h-2.5 rounded bg-emerald-500 inline-block" /> DRB%
+                  <span className="flex items-center gap-1 text-[#0CA17A] font-bold">
+                    <span className="w-2.5 h-2.5 rounded bg-[#0CA17A] inline-block" /> DRB%
                   </span>
-                  <span className="flex items-center gap-1 text-amber-400 font-bold">
-                    <span className="w-3 h-0.5 border-b border-dashed border-amber-400 inline-block" /> 70% Target
+                  <span className="flex items-center gap-1 text-amber-600 font-bold">
+                    <span className="w-3 h-0.5 border-b border-dashed border-amber-500 inline-block" /> 70% Target
                   </span>
                 </div>
               </div>
@@ -643,39 +649,39 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <AreaChart data={timeline} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="drbGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
+                        <stop offset="5%" stopColor="#0CA17A" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#0CA17A" stopOpacity={0.0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
                     <XAxis 
                       dataKey="gameLabel" 
-                      stroke="#94a3b8" 
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }}
+                      stroke="#022D32" 
+                      tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
                     />
                     <YAxis 
-                      stroke="#10b981"
-                      tick={{ fill: '#10b981', fontSize: 11 }}
+                      stroke="#0CA17A"
+                      tick={{ fill: '#0CA17A', fontSize: 11 }}
                       domain={[40, 100]}
                       tickFormatter={(v) => `${v}%`}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <ReferenceLine 
                       y={70} 
-                      stroke="#f59e0b" 
+                      stroke="#D97706" 
                       strokeDasharray="4 4" 
                       strokeWidth={1.5}
-                      label={{ value: '70% Target', position: 'insideTopLeft', fill: '#f59e0b', fontSize: 10, fontWeight: 'bold' }}
+                      label={{ value: '70% Target', position: 'insideTopLeft', fill: '#D97706', fontSize: 10, fontWeight: 'bold' }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="drbPct" 
                       name="Defensive Rebound %"
-                      stroke="#10b981" 
+                      stroke="#0CA17A" 
                       strokeWidth={3}
                       fillOpacity={1} 
                       fill="url(#drbGradient)" 
-                      dot={{ fill: '#059669', r: 4, stroke: '#10b981', strokeWidth: 1.5 }}
+                      dot={{ fill: '#0CA17A', r: 4, stroke: '#022D32', strokeWidth: 1.5 }}
                       activeDot={{ r: 6 }}
                     />
                   </AreaChart>
@@ -687,99 +693,100 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           {/* ========================================================================= */}
           {/* 6. INDIVIDUAL MATCH LOG & DETAILS TABLE                                   */}
           {/* ========================================================================= */}
-          <div className="glass-card p-4 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-sky-400" />
-                <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
-                  CHRONOLOGICAL MATCH BREAKDOWN ({filteredMatches.length} GAMES)
+                <BarChart3 className="w-4 h-4 text-[#0CA17A]" />
+                <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
+                  <span>DETTAGLIO CRONOLOGICO PARTITE ({filteredMatches.length} GARE)</span>
                 </h3>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border border-[#DDF3E9]">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                    <th className="p-2.5">GAME</th>
-                    <th className="p-2.5">DATE</th>
-                    <th className="p-2.5">TYPE</th>
-                    <th className="p-2.5">OPPONENT</th>
-                    <th className="p-2.5 text-center">RESULT</th>
-                    <th className="p-2.5 text-center">SCORE</th>
-                    <th className="p-2.5 text-center">+/-</th>
-                    <th className="p-2.5 text-center">eFG%</th>
-                    <th className="p-2.5 text-center">AST/TOV</th>
-                    <th className="p-2.5 text-center">DRB%</th>
-                    <th className="p-2.5 text-center">PIR</th>
-                    <th className="p-2.5 text-right">ACTION</th>
+                  <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider border-b border-[#DDF3E9]">
+                    <th className="p-3">GARA</th>
+                    <th className="p-3">DATA</th>
+                    <th className="p-3">TIPO</th>
+                    <th className="p-3">AVVERSARIO</th>
+                    <th className="p-3 text-center">ESITO</th>
+                    <th className="p-3 text-center">PUNTEGGIO</th>
+                    <th className="p-3 text-center">+/-</th>
+                    <th className="p-3 text-center">eFG%</th>
+                    <th className="p-3 text-center">AST/TOV</th>
+                    <th className="p-3 text-center">DRB%</th>
+                    <th className="p-3 text-center">PIR</th>
+                    <th className="p-3 text-right">AZIONE</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
-                  {timeline.map((item) => (
-                    <tr key={item.matchId} className="hover:bg-slate-800/50 transition-colors">
-                      <td className="p-2.5 font-bold text-sky-400 font-mono">
+                <tbody className="divide-y divide-[#DDF3E9]">
+                  {timeline.map((item, idx) => (
+                    <tr key={item.matchId} className={`transition-colors hover:bg-[#DDF3E9]/50 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/15'}`}>
+                      <td className="p-3 font-black text-[#022D32] font-mono">
                         {item.gameLabel}
                       </td>
-                      <td className="p-2.5 text-slate-300 font-medium">
+                      <td className="p-3 text-[#022D32]/80 font-medium">
                         {item.date}
                       </td>
-                      <td className="p-2.5">
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                      <td className="p-3">
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
                           item.matchType === 'Official'
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                            ? 'bg-[#DDF3E9] text-[#022D32] border-[#0CA17A]/40'
                             : item.matchType === 'Friendly'
-                              ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
-                              : 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                              ? 'bg-sky-50 text-sky-800 border-sky-300'
+                              : 'bg-purple-50 text-purple-800 border-purple-300'
                         }`}>
                           {item.matchType}
                         </span>
                       </td>
-                      <td className="p-2.5 font-black text-slate-200">
+                      <td className="p-3 font-black text-[#022D32]">
                         {item.opponent}
                       </td>
-                      <td className="p-2.5 text-center">
+                      <td className="p-3 text-center">
                         <span className={`font-mono font-black px-2 py-0.5 rounded text-[11px] ${
                           item.isWin 
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
-                            : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
+                            : 'bg-rose-50 text-rose-800 border border-rose-300'
                         }`}>
                           {item.resultText}
                         </span>
                       </td>
-                      <td className="p-2.5 text-center font-mono font-black text-slate-100">
+                      <td className="p-3 text-center font-mono font-black text-[#022D32]">
                         <span>{item.pts} - {item.oppPts}</span>
                         {item.isScoreOverridden && (
-                          <span className="block text-[8px] font-black text-amber-400 bg-amber-500/10 rounded px-1 mt-0.5" title="Official table override applied">
+                          <span className="block text-[8px] font-black text-[#022D32] bg-[#DDF3E9] rounded px-1 mt-0.5 border border-[#0CA17A]/40" title="Official table override applied">
                             SYNCED
                           </span>
                         )}
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold">
-                        <span className={item.diff > 0 ? 'text-emerald-400' : (item.diff < 0 ? 'text-rose-400' : 'text-slate-400')}>
+                      <td className="p-3 text-center font-mono font-black">
+                        <span className={item.diff > 0 ? 'text-emerald-700' : (item.diff < 0 ? 'text-rose-700' : 'text-[#022D32]')}>
                           {item.diff > 0 ? `+${item.diff}` : item.diff}
                         </span>
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-slate-200">
+                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
                         {item.efgPct}%
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-slate-200">
+                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
                         {item.astTovRatio}
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-slate-200">
+                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
                         {item.drbPct !== null ? `${item.drbPct}%` : '-'}
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                      <td className="p-3 text-center font-mono font-black text-[#022D32]">
                         {item.pir}
                       </td>
-                      <td className="p-2.5 text-right">
+                      <td className="p-3 text-right">
                         <button
                           onClick={() => handleOpenReview(item.rawMatch)}
-                          className="bg-sky-600 hover:bg-sky-500 text-white font-black px-2.5 py-1 rounded text-xs transition-all shadow-sm flex items-center gap-1 ml-auto active:scale-95"
-                          title="Open deep match review"
+                          className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs flex items-center gap-1.5 ml-auto active:scale-95 cursor-pointer"
+                          title="Apri analisi approfondita del match"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>REVIEW</span>
+                          <span>ANALISI</span>
                         </button>
                       </td>
                     </tr>

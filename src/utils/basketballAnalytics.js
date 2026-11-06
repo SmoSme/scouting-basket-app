@@ -430,15 +430,15 @@ export function computeZoneStats(events = []) {
     const pps = attempts > 0 ? (made * zoneInfo.val) / attempts : 0;
 
     // SVG Map color
-    let mapColor = '#0F172A';
+    let mapColor = '#F1F5F9';
     if (attempts > 0) {
-      if (pct >= 50.0) mapColor = '#064E3B'; // Dark Emerald 50-100%
-      else if (pct >= 33.0) mapColor = '#78350F'; // Dark Amber 33-49%
-      else mapColor = '#7F1D1D'; // Brick red 0-32%
+      if (pct >= 50.0) mapColor = '#0CA17A'; // Emerald 50-100%
+      else if (pct >= 33.0) mapColor = '#D97706'; // Amber 33-49%
+      else mapColor = '#DC2626'; // Brick red 0-32%
     }
 
     // Table rating and color
-    const efficiencyColor = pct >= 50 ? '#059669' : pct >= 33 ? '#D97706' : attempts > 0 ? '#DC2626' : '#334155';
+    const efficiencyColor = pct >= 50 ? '#0CA17A' : pct >= 33 ? '#D97706' : attempts > 0 ? '#DC2626' : '#64748B';
     const ratingLabel = pct >= 50 ? 'HOT' : pct >= 33 ? 'SOLID' : attempts > 0 ? 'COLD' : 'NO ATTEMPTS';
 
     const label = attempts > 0 ? `${made}/${attempts} (${Math.round(pct)}%)` : zoneInfo.name.toUpperCase();

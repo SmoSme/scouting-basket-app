@@ -50,12 +50,20 @@ export default function App() {
   
   const sanitizeRoster = (rawList) => {
     if (!Array.isArray(rawList) || rawList.length === 0) return DEFAULT_MASTER_ROSTER;
-    return rawList.map(p => {
+    const list = rawList.map(p => {
       if (String(p.number) === '31' && p.name === 'Giuseppe Macinante') {
         return { ...p, name: 'Emanuele Cuomo' };
       }
       return p;
     });
+
+    // Ensure #35 Marco Girardi is included in master roster if missing from cached localStorage
+    const hasGirardi = list.some(p => String(p.number) === '35' || (p.name && p.name.toLowerCase().includes('girardi')));
+    if (!hasGirardi) {
+      list.push({ number: "35", name: "Marco Girardi", pos: "N/A" });
+    }
+
+    return list.sort((a, b) => Number(a.number) - Number(b.number));
   };
 
   const [masterRoster, setMasterRoster] = useState(() => {
@@ -1023,12 +1031,13 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="h-screen h-[100dvh] w-screen overflow-hidden flex flex-col bg-[#06090F] p-1 sm:p-2 text-slate-100">
+      <div className="h-screen h-[100dvh] w-screen overflow-hidden flex flex-col bg-[#F8F9FA] text-[#022D32]">
         {/* Toast Notification */}
         {toastMsg && (
-          <div className="fixed top-3 right-3 z-50 bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-lg shadow-2xl border-2 border-white flex items-center gap-2 animate-pulse text-xs">
-            <Activity className="w-4 h-4 text-slate-950" />
-            {toastMsg}
+          <div className="fixed top-4 right-4 z-[9999] bg-[#022D32] text-white font-bold px-4 py-2.5 rounded-xl shadow-2xl border-2 border-[#0CA17A] flex items-center gap-2.5 text-xs animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-[#0CA17A] animate-ping" />
+            <Activity className="w-4 h-4 text-[#0CA17A]" />
+            <span>{toastMsg}</span>
           </div>
         )}
 

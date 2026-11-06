@@ -187,23 +187,23 @@ export default function PlayerSelector({
   };
 
   return (
-    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden border-slate-800">
+    <div className="bg-white p-3 h-full flex flex-col overflow-hidden border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
       {/* Panel Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 flex-none">
+      <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-2 mb-2 flex-none">
         <div className="flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-sky-400" />
-          <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+          <Users className="w-3.5 h-3.5 text-[#0CA17A]" />
+          <h2 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
             LINEUP & SUBSTITUTIONS
           </h2>
         </div>
         {isAdmin ? (
-          <div className="flex items-center gap-1 text-[10px] text-slate-400 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-            <ArrowLeftRight className="w-3 h-3 text-sky-400" />
+          <div className="flex items-center gap-1 text-[10px] text-[#022D32]/80 font-bold bg-[#F8F9FA] px-2 py-0.5 rounded-lg border border-[#DDF3E9]">
+            <ArrowLeftRight className="w-3 h-3 text-[#0CA17A]" />
             <span>DRAG TO SUB</span>
           </div>
         ) : (
-          <div className="flex items-center gap-1 text-[10px] text-sky-400 font-semibold bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/60">
-            <UserCheck className="w-3 h-3 text-sky-400" />
+          <div className="flex items-center gap-1 text-[10px] font-bold bg-[#DDF3E9] px-2 py-0.5 rounded-lg border border-[#0CA17A]/30 text-[#022D32]">
+            <UserCheck className="w-3 h-3 text-[#0CA17A]" />
             <span>TAP TO VIEW STATS</span>
           </div>
         )}
@@ -211,16 +211,16 @@ export default function PlayerSelector({
 
       {/* TAP-TO-SUB ACTIVE BANNER (Admin only) */}
       {isAdmin && subBenchPlayer && (
-        <div className="mb-2 p-2 bg-slate-900 border border-amber-500/50 rounded-lg flex items-center justify-between text-xs flex-none shadow-sm">
-          <div className="flex items-center gap-1.5 font-semibold text-amber-300 truncate">
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400 flex-none" />
+        <div className="mb-2 p-2 bg-amber-50 border border-amber-300 rounded-lg flex items-center justify-between text-xs flex-none shadow-sm">
+          <div className="flex items-center gap-1.5 font-bold text-amber-900 truncate">
+            <RefreshCw className="w-3.5 h-3.5 text-amber-700 flex-none" />
             <span className="truncate">
               SUB: #{subBenchPlayer.number} {subBenchPlayer.name} ➔ Select ON-COURT player to replace
             </span>
           </div>
           <button
             onClick={() => setSubBenchPlayer(null)}
-            className="text-slate-400 hover:text-white p-0.5 rounded ml-1 flex-none"
+            className="text-[#022D32]/65 hover:text-[#022D32] p-0.5 rounded ml-1 flex-none"
           >
             <X className="w-4 h-4" />
           </button>
@@ -234,17 +234,17 @@ export default function PlayerSelector({
         {/* ======================================================== */}
         {/* COLUMN 1: BENCH (LEFT)                                   */}
         {/* ======================================================== */}
-        <div className="flex flex-col h-full min-h-0 bg-slate-950/40 rounded-lg p-2 border border-slate-850">
-          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800/80 flex-none">
+        <div className="flex flex-col h-full min-h-0 bg-[#F8F9FA] rounded-xl p-2 border border-[#DDF3E9]">
+          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#DDF3E9] flex-none">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="w-2 h-2 rounded-full bg-slate-500" />
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-[#022D32]/40" />
+              <span className="text-[11px] font-bold text-[#022D32]/65 uppercase tracking-wider">
                 BENCH ({benchPlayers.length})
               </span>
               {isAdmin && onOpenRosterModal && (
                 <button
                   onClick={onOpenRosterModal}
-                  className="text-[9px] font-bold text-sky-400 hover:text-white bg-slate-900 hover:bg-sky-600 border border-slate-700 hover:border-sky-500 px-1.5 py-0.5 rounded transition-all flex items-center gap-0.5 active:scale-95 ml-1"
+                  className="text-[9px] font-bold text-[#0CA17A] hover:text-white bg-[#F8F9FA] hover:bg-[#0CA17A] border border-[#DDF3E9] hover:border-[#0CA17A] px-1.5 py-0.5 rounded transition-all flex items-center gap-0.5 active:scale-95 ml-1"
                   title="Add missing or late player to match bench"
                 >
                   <UserPlus className="w-2.5 h-2.5" />
@@ -252,7 +252,7 @@ export default function PlayerSelector({
                 </button>
               )}
             </div>
-            <span className="text-[10px] text-slate-500 font-medium">
+            <span className="text-[10px] text-[#022D32]/50 font-medium">
               {isAdmin ? 'Drag / Tap' : 'Tap to view'}
             </span>
           </div>
@@ -285,30 +285,30 @@ export default function PlayerSelector({
                   onClick={() => handleBenchClick(player)}
                   className={`p-2 rounded-lg transition-colors cursor-pointer select-none relative flex flex-col justify-between min-h-[58px] border ${
                     isDragOver
-                      ? 'border-dashed border-sky-400 bg-sky-950/40'
+                      ? 'border-dashed border-[#0CA17A] bg-[#DDF3E9]/50'
                       : isSelectedBenchSub
-                      ? 'bg-amber-950/40 border border-amber-500/70 text-amber-200'
+                      ? 'bg-amber-50 border border-amber-500 text-amber-900'
                       : isSelectedPlayer
-                      ? 'bg-sky-950/50 border border-sky-400 ring-1 ring-sky-500/30'
-                      : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-850'
+                      ? 'bg-[#DDF3E9]/60 border border-[#0CA17A] ring-1 ring-[#0CA17A]'
+                      : 'bg-white border-[#DDF3E9] hover:border-[#0CA17A] hover:bg-[#F8F9FA]'
                   } ${isDragging ? 'opacity-40 border-dashed border-slate-600' : ''}`}
                 >
                   {/* Top Row: Grip Handle, Number, Name */}
                   <div className="flex items-center justify-between gap-1.5 w-full">
                     <div className="flex items-center gap-1.5 min-w-0">
                       {isAdmin && (
-                        <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                        <GripVertical className="w-3 h-3 text-[#022D32]/40 hover:text-[#022D32]/65 flex-none cursor-grab active:cursor-grabbing" />
                       )}
-                      <div className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-slate-300 border border-slate-800 flex-none">
+                      <div className="w-7 h-7 rounded bg-[#F8F9FA] flex items-center justify-center font-mono font-black text-xs text-[#022D32] border border-[#DDF3E9] flex-none">
                         #{player.number}
                       </div>
                       <div className="truncate min-w-0">
-                        <div className="font-semibold text-xs text-slate-200 truncate leading-tight">
+                        <div className="font-bold text-xs text-[#022D32] truncate leading-tight">
                           {player.name}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
+                        <div className="text-[10px] text-[#022D32]/70 font-semibold truncate flex items-center gap-1.5 mt-0.5">
                           {fouls > 0 ? (
-                            <span className={fouls >= 5 ? 'text-rose-400 font-bold' : fouls === 4 ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                            <span className={fouls >= 5 ? 'text-rose-700 font-black' : fouls === 4 ? 'text-amber-800 font-black' : 'text-[#022D32] font-bold'}>
                               {fouls} {fouls === 1 ? 'PF' : 'PFs'}
                             </span>
                           ) : (
@@ -328,39 +328,39 @@ export default function PlayerSelector({
                         }}
                         className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors border ${
                           isSelectedBenchSub
-                            ? 'bg-amber-500 text-slate-950 border-amber-400'
-                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                            ? 'bg-[#0CA17A] text-white border-[#0CA17A]'
+                            : 'bg-[#F8F9FA] text-[#022D32] border-[#DDF3E9] hover:bg-[#DDF3E9]'
                         }`}
                       >
                         {isSelectedBenchSub ? 'ACTIVE' : 'SUB'}
                       </button>
                     ) : (
                       isSelectedPlayer && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 flex-none" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0CA17A] flex-none" />
                       )
                     )}
                   </div>
 
                   {/* Bottom Row: Points Pill & +/- Badge */}
-                  <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/60">
+                  <div className="flex items-center justify-between mt-1 pt-1 border-t border-[#DDF3E9]">
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] font-mono font-semibold text-slate-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
+                      <span className="text-[10px] font-mono font-black text-[#022D32] bg-[#F8F9FA] px-1.5 py-0.2 rounded border border-[#DDF3E9]">
                         {pts} PTS
                       </span>
-                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
-                        (plusMinus || 0) > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
-                        (plusMinus || 0) < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
-                        'text-slate-400 bg-slate-950/60 border-slate-800'
+                      <span className={`text-[10px] font-mono font-black px-1.5 py-0.2 rounded border ${
+                        (plusMinus || 0) > 0 ? 'text-emerald-800 bg-emerald-100 border-emerald-300' :
+                        (plusMinus || 0) < 0 ? 'text-rose-800 bg-rose-100 border-rose-300' :
+                        'text-[#022D32] bg-[#F8F9FA] border-[#DDF3E9]'
                       }`} title="Plus/Minus (+/-)">
                         {(plusMinus || 0) > 0 ? `+${plusMinus}` : (plusMinus || 0)}
                       </span>
                     </div>
                     {isDragOver ? (
-                      <span className="text-[9px] font-bold text-sky-300 bg-sky-950 px-1.5 py-0.2 rounded border border-sky-500/50">
+                      <span className="text-[9px] font-black text-[#022D32] bg-[#DDF3E9] px-1.5 py-0.2 rounded border border-[#0CA17A]/40">
                         ⇄ SWAP
                       </span>
                     ) : (
-                      <span className="text-[9px] font-medium text-slate-500 uppercase tracking-wider">
+                      <span className="text-[9px] font-bold text-[#022D32]/60 uppercase tracking-wider">
                         BENCH
                       </span>
                     )}
@@ -374,15 +374,15 @@ export default function PlayerSelector({
         {/* ======================================================== */}
         {/* COLUMN 2: ON COURT (RIGHT - ADJACENT TO COURT & ACTIONS) */}
         {/* ======================================================== */}
-        <div className="flex flex-col h-full min-h-0 bg-slate-950/60 rounded-lg p-2 border border-slate-800">
-          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800/80 flex-none">
+        <div className="flex flex-col h-full min-h-0 bg-[#F8F9FA] rounded-xl p-2 border border-[#DDF3E9]">
+          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-[#DDF3E9]/80 flex-none">
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-[#0CA17A]" />
+              <span className="text-[11px] font-black text-[#022D32] uppercase tracking-wider">
                 ON COURT (5)
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-medium">Select to track</span>
+            <span className="text-[10px] text-[#022D32]/65 font-medium">Select to track</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
@@ -414,10 +414,10 @@ export default function PlayerSelector({
                     onClick={() => handleOnCourtClick(player)}
                     className={`p-2 rounded-lg transition-colors cursor-pointer select-none relative flex flex-col justify-between min-h-[58px] border ${
                       isDragOver
-                        ? 'border-dashed border-sky-400 bg-sky-950/40'
+                        ? 'border-dashed border-[#0CA17A] bg-[#DDF3E9]/50'
                         : isSelected
-                        ? 'bg-sky-950/50 border border-sky-400 ring-1 ring-sky-500/30'
-                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-850 border-l-2 border-l-emerald-500'
+                        ? 'bg-[#DDF3E9]/60 border border-[#0CA17A] ring-2 ring-[#0CA17A] shadow-xs'
+                        : 'bg-white border-[#DDF3E9] hover:border-[#0CA17A] hover:bg-[#F8F9FA] border-l-4 border-l-[#0CA17A]'
                     } ${isPendingSubOut ? 'hover:border-amber-400/80' : ''} ${
                       isDragging ? 'opacity-40 border-dashed border-sky-400' : ''
                     }`}
@@ -426,22 +426,22 @@ export default function PlayerSelector({
                     <div className="flex items-center justify-between gap-1.5 w-full">
                       <div className="flex items-center gap-1.5 min-w-0">
                         {isAdmin && (
-                          <GripVertical className="w-3 h-3 text-slate-600 hover:text-slate-400 flex-none cursor-grab active:cursor-grabbing" />
+                          <GripVertical className="w-3 h-3 text-[#022D32]/40 hover:text-[#022D32]/65 flex-none cursor-grab active:cursor-grabbing" />
                         )}
-                        <div className="w-7 h-7 rounded bg-slate-950 flex items-center justify-center font-mono font-bold text-xs text-sky-400 border border-slate-800 flex-none">
+                        <div className="w-7 h-7 rounded bg-[#F8F9FA] flex items-center justify-center font-mono font-black text-xs text-[#022D32] border border-[#DDF3E9] flex-none">
                           #{player.number}
                         </div>
                         <div className="truncate min-w-0">
-                          <div className="font-semibold text-xs text-slate-100 truncate leading-tight">
+                          <div className="font-bold text-xs text-[#022D32] truncate leading-tight">
                             {player.name}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-medium truncate flex items-center gap-1.5 mt-0.5">
+                          <div className="text-[10px] text-[#022D32]/70 font-semibold truncate flex items-center gap-1.5 mt-0.5">
                             {fouls > 0 ? (
-                              <span className={fouls >= 5 ? 'text-rose-400 font-bold' : fouls === 4 ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                              <span className={fouls >= 5 ? 'text-rose-700 font-black' : fouls === 4 ? 'text-amber-800 font-black' : 'text-[#022D32] font-bold'}>
                                 {fouls} {fouls === 1 ? 'PF' : 'PFs'}
                               </span>
                             ) : (
-                              <span className="text-slate-500">0 PF</span>
+                              <span className="text-[#022D32]/60">0 PF</span>
                             )}
                             {player.pos && player.pos !== 'N/A' && (
                               <>
@@ -456,40 +456,40 @@ export default function PlayerSelector({
                       {/* Right: Selection Check or Sub Button */}
                       <div className="flex items-center gap-1 flex-none">
                         {isSelected && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 flex-none" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#0CA17A] flex-none" />
                         )}
                         {isAdmin && (
                           <button
                             onClick={(e) => handleDirectSubButtonClick(e, player)}
                             title="Click to select bench replacement"
-                            className="p-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700/80"
+                            className="p-1 rounded bg-[#F8F9FA] hover:bg-[#DDF3E9] text-[#022D32] transition-colors border border-[#DDF3E9]"
                           >
-                            <RefreshCw className="w-3 h-3 text-slate-300" />
+                            <RefreshCw className="w-3 h-3 text-[#022D32]/80" />
                           </button>
                         )}
                       </div>
                     </div>
 
                     {/* Bottom Row: Points Pill & Status Badge */}
-                    <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/60">
+                    <div className="flex items-center justify-between mt-1 pt-1 border-t border-[#DDF3E9]">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-slate-950/80 px-1.5 py-0.2 rounded border border-slate-850">
+                        <span className="text-[10px] font-mono font-black text-[#022D32] bg-[#F8F9FA] px-1.5 py-0.2 rounded border border-[#DDF3E9]">
                           {pts} PTS
                         </span>
-                        <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
-                          (plusMinus || 0) > 0 ? 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40' :
-                          (plusMinus || 0) < 0 ? 'text-rose-400 bg-rose-950/70 border-rose-500/40' :
-                          'text-slate-400 bg-slate-950/60 border-slate-800'
+                        <span className={`text-[10px] font-mono font-black px-1.5 py-0.2 rounded border ${
+                          (plusMinus || 0) > 0 ? 'text-emerald-800 bg-emerald-100 border-emerald-300' :
+                          (plusMinus || 0) < 0 ? 'text-rose-800 bg-rose-100 border-rose-300' :
+                          'text-[#022D32] bg-[#F8F9FA] border-[#DDF3E9]'
                         }`} title="Plus/Minus (+/-)">
                           {(plusMinus || 0) > 0 ? `+${plusMinus}` : (plusMinus || 0)}
                         </span>
                       </div>
                       {isDragOver ? (
-                        <span className="text-[9px] font-bold text-sky-300 bg-sky-950 px-1.5 py-0.2 rounded border border-sky-500/50">
+                        <span className="text-[9px] font-black text-[#022D32] bg-[#DDF3E9] px-1.5 py-0.2 rounded border border-[#0CA17A]/40">
                           ⇄ SWAP
                         </span>
                       ) : (
-                        <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+                        <span className="text-[9px] font-black text-[#0CA17A] uppercase tracking-wider">
                           ON COURT
                         </span>
                       )}
@@ -498,10 +498,10 @@ export default function PlayerSelector({
 
                   {/* Inline Bench Dropdown Menu for Direct Sub Button (Admin only) */}
                   {isAdmin && isTargetForSub && (
-                    <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-slate-950 border border-slate-700 rounded-lg shadow-xl space-y-1 z-30">
-                      <div className="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1 border-b border-slate-800 pb-1">
+                    <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-[#F8F9FA] border border-[#DDF3E9] rounded-lg shadow-xl space-y-1 z-30">
+                      <div className="flex justify-between items-center text-[10px] text-[#022D32]/80 font-bold mb-1 border-b border-[#DDF3E9] pb-1">
                         <span>SUB FOR #{player.number}:</span>
-                        <button onClick={() => setActiveSubCourtPlayer(null)} className="text-slate-400 hover:text-white">
+                        <button onClick={() => setActiveSubCourtPlayer(null)} className="text-[#022D32]/65 hover:text-[#022D32]">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -513,7 +513,7 @@ export default function PlayerSelector({
                               onSwapSubstitution(player.number, benchP.number);
                               setActiveSubCourtPlayer(null);
                             }}
-                            className="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs p-1.5 rounded flex items-center justify-between font-medium text-left truncate transition-colors"
+                            className="w-full bg-white hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] text-[#022D32] text-xs p-1.5 rounded flex items-center justify-between font-medium text-left truncate transition-colors"
                           >
                             <span className="truncate">#{benchP.number} {benchP.name}</span>
                             <RefreshCw className="w-3 h-3 text-sky-400 flex-none ml-1" />

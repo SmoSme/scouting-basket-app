@@ -7,8 +7,10 @@ import {
 import MatchReviewModal from '../components/MatchReviewModal';
 import { calculateOpponentScore } from '../utils/basketballAnalytics';
 import { getScoreOverride } from '../utils/scoreOverride';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Archive({ showToast, authRole = 'admin' }) {
+  const { language, t } = useLanguage();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
@@ -295,19 +297,20 @@ export default function Archive({ showToast, authRole = 'admin' }) {
   };
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-4 max-w-6xl mx-auto w-full">
-      {/* Archive Header */}
-      <div className="flex items-center justify-between glass-card p-4 mb-4 border-slate-700/60">
+    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-6xl mx-auto w-full space-y-4">
+      {/* Archive Header Banner */}
+      <div className="flex flex-wrap items-center justify-between bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center">
-            <ArchiveIcon className="w-5 h-5 text-sky-400" />
+          <div className="w-10 h-10 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none">
+            <ArchiveIcon className="w-5 h-5 text-[#0CA17A]" />
           </div>
           <div>
-            <h1 className="text-lg font-black text-slate-100 uppercase tracking-wider">
-              SUPABASE MATCH ARCHIVE
+            <h1 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1.5 h-4.5 bg-[#0CA17A] rounded-full inline-block" />
+              <span>{t('archive_title')}</span>
             </h1>
-            <p className="text-xs text-slate-400 font-semibold">
-              View, review, and export historical match scouting logs stored in cloud
+            <p className="text-xs text-[#022D32]/70 font-semibold mt-0.5">
+              {t('archive_subtitle')}
             </p>
           </div>
         </div>
@@ -315,92 +318,95 @@ export default function Archive({ showToast, authRole = 'admin' }) {
         <button
           onClick={fetchArchive}
           disabled={loading}
-          className="flex items-center gap-2 bg-slate-900 border border-slate-700 hover:border-sky-400 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold transition-all"
+          className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 text-sky-400 ${loading ? 'animate-spin' : ''}`} />
-          REFRESH
+          <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${loading ? 'animate-spin' : ''}`} />
+          <span>{language === 'it' ? 'AGGIORNA' : 'REFRESH'}</span>
         </button>
       </div>
 
       {/* Loading state */}
       {loading ? (
-        <div className="glass-card p-12 text-center border-slate-700/60">
-          <RefreshCw className="w-8 h-8 text-sky-400 animate-spin mx-auto mb-3" />
-          <p className="text-slate-400 font-bold text-sm">Loading match archive from Supabase...</p>
+        <div className="bg-white p-12 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+          <RefreshCw className="w-8 h-8 text-[#0CA17A] animate-spin mx-auto mb-2" />
+          <p className="text-[#022D32] font-black text-sm">{language === 'it' ? 'Caricamento archivio partite da Supabase...' : 'Loading match archive from Supabase...'}</p>
         </div>
       ) : matches.length === 0 ? (
-        <div className="glass-card p-12 text-center border-slate-700/60">
-          <FileSpreadsheet className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-slate-200 font-black text-base uppercase mb-1">No matches in archive</h3>
-          <p className="text-slate-400 font-semibold text-xs max-w-md mx-auto">
-            No match scouting logs found on Supabase. Start a new session from "Live Game" to log play events!
+        <div className="bg-white p-12 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+          <FileSpreadsheet className="w-12 h-12 text-[#0CA17A]/50 mx-auto mb-1" />
+          <h3 className="text-[#022D32] font-black text-base uppercase">{language === 'it' ? 'Nessuna partita archiviata' : 'No matches archived'}</h3>
+          <p className="text-[#022D32]/70 font-medium text-xs max-w-md mx-auto">
+            {t('no_matches_found')}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {matches.map((m, idx) => (
-            <div key={idx} className="glass-card p-4 border-slate-700/60 hover:border-sky-500/50 transition-all flex flex-col justify-between">
+            <div key={idx} className="bg-white p-5 rounded-2xl border border-[#DDF3E9] hover:border-[#0CA17A] transition-all shadow-xs flex flex-col justify-between gap-4">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-black text-base text-sky-400 uppercase tracking-wider">
+                    <h3 className="font-black text-base text-[#022D32] uppercase tracking-wider">
                       {m.name}
                     </h3>
-                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
                       m.matchType === 'Official'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        ? 'bg-[#DDF3E9] text-[#022D32] border-[#0CA17A]/40'
                         : m.matchType === 'Friendly'
-                          ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
-                          : 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                          ? 'bg-sky-50 text-sky-800 border-sky-300'
+                          : 'bg-purple-50 text-purple-800 border-purple-300'
                     }`}>
-                      {m.matchType || 'Official'}
+                      {m.matchType === 'Official' ? (language === 'it' ? 'Ufficiale' : 'Official') :
+                       m.matchType === 'Friendly' ? (language === 'it' ? 'Amichevole' : 'Friendly') :
+                       (language === 'it' ? 'Allenamento' : 'Scrimmage')}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="bg-slate-950 border border-slate-800 text-slate-300 font-mono font-black text-xs px-2.5 py-1 rounded flex items-center gap-1">
-                      <span className="text-amber-400">{m.displayedTeamPts !== undefined ? m.displayedTeamPts : m.pts}</span>
-                      <span className="text-slate-500 font-bold">-</span>
-                      <span className="text-slate-200">{m.displayedOppPts !== undefined ? m.displayedOppPts : (m.oppPts || 0)}</span>
+                    <span className="bg-[#022D32] text-white font-mono font-black text-xs px-3 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                      <span className="text-amber-400 font-bold">{m.displayedTeamPts !== undefined ? m.displayedTeamPts : m.pts}</span>
+                      <span className="text-white/70 font-black">-</span>
+                      <span className="text-white font-bold">{m.displayedOppPts !== undefined ? m.displayedOppPts : (m.oppPts || 0)}</span>
                     </span>
                     {m.isScoreOverridden && (
-                      <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded" title={`Official Table Override (PBP: ${m.pts}-${m.oppPts})`}>
+                      <span className="text-[9px] font-black bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40 px-1.5 py-0.5 rounded" title={`Official Table Override (PBP: ${m.pts}-${m.oppPts})`}>
                         SYNCED
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-slate-400 mb-4 font-semibold">
+                <div className="flex items-center gap-4 text-xs text-[#022D32]/70 mb-2 font-semibold">
                   <span className="flex items-center gap-1">
-                    <Hash className="w-3.5 h-3.5 text-sky-400" />
-                    {m.eventCount} Logged Plays
+                    <Hash className="w-3.5 h-3.5 text-[#0CA17A]" />
+                    {m.eventCount} {language === 'it' ? 'Azioni Registrate' : 'Tracked Events'}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {(() => {
                       const stored = m.matchDate || localStorage.getItem(`match_date_${m.name}`);
-                      if (stored) return new Date(stored + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                      try { return new Date(m.createdAt).toLocaleDateString('en-US'); } catch(e) { return m.createdAt || 'n.a.'; }
+                      const loc = language === 'it' ? 'it-IT' : 'en-US';
+                      if (stored) return new Date(stored + 'T12:00:00').toLocaleDateString(loc, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                      try { return new Date(m.createdAt).toLocaleDateString(loc); } catch(e) { return m.createdAt || 'n.a.'; }
                     })()}
                   </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center gap-2 pt-3 border-t border-[#DDF3E9]">
                 <button
                   onClick={() => handleOpenMatchReview(m)}
                   disabled={actionLoading === m.name}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2 px-2.5 rounded-lg text-xs transition-all shadow-md"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black py-2.5 px-3 rounded-xl text-xs transition-all shadow-sm active:scale-95"
                 >
                   <Eye className="w-4 h-4" />
-                  REVIEW MATCH
+                  {t('full_review')}
                 </button>
                 <button
                   onClick={() => handleDownloadCSV(m.name, m.events)}
                   disabled={actionLoading === m.name}
-                  className="flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-black py-2 px-2.5 rounded-lg text-xs transition-all shadow-md"
-                  title="Download CSV"
+                  className="flex items-center justify-center gap-1.5 bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all shadow-sm active:scale-95"
+                  title="Scarica CSV"
                 >
                   <Download className="w-4 h-4" />
                   CSV
@@ -409,8 +415,8 @@ export default function Archive({ showToast, authRole = 'admin' }) {
                   <button
                     onClick={() => handleDeleteGame(m.name)}
                     disabled={actionLoading === m.name}
-                    className="flex items-center justify-center gap-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold py-2 px-2.5 rounded-lg text-xs transition-all"
-                    title="Delete Match"
+                    className="flex items-center justify-center gap-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold py-2.5 px-3 rounded-xl text-xs transition-all active:scale-95"
+                    title={t('delete')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

@@ -27,7 +27,7 @@ export default function CourtPitchMap({
     const stat = computedStats?.byName?.[zoneName];
     if (stat) return stat;
     return {
-      color: '#0F172A',
+      color: '#F1F5F9',
       label: zoneName.toUpperCase(),
       pct: 0,
       made: 0,
@@ -35,16 +35,21 @@ export default function CourtPitchMap({
     };
   };
 
+  const getTextFill = (zoneName) => {
+    const s = getZoneStats(zoneName);
+    return s.attempts > 0 ? '#FFFFFF' : '#022D32';
+  };
+
   // Professional stroke attributes for active zone selection highlighting
   const getStrokeAttrs = (key) => {
     if (key === selectedZoneKey) {
       return {
-        stroke: '#38BDF8',
-        strokeWidth: 2.2
+        stroke: '#0CA17A',
+        strokeWidth: 2.8
       };
     }
     return {
-      stroke: '#334155',
+      stroke: '#CBD5E1',
       strokeWidth: 1.2
     };
   };
@@ -52,26 +57,26 @@ export default function CourtPitchMap({
   const currentZone = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
 
   return (
-    <div className="glass-card p-2.5 border-slate-800">
+    <div className="glass-card p-2.5 border-[#DDF3E9]">
       {/* Header Info Banner */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+      <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <Target className="w-3.5 h-3.5 text-sky-400" />
-          <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+          <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
+          <span className="text-[11px] font-black text-[#022D32] uppercase tracking-wider">
             COURT SHOT MAP (9 ZONES)
           </span>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 text-sky-400 font-bold text-[10px] px-2.5 py-0.5 rounded">
-          <MapPin className="w-3 h-3 text-sky-400" />
+        <div className="flex items-center gap-1.5 bg-[#022D32] border border-[#022D32] text-[#A7F3D0] font-bold text-[10px] px-2.5 py-0.5 rounded">
+          <MapPin className="w-3 h-3 text-[#0CA17A]" />
           TARGET: {currentZone.name.toUpperCase()} ({currentZone.type})
         </div>
       </div>
 
       {/* SVG Interactive Basketball Half-Court */}
-      <div className="bg-slate-950 border border-slate-800 rounded-lg p-1 text-center shadow-inner relative">
+      <div className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-lg p-1 text-center shadow-inner relative">
         <svg viewBox="0 0 600 360" className="w-full h-48 sm:h-56 rounded">
           {/* Court Outer Boundary */}
-          <rect x="10" y="10" width="580" height="340" fill="#090D16" stroke="#334155" strokeWidth="2" />
+          <rect x="10" y="10" width="580" height="340" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="2" />
 
           {/* ============================================================ */}
           {/* A. 2-POINT ZONES (INSIDE 3-POINT LINE)                      */}
@@ -84,7 +89,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.PAINT.name).color} fillOpacity="0.85"
               {...getStrokeAttrs('PAINT')}
             />
-            <text x="300" y="85" fill="#F8FAFC" fontSize="13" fontWeight="900" textAnchor="middle">
+            <text x="300" y="85" fill={getTextFill(COURT_ZONES.PAINT.name)} fontSize="13" fontWeight="900" textAnchor="middle">
               {getZoneStats(COURT_ZONES.PAINT.name).label}
             </text>
           </g>
@@ -96,7 +101,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.MID_L.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('MID_L')}
             />
-            <text x="145" y="105" fill="#F8FAFC" fontSize="11" fontWeight="800" textAnchor="middle">
+            <text x="145" y="105" fill={getTextFill(COURT_ZONES.MID_L.name)} fontSize="11" fontWeight="800" textAnchor="middle">
               {getZoneStats(COURT_ZONES.MID_L.name).label}
             </text>
           </g>
@@ -108,7 +113,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.MID_R.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('MID_R')}
             />
-            <text x="455" y="105" fill="#F8FAFC" fontSize="11" fontWeight="800" textAnchor="middle">
+            <text x="455" y="105" fill={getTextFill(COURT_ZONES.MID_R.name)} fontSize="11" fontWeight="800" textAnchor="middle">
               {getZoneStats(COURT_ZONES.MID_R.name).label}
             </text>
           </g>
@@ -120,7 +125,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.MID_C.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('MID_C')}
             />
-            <text x="300" y="200" fill="#F8FAFC" fontSize="12" fontWeight="900" textAnchor="middle">
+            <text x="300" y="200" fill={getTextFill(COURT_ZONES.MID_C.name)} fontSize="12" fontWeight="900" textAnchor="middle">
               {getZoneStats(COURT_ZONES.MID_C.name).label}
             </text>
           </g>
@@ -136,7 +141,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.C3_L.name).color} fillOpacity="0.8"
               {...getStrokeAttrs('C3_L')}
             />
-            <text x="35" y="50" fill="#38BDF8" fontSize="10" fontWeight="900" textAnchor="middle">
+            <text x="35" y="50" fill={getTextFill(COURT_ZONES.C3_L.name)} fontSize="10" fontWeight="900" textAnchor="middle">
               {getZoneStats(COURT_ZONES.C3_L.name).label}
             </text>
           </g>
@@ -148,7 +153,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.C3_R.name).color} fillOpacity="0.8"
               {...getStrokeAttrs('C3_R')}
             />
-            <text x="565" y="50" fill="#38BDF8" fontSize="10" fontWeight="900" textAnchor="middle">
+            <text x="565" y="50" fill={getTextFill(COURT_ZONES.C3_R.name)} fontSize="10" fontWeight="900" textAnchor="middle">
               {getZoneStats(COURT_ZONES.C3_R.name).label}
             </text>
           </g>
@@ -160,7 +165,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.W3_L.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('W3_L')}
             />
-            <text x="75" y="230" fill="#38BDF8" fontSize="11" fontWeight="800" textAnchor="middle">
+            <text x="75" y="230" fill={getTextFill(COURT_ZONES.W3_L.name)} fontSize="11" fontWeight="800" textAnchor="middle">
               {getZoneStats(COURT_ZONES.W3_L.name).label}
             </text>
           </g>
@@ -172,7 +177,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.W3_R.name).color} fillOpacity="0.75"
               {...getStrokeAttrs('W3_R')}
             />
-            <text x="525" y="230" fill="#38BDF8" fontSize="11" fontWeight="800" textAnchor="middle">
+            <text x="525" y="230" fill={getTextFill(COURT_ZONES.W3_R.name)} fontSize="11" fontWeight="800" textAnchor="middle">
               {getZoneStats(COURT_ZONES.W3_R.name).label}
             </text>
           </g>
@@ -184,7 +189,7 @@ export default function CourtPitchMap({
               fill={getZoneStats(COURT_ZONES.ARC3_C.name).color} fillOpacity="0.8"
               {...getStrokeAttrs('ARC3_C')}
             />
-            <text x="300" y="315" fill="#38BDF8" fontSize="13" fontWeight="900" textAnchor="middle">
+            <text x="300" y="315" fill={getTextFill(COURT_ZONES.ARC3_C.name)} fontSize="13" fontWeight="900" textAnchor="middle">
               {getZoneStats(COURT_ZONES.ARC3_C.name).label}
             </text>
           </g>
@@ -197,19 +202,19 @@ export default function CourtPitchMap({
           <path
             d="M 60 10 L 60 40 A 240 240 0 0 0 540 40 L 540 10"
             fill="none"
-            stroke="#38BDF8"
+            stroke="#0CA17A"
             strokeWidth="2.5"
             pointerEvents="none"
           />
 
           {/* Free Throw Circle Overlay */}
-          <circle cx="300" cy="160" r="45" fill="none" stroke="#64748B" strokeWidth="1.5" strokeDasharray="4" pointerEvents="none" />
+          <circle cx="300" cy="160" r="45" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="4" pointerEvents="none" />
 
           {/* Paint Key Line Overlay */}
-          <rect x="210" y="10" width="180" height="150" fill="none" stroke="#64748B" strokeWidth="2" pointerEvents="none" />
+          <rect x="210" y="10" width="180" height="150" fill="none" stroke="#94A3B8" strokeWidth="2" pointerEvents="none" />
 
           {/* Backboard & Rim */}
-          <line x1="260" y1="25" x2="340" y2="25" stroke="#94A3B8" strokeWidth="3.5" pointerEvents="none" />
+          <line x1="260" y1="25" x2="340" y2="25" stroke="#022D32" strokeWidth="3.5" pointerEvents="none" />
           <circle cx="300" cy="40" r="14" fill="none" stroke="#F59E0B" strokeWidth="3" pointerEvents="none" />
         </svg>
       </div>

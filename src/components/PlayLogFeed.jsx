@@ -27,7 +27,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
 
   if (!events || events.length === 0) {
     return (
-      <div className="glass-card p-4 text-center text-slate-500 font-semibold text-xs border-slate-700/60">
+      <div className="bg-white p-4 text-center text-[#022D32]/60 font-semibold text-xs border border-[#DDF3E9] rounded-2xl shadow-xs">
         No play events logged yet.
       </div>
     );
@@ -84,15 +84,15 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
   };
 
   return (
-    <div className="glass-card p-2.5 h-full flex flex-col overflow-hidden border-slate-800">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 flex-none">
+    <div className="bg-white p-3 h-full flex flex-col overflow-hidden border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
+      <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-2 mb-2 flex-none">
         <div className="flex items-center gap-1.5">
-          <History className="w-3.5 h-3.5 text-sky-400" />
-          <h2 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+          <History className="w-3.5 h-3.5 text-[#0CA17A]" />
+          <h2 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
             PLAY LOG ({events.length})
           </h2>
         </div>
-        <span className="text-[10px] text-slate-500 font-medium">Click to edit / delete</span>
+        <span className="text-[10px] text-[#022D32]/50 font-medium">Click to edit / delete</span>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
@@ -103,11 +103,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           const actionStr = String(ev?.Action || ev?.action || ev?.Azione || ev?.azione || '');
           const isSuccess = actionStr.includes('Made') || actionStr.includes('Fatto') || actionStr.includes('Steal') || actionStr.includes('Assist');
           const isNegative = actionStr.includes('Missed') || actionStr.includes('Sbagliato') || actionStr.includes('Turnover') || actionStr.includes('Persa');
-          let badgeColor = '#64748B';
-          if (isSuccess) badgeColor = '#10B981';
-          else if (isNegative) badgeColor = '#EF4444';
-          else if (actionStr === 'Stagger') badgeColor = '#818CF8';
-          else if (actionStr === 'Ghost') badgeColor = '#38BDF8';
+          let badgeColor = '#334155';
+          if (isSuccess) badgeColor = '#047857';
+          else if (isNegative) badgeColor = '#B91C1C';
+          else if (actionStr === 'Stagger') badgeColor = '#6D28D9';
+          else if (actionStr === 'Ghost') badgeColor = '#0F766E';
 
           const timestamp = ev?.Timestamp || ev?.timestamp || '';
           const quarto = ev?.Quarter || ev?.quarter || ev?.Quarto || ev?.quarto || '';
@@ -117,14 +117,14 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
 
           if (isEditing) {
             return (
-              <div key={itemKey} className="bg-slate-900 border border-sky-500/60 rounded-md p-2 text-xs space-y-2 shadow-lg">
-                <div className="text-[10px] font-black text-sky-400 uppercase tracking-wider border-b border-slate-800 pb-1">
+              <div key={itemKey} className="bg-white border-2 border-[#0CA17A] rounded-md p-2 text-xs space-y-2 shadow-lg">
+                <div className="text-[10px] font-black text-[#022D32] uppercase tracking-wider border-b border-[#DDF3E9] pb-1">
                   EDIT PLAY EVENT
                 </div>
 
                 {/* Player Selection Dropdown */}
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">PLAYER / SQUAD</label>
+                  <label className="block text-[9px] font-bold text-[#022D32]/65 uppercase mb-0.5">PLAYER / SQUAD</label>
                   <select
                     value={editNum}
                     onChange={(e) => {
@@ -137,7 +137,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                         if (p) setEditName(p.name);
                       }
                     }}
-                    className="w-full bg-slate-950 border border-slate-700 text-slate-100 font-bold p-1 rounded text-xs"
+                    className="w-full bg-white border border-[#DDF3E9] text-[#022D32] font-bold p-1 rounded text-xs"
                   >
                     <option value="-">⚡ TEAM (Tactical Screen / Team Play)</option>
                     {roster.map(p => (
@@ -154,11 +154,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 {/* Action & Quarter Selection */}
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">ACTION</label>
+                    <label className="block text-[9px] font-bold text-[#022D32]/65 uppercase mb-0.5">ACTION</label>
                     <select
                       value={editAction}
                       onChange={(e) => setEditAction(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 text-sky-300 font-bold p-1 rounded text-[11px]"
+                      className="w-full bg-white border border-[#DDF3E9] text-[#022D32] font-bold p-1 rounded text-[11px]"
                     >
                       {ACTION_OPTIONS.map(a => (
                         <option key={a} value={a}>{a}</option>
@@ -167,11 +167,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">QUARTER</label>
+                    <label className="block text-[9px] font-bold text-[#022D32]/65 uppercase mb-0.5">QUARTER</label>
                     <select
                       value={editQuarter}
                       onChange={(e) => setEditQuarter(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold p-1 rounded text-[11px]"
+                      className="w-full bg-white border border-[#DDF3E9] text-[#022D32] font-bold p-1 rounded text-[11px]"
                     >
                       {QUARTER_OPTIONS.map(q => (
                         <option key={q} value={q}>{q}</option>
@@ -182,11 +182,11 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
 
                 {/* Zone Selection */}
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">ZONE</label>
+                  <label className="block text-[9px] font-bold text-[#022D32]/65 uppercase mb-0.5">ZONE</label>
                   <select
                     value={editZone}
                     onChange={(e) => setEditZone(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold p-1 rounded text-[11px]"
+                    className="w-full bg-white border border-[#DDF3E9] text-[#022D32] font-bold p-1 rounded text-[11px]"
                   >
                     {Object.values(COURT_ZONES).map(z => (
                       <option key={z.name} value={z.name}>{z.name} ({z.type})</option>
@@ -205,7 +205,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                   </button>
                   <button
                     onClick={() => setEditingKey(null)}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1 px-2 rounded text-xs flex items-center justify-center gap-1"
+                    className="bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold py-1 px-2 rounded text-xs flex items-center justify-center gap-1"
                   >
                     <X className="w-3.5 h-3.5" /> CANCEL
                   </button>
@@ -217,13 +217,13 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
           return (
             <div
               key={itemKey}
-              className="bg-slate-900/60 border-l-2 rounded p-2 text-xs border-r border-t border-b border-slate-800/80 group relative hover:border-slate-700 transition-colors"
+              className="bg-white border-l-4 rounded p-2 text-xs border-r border-t border-b border-[#DDF3E9] group relative hover:border-[#0CA17A]/40 transition-colors shadow-sm"
               style={{ borderLeftColor: badgeColor }}
             >
-              <div className="flex justify-between items-start text-[10px] text-slate-400 font-mono">
+              <div className="flex justify-between items-start text-[10px] text-[#022D32]/65 font-mono">
                 <span>{timestamp} [{quarto}]</span>
                 <div className="flex items-center gap-1">
-                  <span className="truncate max-w-[90px] text-slate-400">{zona}</span>
+                  <span className="truncate max-w-[90px] text-[#022D32]/65">{zona}</span>
                   
                   {/* Quick Edit & Delete Actions (Admin only) */}
                   {isAdmin && (
@@ -231,7 +231,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                       <button
                         onClick={() => startEditing(ev, itemKey)}
                         title="Edit event"
-                        className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                        className="p-1 rounded bg-[#F8F9FA] hover:bg-[#DDF3E9] text-[#022D32] transition-colors border border-[#DDF3E9]"
                       >
                         <Edit3 className="w-3 h-3" />
                       </button>
@@ -242,7 +242,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                           }
                         }}
                         title="Delete event"
-                        className="p-1 rounded bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 transition-colors"
+                        className="p-1 rounded bg-[#F8F9FA] hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition-colors border border-[#DDF3E9]"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -251,28 +251,28 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                 </div>
               </div>
 
-              <div className="font-semibold text-slate-200 truncate mt-0.5 flex items-center gap-1.5">
+              <div className="font-semibold text-[#022D32] truncate mt-0.5 flex items-center gap-1.5">
                 {numero === '-' || giocatore === 'TEAM' ? (
                   <>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/30">
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40">
                       TEAM
                     </span>
-                    <span className="text-slate-300 text-xs">Tactical Play</span>
+                    <span className="text-[#022D32]/80 text-xs font-bold">Tactical Play</span>
                   </>
                 ) : (
-                  <span>#{numero} {giocatore}</span>
+                  <span className="font-bold">#{numero} {giocatore}</span>
                 )}
               </div>
 
-              <div className="font-bold text-[11px] uppercase tracking-wide mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <div className="font-black text-[11px] uppercase tracking-wide mt-0.5 flex items-center gap-1.5 flex-wrap">
                 <span style={{ color: badgeColor }}>{actionStr}</span>
                 {Boolean(ev?.isTransition) && (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-0.5">
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-0.5">
                     ⚡ TRANS
                   </span>
                 )}
                 {Boolean(ev?.defenseType) && (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-sky-950/80 text-sky-300 border border-sky-600/40">
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40">
                     🛡️ {ev.defenseType}
                   </span>
                 )}

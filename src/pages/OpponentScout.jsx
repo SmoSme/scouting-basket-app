@@ -301,7 +301,7 @@ export default function OpponentScout({ showToast }) {
       <div className="glass-card p-4 border-slate-700/60 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center flex-none shadow-inner">
-            <Crosshair className="w-5 h-5 text-rose-400" />
+            <Crosshair className="w-5 h-5 text-[#A7F3D0]" />
           </div>
           <div>
             <h1 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
@@ -310,7 +310,7 @@ export default function OpponentScout({ showToast }) {
                 FIP STATS INGESTION
               </span>
             </h1>
-            <p className="text-xs text-slate-400 font-semibold">
+            <p className="text-xs text-[#022D32]/70 font-semibold">
               Scouting report & tactical target board generated from Python FIP scraper
             </p>
           </div>
@@ -320,20 +320,20 @@ export default function OpponentScout({ showToast }) {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handleLoadSample}
-            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 bg-[#022D32] hover:bg-[#022D32]/90 border border-[#022D32] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
             title="Load standard sample Virtus Roma FIP report"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <RefreshCw className="w-3.5 h-3.5 text-[#A7F3D0]" />
             <span>LOAD SAMPLE DATA</span>
           </button>
 
-          <div className="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+          <div className="flex bg-white p-0.5 rounded-lg border border-[#DDF3E9] shadow-sm">
             <button
               onClick={() => setActiveTab('DASHBOARD')}
               className={`px-3 py-1.5 text-xs font-black rounded-md transition-all ${
                 activeTab === 'DASHBOARD'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0CA17A] text-white shadow-sm font-black'
+                  : 'text-[#022D32]/60 hover:text-[#022D32] hover:bg-[#DDF3E9]/40 font-bold'
               }`}
             >
               SCOUT DASHBOARD
@@ -345,8 +345,8 @@ export default function OpponentScout({ showToast }) {
               }}
               className={`px-3 py-1.5 text-xs font-black rounded-md transition-all flex items-center gap-1.5 ${
                 activeTab === 'RAW_JSON'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0CA17A] text-white shadow-sm font-black'
+                  : 'text-[#022D32]/60 hover:text-[#022D32] hover:bg-[#DDF3E9]/40 font-bold'
               }`}
             >
               <FileCode className="w-3.5 h-3.5" />
@@ -358,9 +358,9 @@ export default function OpponentScout({ showToast }) {
 
       {/* Status banner */}
       {statusMsg && (
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-between">
+        <div className="p-2.5 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/40 text-xs font-bold text-[#022D32] flex items-center justify-between">
           <span>{statusMsg}</span>
-          <button onClick={() => setStatusMsg('')} className="text-slate-400 hover:text-white">
+          <button onClick={() => setStatusMsg('')} className="text-[#022D32]/60 hover:text-[#022D32]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -370,15 +370,15 @@ export default function OpponentScout({ showToast }) {
       {/* 2. JSON IMPORTER (IF ACTIVE)                                              */}
       {/* ========================================================================= */}
       {activeTab === 'RAW_JSON' && (
-        <div className="glass-card p-5 border-slate-700 space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="bg-white p-5 border border-[#DDF3E9] rounded-2xl shadow-sm space-y-4 animate-fade-in text-[#022D32]">
+          <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-2">
             <div className="flex items-center gap-2">
-              <Upload className="w-4 h-4 text-rose-400" />
-              <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider">
+              <Upload className="w-4 h-4 text-[#0CA17A]" />
+              <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
                 LOAD OPPONENT JSON REPORT
               </h3>
             </div>
-            <span className="text-[10px] text-slate-400 font-semibold">
+            <span className="text-[10px] text-[#022D32]/60 font-semibold">
               Drop Python FIP Scraper JSON File or Paste Directly
             </span>
           </div>
@@ -390,18 +390,18 @@ export default function OpponentScout({ showToast }) {
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
               isDragOver 
-                ? 'border-rose-400 bg-rose-500/10' 
-                : 'border-slate-700 hover:border-slate-500 bg-slate-950/60'
+                ? 'border-[#0CA17A] bg-[#DDF3E9]/50' 
+                : 'border-[#DDF3E9] hover:border-[#0CA17A] bg-[#F8F9FA]'
             }`}
           >
-            <Upload className="w-8 h-8 text-rose-400/80 mx-auto mb-2" />
-            <p className="text-xs font-bold text-slate-200 mb-1">
-              Drag and drop an opponent <code className="text-rose-300">.json</code> file here
+            <Upload className="w-8 h-8 text-[#0CA17A] mx-auto mb-2 font-black" />
+            <p className="text-xs font-bold text-[#022D32] mb-1">
+              Drag and drop an opponent <code className="text-[#0CA17A] font-bold">.json</code> file here
             </p>
-            <p className="text-[11px] text-slate-400 mb-3">
+            <p className="text-[11px] text-[#022D32]/70 mb-3">
               or select file directly from your computer
             </p>
-            <label className="bg-rose-600 hover:bg-rose-500 text-white font-black px-4 py-2 rounded-lg text-xs cursor-pointer shadow-md inline-flex items-center gap-2 active:scale-95 transition-all">
+            <label className="bg-[#022D32] hover:bg-[#022D32]/90 text-white font-black px-4 py-2 rounded-lg text-xs cursor-pointer shadow-md inline-flex items-center gap-2 active:scale-95 transition-all border border-[#022D32]">
               <FileText className="w-3.5 h-3.5" />
               <span>CHOOSE JSON FILE</span>
               <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
@@ -410,7 +410,7 @@ export default function OpponentScout({ showToast }) {
 
           {/* Paste Raw JSON Text */}
           <div className="space-y-2">
-            <label className="block text-[11px] font-black uppercase tracking-wider text-slate-400">
+            <label className="block text-[11px] font-black uppercase tracking-wider text-[#022D32]/80">
               OR PASTE JSON REPORT CONTENT:
             </label>
             <textarea
@@ -418,20 +418,20 @@ export default function OpponentScout({ showToast }) {
               onChange={(e) => setJsonText(e.target.value)}
               rows={8}
               placeholder='{"team": {"name": "Virtus Roma", "ppg": 79.4}, "players": [...]}'
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-400"
+              className="w-full bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-3 font-mono text-xs text-[#022D32] focus:outline-none focus:border-[#0CA17A]"
             />
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
                 onClick={handleClear}
-                className="bg-slate-900 border border-slate-700 hover:bg-slate-800 text-rose-400 font-bold px-3 py-2 rounded-lg text-xs transition-all"
+                className="bg-white border border-[#DDF3E9] hover:bg-[#F8F9FA] text-[#022D32] font-bold px-3 py-2 rounded-lg text-xs transition-all"
               >
                 CLEAR
               </button>
               <button
                 type="button"
                 onClick={() => handleParseJSON(jsonText)}
-                className="bg-rose-600 hover:bg-rose-500 text-white font-black px-4 py-2 rounded-lg text-xs transition-all shadow-md active:scale-95"
+                className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-2 rounded-lg text-xs transition-all shadow-md active:scale-95"
               >
                 PARSE & LOAD REPORT
               </button>
@@ -443,26 +443,26 @@ export default function OpponentScout({ showToast }) {
       {/* ========================================================================= */}
       {/* 3. TEAM PROFILE CARD                                                      */}
       {/* ========================================================================= */}
-      <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl">
+      <div className="bg-white p-4 sm:p-5 border border-[#DDF3E9] rounded-2xl shadow-sm text-[#022D32]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h2 className="text-lg sm:text-xl font-black text-rose-400 uppercase tracking-wider">
+              <h2 className="text-lg sm:text-xl font-black text-[#022D32] uppercase tracking-wider">
                 {team.name || 'Opponent Team'}
               </h2>
               {team.league && (
-                <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
+                <span className="text-[10px] bg-[#DDF3E9] text-[#022D32] font-bold px-2 py-0.5 rounded border border-[#C6E8DB]">
                   {team.league}
                 </span>
               )}
               {team.paceRating && (
-                <span className="text-[10px] bg-amber-500/20 text-amber-300 font-black px-2 py-0.5 rounded border border-amber-500/40 flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-amber-400" />
+                <span className="text-[10px] bg-[#022D32] text-[#A7F3D0] font-black px-2 py-0.5 rounded border border-[#022D32] flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-[#A7F3D0]" />
                   {team.paceRating}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-[#022D32]/70 font-medium">
               Season Profile • {scoutData.players?.length || 0} active roster players tracked
             </p>
           </div>
@@ -470,27 +470,27 @@ export default function OpponentScout({ showToast }) {
           {/* Record & Form */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <div className="text-[10px] font-black uppercase tracking-wider text-[#022D32]/70">
                 SEASON RECORD
               </div>
-              <div className="font-mono text-lg font-black text-slate-100">
+              <div className="font-mono text-lg font-black text-[#022D32]">
                 {team.record?.wins || 0}W - {team.record?.losses || 0}L
-                <span className="text-xs font-semibold text-emerald-400 ml-1.5">
+                <span className="text-xs font-black text-emerald-700 ml-1.5">
                   ({team.record?.winPct || 0}%)
                 </span>
               </div>
             </div>
 
             {Array.isArray(team.lastFive) && team.lastFive.length > 0 && (
-              <div className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-lg border border-slate-800">
-                <span className="text-[9px] font-bold text-slate-500 mr-0.5">FORM:</span>
+              <div className="flex items-center gap-1 bg-[#F8F9FA] p-1.5 rounded-lg border border-[#DDF3E9]">
+                <span className="text-[9px] font-bold text-[#022D32]/60 mr-0.5">FORM:</span>
                 {team.lastFive.map((res, i) => (
                   <span
                     key={i}
                     className={`w-5 h-5 rounded flex items-center justify-center font-mono text-[10px] font-black ${
                       res === 'W'
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border border-rose-300'
                     }`}
                   >
                     {res}
@@ -502,41 +502,39 @@ export default function OpponentScout({ showToast }) {
         </div>
 
         {/* Core Team Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 pt-4 border-t border-slate-800/80">
-          <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 pt-4 border-t border-[#DDF3E9]">
+          <div className="bg-[#022D32] p-3 rounded-xl border border-[#022D32] text-center shadow-sm">
+            <span className="text-[10px] font-black uppercase text-[#A7F3D0] tracking-wider block mb-1">
               POINTS SCORED (PPG)
             </span>
-            <span className="font-mono text-xl font-black text-rose-400">
+            <span className="font-mono text-2xl font-black text-white">
               {team.ppg || 0}
             </span>
           </div>
 
-          <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+          <div className="bg-[#022D32] p-3 rounded-xl border border-[#022D32] text-center shadow-sm">
+            <span className="text-[10px] font-black uppercase text-[#A7F3D0] tracking-wider block mb-1">
               POINTS ALLOWED (OPP)
             </span>
-            <span className="font-mono text-xl font-black text-slate-200">
+            <span className="font-mono text-2xl font-black text-white">
               {team.pointsAllowed || 0}
             </span>
           </div>
 
-          <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+          <div className="bg-[#022D32] p-3 rounded-xl border border-[#022D32] text-center shadow-sm">
+            <span className="text-[10px] font-black uppercase text-[#A7F3D0] tracking-wider block mb-1">
               NET SCORING MARGIN
             </span>
-            <span className={`font-mono text-xl font-black ${
-              team.netMargin > 0 ? 'text-emerald-400' : (team.netMargin < 0 ? 'text-rose-400' : 'text-slate-200')
-            }`}>
+            <span className="font-mono text-2xl font-black text-white">
               {team.netMargin > 0 ? `+${team.netMargin}` : team.netMargin || 0}
             </span>
           </div>
 
-          <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
+          <div className="bg-[#022D32] p-3 rounded-xl border border-[#022D32] text-center shadow-sm">
+            <span className="text-[10px] font-black uppercase text-[#A7F3D0] tracking-wider block mb-1">
               TRACKED SQUAD
             </span>
-            <span className="font-mono text-xl font-black text-sky-400">
+            <span className="font-mono text-2xl font-black text-white">
               {scoutData.players?.length || 0} Players
             </span>
           </div>
@@ -548,56 +546,56 @@ export default function OpponentScout({ showToast }) {
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* CARD A: FOUL TROUBLE CANDIDATES */}
-        <div className="glass-card p-4 border-amber-500/30 bg-slate-900/90 shadow-xl space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div className="bg-white p-4 sm:p-5 border border-[#DDF3E9] rounded-2xl shadow-sm space-y-3 text-[#022D32]">
+          <div className="flex items-center justify-between pb-2 border-b border-[#DDF3E9]">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
               </div>
               <div>
-                <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider flex items-center gap-1.5">
                   FOUL TROUBLE TARGETS
-                  <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-bold border border-amber-500/40">
+                  <span className="text-[9px] bg-amber-50 text-amber-800 px-1.5 py-0.2 rounded font-bold border border-amber-200">
                     &gt; 3.5 FOULED/G
                   </span>
                 </h3>
               </div>
             </div>
-            <span className="text-[10px] font-mono font-bold text-amber-400">
+            <span className="text-[10px] font-mono font-bold text-amber-700">
               {foulTroubleCandidates.length} CANDIDATES
             </span>
           </div>
 
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            <strong className="text-slate-200">Coach Tactical Note:</strong> Attack these players in early offensive possessions using shot fakes, high pick-and-roll drives, and post touches to draw early fouls and force bench substitutions.
+          <p className="text-[11px] text-[#022D32]/70 leading-relaxed">
+            <strong className="text-[#022D32]">Coach Tactical Note:</strong> Attack these players in early offensive possessions using shot fakes, high pick-and-roll drives, and post touches to draw early fouls and force bench substitutions.
           </p>
 
           <div className="space-y-2">
             {foulTroubleCandidates.length === 0 ? (
-              <div className="p-3 text-center text-xs text-slate-500 bg-slate-950/60 rounded-lg">
+              <div className="p-3 text-center text-xs text-[#022D32]/50 bg-[#F8F9FA] rounded-lg border border-[#DDF3E9]">
                 No players with &gt; 3.5 fouls/game in current report.
               </div>
             ) : (
               foulTroubleCandidates.map((p) => (
-                <div key={p.number} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start justify-between gap-3">
+                <div key={p.number} className="bg-[#F8F9FA] p-2.5 rounded-xl border border-[#DDF3E9] flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-black text-amber-400 text-xs">#{p.number}</span>
-                      <span className="font-black text-slate-200 text-xs">{p.name}</span>
-                      <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-bold">{p.position}</span>
+                      <span className="font-mono font-black text-[#022D32] text-xs">#{p.number}</span>
+                      <span className="font-black text-[#022D32] text-xs">{p.name}</span>
+                      <span className="text-[10px] bg-[#DDF3E9] text-[#022D32] px-1.5 py-0.2 rounded font-bold border border-[#C6E8DB]">{p.position}</span>
                     </div>
                     {p.notes && (
-                      <p className="text-[11px] text-slate-400 mt-1 italic">
+                      <p className="text-[11px] text-[#022D32]/70 mt-1 italic">
                         "{p.notes}"
                       </p>
                     )}
                   </div>
 
                   <div className="text-right flex-none">
-                    <span className="font-mono text-sm font-black text-rose-400 bg-rose-950/60 border border-rose-800/60 px-2 py-0.5 rounded block">
+                    <span className="font-mono text-sm font-black text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded block">
                       {p.foulsPerGame.toFixed(1)} F/G
                     </span>
-                    <span className="text-[9px] text-slate-500 font-bold block mt-0.5">
+                    <span className="text-[9px] text-[#022D32]/60 font-bold block mt-0.5">
                       {p.ppg} PPG
                     </span>
                   </div>
@@ -608,56 +606,56 @@ export default function OpponentScout({ showToast }) {
         </div>
 
         {/* CARD B: PRIMARY PERIMETER SHOOTERS */}
-        <div className="glass-card p-4 border-sky-500/30 bg-slate-900/90 shadow-xl space-y-3">
+        <div className="bg-white p-4 sm:p-5 border border-[#DDF3E9] rounded-2xl shadow-sm space-y-3 text-[#022D32]">
           <div className="flex items-center justify-between pb-2 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center">
-                <Target className="w-4 h-4 text-sky-400" />
+              <div className="w-7 h-7 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/40 flex items-center justify-center">
+                <Target className="w-4 h-4 text-[#0CA17A]" />
               </div>
               <div>
                 <h3 className="text-xs font-black text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                   PRIMARY PERIMETER SHOOTERS
-                  <span className="text-[9px] bg-sky-500/20 text-sky-300 px-1.5 py-0.2 rounded font-bold border border-sky-500/40">
+                  <span className="text-[9px] bg-[#DDF3E9] text-[#022D32] px-1.5 py-0.2 rounded font-bold border border-[#0CA17A]/40">
                     HIGH 3PA VOLUME
                   </span>
                 </h3>
               </div>
             </div>
-            <span className="text-[10px] font-mono font-bold text-sky-400">
+            <span className="text-[10px] font-mono font-bold text-[#0CA17A]">
               {primaryShooters.length} SHOOTERS
             </span>
           </div>
 
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            <strong className="text-slate-200">Coach Tactical Note:</strong> No help off these players on the perimeter. Close out tight to contest on the catch, deny high-percentage spot-ups, and force them into off-balance mid-range pull-ups.
+          <p className="text-[11px] text-[#022D32]/70 leading-relaxed">
+            <strong className="text-[#022D32]">Coach Tactical Note:</strong> No help off these players on the perimeter. Close out tight to contest on the catch, deny high-percentage spot-ups, and force them into off-balance mid-range pull-ups.
           </p>
 
           <div className="space-y-2">
             {primaryShooters.length === 0 ? (
-              <div className="p-3 text-center text-xs text-slate-500 bg-slate-950/60 rounded-lg">
+              <div className="p-3 text-center text-xs text-[#022D32]/50 bg-[#F8F9FA] rounded-lg border border-[#DDF3E9]">
                 No high-volume 3PT shooters identified in current report.
               </div>
             ) : (
               primaryShooters.map((p) => (
-                <div key={p.number} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start justify-between gap-3">
+                <div key={p.number} className="bg-[#F8F9FA] p-2.5 rounded-xl border border-[#DDF3E9] flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-black text-sky-400 text-xs">#{p.number}</span>
-                      <span className="font-black text-slate-200 text-xs">{p.name}</span>
-                      <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-bold">{p.position}</span>
+                      <span className="font-mono font-black text-[#022D32] text-xs">#{p.number}</span>
+                      <span className="font-black text-[#022D32] text-xs">{p.name}</span>
+                      <span className="text-[10px] bg-[#DDF3E9] text-[#022D32] px-1.5 py-0.2 rounded font-bold border border-[#C6E8DB]">{p.position}</span>
                     </div>
                     {p.notes && (
-                      <p className="text-[11px] text-slate-400 mt-1 italic">
+                      <p className="text-[11px] text-[#022D32]/70 mt-1 italic">
                         "{p.notes}"
                       </p>
                     )}
                   </div>
 
                   <div className="text-right flex-none">
-                    <span className="font-mono text-sm font-black text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2 py-0.5 rounded block">
+                    <span className="font-mono text-sm font-black text-[#022D32] bg-[#DDF3E9] border border-[#C6E8DB] px-2 py-0.5 rounded block">
                       {p.threePtAttPerGame.toFixed(1)} 3PA/G
                     </span>
-                    <span className="text-[9px] text-amber-400 font-bold block mt-0.5">
+                    <span className="text-[9px] text-[#0CA17A] font-bold block mt-0.5">
                       {p.threePtPct}% 3P • {p.pctFromThree}% pts
                     </span>
                   </div>
@@ -671,11 +669,11 @@ export default function OpponentScout({ showToast }) {
       {/* ========================================================================= */}
       {/* 5. TOP SCORERS & COMPLETE ROSTER TABLE                                    */}
       {/* ========================================================================= */}
-      <div className="glass-card p-4 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+      <div className="bg-white p-4 sm:p-5 border border-[#DDF3E9] rounded-2xl shadow-sm space-y-3 text-[#022D32]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-rose-400" />
-            <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase tracking-wider">
+            <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
+            <h3 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider">
               OPPONENT PLAYER PROFILES & SCORING DISTRIBUTION
             </h3>
           </div>
@@ -683,18 +681,18 @@ export default function OpponentScout({ showToast }) {
           {/* Search & Sort Controls */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-[#022D32]/60 absolute left-2.5 top-2.5" />
               <input
                 type="text"
                 placeholder="Search player or #..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-rose-400 w-44"
+                className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#022D32] focus:outline-none focus:border-[#0CA17A] w-44"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-              <span className="text-slate-500 font-bold px-1 uppercase">SORT:</span>
+            <div className="flex items-center gap-1 bg-[#F8F9FA] p-1 rounded-lg border border-[#DDF3E9] text-[10px]">
+              <span className="text-[#022D32]/60 font-bold px-1 uppercase">SORT:</span>
               {[
                 { id: 'ppg', label: 'PPG' },
                 { id: 'three', label: '3PT' },
@@ -705,7 +703,7 @@ export default function OpponentScout({ showToast }) {
                   key={s.id}
                   onClick={() => setSortBy(s.id)}
                   className={`px-2 py-0.5 font-bold rounded transition-all ${
-                    sortBy === s.id ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                    sortBy === s.id ? 'bg-[#0CA17A] text-white' : 'text-[#022D32]/60 hover:text-[#022D32]'
                   }`}
                 >
                   {s.label}
@@ -716,15 +714,15 @@ export default function OpponentScout({ showToast }) {
         </div>
 
         {/* Legend for Scoring Breakdown Bar */}
-        <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 border-b border-slate-800/80 pb-2">
+        <div className="flex items-center gap-4 text-[10px] font-bold text-[#022D32]/70 border-b border-[#DDF3E9] pb-2">
           <span>SCORING COMPOSITION LEGEND:</span>
-          <span className="flex items-center gap-1 text-amber-400">
+          <span className="flex items-center gap-1 text-amber-800 font-bold">
             <span className="w-2.5 h-2.5 rounded bg-amber-400 inline-block" /> 3-POINTERS
           </span>
-          <span className="flex items-center gap-1 text-sky-400">
+          <span className="flex items-center gap-1 text-teal-800 font-bold">
             <span className="w-2.5 h-2.5 rounded bg-sky-400 inline-block" /> 2-POINTERS
           </span>
-          <span className="flex items-center gap-1 text-emerald-400">
+          <span className="flex items-center gap-1 text-emerald-800 font-bold">
             <span className="w-2.5 h-2.5 rounded bg-emerald-400 inline-block" /> FREE THROWS
           </span>
         </div>
@@ -733,7 +731,7 @@ export default function OpponentScout({ showToast }) {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-[#DDF3E9] bg-[#DDF3E9]/60 text-[#022D32] font-black uppercase text-[10px] tracking-wider">
                 <th className="p-2.5">#</th>
                 <th className="p-2.5">PLAYER</th>
                 <th className="p-2.5 text-center">POS</th>
@@ -747,7 +745,7 @@ export default function OpponentScout({ showToast }) {
                 <th className="p-2.5">SCOUTING TAGS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y divide-[#DDF3E9]">
               {filteredPlayers.length === 0 ? (
                 <tr>
                   <td colSpan={11} className="p-6 text-center text-slate-500 font-medium">
@@ -760,27 +758,27 @@ export default function OpponentScout({ showToast }) {
                   const isFoulProne = p.foulsPerGame >= 3.5;
 
                   return (
-                    <tr key={p.number} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="p-2.5 font-mono font-black text-rose-400">
+                    <tr key={p.number} className="hover:bg-[#F8F9FA] transition-colors">
+                      <td className="p-2.5 font-mono font-black text-[#022D32]">
                         #{p.number}
                       </td>
-                      <td className="p-2.5 font-black text-slate-200">
+                      <td className="p-2.5 font-black text-[#022D32]">
                         {p.name}
                       </td>
-                      <td className="p-2.5 text-center font-bold text-slate-400">
+                      <td className="p-2.5 text-center font-bold text-[#022D32]/70">
                         {p.position}
                       </td>
-                      <td className="p-2.5 text-center font-mono text-slate-300">
+                      <td className="p-2.5 text-center font-mono text-[#022D32]/80">
                         {p.games}
                       </td>
-                      <td className="p-2.5 text-center font-mono font-black text-slate-100 text-sm">
+                      <td className="p-2.5 text-center font-mono font-black text-[#022D32] text-sm">
                         {p.ppg.toFixed(1)}
                       </td>
                       
                       {/* Multi-Segment Visual Bar (% from 3P, 2P, FT) */}
                       <td className="p-2.5">
                         <div className="space-y-1">
-                          <div className="h-3.5 w-full bg-slate-950 rounded-md overflow-hidden flex border border-slate-800 shadow-inner">
+                          <div className="h-3.5 w-full bg-[#F8F9FA] rounded-md overflow-hidden flex border border-[#DDF3E9] shadow-inner">
                             <div 
                               style={{ width: `${p.pctFromThree}%` }} 
                               className="bg-amber-400 h-full transition-all" 
@@ -797,28 +795,28 @@ export default function OpponentScout({ showToast }) {
                               title={`FT: ${p.pctFromFt}% of points`}
                             />
                           </div>
-                          <div className="flex justify-between text-[9px] font-mono font-bold text-slate-400">
-                            <span className="text-amber-400">{p.pctFromThree}% 3P</span>
-                            <span className="text-sky-400">{p.pctFromTwo}% 2P</span>
-                            <span className="text-emerald-400">{p.pctFromFt}% FT</span>
+                          <div className="flex justify-between text-[9px] font-mono font-bold text-[#022D32]/70">
+                            <span className="text-amber-800 font-bold">{p.pctFromThree}% 3P</span>
+                            <span className="text-teal-800 font-bold">{p.pctFromTwo}% 2P</span>
+                            <span className="text-emerald-800 font-bold">{p.pctFromFt}% FT</span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="p-2.5 text-center font-mono font-bold text-sky-400">
+                      <td className="p-2.5 text-center font-mono font-bold text-[#022D32]">
                         {p.threePtAttPerGame.toFixed(1)}
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                      <td className="p-2.5 text-center font-mono font-bold text-[#022D32]">
                         {p.threePtPct}%
                       </td>
-                      <td className="p-2.5 text-center font-mono font-bold text-emerald-300">
+                      <td className="p-2.5 text-center font-mono font-bold text-[#022D32]">
                         {p.ftPct}%
                       </td>
                       <td className="p-2.5 text-center font-mono font-black">
                         <span className={`px-1.5 py-0.5 rounded ${
                           isFoulProne 
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' 
-                            : 'text-slate-300'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200 font-bold' 
+                            : 'text-[#022D32]'
                         }`}>
                           {p.foulsPerGame.toFixed(1)}
                         </span>

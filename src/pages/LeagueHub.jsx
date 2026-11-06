@@ -3,8 +3,13 @@ import {
   Trophy, Target, Upload, FileText, AlertTriangle, 
   RefreshCw, Search, ArrowLeft, Shield, Zap, ChevronRight, ChevronDown,
   X, User, HelpCircle, Loader2, Terminal, Flame, CheckCircle2,
-  Users, Info, BarChart2
+  Users, Info, BarChart2, TrendingUp, Calendar, Clock, Home, Activity
 } from 'lucide-react';
+import { 
+  ResponsiveContainer, LineChart, Line, BarChart, Bar, Cell, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine 
+} from 'recharts';
+import { useLanguage } from '../context/LanguageContext';
 
 // =========================================================================
 // BASELINE DATA (Divisione Regionale 2 - Girone F)
@@ -550,22 +555,22 @@ const formatMedVal = (val, games) => {
 };
 
 const formatTotPlusMinus = (pm) => {
-  if (pm == null || isNaN(pm)) return <span className="text-slate-400">0</span>;
+  if (pm == null || isNaN(pm)) return <span className="text-[#022D32]/60">0</span>;
   const num = Number(pm);
-  if (num > 0) return <span className="text-emerald-400">+{num}</span>;
-  if (num < 0) return <span className="text-rose-400">{num}</span>;
-  return <span className="text-slate-400">0</span>;
+  if (num > 0) return <span className="text-[#0CA17A]">+{num}</span>;
+  if (num < 0) return <span className="text-rose-600">{num}</span>;
+  return <span className="text-[#022D32]/60">0</span>;
 };
 
 const formatMedPlusMinus = (stats) => {
-  if (!stats) return <span className="text-slate-400">0.0</span>;
+  if (!stats) return <span className="text-[#022D32]/60">0.0</span>;
   const games = Number(stats.games || 0);
-  if (games <= 0) return <span className="text-slate-400">0.0</span>;
+  if (games <= 0) return <span className="text-[#022D32]/60">0.0</span>;
   const pm = Number(stats.plusMinus || 0);
   const avg = pm / games;
-  if (avg > 0) return <span className="text-emerald-400">+{avg.toFixed(1)}</span>;
-  if (avg < 0) return <span className="text-rose-400">{avg.toFixed(1)}</span>;
-  return <span className="text-slate-400">0.0</span>;
+  if (avg > 0) return <span className="text-[#0CA17A]">+{avg.toFixed(1)}</span>;
+  if (avg < 0) return <span className="text-rose-600">{avg.toFixed(1)}</span>;
+  return <span className="text-[#022D32]/60">0.0</span>;
 };
 
 // Formats seconds into MM:SS string (e.g. 1415 -> "23:35")
@@ -726,6 +731,15 @@ function normalizeLineupItem(item, idx) {
   }
 
   const startingVal = item.starting != null ? item.starting : (p.starting != null ? p.starting : (s.starting != null ? s.starting : false));
+  const rawStartPct = item.startPercentage != null ? item.startPercentage : (p.startPercentage != null ? p.startPercentage : (s.startPercentage != null ? s.startPercentage : null));
+  let startPercentage = '0%';
+  if (rawStartPct != null) {
+    startPercentage = typeof rawStartPct === 'string' && rawStartPct.includes('%') ? rawStartPct : `${rawStartPct}%`;
+  } else if (startingVal) {
+    startPercentage = '100%';
+  }
+  const startsCount = Number(item.startsCount ?? p.startsCount ?? (startingVal ? 1 : 0));
+
   const timePlayedAVG = Number(s.timePlayedAVG ?? s.timePlayed ?? item.timePlayedAVG ?? p.timePlayedAVG ?? 0);
   const ppgVal = Number(s.pointsPerGame ?? s.pointsAVG ?? s.ppg ?? 0);
   const twoMadeVal = Number(s.twoMadePerGame ?? s.inArcThrowsAVG ?? s.inArcThrowsMadeAVG ?? 0);
@@ -745,6 +759,8 @@ function normalizeLineupItem(item, idx) {
     position: cleanPosition,
     captain: Boolean(p.captain),
     starting: Boolean(startingVal),
+    startPercentage,
+    startsCount,
     photo: p.photo || null,
     uniquePlayer: {
       id: uniquePlayer?.id || null,
@@ -801,8 +817,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'At least 1.5 3PM/G and over 45% of points from 3-pointers.',
     coachInsight: 'Tiratore primario ad alto volume perimetrale. Uscire forte dai blocchi, passare aggressivamente sopra i pick & roll e negare ricezioni piedi a terra.',
     coachInsightEn: 'High-volume primary perimeter shooter. Run shooters off screens, fight over pick & rolls, and deny spot-up catch-and-shoot looks.',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    dotClass: 'bg-emerald-400',
+    badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+    dotClass: 'bg-emerald-600',
     rule: (m) => m.ThreePM_PerGame >= 1.5 && m.Pct3 >= 45,
   },
   {
@@ -815,8 +831,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'At least 3.5 2PM/G and no more than 15% of points from 3-pointers.',
     coachInsight: 'Attacca aggressivamente il ferro dal palleggio o lavora spalle a canestro. Chiudere le linee di penetrazione, proteggere l\'area e concedere il tiro dal perimetro.',
     coachInsightEn: 'Attacks the rim aggressively off the dribble or in the paint. Pack the lane, wall off drives, and force contested pull-ups from deep.',
-    badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
-    dotClass: 'bg-sky-400',
+    badgeClass: 'bg-sky-50 text-sky-800 border-sky-300',
+    dotClass: 'bg-sky-600',
     rule: (m) => m.TwoPM_PerGame >= 3.5 && m.Pct3 <= 15,
   },
   {
@@ -829,8 +845,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'At least 4.5 free throw attempts per game.',
     coachInsight: 'Specialista nel creare contatti e subire falli. Disciplina difensiva fondamentale: mani in alto in verticalità senza abboccare alle finte di tiro.',
     coachInsightEn: 'Master at drawing fouls and initiating contact. Extreme discipline required: contest vertically with high hands and do not bite on pump fakes.',
-    badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-    dotClass: 'bg-amber-400',
+    badgeClass: 'bg-amber-50 text-amber-900 border-amber-300',
+    dotClass: 'bg-amber-600',
     rule: (m) => m.FT_Att_PerGame >= 4.5,
   },
   {
@@ -843,8 +859,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'Free throw percentage >= 78% with at least 2.5 FTA/G.',
     coachInsight: 'Tiratore infallibile a cronometro fermo. Evitare categoricamente falli sul tiro o situazioni di bonus nei finali punto a punto.',
     coachInsightEn: 'Deadly free-throw shooter in clutch moments. Never commit intentional fouls or surrender bonus free throws in close late-game scenarios.',
-    badgeClass: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-    dotClass: 'bg-teal-400',
+    badgeClass: 'bg-teal-50 text-teal-800 border-teal-300',
+    dotClass: 'bg-teal-600',
     rule: (m) => m.freeThrowsPercentage != null && m.freeThrowsPercentage >= 78 && m.FT_Att_PerGame >= 2.5,
   },
   {
@@ -857,8 +873,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'Free throw percentage <= 50% with at least 1.5 FTA/G: tactical foul target.',
     coachInsight: 'Bersaglio tattico difensivo: gravi difficoltà dalla lunetta. Opzione strategica per spendere falli in bonus sotto canestro per impedire 2 facili.',
     coachInsightEn: 'Tactical target: poor free-throw conversion. Strategic target to commit smart fouls in the bonus rather than allowing uncontested layups.',
-    badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-    dotClass: 'bg-rose-400',
+    badgeClass: 'bg-rose-50 text-rose-800 border-rose-300',
+    dotClass: 'bg-rose-600',
     rule: (m) => m.freeThrowsPercentage != null && m.freeThrowsPercentage <= 50 && m.FT_Att_PerGame >= 1.5,
   },
   {
@@ -871,8 +887,8 @@ export const TACTICAL_TAGS_CONFIG = [
     criteriaDescEn: 'Averages 3.0+ personal fouls committed per game.',
     coachInsight: 'Difensore indisciplinato e a costante rischio espulsione. Puntarlo fin dai primi minuti con isolamenti e roll decisi per costringerlo in panchina.',
     coachInsightEn: 'Foul-prone defender frequently in foul trouble. Attack them early in isolations and pick & rolls to force early substitution.',
-    badgeClass: 'bg-red-500/20 text-red-300 border-red-500/40',
-    dotClass: 'bg-red-400',
+    badgeClass: 'bg-red-50 text-red-800 border-red-300',
+    dotClass: 'bg-red-600',
     rule: (m) => m.Fouls_PerGame >= 3.0,
   },
 ];
@@ -1015,6 +1031,8 @@ export const DICTIONARY = {
     statRecord: "RECORD",
     statWinRate: "PERC. VITTORIE",
     statDiff: "DIFF. CANESTRI",
+    statPtsScored: "PUNTI SEGNATI / GARA",
+    statPtsConceded: "PUNTI SUBITI / GARA",
     statRosterSize: "ROSTER",
     playersCount: "Giocatori",
     alertFoulTitle: "⚠️ BERSAGLI DA FALLO (>3.0 FALLI/P)",
@@ -1115,6 +1133,48 @@ export const DICTIONARY = {
     mostUsedLineupDesc: "I 5 giocatori con più presenze in squadra (games con tie-breaker su minuti/punti)",
     noStartingFive: "Nessun quintetto titolare registrato per questa squadra.",
     noLineupData: "Nessun dato di presenze disponibile per questa squadra.",
+    tabRoster: "ROSTER & STATISTICHE",
+    tabTrends: "ANALISI & TREND",
+    trendsOverviewTitle: "PANORAMICA & MOMENTUM",
+    splitsTitle: "CONFRONTO RENDIMENTO & AMBIENTE",
+    visualAnalyticsTitle: "VISUAL ANALYTICS & TRAIETTORIE",
+    colStartPct: "START %",
+    trendsTitle: "ANALISI TREND & MACRO-SCOUTING",
+    trendsSubtitle: "Rendimento casa/trasferta, analisi dei quarti e game log ufficiale FIP",
+    streakTitle: "FORMA ATTUALE / STRISCIA",
+    homeAwayTitle: "RENDIMENTO CASA / TRASFERTA",
+    home: "CASA",
+    away: "TRASFERTA",
+    quartersTitle: "ANALISI DEI QUARTI",
+    quartersSubtitle: "Punti segnati, punti subiti e differenziale medio per periodo",
+    quarterDiffChartTitle: "DIFFERENZIALE MEDIO PER QUARTO",
+    quarterDiffChartSubtitle: "Impronta visiva dell'efficienza periodo per periodo (Verde = Vantaggio, Rosso = Sofferenza)",
+    volatilityIndex: "INDICE DI VOLATILITÀ (σ)",
+    volatilityConsistent: "Offensiva Costante",
+    volatilityConsistentDesc: "Bassa dispersione dei punteggi, produzione realizzativa stabile ed affidabile",
+    volatilityFluctuating: "Offensiva Altalenante",
+    volatilityFluctuatingDesc: "Discreta variabilità realizzativa a seconda dell'avversario",
+    volatilityUnpredictable: "Offensiva Imprevedibile",
+    volatilityUnpredictableDesc: "Forti oscillazioni tra gare a punteggio alto e basso",
+    halvesTitle: "1° TEMPO vs 2° TEMPO (TENUTA FISICA)",
+    halvesSubtitle: "Confronto rendimento prima metà vs seconda metà di gara",
+    firstHalf: "1° TEMPO (Q1+Q2)",
+    secondHalf: "2° TEMPO (Q3+Q4)",
+    halvesFade: "CALO FISICO NEL 2° TEMPO",
+    halvesFadeDesc: "La squadra cala significativamente di intensità nella seconda frazione. Alzare il ritmo ed aggredire nella ripresa.",
+    halvesStrong: "PROGRESSIONE NEL 2° TEMPO",
+    halvesStrongDesc: "Squadra diesel che aumenta efficienza ed intensità nei quarti finali. Mantenere la concentrazione fino al 40°.",
+    halvesBalanced: "RENDIMENTO EQUILIBRATO",
+    halvesBalancedDesc: "Produzione e differenziale stabili tra primo e secondo tempo.",
+    halvesDiffDelta: "Differenziale 2°T vs 1°T",
+    gameTrendsTitle: "TRAIETTORIA & TREND DI RENDIMENTO",
+    gameTrendsSubtitle: "Evoluzione cronologica dei punti segnati vs punti subiti partita per partita",
+    scoredPoints: "Punti Segnati",
+    concededPoints: "Punti Subiti",
+    netMargin: "Differenziale Netto",
+    gameLogTitle: "GAME LOG / ULTIME PARTITE",
+    noTrends: "Nessun dato di trend o partite registrato per questa squadra.",
+    noGames: "Nessuna gara disputata registrata a referto.",
     // Empty state
     emptyTitle: "Dati Campionato Non Sincronizzati",
     emptyDesc: "Dati campionato non presenti. Clicca su AGGIORNA DATI FIP per scaricare l'ultima classifica e i report scouting dal cloud, oppure carica il set di esempio.",
@@ -1154,6 +1214,8 @@ export const DICTIONARY = {
     statRecord: "RECORD",
     statWinRate: "WIN RATE",
     statDiff: "POINT DIFFERENTIAL",
+    statPtsScored: "POINTS SCORED / G",
+    statPtsConceded: "POINTS CONCEDED / G",
     statRosterSize: "ROSTER SIZE",
     playersCount: "Players",
     alertFoulTitle: "⚠️ HIGH FOUL TARGETS (>3.0 FOULS/G)",
@@ -1254,6 +1316,48 @@ export const DICTIONARY = {
     mostUsedLineupDesc: "Top 5 players by total games played on this team (tie-breaker on minutes/points)",
     noStartingFive: "No starting lineup registered for this team.",
     noLineupData: "No games played data available for this team.",
+    tabRoster: "ROSTER & STATS",
+    tabTrends: "TRENDS & ANALYSIS",
+    trendsOverviewTitle: "OVERVIEW & MOMENTUM",
+    splitsTitle: "ENVIRONMENT & SPLIT PERFORMANCE",
+    visualAnalyticsTitle: "VISUAL ANALYTICS & TRAJECTORIES",
+    colStartPct: "START %",
+    trendsTitle: "TEAM TRENDS & MACRO-SCOUTING",
+    trendsSubtitle: "Home/away splits, quarters breakdown and official FIP game log",
+    streakTitle: "CURRENT FORM / STREAK",
+    homeAwayTitle: "HOME / AWAY PERFORMANCE",
+    home: "HOME",
+    away: "AWAY",
+    quartersTitle: "QUARTERS BREAKDOWN",
+    quartersSubtitle: "Average points scored, conceded and differential per period",
+    quarterDiffChartTitle: "QUARTER AVERAGE DIFFERENTIAL",
+    quarterDiffChartSubtitle: "Visual fingerprint of period-by-period net margin (Green = Advantage, Red = Deficit)",
+    volatilityIndex: "VOLATILITY INDEX (σ)",
+    volatilityConsistent: "Consistent Offense",
+    volatilityConsistentDesc: "Low scoring dispersion, reliable and predictable offensive output",
+    volatilityFluctuating: "Fluctuating Offense",
+    volatilityFluctuatingDesc: "Moderate scoring variance depending on opponent and matchup",
+    volatilityUnpredictable: "Unpredictable Offense",
+    volatilityUnpredictableDesc: "High variance with wide swings between high and low scoring nights",
+    halvesTitle: "1ST HALF vs 2ND HALF (STAMINA & MOMENTUM)",
+    halvesSubtitle: "Performance comparison between first half and second half",
+    firstHalf: "1ST HALF (Q1+Q2)",
+    secondHalf: "2ND HALF (Q3+Q4)",
+    halvesFade: "SECOND HALF FADE",
+    halvesFadeDesc: "Team suffers a noticeable drop in late quarters. Push pace and attack aggressively in the second half.",
+    halvesStrong: "SECOND HALF FINISH",
+    halvesStrongDesc: "Team ramps up intensity and efficiency late. Guard against lapses and maintain 40-minute focus.",
+    halvesBalanced: "BALANCED HALF SPLITS",
+    halvesBalancedDesc: "Consistent scoring and defensive stability across both halves.",
+    halvesDiffDelta: "2nd Half vs 1st Half Differential",
+    gameTrendsTitle: "GAME-BY-GAME PERFORMANCE TREND",
+    gameTrendsSubtitle: "Chronological trajectory of points scored vs points conceded game by game",
+    scoredPoints: "Points Scored",
+    concededPoints: "Points Conceded",
+    netMargin: "Net Margin",
+    gameLogTitle: "GAME LOG / RECENT MATCHES",
+    noTrends: "No match trends recorded for this team.",
+    noGames: "No official matches recorded on file.",
     // Empty state
     emptyTitle: "League Data Not Synced",
     emptyDesc: "League data not synced. Tap SYNC FIP DATA to pull the latest standings and scouting reports directly from the cloud, or load the baseline sample.",
@@ -1264,23 +1368,79 @@ export const DICTIONARY = {
   }
 };
 
-export default function LeagueHub({ showToast }) {
-  // Language State: 'it' (default) | 'en'
-  const [lang, setLang] = useState(() => {
-    try {
-      return localStorage.getItem('bba_lang') || 'it';
-    } catch (e) {
-      return 'it';
-    }
-  });
+// =========================================================================
+// RECHARTS CUSTOM TOOLTIPS (BBA MODERN SAAS THEME)
+// =========================================================================
+function CustomTrendTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const isWin = data.isWin;
+    return (
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-md text-xs space-y-2 font-sans min-w-[200px]">
+        <div className="font-black text-[#022D32] border-b border-slate-100 pb-1.5 flex items-center justify-between gap-2">
+          <span>{data.fullTitle}</span>
+          <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full ${
+            isWin ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+          }`}>
+            {isWin ? 'V' : 'P'}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-[#0CA17A] font-bold">
+          <span>Punti Segnati:</span>
+          <span className="font-mono font-black text-sm">{data.scored}</span>
+        </div>
+        <div className="flex justify-between items-center text-rose-600 font-bold">
+          <span>Punti Subiti:</span>
+          <span className="font-mono font-black text-sm">{data.conceded}</span>
+        </div>
+        <div className="flex justify-between items-center text-[#022D32] pt-1.5 border-t border-slate-100 font-bold text-[11px]">
+          <span className="text-slate-500 uppercase tracking-wider">Differenziale:</span>
+          <span className={`font-mono font-black ${data.diff > 0 ? 'text-[#0CA17A]' : data.diff < 0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
+            {data.diff > 0 ? `+${data.diff}` : data.diff}
+          </span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
 
+function CustomQuarterTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const isPos = data.diff > 0;
+    return (
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-md text-xs space-y-2 font-sans min-w-[170px]">
+        <div className="font-black text-[#022D32] border-b border-slate-100 pb-1 flex items-center justify-between">
+          <span className="font-mono text-sm">{data.quarter}</span>
+          <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded-full ${
+            isPos ? 'bg-emerald-50 text-emerald-700' : data.diff < 0 ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-700'
+          }`}>
+            {isPos ? `+${data.diff}` : data.diff}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-[#0CA17A] font-semibold">
+          <span>Media Segnati:</span>
+          <span className="font-mono font-black">{data.scoredAvg}</span>
+        </div>
+        <div className="flex justify-between items-center text-rose-600 font-semibold">
+          <span>Media Subiti:</span>
+          <span className="font-mono font-black">{data.concededAvg}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+export default function LeagueHub({ showToast }) {
+  // Global Language Context: 'it' | 'en'
+  const { language, setLanguage } = useLanguage();
+  const lang = language;
   const t = DICTIONARY[lang] || DICTIONARY.it;
 
   const toggleLang = (newLang) => {
-    setLang(newLang);
-    try {
-      localStorage.setItem('bba_lang', newLang);
-    } catch (e) {}
+    setLanguage(newLang);
   };
 
   // Navigation State: 'STANDINGS_VIEW' | 'TEAM_DETAIL_VIEW'
@@ -1303,6 +1463,16 @@ export default function LeagueHub({ showToast }) {
     } catch (e) {}
     return null;
   });
+
+  const [teamTrends, setTeamTrends] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bba_fip_trends');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {};
+  });
+
+  const [teamDetailTab, setTeamDetailTab] = useState('roster'); // 'roster' | 'trends'
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(!standings);
@@ -1377,6 +1547,22 @@ export default function LeagueHub({ showToast }) {
         }
       } catch (rostersErr) {
         console.warn('[League Hub] /data/league_rosters.json fetch note:', rostersErr.message);
+      }
+
+      // 3. Fetch /data/team_trends.json directly
+      try {
+        const trendsRes = await fetch('/data/team_trends.json', { cache: 'no-store' });
+        if (trendsRes.ok) {
+          const trendsJson = await trendsRes.json();
+          if (trendsJson && typeof trendsJson === 'object') {
+            setTeamTrends(trendsJson);
+            try {
+              localStorage.setItem('bba_fip_trends', JSON.stringify(trendsJson));
+            } catch (e) {}
+          }
+        }
+      } catch (trendsErr) {
+        console.warn('[League Hub] /data/team_trends.json fetch note:', trendsErr.message);
       }
 
       // 3. If not found or if user clicked manual sync, fallback to /api/sync-fip
@@ -1459,6 +1645,7 @@ export default function LeagueHub({ showToast }) {
     setSelectedTeamFid(teamFid);
     setCurrentView('TEAM_DETAIL_VIEW');
     setSelectedPlayer(null);
+    setTeamDetailTab('roster');
     setRosterSearch('');
   };
 
@@ -1466,6 +1653,7 @@ export default function LeagueHub({ showToast }) {
     setCurrentView('STANDINGS_VIEW');
     setSelectedTeamFid(null);
     setSelectedPlayer(null);
+    setTeamDetailTab('roster');
   };
 
   const handleResetToDefault = () => {
@@ -1497,6 +1685,12 @@ export default function LeagueHub({ showToast }) {
   const currentRoster = useMemo(() => {
     return rawLineups.map((item, idx) => normalizeLineupItem(item, idx));
   }, [rawLineups]);
+
+  // Selected Team Advanced Match Trends (Home/Away, Quarters, Streak, Log)
+  const currentTrends = useMemo(() => {
+    if (!selectedTeamFid || !teamTrends) return null;
+    return teamTrends[selectedTeamFid] || null;
+  }, [selectedTeamFid, teamTrends]);
 
   // Dynamic active season & previous season detection from current roster history
   const activeSeasonInfo = useMemo(() => {
@@ -1549,6 +1743,152 @@ export default function LeagueHub({ showToast }) {
     }
     return 65;
   }, [currentTeamStanding, selectedTeamFid, rosters, currentRoster, activeSeasonInfo]);
+
+  // =========================================================================
+  // DERIVED INTELLIGENCE: VOLATILITY, HALVES & CHARTS DATA
+  // =========================================================================
+
+  // 1. Volatility & Predictability Index (Standard Deviation σ of Points Scored across all games in log)
+  const volatilityMetric = useMemo(() => {
+    if (!currentTrends || !Array.isArray(currentTrends.log) || currentTrends.log.length === 0) {
+      return null;
+    }
+    const matchLog = currentTrends.log;
+    const scoredList = matchLog
+      .map(m => (m.isHomeGame ? m.homeScore : m.awayScore))
+      .filter(p => typeof p === 'number' && !isNaN(p));
+
+    if (scoredList.length === 0) return null;
+
+    const n = scoredList.length;
+    const mean = scoredList.reduce((acc, v) => acc + v, 0) / n;
+
+    let stdDev = 0;
+    if (n > 1) {
+      const variance = scoredList.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / n;
+      stdDev = Number(Math.sqrt(variance).toFixed(1));
+    }
+
+    let badgeText = '';
+    let badgeDesc = '';
+    let badgeColor = '';
+    let dotColor = '';
+
+    if (stdDev < 7) {
+      badgeText = t.volatilityConsistent || 'Offensiva Costante';
+      badgeDesc = t.volatilityConsistentDesc || 'Produzione offensiva affidabile e stabile';
+      badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+      dotColor = 'bg-emerald-500';
+    } else if (stdDev <= 12) {
+      badgeText = t.volatilityFluctuating || 'Offensiva Altalenante';
+      badgeDesc = t.volatilityFluctuatingDesc || 'Variabilità realizzativa media a seconda del match';
+      badgeColor = 'bg-amber-100 text-amber-900 border-amber-300';
+      dotColor = 'bg-amber-500';
+    } else {
+      badgeText = t.volatilityUnpredictable || 'Offensiva Imprevedibile';
+      badgeDesc = t.volatilityUnpredictableDesc || 'Forti oscillazioni tra gare a punteggio alto e basso';
+      badgeColor = 'bg-rose-100 text-rose-900 border-rose-300';
+      dotColor = 'bg-rose-500';
+    }
+
+    return {
+      stdDev,
+      mean: Number(mean.toFixed(1)),
+      badgeText,
+      badgeDesc,
+      badgeColor,
+      dotColor,
+      gamesCount: n
+    };
+  }, [currentTrends, t]);
+
+  // 2. First Half vs Second Half (Tenuta Fisica & Continuità)
+  const halvesData = useMemo(() => {
+    if (!currentTrends) return null;
+    const g = currentTrends.global?.games || 0;
+    if (g === 0) return null;
+
+    const q1 = currentTrends.quarters?.Q1 || { scored: 0, conceded: 0 };
+    const q2 = currentTrends.quarters?.Q2 || { scored: 0, conceded: 0 };
+    const q3 = currentTrends.quarters?.Q3 || { scored: 0, conceded: 0 };
+    const q4 = currentTrends.quarters?.Q4 || { scored: 0, conceded: 0 };
+
+    const h1Scored = (q1.scored || 0) + (q2.scored || 0);
+    const h1Conceded = (q1.conceded || 0) + (q2.conceded || 0);
+    const h2Scored = (q3.scored || 0) + (q4.scored || 0);
+    const h2Conceded = (q3.conceded || 0) + (q4.conceded || 0);
+
+    const h1ScoredAvg = Number((h1Scored / g).toFixed(1));
+    const h1ConcededAvg = Number((h1Conceded / g).toFixed(1));
+    const h1Diff = Number((h1ScoredAvg - h1ConcededAvg).toFixed(1));
+
+    const h2ScoredAvg = Number((h2Scored / g).toFixed(1));
+    const h2ConcededAvg = Number((h2Conceded / g).toFixed(1));
+    const h2Diff = Number((h2ScoredAvg - h2ConcededAvg).toFixed(1));
+
+    const diffDelta = Number((h2Diff - h1Diff).toFixed(1));
+
+    let verdictType = 'balanced';
+    if (diffDelta <= -3.0) {
+      verdictType = 'fade';
+    } else if (diffDelta >= 3.0) {
+      verdictType = 'strong';
+    }
+
+    return {
+      h1ScoredAvg,
+      h1ConcededAvg,
+      h1Diff,
+      h2ScoredAvg,
+      h2ConcededAvg,
+      h2Diff,
+      diffDelta,
+      verdictType
+    };
+  }, [currentTrends]);
+
+  // 3. Chronological Game Trends (Oldest to Newest) for Recharts LineChart
+  const trendsLineData = useMemo(() => {
+    if (!currentTrends || !Array.isArray(currentTrends.log) || currentTrends.log.length === 0) {
+      return [];
+    }
+    const sorted = [...currentTrends.log].sort((a, b) => new Date(a.date) - new Date(b.date));
+    return sorted.map((m, idx) => {
+      const scored = m.isHomeGame ? m.homeScore : m.awayScore;
+      const conceded = m.isHomeGame ? m.awayScore : m.homeScore;
+      const opp = (m.isHomeGame ? m.awayTeam : m.homeTeam) || 'Avversario';
+      const locPrefix = m.isHomeGame ? 'vs' : '@';
+      const d = new Date(m.date);
+      const dateStr = !isNaN(d) ? `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}` : '';
+      const roundLabel = m.round ? `G${m.round}` : `#${idx + 1}`;
+
+      return {
+        round: roundLabel,
+        fullTitle: `${roundLabel} • ${locPrefix} ${opp.trim()}`,
+        date: dateStr,
+        scored: Number(scored) || 0,
+        conceded: Number(conceded) || 0,
+        diff: (Number(scored) || 0) - (Number(conceded) || 0),
+        isWin: m.isWin,
+        isHome: m.isHomeGame
+      };
+    });
+  }, [currentTrends]);
+
+  // 4. Quarter Differentials for Recharts BarChart
+  const quarterChartData = useMemo(() => {
+    if (!currentTrends || !currentTrends.quarterAverages) return [];
+    const qa = currentTrends.quarterAverages;
+    return ['Q1', 'Q2', 'Q3', 'Q4'].map(qKey => {
+      const qData = qa[qKey] || { scoredAvg: 0, concededAvg: 0, diff: 0 };
+      return {
+        quarter: qKey,
+        diff: Number(qData.diff) || 0,
+        scoredAvg: qData.scoredAvg,
+        concededAvg: qData.concededAvg
+      };
+    });
+  }, [currentTrends]);
 
   // -------------------------------------------------------------------------
   // Dynamic Tactical Alerts & Team-Scope Threat Groups
@@ -1615,6 +1955,11 @@ export default function LeagueHub({ showToast }) {
           valB = Number(b.timePlayedAVG || b.stats?.timePlayedAVG || 0);
           break;
 
+        case 'startPercentage':
+          valA = parseFloat(String(a.startPercentage || '0').replace('%', ''));
+          valB = parseFloat(String(b.startPercentage || '0').replace('%', ''));
+          break;
+
         case 'pointsPerGame':
           valA = Number(a.pointsPerGame ?? a.pointsAVG ?? 0);
           valB = Number(b.pointsPerGame ?? b.pointsAVG ?? 0);
@@ -1659,39 +2004,39 @@ export default function LeagueHub({ showToast }) {
   }, [currentRoster, rosterSearch, sortConfig]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-4 max-w-7xl mx-auto w-full space-y-4">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-[#F8F9FA] text-[#022D32] -m-1 sm:-m-2 p-3 sm:p-6 w-auto space-y-5">
       {/* ========================================================================= */}
       {/* 1. TOP HEADER & GLOBAL CONTROLS                                           */}
       {/* ========================================================================= */}
-      <div className="glass-card p-4 border-slate-700/60 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-none shadow-inner">
-            <Trophy className="w-5 h-5 text-amber-400" />
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] flex flex-wrap items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none">
+            <Trophy className="w-6 h-6 text-[#0CA17A]" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2.5">
               {t.title}
-              <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">
+              <span className="text-xs bg-[#DDF3E9] text-[#0CA17A] font-black px-2.5 py-0.5 rounded-md border border-[#0CA17A]/30">
                 {t.badgeSynced}
               </span>
             </h1>
-            <p className="text-xs text-slate-400 font-semibold">
+            <p className="text-xs sm:text-sm text-[#022D32]/80 font-bold">
               {t.division} • {t.season}
             </p>
           </div>
         </div>
 
         {/* Global Controls & Language Toggle */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Language Toggle */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 shadow-inner">
+          <div className="flex items-center bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-1">
             <button
               type="button"
               onClick={() => toggleLang('it')}
-              className={`px-2 py-1 rounded text-[11px] font-black transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 lang === 'it' 
-                  ? 'bg-amber-500 text-slate-950 shadow' 
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0CA17A] text-white shadow-xs' 
+                  : 'text-[#022D32]/70 hover:text-[#022D32]'
               }`}
             >
               IT
@@ -1699,10 +2044,10 @@ export default function LeagueHub({ showToast }) {
             <button
               type="button"
               onClick={() => toggleLang('en')}
-              className={`px-2 py-1 rounded text-[11px] font-black transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 lang === 'en' 
-                  ? 'bg-amber-500 text-slate-950 shadow' 
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0CA17A] text-white shadow-xs' 
+                  : 'text-[#022D32]/70 hover:text-[#022D32]'
               }`}
             >
               EN
@@ -1713,29 +2058,29 @@ export default function LeagueHub({ showToast }) {
             type="button"
             onClick={() => fetchFipData(true)}
             disabled={isSyncing}
-            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Fetch latest league data from /api/sync-fip"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isSyncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
           </button>
 
           <button
             type="button"
             onClick={handleResetToDefault}
-            className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
             title="Load default championship league dataset"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <RefreshCw className="w-4 h-4 text-[#0CA17A]" />
             <span>{t.btnDefault}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setShowImporter(true)}
-            className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 bg-[#022D32] hover:bg-[#022D32]/90 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs active:scale-95 cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5" />
+            <Upload className="w-4 h-4" />
             <span>{t.btnImport}</span>
           </button>
         </div>
@@ -1743,9 +2088,9 @@ export default function LeagueHub({ showToast }) {
 
       {/* Status banner */}
       {statusMsg && (
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-between animate-fade-in">
+        <div className="p-2.5 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/40 text-xs font-bold text-[#022D32] flex items-center justify-between animate-fade-in">
           <span>{statusMsg}</span>
-          <button onClick={() => setStatusMsg('')} className="text-slate-400 hover:text-white">
+          <button onClick={() => setStatusMsg('')} className="text-[#022D32]/60 hover:text-[#022D32]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -1755,32 +2100,32 @@ export default function LeagueHub({ showToast }) {
       {/* 2. LOADING & EMPTY/UNSYNCED STATES                                        */}
       {/* ========================================================================= */}
       {isSyncing && (!standings || standings.length === 0) ? (
-        <div className="glass-card p-12 text-center border-slate-800 bg-slate-900/90 rounded-2xl max-w-md mx-auto space-y-3 my-12 animate-pulse shadow-2xl">
-          <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
-          <p className="text-sm font-bold text-slate-300">Syncing FIP League Data...</p>
-          <p className="text-xs text-slate-500 font-mono">Querying cloud serverless endpoint (/api/sync-fip)</p>
+        <div className="bg-white p-12 text-center border border-[#DDF3E9] rounded-2xl max-w-md mx-auto space-y-3 my-12 animate-pulse shadow-sm">
+          <Loader2 className="w-8 h-8 text-[#0CA17A] animate-spin mx-auto" />
+          <p className="text-sm font-bold text-[#022D32]">Syncing FIP League Data...</p>
+          <p className="text-xs text-[#022D32]/60 font-mono">Querying cloud serverless endpoint (/api/sync-fip)</p>
         </div>
       ) : (!standings || standings.length === 0) ? (
         /* Empty / Unsynced State */
-        <div className="glass-card p-8 sm:p-12 text-center border-slate-800 bg-slate-900/90 rounded-2xl max-w-xl mx-auto space-y-5 my-8 shadow-2xl animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-inner">
+        <div className="bg-white p-8 sm:p-12 text-center border border-[#DDF3E9] rounded-2xl max-w-xl mx-auto space-y-5 my-8 shadow-sm animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center mx-auto text-[#0CA17A]">
             <Trophy className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-lg sm:text-xl font-black text-slate-100 uppercase tracking-wide">
+            <h2 className="text-lg sm:text-xl font-black text-[#022D32] uppercase tracking-wide">
               {t.emptyTitle}
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[#022D32]/70">
               {t.emptyDesc}
             </p>
           </div>
 
           {/* Terminal Command Box */}
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-left font-mono text-xs text-slate-300 flex items-center justify-between gap-3 shadow-inner">
+          <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] text-left font-mono text-xs text-[#022D32] flex items-center justify-between gap-3 shadow-inner">
             <div className="flex items-center gap-2 overflow-x-auto">
-              <Terminal className="w-4 h-4 text-emerald-400 flex-none" />
-              <span className="text-slate-200">{t.emptyCmd}</span>
+              <Terminal className="w-4 h-4 text-[#0CA17A] flex-none" />
+              <span className="text-[#022D32]">{t.emptyCmd}</span>
             </div>
             <button
               type="button"
@@ -1790,7 +2135,7 @@ export default function LeagueHub({ showToast }) {
                 }
                 if (showToast) showToast(`📋 Copied: ${t.emptyCmd}`);
               }}
-              className="text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 transition-colors flex-none text-[11px] font-sans font-bold active:scale-95"
+              className="text-[#022D32]/70 hover:text-[#022D32] px-2.5 py-1 rounded bg-white hover:bg-[#DDF3E9] border border-[#DDF3E9] transition-colors flex-none text-[11px] font-sans font-bold active:scale-95 shadow-xs"
               title="Copy command to clipboard"
             >
               Copy
@@ -1798,8 +2143,8 @@ export default function LeagueHub({ showToast }) {
           </div>
 
           {fetchError && (
-            <p className="text-xs text-slate-400 font-semibold bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl">
-              Status: <span className="text-rose-400">{fetchError}</span>
+            <p className="text-xs text-[#022D32]/70 font-semibold bg-rose-50 border border-rose-200 p-2.5 rounded-xl">
+              Status: <span className="text-rose-600 font-bold">{fetchError}</span>
             </p>
           )}
 
@@ -1809,7 +2154,7 @@ export default function LeagueHub({ showToast }) {
               type="button"
               onClick={() => fetchFipData(true)}
               disabled={isSyncing}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition-all shadow-md active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-2 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
@@ -1818,9 +2163,9 @@ export default function LeagueHub({ showToast }) {
             <button
               type="button"
               onClick={handleResetToDefault}
-              className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95"
             >
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <FileText className="w-3.5 h-3.5 text-[#0CA17A]" />
               <span>{t.btnDefault}</span>
             </button>
           </div>
@@ -1833,16 +2178,16 @@ export default function LeagueHub({ showToast }) {
           {currentView === 'STANDINGS_VIEW' && (
             <div className="space-y-4 animate-fade-in">
               {/* Top Leaders Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="glass-card p-3 border-amber-500/30 bg-slate-900/90 shadow-md">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-0.5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="bg-[#022D32] p-5 rounded-2xl shadow-md">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#A7F3D0] block mb-1.5">
                     {t.standingsTitle}
                   </span>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-base font-black text-slate-100">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-base sm:text-lg font-black text-white truncate">
                       {standings[0]?.name || standings[0]?.team?.name || 'N/A'}
                     </span>
-                    <span className="font-mono text-sm font-black text-amber-400">
+                    <span className="font-mono text-base font-black text-[#0CA17A] flex-none">
                       {standings[0]?.stats?.wonMatches != null
                         ? standings[0].stats.wonMatches * 2
                         : (standings[0]?.points ?? ((standings[0]?.won ?? 0) * 2))} {t.colPts}
@@ -1850,17 +2195,17 @@ export default function LeagueHub({ showToast }) {
                   </div>
                 </div>
 
-                <div className="glass-card p-3 border-sky-500/30 bg-slate-900/90 shadow-md">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 block mb-0.5">
+                <div className="bg-[#022D32] p-5 rounded-2xl shadow-md">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#A7F3D0] block mb-1.5">
                     {t.bestRecord}
                   </span>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-base font-black text-slate-100">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-base sm:text-lg font-black text-white truncate">
                       {standings[0]?.stats
                         ? `${standings[0].stats.wonMatches}W - ${standings[0].stats.lostMatches}L`
                         : `${standings[0]?.won ?? 0}W - ${standings[0]?.lost ?? 0}L`}
                     </span>
-                    <span className="font-mono text-sm font-black text-sky-400">
+                    <span className="font-mono text-base font-black text-[#0CA17A] flex-none">
                       {(() => {
                         const won = standings[0]?.stats?.wonMatches ?? standings[0]?.won ?? 0;
                         const played = standings[0]?.stats?.playedMatches ?? standings[0]?.played ?? 0;
@@ -1870,11 +2215,11 @@ export default function LeagueHub({ showToast }) {
                   </div>
                 </div>
 
-                <div className="glass-card p-3 border-emerald-500/30 bg-slate-900/90 shadow-md">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block mb-0.5">
+                <div className="bg-[#022D32] p-5 rounded-2xl shadow-md">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#A7F3D0] block mb-1.5">
                     {t.topDiff}
                   </span>
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline justify-between gap-2">
                     {(() => {
                       const getDiff = (s) => {
                         if (s?.stats?.pointsPerGame != null && s?.stats?.opponentsPointsPerGame != null) {
@@ -1886,10 +2231,10 @@ export default function LeagueHub({ showToast }) {
                       const diffVal = getDiff(topDiffTeam);
                       return (
                         <>
-                          <span className="text-base font-black text-slate-100">
+                          <span className="text-base sm:text-lg font-black text-white truncate">
                             {topDiffTeam?.name || 'N/A'}
                           </span>
-                          <span className="font-mono text-sm font-black text-emerald-400">
+                          <span className={`font-mono text-base font-black flex-none ${diffVal > 0 ? 'text-[#0CA17A]' : (diffVal < 0 ? 'text-rose-400' : 'text-white')}`}>
                             {diffVal > 0 ? `+${diffVal}` : diffVal}
                           </span>
                         </>
@@ -1900,46 +2245,46 @@ export default function LeagueHub({ showToast }) {
               </div>
 
               {/* Standings Table Card */}
-              <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
                       {t.standingsTitle} ({filteredStandings.length} {t.playersCount})
                     </h3>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-xs sm:text-sm text-[#022D32]/75 font-medium">
                       {t.standingsSubtitle}
                     </p>
                   </div>
 
                   {/* Search Filter */}
                   <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                    <Search className="w-4 h-4 text-[#022D32]/50 absolute left-3 top-2.5" />
                     <input
                       type="text"
                       placeholder={t.filterTeam}
                       value={standingsSearch}
                       onChange={(e) => setStandingsSearch(e.target.value)}
-                      className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-48"
+                      className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl pl-9 pr-3.5 py-2 text-xs sm:text-sm text-[#022D32] placeholder-[#022D32]/50 focus:outline-none focus:border-[#0CA17A] w-52 sm:w-64 shadow-inner font-medium"
                     />
                   </div>
                 </div>
 
                 {/* Standings Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
+                <div className="overflow-x-auto rounded-xl border border-[#DDF3E9]">
+                  <table className="w-full text-left border-collapse font-sans">
                     <thead>
-                      <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                        <th className="p-3 w-12 text-center">{t.colRank}</th>
-                        <th className="p-3">{t.colTeam}</th>
-                        <th className="p-3 text-center">{t.colLast5}</th>
-                        <th className="p-3 text-center">{t.colPts}</th>
-                        <th className="p-3 text-center">{t.colRecord}</th>
-                        <th className="p-3 text-center">{t.colGp}</th>
-                        <th className="p-3 text-center">{t.colDiff}</th>
-                        <th className="p-3 text-right">{t.colScout}</th>
+                      <tr className="border-b border-[#DDF3E9] bg-[#DDF3E9] text-[#022D32] font-black uppercase text-xs sm:text-sm tracking-wider">
+                        <th className="p-3.5 w-14 text-center">{t.colRank}</th>
+                        <th className="p-3.5">{t.colTeam}</th>
+                        <th className="p-3.5 text-center">{t.colLast5}</th>
+                        <th className="p-3.5 text-center">{t.colPts}</th>
+                        <th className="p-3.5 text-center">{t.colRecord}</th>
+                        <th className="p-3.5 text-center">{t.colGp}</th>
+                        <th className="p-3.5 text-center">{t.colDiff}</th>
+                        <th className="p-3.5 text-right">{t.colScout}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/80">
+                    <tbody className="divide-y divide-[#DDF3E9]/80">
                       {filteredStandings.map((team, idx) => {
                         const tFid = team.fid || team.teamFid || `team_${idx + 1}`;
                         const tName = team.name || `Team #${idx + 1}`;
@@ -1963,79 +2308,81 @@ export default function LeagueHub({ showToast }) {
                             onClick={() => { if (!isBBA) handleSelectTeam(team.fid || tFid); }}
                             className={`transition-colors ${
                               isBBA 
-                                ? 'bg-sky-950/20 border-l-2 border-sky-400 cursor-default' 
-                                : 'hover:bg-slate-800/50 cursor-pointer'
+                                ? 'bg-[#DDF3E9]/60 border-l-4 border-[#0CA17A] cursor-default' 
+                                : `${idx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/20'} hover:bg-[#DDF3E9]/50 cursor-pointer`
                             }`}
                           >
-                            <td className="p-3 text-center font-mono font-black">
-                              <span className={`w-6 h-6 rounded-full inline-flex items-center justify-center text-xs ${
+                            <td className="p-3.5 text-center font-mono font-black">
+                              <span className={`w-7 h-7 rounded-full inline-flex items-center justify-center text-xs sm:text-sm ${
                                 isPlayoff
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                                   : isPlayout
-                                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                                    : 'bg-slate-800 text-slate-300'
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                    : 'bg-gray-100 text-gray-700'
                               }`}>
                                 {rankNum}
                               </span>
                             </td>
-                            <td className="p-3 font-black text-slate-100 flex items-center gap-2">
-                              <span className="text-sm">{tName}</span>
-                              {isBBA && (
-                                <span className="text-[9px] bg-sky-500/20 text-sky-300 font-bold px-1.5 py-0.5 rounded border border-sky-500/40">
-                                  {t.ourTeam}
-                                </span>
-                              )}
+                            <td className="p-3.5 font-black text-[#022D32]">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm sm:text-base">{tName}</span>
+                                {isBBA && (
+                                  <span className="text-[10px] sm:text-xs bg-[#DDF3E9] text-[#022D32] font-black px-2 py-0.5 rounded border border-[#0CA17A]/40">
+                                    {t.ourTeam}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             {/* Streak / Last 5 */}
-                            <td className="p-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
+                            <td className="p-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
                                 {Array.isArray(team.streak) && team.streak.length > 0 ? (
                                   team.streak.slice(-5).map((res, sIdx) => (
                                     <span
                                       key={sIdx}
-                                      className={`w-4 h-4 rounded-full font-mono text-[9px] font-black flex items-center justify-center border shadow-sm ${
+                                      className={`w-5 h-5 rounded-full font-mono text-[10px] sm:text-xs font-black flex items-center justify-center border shadow-xs ${
                                         res === 'W'
-                                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                                          : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                          : 'bg-rose-100 text-rose-800 border-rose-300'
                                       }`}
                                     >
                                       {res}
                                     </span>
                                   ))
                                 ) : (
-                                  <span className="text-slate-500 font-mono text-xs">-</span>
+                                  <span className="text-[#022D32]/50 font-mono text-sm">-</span>
                                 )}
                               </div>
                             </td>
-                            <td className="p-3 text-center font-mono font-black text-amber-400 text-sm">
+                            <td className="p-3.5 text-center font-mono font-black text-[#022D32] text-sm sm:text-base">
                               {pts}
                             </td>
-                            <td className="p-3 text-center font-mono font-bold text-slate-200">
-                              <span className="text-emerald-400">{won}</span>
-                              <span className="text-slate-500 mx-1">-</span>
-                              <span className="text-rose-400">{lost}</span>
+                            <td className="p-3.5 text-center font-mono font-bold text-sm sm:text-base text-[#022D32]">
+                              <span className="text-emerald-700 font-black">{won}</span>
+                              <span className="text-[#022D32]/40 mx-1">-</span>
+                              <span className="text-rose-700 font-black">{lost}</span>
                             </td>
-                            <td className="p-3 text-center font-mono text-slate-400">
+                            <td className="p-3.5 text-center font-mono text-sm sm:text-base text-[#022D32] font-bold">
                               {gp}
                             </td>
-                            <td className="p-3 text-center font-mono font-black">
-                              <span className={Number(diff) > 0 ? 'text-emerald-400' : (Number(diff) < 0 ? 'text-rose-400' : 'text-slate-400')}>
+                            <td className="p-3.5 text-center font-mono font-black text-sm sm:text-base">
+                              <span className={Number(diff) > 0 ? 'text-emerald-700' : (Number(diff) < 0 ? 'text-rose-700' : 'text-[#022D32]')}>
                                 {Number(diff) > 0 ? `+${diff}` : diff}
                               </span>
                             </td>
-                            <td className="p-3 text-right">
+                            <td className="p-3.5 text-right">
                               {isBBA ? (
-                                <span className="text-slate-600 font-bold px-2 py-1 select-none text-xs">
+                                <span className="text-[#022D32]/40 font-bold px-2 py-1 select-none text-xs sm:text-sm">
                                   —
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={(e) => { e.stopPropagation(); handleSelectTeam(team.fid || tFid); }}
-                                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded text-xs transition-all inline-flex items-center gap-1 shadow-sm active:scale-95"
+                                  className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-bold px-3 py-1.5 rounded-xl text-xs sm:text-sm transition-all inline-flex items-center gap-1 shadow-xs active:scale-95 cursor-pointer"
                                 >
                                   <span>{t.btnScout}</span>
-                                  <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                                  <ChevronRight className="w-4 h-4 text-white" />
                                 </button>
                               )}
                             </td>
@@ -2053,25 +2400,25 @@ export default function LeagueHub({ showToast }) {
           {/* VIEW B: TEAM DETAIL VIEW (LINEUP STATS & DYNAMIC ALERTS)                  */}
           {/* ========================================================================= */}
           {currentView === 'TEAM_DETAIL_VIEW' && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-5 animate-fade-in">
               {/* Back Navigation Bar */}
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={handleBackToStandings}
-                  className="bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-black px-3.5 py-2 rounded-xl text-xs inline-flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+                  className="bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm inline-flex items-center gap-2 transition-all active:scale-95 shadow-xs cursor-pointer"
                 >
-                  <ArrowLeft className="w-4 h-4 text-amber-400" />
+                  <ArrowLeft className="w-4 h-4 text-[#0CA17A]" />
                   <span>← {t.btnBack}</span>
                 </button>
 
                 {/* Team Switcher Dropdown */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase hidden sm:inline">{t.quickSwitch}</span>
+                  <span className="text-xs sm:text-sm font-bold text-[#022D32]/80 uppercase hidden sm:inline">{t.quickSwitch}</span>
                   <select
                     value={selectedTeamFid || ''}
                     onChange={(e) => handleSelectTeam(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold p-2 rounded-xl focus:outline-none focus:border-amber-400 cursor-pointer"
+                    className="bg-white border border-[#DDF3E9] text-[#022D32] text-xs sm:text-sm font-bold p-2.5 rounded-xl focus:outline-none focus:border-[#0CA17A] cursor-pointer shadow-xs"
                   >
                     {standings
                       .filter(s => {
@@ -2086,7 +2433,7 @@ export default function LeagueHub({ showToast }) {
                         const pts = s.stats?.wonMatches != null ? s.stats.wonMatches * 2 : (s.points ?? ((s.won ?? 0) * 2));
                         const pos = s.position ?? s.rank ?? '-';
                         return (
-                          <option key={fid} value={fid} className="bg-slate-900 text-slate-100">
+                          <option key={fid} value={fid} className="bg-white text-[#022D32]">
                             #{pos} {name} ({pts} {t.colPts})
                           </option>
                         );
@@ -2095,537 +2442,1321 @@ export default function LeagueHub({ showToast }) {
                 </div>
               </div>
 
-              {/* Team Profile Header Card */}
-              <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h2 className="text-xl sm:text-2xl font-black text-rose-400 uppercase tracking-wider">
-                        {currentTeamStanding?.name || selectedTeamFid}
-                      </h2>
-                      <span className="text-[10px] bg-slate-950 text-slate-300 font-bold px-2 py-0.5 rounded border border-slate-800">
-                        {t.division}
-                      </span>
-                      {continuityPct != null && (
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-                          <Users className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>
-                            {(t.continuityBadge || 'Confermati dal {season}: {pct}%')
-                              .replace('{season}', activeSeasonInfo.prevShort)
-                              .replace('{pct}', continuityPct)}
+              {/* Team Overview Header Banner */}
+              {(() => {
+                const won = currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0;
+                const lost = currentTeamStanding?.stats?.lostMatches ?? currentTeamStanding?.lost ?? 0;
+                const teamPpg = currentTeamStanding?.stats?.pointsPerGame != null 
+                  ? Number(currentTeamStanding.stats.pointsPerGame).toFixed(1) 
+                  : (currentTeamStanding?.pointsPerGame != null ? Number(currentTeamStanding.pointsPerGame).toFixed(1) : '—');
+                const teamOppPpg = currentTeamStanding?.stats?.opponentsPointsPerGame != null 
+                  ? Number(currentTeamStanding.stats.opponentsPointsPerGame).toFixed(1) 
+                  : (currentTeamStanding?.opponentsPointsPerGame != null ? Number(currentTeamStanding.opponentsPointsPerGame).toFixed(1) : '—');
+                const diffVal = (currentTeamStanding?.stats?.pointsPerGame != null && currentTeamStanding?.stats?.opponentsPointsPerGame != null)
+                  ? (currentTeamStanding.stats.pointsPerGame - currentTeamStanding.stats.opponentsPointsPerGame).toFixed(1)
+                  : (currentTeamStanding?.pointDiff != null ? Number(currentTeamStanding.pointDiff).toFixed(1) : '0.0');
+                const rankNum = currentTeamStanding?.position ?? currentTeamStanding?.rank ?? '-';
+
+                return (
+                  <div className="bg-white p-5 sm:p-7 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
+                          <h2 className="text-2xl sm:text-4xl font-black text-[#022D32] uppercase tracking-wide">
+                            {currentTeamStanding?.name || selectedTeamFid}
+                          </h2>
+                          <span className="text-xs sm:text-sm bg-[#DDF3E9] text-[#022D32] font-black px-3 py-1 rounded-lg border border-[#DDF3E9]">
+                            #{rankNum} IN CLASSIFICA
                           </span>
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-400 font-medium">
-                      {t.scoutProfileSubtitle} • {currentRoster.length} {t.trackedPlayers}
-                    </p>
-                  </div>
-
-                  {/* Standing points pill */}
-                  <div className="text-right">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.colRank}
-                    </span>
-                    <div className="font-mono text-xl font-black text-amber-400">
-                      {currentTeamStanding?.stats?.wonMatches != null 
-                        ? currentTeamStanding.stats.wonMatches * 2 
-                        : (currentTeamStanding?.points ?? ((currentTeamStanding?.won ?? 0) * 2))} {t.colPts}
-                      <span className="text-xs text-slate-300 font-semibold ml-1.5">
-                        (#{currentTeamStanding?.position ?? currentTeamStanding?.rank ?? '-'})
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Team Stats Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mt-4 pt-4 border-t border-slate-800/80">
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.statRecord}
-                    </span>
-                    <span className="font-mono text-xl font-black text-slate-200">
-                      {currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0}W - {currentTeamStanding?.stats?.lostMatches ?? currentTeamStanding?.lost ?? 0}L
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.statWinRate}
-                    </span>
-                    <span className="font-mono text-xl font-black text-sky-400">
-                      {(() => {
-                        const won = currentTeamStanding?.stats?.wonMatches ?? currentTeamStanding?.won ?? 0;
-                        const played = currentTeamStanding?.stats?.playedMatches ?? currentTeamStanding?.played ?? 0;
-                        return played > 0 ? `${Math.round((won / played) * 100)}%` : '-';
-                      })()}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.statDiff}
-                    </span>
-                    {(() => {
-                      const diffVal = (currentTeamStanding?.stats?.pointsPerGame != null && currentTeamStanding?.stats?.opponentsPointsPerGame != null)
-                        ? (currentTeamStanding.stats.pointsPerGame - currentTeamStanding.stats.opponentsPointsPerGame).toFixed(1)
-                        : (currentTeamStanding?.pointDiff != null ? Number(currentTeamStanding.pointDiff).toFixed(1) : '0.0');
-                      return (
-                        <span className={`font-mono text-xl font-black ${Number(diffVal) > 0 ? 'text-emerald-400' : (Number(diffVal) < 0 ? 'text-rose-400' : 'text-slate-400')}`}>
-                          {Number(diffVal) > 0 ? `+${diffVal}` : diffVal}
-                        </span>
-                      );
-                    })()}
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {t.statRosterSize}
-                    </span>
-                    <span className="font-mono text-xl font-black text-amber-400">
-                      {currentRoster.length} {t.playersCount}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 col-span-2 sm:col-span-1">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">
-                      {(t.statContinuity || 'CONTINUITÀ {season}').replace('{season}', activeSeasonInfo.prevShort)}
-                    </span>
-                    <span className="font-mono text-xl font-black text-emerald-400 flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-emerald-400" />
-                      {continuityPct}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ===================================================================== */}
-              {/* AUTOMATED SCOUTING SUMMARY / KEY MATCHUPS (TEAM SCOPE THREATS)        */}
-              {/* ===================================================================== */}
-              <div className="glass-card p-4 sm:p-5 border-slate-700/80 bg-slate-900/90 shadow-xl space-y-3.5">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                        {t.scoutingSummaryTitle || 'SCOUTING SUMMARY / KEY MATCHUPS'}
-                      </h3>
-                      <p className="text-[11px] text-slate-400 font-medium">
-                        {t.scoutingSummarySubtitle || 'Ruoli e pericoli tattici calcolati sulle statistiche effettive in questa squadra (Team Scope)'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowLegendModal(true)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer"
-                    >
-                      <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{t.legendBtn || 'Legenda Tag'}</span>
-                    </button>
-                    <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                      {teamTacticalGroups.length} {t.activeCategories || 'CATEGORIE ATTIVE'}
-                    </span>
-                  </div>
-                </div>
-
-                {teamTacticalGroups.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {teamTacticalGroups.map(({ config: tag, players }) => (
-                      <div 
-                        key={tag.id}
-                        className={`p-3.5 rounded-xl border ${tag.badgeClass} bg-slate-950/60 flex flex-col justify-between space-y-2.5 shadow-sm`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg select-none">{tag.icon}</span>
-                            <span className="font-black text-xs uppercase tracking-wide text-white">
-                              {lang === 'it' ? tag.labelIt : tag.label}
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-mono font-bold bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-amber-300">
-                            {players.length}
+                          <span className="text-xs sm:text-sm bg-[#F8F9FA] text-[#022D32]/80 font-bold px-3 py-1 rounded-lg border border-[#DDF3E9]">
+                            {t.division}
                           </span>
                         </div>
+                        <p className="text-xs sm:text-sm text-[#022D32]/80 font-semibold">
+                          {t.scoutProfileSubtitle} • {currentRoster.length} {t.trackedPlayers}
+                        </p>
+                      </div>
 
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {players.map(p => (
-                            <button
-                              key={p.fid}
-                              type="button"
-                              onClick={() => setSelectedPlayer(p)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
-                              title={`Apri profilo ${p.name}`}
-                            >
-                              <span className="text-rose-400 font-mono font-black">#{p.number}</span>
-                              <span className="truncate max-w-[130px]">{p.name}</span>
-                            </button>
-                          ))}
+                      {/* Continuity badge in header */}
+                      {continuityPct != null && (
+                        <div className="bg-[#DDF3E9] border border-[#0CA17A]/30 rounded-xl px-4 py-2 flex items-center gap-2.5 shadow-xs">
+                          <Users className="w-5 h-5 text-[#0CA17A]" />
+                          <div>
+                            <span className="text-[10px] sm:text-xs font-black uppercase text-[#022D32]/70 block">
+                              {(t.statContinuity || 'CONTINUITÀ {season}').replace('{season}', activeSeasonInfo.prevShort)}
+                            </span>
+                            <span className="font-mono text-base sm:text-lg font-black text-[#0CA17A]">
+                              {continuityPct}%
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Team Stats Strip - 5 Primary Cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3.5 pt-4 border-t border-[#DDF3E9]">
+                      {/* 1. Record */}
+                      <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-center shadow-md flex flex-col justify-between">
+                        <div>
+                          <span className="font-mono text-2xl sm:text-3xl font-black text-white block">
+                            {won}W - {lost}L
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1.5">
+                            {t.statRecord}
+                          </span>
                         </div>
                       </div>
-                    ))}
+
+                      {/* 2. Punti Segnati / Gara + Volatility Index Badge */}
+                      <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-center shadow-md flex flex-col justify-between">
+                        <div>
+                          <span className="font-mono text-2xl sm:text-3xl font-black text-[#0CA17A] block">
+                            {teamPpg} <span className="text-xs sm:text-sm font-sans font-bold text-white/70">PTS/G</span>
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1.5">
+                            {t.statPtsScored || 'PUNTI SEGNATI / GARA'}
+                          </span>
+                        </div>
+                        {volatilityMetric && (
+                          <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-center">
+                            <span 
+                              className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 shadow-2xs ${volatilityMetric.badgeColor}`}
+                              title={volatilityMetric.badgeDesc}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${volatilityMetric.dotColor}`} />
+                              <span>{volatilityMetric.badgeText}</span>
+                              <span className="font-mono text-[9px] font-black opacity-80">(σ {volatilityMetric.stdDev})</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3. Punti Subiti / Gara */}
+                      <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-center shadow-md flex flex-col justify-between">
+                        <div>
+                          <span className="font-mono text-2xl sm:text-3xl font-black text-rose-400 block">
+                            {teamOppPpg} <span className="text-xs sm:text-sm font-sans font-bold text-white/70">PTS/G</span>
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1.5">
+                            {t.statPtsConceded || 'PUNTI SUBITI / GARA'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 4. Differenziale (+/-) */}
+                      <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-center shadow-md flex flex-col justify-between">
+                        <div>
+                          <span className={`font-mono text-2xl sm:text-3xl font-black block ${Number(diffVal) > 0 ? 'text-[#0CA17A]' : (Number(diffVal) < 0 ? 'text-rose-400' : 'text-white')}`}>
+                            {Number(diffVal) > 0 ? `+${diffVal}` : diffVal}
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1.5">
+                            {t.statDiff}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 5. Roster Continuity */}
+                      <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-center shadow-md col-span-2 sm:col-span-1 flex flex-col justify-between">
+                        <div>
+                          <span className="font-mono text-2xl sm:text-3xl font-black text-white block">
+                            {continuityPct != null ? `${continuityPct}%` : '—'}
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1.5">
+                            ROSTER RETENTION
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 text-center italic">
-                    {t.noTeamThreats || 'Nessun giocatore avversario supera le soglie estreme di volume per i tag tattici primari.'}
-                  </div>
-                )}
+                );
+              })()}
+
+              {/* ===================================================================== */}
+              {/* SUB-NAVIGATION TABS: ROSTER & STATISTICHE vs ANALISI & TREND          */}
+              {/* ===================================================================== */}
+              <div className="flex items-center gap-2.5 border-b border-[#DDF3E9] pb-2">
+                <button
+                  type="button"
+                  onClick={() => setTeamDetailTab('roster')}
+                  className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+                    teamDetailTab === 'roster'
+                      ? 'bg-[#022D32] text-white shadow-md'
+                      : 'bg-white text-[#022D32] hover:bg-[#F8F9FA] border border-[#DDF3E9]'
+                  }`}
+                >
+                  <Users className={`w-4 h-4 ${teamDetailTab === 'roster' ? 'text-[#0CA17A]' : 'text-[#022D32]/60'}`} />
+                  <span>{t.tabRoster || 'ROSTER & STATISTICHE'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTeamDetailTab('trends')}
+                  className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+                    teamDetailTab === 'trends'
+                      ? 'bg-[#022D32] text-white shadow-md'
+                      : 'bg-white text-[#022D32] hover:bg-[#F8F9FA] border border-[#DDF3E9]'
+                  }`}
+                >
+                  <TrendingUp className={`w-4 h-4 ${teamDetailTab === 'trends' ? 'text-[#0CA17A]' : 'text-[#022D32]/60'}`} />
+                  <span>{t.tabTrends || 'ANALISI & TREND'}</span>
+                </button>
               </div>
 
-              {/* Roster Table Card */}
-              <div className="glass-card p-4 sm:p-5 border-slate-800 bg-slate-900/90 shadow-xl space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                      {t.rosterTitle} ({filteredRoster.length} {t.playersCount})
-                    </h3>
-                    <p className="text-[11px] text-slate-400">
-                      {t.rosterSubtitle}
-                    </p>
+              {/* TAB 1: ROSTER & STATISTICHE (KEY MATCHUPS + ROSTER TABLE) */}
+              {teamDetailTab === 'roster' && (
+                <div className="space-y-5 animate-fade-in">
+                  {/* Automated Scouting Summary / Key Matchups */}
+                  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3.5 border-b border-[#DDF3E9] flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                          <Shield className="w-5 h-5 text-[#0CA17A]" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm sm:text-base font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                            {t.scoutingSummaryTitle || 'SCOUTING SUMMARY / KEY MATCHUPS'}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#022D32]/75 font-medium">
+                            {t.scoutingSummarySubtitle || 'Ruoli e pericoli tattici calcolati sulle statistiche effettive in questa squadra (Team Scope)'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setShowLegendModal(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9] border border-[#DDF3E9] text-[#022D32] text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <HelpCircle className="w-4 h-4 text-[#0CA17A]" />
+                          <span>{t.legendBtn || 'Legenda Tag'}</span>
+                        </button>
+                        <span className="text-xs font-mono font-black text-[#022D32] bg-[#DDF3E9] px-3 py-1 rounded-lg border border-[#0CA17A]/40">
+                          {teamTacticalGroups.length} {t.activeCategories || 'CATEGORIE ATTIVE'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {teamTacticalGroups.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        {teamTacticalGroups.map(({ config: tag, players }) => (
+                          <div 
+                            key={tag.id}
+                            className={`p-4 rounded-2xl border ${tag.badgeClass} flex flex-col justify-between space-y-3 shadow-xs`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl select-none">{tag.icon}</span>
+                                <span className="font-black text-xs sm:text-sm uppercase tracking-wide text-[#022D32]">
+                                  {lang === 'it' ? tag.labelIt : tag.label}
+                                </span>
+                              </div>
+                              <span className="text-xs font-mono font-bold bg-white border border-[#DDF3E9] px-2.5 py-0.5 rounded text-[#022D32]">
+                                {players.length}
+                              </span>
+                            </div>
+
+                            {/* Player Badges - FULL NAMES ALWAYS DISPLAYED */}
+                            <div className="flex flex-wrap gap-2 pt-1.5">
+                              {players.map(p => (
+                                <button
+                                  key={p.fid}
+                                  type="button"
+                                  onClick={() => setSelectedPlayer(p)}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] text-xs sm:text-sm font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
+                                  title={`Apri profilo ${p.name}`}
+                                >
+                                  <span className="text-[#065F46] font-mono font-black text-xs sm:text-sm">#{p.number}</span>
+                                  <span className="font-bold text-[#022D32] whitespace-nowrap">{p.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-[#F8F9FA] border border-[#DDF3E9] text-xs sm:text-sm text-[#022D32]/70 text-center italic font-medium">
+                        {t.noTeamThreats || 'Nessun giocatore avversario supera le soglie estreme di volume per i tag tattici primari.'}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Filter Search Bar (Sorting select removed in favor of clickable headers) */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                      <input
-                        type="text"
-                        placeholder={t.searchPlayer}
-                        value={rosterSearch}
-                        onChange={(e) => setRosterSearch(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 w-48 sm:w-56"
-                      />
+                  {/* Roster Table Card */}
+                  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                          {t.rosterTitle} ({filteredRoster.length} {t.playersCount})
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#022D32]/75 font-medium">
+                          {t.rosterSubtitle}
+                        </p>
+                      </div>
+
+                      {/* Filter Search Bar */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="relative">
+                          <Search className="w-4 h-4 text-[#022D32]/50 absolute left-3 top-3" />
+                          <input
+                            type="text"
+                            placeholder={t.searchPlayer}
+                            value={rosterSearch}
+                            onChange={(e) => setRosterSearch(e.target.value)}
+                            className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl pl-9 pr-3.5 py-2 text-xs sm:text-sm text-[#022D32] placeholder-[#022D32]/40 focus:outline-none focus:border-[#0CA17A] w-52 sm:w-64 shadow-inner font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Roster Table with Clickable Column Headers */}
+                    <div className="overflow-x-auto rounded-xl border border-[#DDF3E9]">
+                      <table className="w-full text-left text-xs sm:text-sm border-collapse font-sans">
+                        <thead>
+                          <tr className="border-b border-[#DDF3E9] bg-[#DDF3E9] text-[#022D32] font-black uppercase text-xs sm:text-sm tracking-wider select-none">
+                            <th 
+                              onClick={() => handleSort('number')}
+                              className={`p-3.5 sm:p-4 w-14 text-center cursor-pointer transition-colors group ${sortConfig.key === 'number' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Numero di maglia"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colNumber || '#'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'number' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'number' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('name')}
+                              className={`p-3.5 sm:p-4 min-w-[240px] text-left cursor-pointer transition-colors group ${sortConfig.key === 'name' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Nome giocatore"
+                            >
+                              <div className="flex items-center justify-start gap-1.5">
+                                <span>{t.colNamePos || 'NOME & RUOLO'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'name' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('games')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'games' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Partite Giocate (GP)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colGp || 'GP'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'games' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'games' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('timePlayedAVG')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'timePlayedAVG' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Media Minuti Giocati (MM:SS)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span className="text-[#022D32] font-black">{t.colMin || 'MIN'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'timePlayedAVG' ? 'text-[#022D32] font-black' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'timePlayedAVG' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            {/* QUINTETTO % (START %) COLUMN */}
+                            <th 
+                              onClick={() => handleSort('startPercentage')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'startPercentage' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Percentuale di Partenza in Quintetto (START %)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span className="text-[#022D32] font-black">{t.colStartPct || 'START %'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'startPercentage' ? 'text-[#022D32] font-black' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'startPercentage' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('pointsPerGame')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'pointsPerGame' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Punti a Partita (PTS/G)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colPpg || 'PTS/G'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'pointsPerGame' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'pointsPerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('twoMadePerGame')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'twoMadePerGame' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Canestri da 2 Segnati a Partita (2PM/G)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.col2pm || '2PM/G'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'twoMadePerGame' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'twoMadePerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('threeMadePerGame')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'threeMadePerGame' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Triple Segnate a Partita (3PM/G)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.col3pm || '3PM/G'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'threeMadePerGame' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'threeMadePerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('freeThrowsPercentage')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'freeThrowsPercentage' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Percentuale ai Tiri Liberi (FT%)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colFt || 'FT%'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'freeThrowsPercentage' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'freeThrowsPercentage' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('foulsAVG')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'foulsAVG' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Falli Commessi a Partita (FF/P)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colFouls || 'FF/P'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'foulsAVG' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'foulsAVG' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th 
+                              onClick={() => handleSort('plusMinus')}
+                              className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'plusMinus' ? 'text-[#022D32] font-black bg-[#C6E8DB]' : 'text-[#022D32]/80 hover:text-[#0CA17A]'}`}
+                              title="Ordina per Plus / Minus (+/-)"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <span>{t.colPlusMinus || '+/-'}</span>
+                                <span className={`text-xs leading-none ${sortConfig.key === 'plusMinus' ? 'text-[#0CA17A] font-bold' : 'opacity-0 group-hover:opacity-40 text-[#022D32]/50'}`}>
+                                  {sortConfig.key === 'plusMinus' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                                </span>
+                              </div>
+                            </th>
+
+                            <th className="p-3.5 sm:p-4 text-left min-w-[130px]">{t.colAlerts || 'ALERT'}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#DDF3E9]/80">
+                          {filteredRoster.length === 0 ? (
+                            <tr>
+                              <td colSpan={12} className="p-8 text-center text-[#022D32]/60">
+                                <User className="w-8 h-8 text-[#022D32]/30 mx-auto mb-2 opacity-50" />
+                                <p className="font-bold text-[#022D32]">{t.noPlayersTitle}</p>
+                                <p className="text-xs text-[#022D32]/60 mt-1">
+                                  {rosterSearch.trim() ? `${t.noPlayersSearch} "${rosterSearch}"` : t.noPlayersDesc}
+                                </p>
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredRoster.map((p, pIdx) => {
+                              const isFoulTarget = p.foulsAVG > 3.0;
+
+                              // 3 Scopes for Multi-Level Tactical Tags
+                              // A. Team Scope
+                              const teamTags = getTacticalTags(p.stats || p, p.games || p.stats?.games || 0).tags;
+
+                              // B. Season Scope
+                              const hist = Array.isArray(p.history) && p.history.length > 0 
+                                ? p.history 
+                                : (Array.isArray(p.uniquePlayer?.history) ? p.uniquePlayer.history : []);
+                              const currSeason = hist.find(h => {
+                                const str = String(h.seasonName || h.seasonId || '');
+                                return str.includes('2025') || str.includes('25/26');
+                              }) || hist[0];
+                              const seasonTags = currSeason 
+                                ? getTacticalTags(currSeason, currSeason.games).tags 
+                                : (p.games > 0 ? teamTags : []);
+
+                              // C. Career Scope
+                              const careerTags = p.uniquePlayer?.stats 
+                                ? getTacticalTags(p.uniquePlayer.stats, p.uniquePlayer.stats.games).tags 
+                                : [];
+
+                              const startPctNum = parseInt(p.startPercentage || 0, 10);
+
+                              return (
+                                <tr
+                                  key={p.fid}
+                                  onClick={() => setSelectedPlayer(p)}
+                                  className={`${pIdx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/20'} hover:bg-[#DDF3E9]/50 cursor-pointer transition-colors`}
+                                >
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-black text-[#022D32] text-sm sm:text-base">
+                                    #{p.number}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 min-w-[240px]">
+                                    <div className="flex flex-col gap-1.5">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-black text-[#022D32] text-sm sm:text-base">{p.name}</span>
+                                        {p.captain && (
+                                          <span className="text-[10px] sm:text-xs font-black uppercase bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40 px-2 py-0.5 rounded">
+                                            CAP
+                                          </span>
+                                        )}
+                                      </div>
+                                      {p.position && p.position.trim() && p.position.trim().toLowerCase() !== 'player' && (
+                                        <span className="text-xs text-[#022D32]/80 font-bold">{p.position}</span>
+                                      )}
+
+                                      {/* Compact Multi-Level Tactical Tags Breakdown */}
+                                      <div className="flex items-center gap-2 mt-0.5 text-xs font-mono select-none flex-wrap">
+                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
+                                          <span className="text-[10px] sm:text-xs font-black text-[#022D32]/70 uppercase tracking-tight">Team:</span>
+                                          {teamTags.length > 0 ? (
+                                            <span className="inline-flex items-center gap-1">
+                                              {teamTags.map(t => (
+                                                <span 
+                                                  key={t.id}
+                                                  title={`Team: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
+                                                  className="cursor-help hover:scale-125 transition-transform inline-block select-none text-xs sm:text-sm"
+                                                >
+                                                  {t.icon}
+                                                </span>
+                                              ))}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[#022D32]/40 font-sans text-xs">—</span>
+                                          )}
+                                        </span>
+
+                                        <span className="text-[#022D32]/30 text-xs">|</span>
+
+                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
+                                          <span className="text-[10px] sm:text-xs font-black text-[#022D32]/70 uppercase tracking-tight">Season:</span>
+                                          {seasonTags.length > 0 ? (
+                                            <span className="inline-flex items-center gap-1">
+                                              {seasonTags.map(t => (
+                                                <span 
+                                                  key={t.id}
+                                                  title={`Season: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
+                                                  className="cursor-help hover:scale-125 transition-transform inline-block select-none text-xs sm:text-sm"
+                                                >
+                                                  {t.icon}
+                                                </span>
+                                              ))}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[#022D32]/40 font-sans text-xs">—</span>
+                                          )}
+                                        </span>
+
+                                        <span className="text-[#022D32]/30 text-xs">|</span>
+
+                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
+                                          <span className="text-[10px] sm:text-xs font-black text-[#022D32]/70 uppercase tracking-tight">Career:</span>
+                                          {careerTags.length > 0 ? (
+                                            <span className="inline-flex items-center gap-1">
+                                              {careerTags.map(t => (
+                                                <span 
+                                                  key={t.id}
+                                                  title={`Career: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
+                                                  className="cursor-help hover:scale-125 transition-transform inline-block select-none text-xs sm:text-sm"
+                                                >
+                                                  {t.icon}
+                                                </span>
+                                              ))}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[#022D32]/40 font-sans text-xs">—</span>
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                    {p.games}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                    {formatMinutes(p.timePlayedAVG || p.stats?.timePlayedAVG)}
+                                  </td>
+                                  {/* QUINTETTO % CELL */}
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
+                                    <span className={`px-2.5 py-1 rounded-md font-mono font-black ${
+                                      startPctNum >= 80 
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                                        : startPctNum >= 50
+                                          ? 'bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/30'
+                                          : 'text-[#022D32]/50'
+                                    }`}>
+                                      {p.startPercentage || '0%'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-black text-[#022D32] text-sm sm:text-base">
+                                    {p.pointsAVG != null ? p.pointsAVG.toFixed(1) : '0.0'}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                    {p.twoMadeAVG != null ? p.twoMadeAVG.toFixed(1) : '0.0'}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                    {p.threeMadeAVG != null ? p.threeMadeAVG.toFixed(1) : '0.0'}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                    {p.ftPct ? `${p.ftPct}%` : '—'}
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
+                                    <span className={`px-2.5 py-1 rounded-md ${
+                                      isFoulTarget ? 'bg-rose-100 text-rose-800 border border-rose-300 font-black' : 'text-[#022D32]'
+                                    }`}>
+                                      {p.foulsAVG != null ? p.foulsAVG.toFixed(1) : '0.0'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5 sm:p-4 text-center font-mono font-black text-xs sm:text-sm">
+                                    <span className={`px-2.5 py-1 rounded-md ${
+                                      p.plusMinusAVG > 0 
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                                        : p.plusMinusAVG < 0 
+                                          ? 'bg-rose-100 text-rose-800 border border-rose-300' 
+                                          : 'text-[#022D32]'
+                                    }`}>
+                                      {p.plusMinusAVG > 0 ? `+${p.plusMinusAVG.toFixed(1)}` : (p.plusMinusAVG != null ? p.plusMinusAVG.toFixed(1) : '0.0')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5 sm:p-4">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {teamTags.length > 0 ? (
+                                        teamTags.slice(0, 2).map(tag => (
+                                          <span 
+                                            key={tag.id}
+                                            className={`text-xs font-bold px-2 py-1 rounded-lg border ${tag.badgeClass} flex items-center gap-1 shadow-xs`}
+                                            title={`${tag.icon} ${lang === 'it' ? tag.labelIt : tag.label}`}
+                                          >
+                                            <span>{tag.icon}</span>
+                                            <span className="hidden sm:inline">{lang === 'it' ? tag.labelIt : tag.label}</span>
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <span className="text-xs text-[#022D32]/40 font-mono">—</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Roster Table with Clickable Column Headers */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse font-sans">
-                    <thead>
-                      <tr className="border-b border-slate-800 bg-slate-950 text-slate-400 font-black uppercase text-[10px] tracking-wider select-none">
-                        <th 
-                          onClick={() => handleSort('number')}
-                          className={`p-3 w-12 text-center cursor-pointer transition-colors group ${sortConfig.key === 'number' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Numero di maglia"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colNumber || '#'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'number' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'number' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+              {/* TAB 2: DEDICATED "ANALISI & TREND" TEAM MODULE */}
+              {teamDetailTab === 'trends' && (() => {
+                const trends = currentTrends || {
+                  global: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+                  home: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+                  away: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+                  quarters: { Q1: { scored: 0, conceded: 0 }, Q2: { scored: 0, conceded: 0 }, Q3: { scored: 0, conceded: 0 }, Q4: { scored: 0, conceded: 0 } },
+                  quarterAverages: {},
+                  streak: [],
+                  log: []
+                };
+
+                const streak = Array.isArray(trends.streak) ? trends.streak : [];
+                const streakWins = streak.filter(s => s === 'V' || s === 'W').length;
+                const streakLosses = streak.filter(s => s === 'P' || s === 'L').length;
+
+                const homeStats = trends.home || { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 };
+                const awayStats = trends.away || { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 };
+                const homeDiff = homeStats.games > 0 ? Number(((homeStats.pointsScored - homeStats.pointsConceded) / homeStats.games).toFixed(1)) : 0;
+                const awayDiff = awayStats.games > 0 ? Number(((awayStats.pointsScored - awayStats.pointsConceded) / awayStats.games).toFixed(1)) : 0;
+
+                const quarterAverages = trends.quarterAverages || {};
+                const g = trends.global?.games || 0;
+                const matchLog = Array.isArray(trends.log) ? trends.log : [];
+
+                return (
+                  <div className="space-y-8 animate-fade-in">
+                    {/* SECTION 1: PANORAMICA & MOMENTUM (CSS Grid 3 cols, independent floating white cards) */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                          <Flame className="w-4 h-4 text-[#0CA17A]" />
+                          {t.trendsOverviewTitle || 'PANORAMICA & MOMENTUM'}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {lang === 'it' 
+                            ? 'Striscia recente, consistenza offensiva e variazione tra primo e secondo tempo'
+                            : 'Recent streak, offensive volatility index, and second half progression'}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                        {/* 1A. Forma Attuale / Striscia */}
+                        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-bold">
+                              {t.streakTitle || 'FORMA ATTUALE / STRISCIA'}
+                            </span>
+                            {streak.length > 0 && (
+                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                {streakWins}V - {streakLosses}P
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32]">
+                              {streak.length > 0 ? `${Math.round((streakWins / streak.length) * 100)}%` : '—'}
+                            </div>
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mt-1">
+                              {lang === 'it' ? `Vittorie ultime ${streak.length} gare` : `Win rate last ${streak.length} games`}
                             </span>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('name')}
-                          className={`p-3 min-w-[220px] text-left cursor-pointer transition-colors group ${sortConfig.key === 'name' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Nome giocatore"
-                        >
-                          <div className="flex items-center justify-start gap-1">
-                            <span>{t.colNamePos || 'NOME & RUOLO'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'name' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                          {streak.length > 0 ? (
+                            <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100">
+                              {streak.map((res, sIdx) => {
+                                const isWin = res === 'V' || res === 'W';
+                                return (
+                                  <span
+                                    key={sIdx}
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-mono font-black text-xs ${
+                                      isWin ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                                    }`}
+                                    title={isWin ? 'Vittoria' : 'Sconfitta'}
+                                  >
+                                    {isWin ? 'V' : 'P'}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic font-medium">{t.noGames || 'Nessuna gara registrata'}</p>
+                          )}
+                        </div>
+
+                        {/* 1B. Indice di Volatilità (σ) */}
+                        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-bold">
+                              {t.volatilityIndex || 'INDICE DI VOLATILITÀ (σ)'}
+                            </span>
+                            {volatilityMetric && (
+                              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                                volatilityMetric.stdDev < 7 
+                                  ? 'bg-emerald-50 text-emerald-700' 
+                                  : volatilityMetric.stdDev <= 12 
+                                    ? 'bg-amber-50 text-amber-700' 
+                                    : 'bg-rose-50 text-rose-700'
+                              }`}>
+                                {volatilityMetric.badgeText}
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32]">
+                              {volatilityMetric ? `σ ${volatilityMetric.stdDev}` : '—'}
+                            </div>
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mt-1">
+                              {lang === 'it' ? 'Deviazione standard punti segnati' : 'Points standard deviation'}
                             </span>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('games')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'games' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Partite Giocate (GP)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colGp || 'GP'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'games' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'games' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                          {volatilityMetric ? (
+                            <div className="pt-2 border-t border-slate-100">
+                              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                                {volatilityMetric.badgeDesc} • Media: <strong className="font-mono text-[#022D32]">{volatilityMetric.mean}</strong> pts
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic font-medium">{t.noGames || 'Nessuna gara registrata'}</p>
+                          )}
+                        </div>
+
+                        {/* 1C. Delta 2° Tempo vs 1° Tempo */}
+                        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-bold">
+                              {t.halvesDiffDelta || 'DELTA 2°T vs 1°T'}
+                            </span>
+                            {halvesData && (
+                              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                                halvesData.verdictType === 'fade'
+                                  ? 'bg-rose-50 text-rose-700'
+                                  : halvesData.verdictType === 'strong'
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'bg-slate-100 text-slate-700'
+                              }`}>
+                                {halvesData.verdictType === 'fade' ? '⚠️ ' + (t.halvesFade || 'Calo Fisico')
+                                  : halvesData.verdictType === 'strong' ? '⚡ ' + (t.halvesStrong || 'Progressione')
+                                  : '⚖️ ' + (t.halvesBalanced || 'Costante')}
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className={`font-mono text-3xl sm:text-4xl font-extrabold ${
+                              halvesData 
+                                ? (halvesData.diffDelta > 0 ? 'text-[#0CA17A]' : halvesData.diffDelta < 0 ? 'text-rose-600' : 'text-[#022D32]')
+                                : 'text-[#022D32]'
+                            }`}>
+                              {halvesData ? (halvesData.diffDelta > 0 ? `+${halvesData.diffDelta}` : halvesData.diffDelta) : '—'}
+                              <span className="text-sm font-sans font-bold text-slate-400 ml-1.5">PTS</span>
+                            </div>
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mt-1">
+                              {lang === 'it' ? 'Scarto differenziale ripresa' : 'Second half net swing'}
                             </span>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('timePlayedAVG')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'timePlayedAVG' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Media Minuti Giocati (MM:SS)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-sky-300 font-bold">{t.colMin || 'MIN'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'timePlayedAVG' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'timePlayedAVG' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                          {halvesData ? (
+                            <div className="pt-2 border-t border-slate-100">
+                              <p className="text-xs text-slate-500 font-medium leading-relaxed truncate" title={
+                                halvesData.verdictType === 'fade' 
+                                  ? (t.halvesFadeDesc || 'La squadra cala significativamente di intensità nella seconda frazione.') 
+                                  : halvesData.verdictType === 'strong' 
+                                    ? (t.halvesStrongDesc || 'Squadra diesel che aumenta efficienza ed intensità nei quarti finali.') 
+                                    : (t.halvesBalancedDesc || 'Produzione e differenziale stabili tra primo e secondo tempo.')
+                              }>
+                                {halvesData.verdictType === 'fade' 
+                                  ? (t.halvesFadeDesc || 'Cala di intensità nella ripresa.') 
+                                  : halvesData.verdictType === 'strong' 
+                                    ? (t.halvesStrongDesc || 'Aumenta efficienza nei quarti finali.') 
+                                    : (t.halvesBalancedDesc || 'Produzione stabile tra primo e secondo tempo.')}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic font-medium">{t.noGames || 'Nessuna gara registrata'}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SECTION 2: CONFRONTO RENDIMENTO & AMBIENTE (CASA / TRASFERTA) */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                          <Home className="w-4 h-4 text-[#0CA17A]" />
+                          {t.splitsTitle || 'CONFRONTO RENDIMENTO & AMBIENTE'}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {lang === 'it' ? 'Spaccato comparativo tra partite casalinghe e trasferte' : 'Comparative performance between home and away games'}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                        {/* Casa */}
+                        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">🏠</span>
+                              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
+                                {t.home || 'CASA'}
+                              </span>
+                            </div>
+                            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                              {homeStats.games} {homeStats.games === 1 ? (lang === 'it' ? 'partita' : 'game') : (lang === 'it' ? 'partite' : 'games')}
                             </span>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('pointsPerGame')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'pointsPerGame' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Punti a Partita (PTS/G)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colPpg || 'PTS/G'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'pointsPerGame' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'pointsPerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                          <div className="grid grid-cols-3 gap-3 pt-1">
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
+                                {homeStats.wins}W - {homeStats.losses}L
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                RECORD
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                                {homeStats.games > 0 ? (homeStats.pointsScored / homeStats.games).toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                SEGNATI/G
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                                {homeStats.games > 0 ? (homeStats.pointsConceded / homeStats.games).toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                SUBITI/G
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                              {lang === 'it' ? 'Differenziale Medio' : 'Average Margin'}
+                            </span>
+                            <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                              homeDiff > 0 
+                                ? 'bg-emerald-50 text-emerald-700' 
+                                : homeDiff < 0 
+                                  ? 'bg-rose-50 text-rose-700' 
+                                  : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {homeDiff > 0 ? `+${homeDiff}` : homeDiff} pts
                             </span>
                           </div>
-                        </th>
+                        </div>
 
-                        <th 
-                          onClick={() => handleSort('twoMadePerGame')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'twoMadePerGame' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Canestri da 2 Segnati a Partita (2PM/G)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.col2pm || '2PM/G'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'twoMadePerGame' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'twoMadePerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                        {/* Trasferta */}
+                        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">✈️</span>
+                              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
+                                {t.away || 'TRASFERTA'}
+                              </span>
+                            </div>
+                            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                              {awayStats.games} {awayStats.games === 1 ? (lang === 'it' ? 'partita' : 'game') : (lang === 'it' ? 'partite' : 'games')}
                             </span>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('threeMadePerGame')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'threeMadePerGame' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Triple Segnate a Partita (3PM/G)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.col3pm || '3PM/G'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'threeMadePerGame' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'threeMadePerGame' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
+                          <div className="grid grid-cols-3 gap-3 pt-1">
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
+                                {awayStats.wins}W - {awayStats.losses}L
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                RECORD
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                                {awayStats.games > 0 ? (awayStats.pointsScored / awayStats.games).toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                SEGNATI/G
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                                {awayStats.games > 0 ? (awayStats.pointsConceded / awayStats.games).toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                SUBITI/G
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                              {lang === 'it' ? 'Differenziale Medio' : 'Average Margin'}
+                            </span>
+                            <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                              awayDiff > 0 
+                                ? 'bg-emerald-50 text-emerald-700' 
+                                : awayDiff < 0 
+                                  ? 'bg-rose-50 text-rose-700' 
+                                  : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {awayDiff > 0 ? `+${awayDiff}` : awayDiff} pts
                             </span>
                           </div>
-                        </th>
+                        </div>
+                      </div>
+                    </div>
 
-                        <th 
-                          onClick={() => handleSort('freeThrowsPercentage')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'freeThrowsPercentage' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Percentuale ai Tiri Liberi (FT%)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colFt || 'FT%'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'freeThrowsPercentage' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'freeThrowsPercentage' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
-                            </span>
+                    {/* SECTION 3: TENUTA FISICA (1° TEMPO vs 2° TEMPO) */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-[#0CA17A]" />
+                          {t.halvesTitle || '1° TEMPO vs 2° TEMPO (TENUTA FISICA)'}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {t.halvesSubtitle || 'Analisi tenuta atletica, cali di concentrazione e progressione di rendimento'}
+                        </p>
+                      </div>
+
+                      {halvesData ? (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                            {/* 1° Tempo (Q1 + Q2) */}
+                            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">⏱️</span>
+                                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
+                                    {t.firstHalf || '1° TEMPO (Q1+Q2)'}
+                                  </span>
+                                </div>
+                                <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                                  halvesData.h1Diff > 0 
+                                    ? 'bg-emerald-50 text-emerald-700' 
+                                    : halvesData.h1Diff < 0 
+                                      ? 'bg-rose-50 text-rose-700' 
+                                      : 'bg-slate-100 text-slate-700'
+                                }`}>
+                                  Diff: {halvesData.h1Diff > 0 ? `+${halvesData.h1Diff}` : halvesData.h1Diff}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 pt-1">
+                                <div>
+                                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                                    {halvesData.h1ScoredAvg}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                    SEGNATI / 1°T
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                                    {halvesData.h1ConcededAvg}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                    SUBITI / 1°T
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2° Tempo (Q3 + Q4) */}
+                            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">🔥</span>
+                                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
+                                    {t.secondHalf || '2° TEMPO (Q3+Q4)'}
+                                  </span>
+                                </div>
+                                <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                                  halvesData.h2Diff > 0 
+                                    ? 'bg-emerald-50 text-emerald-700' 
+                                    : halvesData.h2Diff < 0 
+                                      ? 'bg-rose-50 text-rose-700' 
+                                      : 'bg-slate-100 text-slate-700'
+                                }`}>
+                                  Diff: {halvesData.h2Diff > 0 ? `+${halvesData.h2Diff}` : halvesData.h2Diff}
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 pt-1">
+                                <div>
+                                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                                    {halvesData.h2ScoredAvg}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                    SEGNATI / 2°T
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                                    {halvesData.h2ConcededAvg}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
+                                    SUBITI / 2°T
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </th>
 
-                        <th 
-                          onClick={() => handleSort('foulsAVG')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'foulsAVG' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Falli Commessi a Partita (FF/P)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colFouls || 'FF/P'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'foulsAVG' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'foulsAVG' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
-                            </span>
+                          {/* Tactical Takeaway Pill */}
+                          <div className={`p-4 rounded-2xl flex items-start gap-3 shadow-sm border ${
+                            halvesData.verdictType === 'fade'
+                              ? 'bg-rose-50/60 border-rose-100 text-rose-900'
+                              : halvesData.verdictType === 'strong'
+                                ? 'bg-emerald-50/60 border-emerald-100 text-emerald-900'
+                                : 'bg-white border-slate-100 text-[#022D32]'
+                          }`}>
+                            <Info className={`w-4 h-4 mt-0.5 flex-none ${
+                              halvesData.verdictType === 'fade' 
+                                ? 'text-rose-600' 
+                                : halvesData.verdictType === 'strong' 
+                                  ? 'text-emerald-600' 
+                                  : 'text-[#0CA17A]'
+                            }`} />
+                            <div className="space-y-0.5">
+                              <p className="text-xs font-black uppercase tracking-wider">
+                                {t.halvesDiffDelta || 'Differenziale 2°T vs 1°T'}: <span className="font-mono text-sm">{halvesData.diffDelta > 0 ? `+${halvesData.diffDelta}` : halvesData.diffDelta} pts</span>
+                              </p>
+                              <p className="text-xs opacity-90 leading-relaxed font-medium">
+                                {halvesData.verdictType === 'fade'
+                                  ? (t.halvesFadeDesc || "La squadra cala significativamente di intensità nella seconda frazione. Alzare il ritmo ed aggredire nella ripresa.")
+                                  : halvesData.verdictType === 'strong'
+                                    ? (t.halvesStrongDesc || "Squadra diesel che aumenta efficienza ed intensità nei quarti finali. Mantenere la concentrazione fino al 40°.")
+                                    : (t.halvesBalancedDesc || "Produzione e differenziale stabili tra primo e secondo tempo.")}
+                              </p>
+                            </div>
                           </div>
-                        </th>
-
-                        <th 
-                          onClick={() => handleSort('plusMinus')}
-                          className={`p-3 text-center cursor-pointer transition-colors group ${sortConfig.key === 'plusMinus' ? 'text-amber-300 font-black bg-slate-900/60' : 'hover:text-slate-200'}`}
-                          title="Ordina per Plus / Minus (+/-)"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <span>{t.colPlusMinus || '+/-'}</span>
-                            <span className={`text-[10px] leading-none ${sortConfig.key === 'plusMinus' ? 'text-amber-400 font-bold' : 'opacity-0 group-hover:opacity-40 text-slate-500'}`}>
-                              {sortConfig.key === 'plusMinus' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '▼'}
-                            </span>
-                          </div>
-                        </th>
-
-                        <th className="p-3 text-left min-w-[120px]">{t.colAlerts || 'ALERT'}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/80">
-                      {filteredRoster.length === 0 ? (
-                        <tr>
-                          <td colSpan={11} className="p-8 text-center text-slate-400">
-                            <User className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
-                            <p className="font-bold text-slate-300">{t.noPlayersTitle}</p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              {rosterSearch.trim() ? `${t.noPlayersSearch} "${rosterSearch}"` : t.noPlayersDesc}
-                            </p>
-                          </td>
-                        </tr>
+                        </div>
                       ) : (
-                        filteredRoster.map((p) => {
-                          const isFoulTarget = p.foulsAVG > 3.0;
-
-                          // 3 Scopes for Multi-Level Tactical Tags
-                          // A. Team Scope
-                          const teamTags = getTacticalTags(p.stats || p, p.games || p.stats?.games || 0).tags;
-
-                          // B. Season Scope
-                          const hist = Array.isArray(p.history) && p.history.length > 0 
-                            ? p.history 
-                            : (Array.isArray(p.uniquePlayer?.history) ? p.uniquePlayer.history : []);
-                          const currSeason = hist.find(h => {
-                            const str = String(h.seasonName || h.seasonId || '');
-                            return str.includes('2025') || str.includes('25/26');
-                          }) || hist[0];
-                          const seasonTags = currSeason 
-                            ? getTacticalTags(currSeason, currSeason.games).tags 
-                            : (p.games > 0 ? teamTags : []);
-
-                          // C. Career Scope
-                          const careerTags = p.uniquePlayer?.stats 
-                            ? getTacticalTags(p.uniquePlayer.stats, p.uniquePlayer.stats.games).tags 
-                            : [];
-
-                          return (
-                            <tr
-                              key={p.fid}
-                              onClick={() => setSelectedPlayer(p)}
-                              className="hover:bg-slate-800/50 cursor-pointer transition-colors"
-                            >
-                              <td className="p-3 text-center font-mono font-black text-rose-400">
-                                #{p.number}
-                              </td>
-                              <td className="p-3 min-w-[220px]">
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="font-black text-slate-100 text-xs">{p.name}</span>
-                                    {p.captain && (
-                                      <span className="text-[9px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2 rounded">
-                                        CAP
-                                      </span>
-                                    )}
-                                  </div>
-                                  {p.position && p.position.trim() && p.position.trim().toLowerCase() !== 'player' && (
-                                    <span className="text-[10px] text-slate-400 font-semibold">{p.position}</span>
-                                  )}
-
-                                  {/* Compact Multi-Level Tactical Tags Breakdown */}
-                                  <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono select-none flex-wrap">
-                                    <span className="inline-flex items-center gap-1 text-slate-300">
-                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Team:</span>
-                                      {teamTags.length > 0 ? (
-                                        <span className="inline-flex items-center gap-0.5">
-                                          {teamTags.map(t => (
-                                            <span 
-                                              key={t.id}
-                                              title={`Team: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
-                                              className="cursor-help hover:scale-125 transition-transform inline-block select-none"
-                                            >
-                                              {t.icon}
-                                            </span>
-                                          ))}
-                                        </span>
-                                      ) : (
-                                        <span className="text-slate-600 font-sans">-</span>
-                                      )}
-                                    </span>
-
-                                    <span className="text-slate-700">|</span>
-
-                                    <span className="inline-flex items-center gap-1 text-slate-300">
-                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Season:</span>
-                                      {seasonTags.length > 0 ? (
-                                        <span className="inline-flex items-center gap-0.5">
-                                          {seasonTags.map(t => (
-                                            <span 
-                                              key={t.id}
-                                              title={`Season: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
-                                              className="cursor-help hover:scale-125 transition-transform inline-block select-none"
-                                            >
-                                              {t.icon}
-                                            </span>
-                                          ))}
-                                        </span>
-                                      ) : (
-                                        <span className="text-slate-600 font-sans">-</span>
-                                      )}
-                                    </span>
-
-                                    <span className="text-slate-700">|</span>
-
-                                    <span className="inline-flex items-center gap-1 text-slate-300">
-                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Career:</span>
-                                      {careerTags.length > 0 ? (
-                                        <span className="inline-flex items-center gap-0.5">
-                                          {careerTags.map(t => (
-                                            <span 
-                                              key={t.id}
-                                              title={`Career: ${t.icon} ${lang === 'it' ? t.labelIt : t.label}`}
-                                              className="cursor-help hover:scale-125 transition-transform inline-block select-none"
-                                            >
-                                              {t.icon}
-                                            </span>
-                                          ))}
-                                        </span>
-                                      ) : (
-                                        <span className="text-slate-600 font-sans">-</span>
-                                      )}
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="p-3 text-center font-mono text-slate-400">
-                                {p.games}
-                              </td>
-                              <td className="p-3 text-center font-mono font-bold text-sky-300">
-                                {formatMinutes(p.timePlayedAVG || p.stats?.timePlayedAVG)}
-                              </td>
-                              <td className="p-3 text-center font-mono font-black text-rose-400 text-sm">
-                                {p.pointsAVG != null ? p.pointsAVG.toFixed(1) : '0.0'}
-                              </td>
-                              <td className="p-3 text-center font-mono font-bold text-sky-400">
-                                {p.twoMadeAVG != null ? p.twoMadeAVG.toFixed(1) : '0.0'}
-                              </td>
-                              <td className="p-3 text-center font-mono font-bold text-amber-300">
-                                {p.threeMadeAVG != null ? p.threeMadeAVG.toFixed(1) : '0.0'}
-                              </td>
-                              <td className="p-3 text-center font-mono font-bold text-emerald-400">
-                                {p.ftPct ? `${p.ftPct}%` : '—'}
-                              </td>
-                              <td className="p-3 text-center font-mono font-bold">
-                                <span className={`px-2 py-0.5 rounded ${
-                                  isFoulTarget ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 font-black' : 'text-slate-300'
-                                }`}>
-                                  {p.foulsAVG != null ? p.foulsAVG.toFixed(1) : '0.0'}
-                                </span>
-                              </td>
-                              <td className="p-3 text-center font-mono font-black">
-                                <span className={`px-2 py-0.5 rounded ${
-                                  p.plusMinusAVG > 0 
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                                    : p.plusMinusAVG < 0 
-                                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
-                                      : 'text-slate-400'
-                                }`}>
-                                  {p.plusMinusAVG > 0 ? `+${p.plusMinusAVG.toFixed(1)}` : (p.plusMinusAVG != null ? p.plusMinusAVG.toFixed(1) : '0.0')}
-                                </span>
-                              </td>
-                              <td className="p-3">
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  {teamTags.length > 0 ? (
-                                    teamTags.slice(0, 2).map(tag => (
-                                      <span 
-                                        key={tag.id}
-                                        className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${tag.badgeClass} flex items-center gap-0.5`}
-                                        title={`${tag.icon} ${lang === 'it' ? tag.labelIt : tag.label}`}
-                                      >
-                                        <span>{tag.icon}</span>
-                                        <span className="hidden sm:inline">{lang === 'it' ? tag.labelIt : tag.label}</span>
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="text-[10px] text-slate-500 font-mono">—</span>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center">
+                          <p className="text-xs text-slate-400 italic font-medium">
+                            {t.noGames || 'Nessuna gara disputata registrata a referto.'}
+                          </p>
+                        </div>
                       )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                    </div>
+
+                    {/* SECTION 4: VISUAL ANALYTICS & TRAIETTORIE (CSS Grid 12 cols: 7 cols LineChart + 5 cols BarChart) */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-[#0CA17A]" />
+                          {t.visualAnalyticsTitle || 'VISUAL ANALYTICS & TRAIETTORIE'}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          {lang === 'it' 
+                            ? 'Evoluzione punti partita per partita e margine medio per singolo quarto' 
+                            : 'Chronological scoring trends and period net margins'}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+                        {/* 4A. LineChart (7 cols) */}
+                        <div className="lg:col-span-7 bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                              <h4 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider">
+                                {t.gameTrendsTitle || 'TRAIETTORIA & TREND DI RENDIMENTO'}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                {t.gameTrendsSubtitle || 'Evoluzione cronologica dei punti segnati vs punti subiti'}
+                              </p>
+                            </div>
+                            {trendsLineData.length > 0 && (
+                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                {trendsLineData.length} {trendsLineData.length === 1 ? (lang === 'it' ? 'partita' : 'game') : (lang === 'it' ? 'partite' : 'games')}
+                              </span>
+                            )}
+                          </div>
+
+                          {trendsLineData.length > 0 ? (
+                            <div className="h-64 sm:h-72 w-full pt-1">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={trendsLineData} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                                  <XAxis 
+                                    dataKey="round" 
+                                    tick={{ fill: '#64748B', fontSize: 11, fontWeight: '600' }} 
+                                    stroke="#CBD5E1" 
+                                  />
+                                  <YAxis 
+                                    domain={['auto', 'auto']} 
+                                    tick={{ fill: '#64748B', fontSize: 11, fontWeight: '600' }} 
+                                    stroke="#CBD5E1" 
+                                  />
+                                  <Tooltip content={<CustomTrendTooltip />} />
+                                  <Legend 
+                                    iconType="circle" 
+                                    wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: 'bold', color: '#022D32' }} 
+                                  />
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="scored" 
+                                    name={t.scoredPoints || 'Punti Segnati'} 
+                                    stroke="#0CA17A" 
+                                    strokeWidth={3} 
+                                    dot={{ r: 4.5, fill: '#0CA17A', stroke: '#FFFFFF', strokeWidth: 2 }} 
+                                    activeDot={{ r: 6.5 }} 
+                                  />
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="conceded" 
+                                    name={t.concededPoints || 'Punti Subiti'} 
+                                    stroke="#E11D48" 
+                                    strokeWidth={2.5} 
+                                    strokeDasharray="4 4" 
+                                    dot={{ r: 4, fill: '#E11D48', stroke: '#FFFFFF', strokeWidth: 1.5 }} 
+                                    activeDot={{ r: 6 }} 
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic font-medium py-8 text-center">
+                              {t.noGames || 'Nessuna gara disputata registrata a referto.'}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* 4B. BarChart Differenziale per Quarto (5 cols) */}
+                        <div className="lg:col-span-5 bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                          <div>
+                            <h4 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider">
+                              {t.quartersTitle || 'ANALISI DEI QUARTI'}
+                            </h4>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5">
+                              {t.quartersSubtitle || 'Differenziale medio periodo per periodo (Q1 - Q4)'}
+                            </p>
+                          </div>
+
+                          {quarterChartData.length > 0 && g > 0 ? (
+                            <div className="space-y-4">
+                              <div className="h-48 sm:h-52 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={quarterChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                                    <XAxis 
+                                      dataKey="quarter" 
+                                      tick={{ fill: '#022D32', fontSize: 11, fontWeight: '800' }} 
+                                      stroke="#CBD5E1" 
+                                    />
+                                    <YAxis 
+                                      tick={{ fill: '#64748B', fontSize: 10, fontWeight: '600' }} 
+                                      stroke="#CBD5E1" 
+                                    />
+                                    <ReferenceLine y={0} stroke="#94A3B8" strokeWidth={1} strokeDasharray="2 2" />
+                                    <Tooltip content={<CustomQuarterTooltip />} />
+                                    <Bar dataKey="diff" radius={[6, 6, 0, 0]}>
+                                      {quarterChartData.map((entry, index) => (
+                                        <Cell 
+                                          key={`cell-${index}`} 
+                                          fill={entry.diff >= 0 ? '#0CA17A' : '#F43F5E'} 
+                                        />
+                                      ))}
+                                    </Bar>
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
+
+                              {/* 4-Column Quarter Summary Pill Row */}
+                              <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                                {['Q1', 'Q2', 'Q3', 'Q4'].map(qKey => {
+                                  const qData = quarterAverages[qKey] || { scoredAvg: 0, concededAvg: 0, diff: 0 };
+                                  const isPos = qData.diff > 0;
+                                  const isNeg = qData.diff < 0;
+                                  return (
+                                    <div key={qKey} className="text-center">
+                                      <span className="text-[11px] font-mono font-bold text-slate-400 block">{qKey}</span>
+                                      <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-md inline-block mt-0.5 ${
+                                        isPos ? 'bg-emerald-50 text-emerald-700' : isNeg ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-700'
+                                      }`}>
+                                        {isPos ? `+${qData.diff}` : qData.diff}
+                                      </span>
+                                      <span className="text-[10px] font-mono text-slate-400 block mt-1">
+                                        {qData.scoredAvg}/{qData.concededAvg}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 italic font-medium py-8 text-center">
+                              {t.noGames || 'Nessuna gara disputata registrata a referto.'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SECTION 5: GAME LOG / ULTIME PARTITE (Floating White Container, Soft Win/Loss Badges) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between pb-1">
+                        <div>
+                          <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-[#0CA17A]" />
+                            {t.gameLogTitle || 'GAME LOG / ULTIME PARTITE'}
+                          </h3>
+                          <p className="text-xs text-slate-500 font-medium mt-0.5">
+                            {lang === 'it' ? 'Risultati ufficiali e parziali per quarto' : 'Official match results and quarter scores'}
+                          </p>
+                        </div>
+                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                          {matchLog.length} {matchLog.length === 1 ? 'GARA' : 'GARE'}
+                        </span>
+                      </div>
+
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+                        {matchLog.length > 0 ? (
+                          matchLog.map((m, mIdx) => {
+                            const dStr = m.date ? new Date(m.date).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-US') : '—';
+                            const isWin = Boolean(m.isWin);
+                            const opponentTeamName = m.isHomeGame ? m.awayTeam : m.homeTeam;
+                            const myScore = m.isHomeGame ? m.homeScore : m.awayScore;
+                            const oppScore = m.isHomeGame ? m.awayScore : m.homeScore;
+
+                            return (
+                              <div 
+                                key={m.matchFid || mIdx}
+                                className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5"
+                              >
+                                <div className="flex items-center gap-3.5 flex-wrap">
+                                  <span className={`w-9 h-9 rounded-xl font-mono font-extrabold text-sm flex items-center justify-center flex-none ${
+                                    isWin 
+                                      ? 'bg-emerald-50 text-emerald-700' 
+                                      : 'bg-rose-50 text-rose-700'
+                                  }`}>
+                                    {isWin ? 'V' : 'P'}
+                                  </span>
+
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-xs sm:text-sm font-black uppercase text-[#022D32]">
+                                        vs {opponentTeamName}
+                                      </span>
+                                      <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                        {m.isHomeGame ? '🏠 ' + (t.home || 'CASA') : '✈️ ' + (t.away || 'TRASFERTA')}
+                                      </span>
+                                      {m.round && (
+                                        <span className="text-[10px] sm:text-xs font-mono text-slate-400">
+                                          • {m.round}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-slate-400 font-mono">
+                                      {dStr}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3.5 flex-wrap md:flex-nowrap w-full md:w-auto justify-between md:justify-end">
+                                  {/* Partials */}
+                                  {Array.isArray(m.partials) && m.partials.length > 0 && (
+                                    <div className="flex items-center gap-2 text-xs font-mono text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl">
+                                      {m.partials.map(p => (
+                                        <span key={p.period}>
+                                          <span className="text-slate-400 font-bold">Q{p.period}:</span> {p.homeScore}-{p.awayScore}
+                                          {p.period < m.partials.length && <span className="text-slate-300 mx-1">|</span>}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {/* Final score */}
+                                  <div className="text-right flex-none">
+                                    <span className={`font-mono text-base sm:text-lg font-extrabold px-3.5 py-1.5 rounded-xl ${
+                                      isWin
+                                        ? 'bg-emerald-50 text-emerald-700'
+                                        : 'bg-rose-50 text-rose-700'
+                                    }`}>
+                                      {myScore} - {oppScore}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p className="text-xs sm:text-sm text-slate-400 italic font-medium py-6 text-center">
+                            {t.noGames || 'Nessun match disputato registrato.'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </>
@@ -2635,29 +3766,29 @@ export default function LeagueHub({ showToast }) {
       {/* 3. FULL-SCREEN DEDICATED PLAYER PROFILE PAGE                              */}
       {/* ========================================================================= */}
       {selectedPlayer && (
-        <div className="fixed inset-0 z-50 w-full h-full h-screen bg-slate-950 overflow-y-auto animate-fade-in flex flex-col">
+        <div className="fixed inset-0 z-50 w-full h-full min-h-screen bg-[#F8F9FA] text-[#022D32] overflow-y-auto animate-fade-in flex flex-col">
           {/* Top Sticky Navigation Bar */}
-          <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between flex-none">
+          <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#DDF3E9] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between flex-none shadow-xs">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedPlayer(null)}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-slate-200 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] font-bold text-xs uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
                 aria-label={t.backToRoster || 'Torna al Roster'}
               >
-                <ArrowLeft className="w-4 h-4 text-rose-400" />
+                <ArrowLeft className="w-4 h-4 text-[#0CA17A]" />
                 <span>{t.backToRoster || 'Torna al Roster'}</span>
               </button>
-              <div className="h-5 w-px bg-slate-800 hidden sm:block" />
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-medium">
-                <span className="text-slate-300 font-bold">{currentTeamStanding?.name || selectedTeamFid}</span>
+              <div className="h-5 w-px bg-[#DDF3E9] hidden sm:block" />
+              <div className="hidden sm:flex items-center gap-2 text-xs text-[#022D32]/70 font-medium">
+                <span className="text-[#022D32] font-bold">{currentTeamStanding?.name || selectedTeamFid}</span>
                 <span>/</span>
-                <span className="text-rose-400 font-bold uppercase">{selectedPlayer.name}</span>
+                <span className="text-[#022D32] font-black uppercase">{selectedPlayer.name}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+              <span className="text-xs font-mono font-bold text-[#022D32] bg-[#DDF3E9] px-3 py-1.5 rounded-lg border border-[#0CA17A]/30">
                 #{selectedPlayer.number}{selectedPlayer.position && selectedPlayer.position.trim().toLowerCase() !== 'player' ? ` • ${selectedPlayer.position}` : ''}
               </span>
             </div>
@@ -2675,44 +3806,46 @@ export default function LeagueHub({ showToast }) {
             return (
               <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
                 {/* Player Hero Card */}
-                <div className="glass-card p-5 sm:p-6 border-slate-800 bg-slate-900/90 shadow-xl flex flex-wrap items-center justify-between gap-4">
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#DDF3E9] shadow-xs flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     {selectedPlayer.photo ? (
                       <img
                         src={selectedPlayer.photo}
                         alt={selectedPlayer.name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-rose-500/40 bg-slate-950 flex-none shadow-md"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-[#0CA17A]/40 bg-[#F8F9FA] flex-none shadow-xs"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.style.display = 'none';
                         }}
                       />
                     ) : (
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center font-mono font-black text-rose-400 text-2xl flex-none shadow-md">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center font-mono font-black text-[#022D32] text-2xl flex-none shadow-xs">
                         #{selectedPlayer.number}
                       </div>
                     )}
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-xl sm:text-3xl font-black text-slate-100 uppercase tracking-wide">
+                        <h2 className="text-xl sm:text-3xl font-black text-[#022D32] uppercase tracking-wide">
                           {selectedPlayer.name}
                         </h2>
                         {selectedPlayer.captain && (
-                          <span className="text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-black uppercase bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40 px-2 py-0.5 rounded">
                             CAPITANO
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-slate-400 font-semibold flex items-center gap-2 mt-1">
+                      <p className="text-sm text-[#022D32]/80 font-semibold flex items-center gap-2 mt-1">
                         {selectedPlayer.position && selectedPlayer.position.trim().toLowerCase() !== 'player' && (
                           <>
-                            <span className="text-slate-300">{selectedPlayer.position}</span>
+                            <span className="text-[#022D32] font-bold">{selectedPlayer.position}</span>
                             <span>•</span>
                           </>
                         )}
-                        <span className="text-rose-400 font-bold">{currentTeamStanding?.name || selectedTeamFid}</span>
+                        <span className="text-[#022D32] font-black">{currentTeamStanding?.name || selectedTeamFid}</span>
                         <span>•</span>
-                        <span className="text-sky-400 font-mono font-bold">{selectedPlayer.games} GP</span>
+                        <span className="text-[#065F46] font-mono font-black">{selectedPlayer.games} GP</span>
+                        <span>•</span>
+                        <span className="text-[#0CA17A] font-mono font-black">{selectedPlayer.startPercentage || '0%'} START</span>
                       </p>
                     </div>
                   </div>
@@ -2723,7 +3856,7 @@ export default function LeagueHub({ showToast }) {
                       profileTags.map(tag => (
                         <span 
                           key={tag.id}
-                          className={`text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm border ${tag.badgeClass}`}
+                          className={`text-xs font-black px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xs border ${tag.badgeClass}`}
                           title={`${tag.icon} ${lang === 'it' ? tag.labelIt : tag.label}`}
                         >
                           <span className="text-sm select-none">{tag.icon}</span>
@@ -2731,61 +3864,53 @@ export default function LeagueHub({ showToast }) {
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs font-semibold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                      <span className="text-xs font-semibold text-[#022D32] bg-[#F8F9FA] border border-[#DDF3E9] px-3 py-1.5 rounded-xl">
                         Profilo Bilanciato
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Core Stats Grid (Current Season) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalPpg}</span>
-                    <span className="font-mono text-2xl font-black text-rose-400">{selectedPlayer.pointsAVG.toFixed(1)}</span>
+                {/* Core Stats Grid (Current Season) - 5 Primary Cards Inspired by BBA Brief */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="bg-[#022D32] p-4 rounded-xl text-center shadow-md">
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-white block">{selectedPlayer.pointsAVG.toFixed(1)}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1">{t.modalPpg}</span>
                   </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalFouls}</span>
-                    <span className={`font-mono text-2xl font-black ${selectedPlayer.foulsAVG > 3.0 ? 'text-rose-400' : 'text-slate-200'}`}>
+                  <div className="bg-[#022D32] p-4 rounded-xl text-center shadow-md">
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-white block">{selectedPlayer.threePct}%</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1">{t.modalThree}</span>
+                  </div>
+                  <div className="bg-[#022D32] p-4 rounded-xl text-center shadow-md">
+                    <span className={`font-mono text-2xl sm:text-3xl font-black block ${selectedPlayer.foulsAVG > 3.0 ? 'text-rose-300' : 'text-white'}`}>
                       {selectedPlayer.foulsAVG.toFixed(1)}
                     </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1">{t.modalFouls}</span>
                   </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalThree}</span>
-                    <span className="font-mono text-2xl font-black text-amber-300">{selectedPlayer.threePct}%</span>
-                  </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalPlusMinus}</span>
-                    <span className={`font-mono text-2xl font-black ${selectedPlayer.plusMinusAVG > 0 ? 'text-emerald-400' : selectedPlayer.plusMinusAVG < 0 ? 'text-rose-400' : 'text-slate-200'}`}>
+                  <div className="bg-[#022D32] p-4 rounded-xl text-center shadow-md">
+                    <span className={`font-mono text-2xl sm:text-3xl font-black block ${selectedPlayer.plusMinusAVG > 0 ? 'text-emerald-300' : selectedPlayer.plusMinusAVG < 0 ? 'text-rose-300' : 'text-white'}`}>
                       {selectedPlayer.plusMinusAVG > 0 ? `+${selectedPlayer.plusMinusAVG.toFixed(1)}` : selectedPlayer.plusMinusAVG.toFixed(1)}
                     </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1">{t.modalPlusMinus}</span>
                   </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalRebounds}</span>
-                    <span className="font-mono text-2xl font-black text-indigo-300">{selectedPlayer.reboundsAVG.toFixed(1)}</span>
-                  </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalAssists}</span>
-                    <span className="font-mono text-2xl font-black text-teal-300">{selectedPlayer.assistsAVG.toFixed(1)}</span>
-                  </div>
-                  <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center shadow-sm col-span-2 sm:col-span-1">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">{t.modalGames}</span>
-                    <span className="font-mono text-2xl font-black text-sky-400">{selectedPlayer.games}</span>
+                  <div className="bg-[#022D32] p-4 rounded-xl text-center shadow-md col-span-2 sm:col-span-1">
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-white block">{selectedPlayer.games}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block mt-1">{t.modalGames}</span>
                   </div>
                 </div>
 
                 {/* 100% Width Horizontal Stacked Bar Chart for Point Distribution */}
-                <div className="bg-slate-900/90 p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] space-y-4 shadow-xs">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <span className="text-xs font-black uppercase text-slate-200 tracking-wider flex items-center gap-2">
-                        <BarChart2 className="w-4 h-4 text-rose-400" />
+                      <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
+                        <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
                         {t.shotDistTitle || 'DISTRIBUZIONE PUNTI / SHOT PROFILE'}
                       </span>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-[#022D32]/70 mt-0.5">
                         {t.shotDistSubtitle || 'Ripartizione percentuale dei punti segnati tra 2PT, 3PT e Tiri Liberi'}
                         {' • '}
-                        <span className="text-amber-400/90 font-bold">
+                        <span className="text-[#0CA17A] font-bold">
                           {useCareerProfile 
                             ? (t.basedOnCareer ? t.basedOnCareer.replace('{games}', profileGames) : `Carriera (${profileGames} PG)`)
                             : (t.basedOnSeason ? t.basedOnSeason.replace('{games}', profileGames) : `Stagione 2025/2026 (${profileGames} PG)`)}
@@ -2793,8 +3918,8 @@ export default function LeagueHub({ showToast }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-slate-400 font-mono font-bold block">
-                        TOTALE: <strong className="text-rose-400 font-black text-sm">{profileMetrics.totalPts} PTS</strong> ({profileMetrics.ptsPerGame.toFixed(1)} PPG)
+                      <span className="text-xs text-[#022D32]/70 font-mono font-bold block">
+                        TOTALE: <strong className="text-[#022D32] font-black text-sm">{profileMetrics.totalPts} PTS</strong> ({profileMetrics.ptsPerGame.toFixed(1)} PPG)
                       </span>
                     </div>
                   </div>
@@ -2802,11 +3927,11 @@ export default function LeagueHub({ showToast }) {
                   {profileMetrics.totalPts > 0 ? (
                     <div className="space-y-3">
                       {/* Stacked Bar */}
-                      <div className="w-full h-7 bg-slate-950 rounded-xl p-1 border border-slate-800 shadow-inner flex overflow-hidden gap-1">
+                      <div className="w-full h-7 bg-[#F8F9FA] rounded-xl p-1 border border-[#DDF3E9] shadow-inner flex overflow-hidden gap-1">
                         {profileMetrics.pct2 > 0 && (
                           <div 
                             style={{ width: `${profileMetrics.pct2}%` }}
-                            className="h-full bg-sky-500 hover:bg-sky-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-slate-950 px-1 overflow-hidden"
+                            className="h-full bg-sky-500 hover:bg-sky-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
                             title={`Punti da 2 (2PT): ${profileMetrics.pct2.toFixed(1)}% (${profileMetrics.twoMade * 2} PTS)`}
                           >
                             {profileMetrics.pct2 >= 10 && `${Math.round(profileMetrics.pct2)}%`}
@@ -2815,7 +3940,7 @@ export default function LeagueHub({ showToast }) {
                         {profileMetrics.pct3 > 0 && (
                           <div 
                             style={{ width: `${profileMetrics.pct3}%` }}
-                            className="h-full bg-emerald-500 hover:bg-emerald-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-slate-950 px-1 overflow-hidden"
+                            className="h-full bg-[#0CA17A] hover:bg-[#0CA17A]/90 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
                             title={`Punti da 3 (3PT): ${profileMetrics.pct3.toFixed(1)}% (${profileMetrics.threeMade * 3} PTS)`}
                           >
                             {profileMetrics.pct3 >= 10 && `${Math.round(profileMetrics.pct3)}%`}
@@ -2824,7 +3949,7 @@ export default function LeagueHub({ showToast }) {
                         {profileMetrics.pctFT > 0 && (
                           <div 
                             style={{ width: `${profileMetrics.pctFT}%` }}
-                            className="h-full bg-amber-500 hover:bg-amber-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-slate-950 px-1 overflow-hidden"
+                            className="h-full bg-amber-500 hover:bg-amber-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
                             title={`Tiri Liberi (FT): ${profileMetrics.pctFT.toFixed(1)}% (${profileMetrics.ftMade} PTS)`}
                           >
                             {profileMetrics.pctFT >= 10 && `${Math.round(profileMetrics.pctFT)}%`}
@@ -2834,82 +3959,82 @@ export default function LeagueHub({ showToast }) {
 
                       {/* 3 KPI breakdown cards below bar */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 flex items-center justify-between shadow-sm">
+                        <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] flex items-center justify-between shadow-xs">
                           <div className="flex items-center gap-2.5">
-                            <span className="w-3.5 h-3.5 rounded-full bg-sky-500 flex-none shadow-sm" />
+                            <span className="w-3.5 h-3.5 rounded-full bg-sky-500 flex-none shadow-xs" />
                             <div>
-                              <span className="text-[10px] font-black text-slate-400 uppercase block tracking-wider">
+                              <span className="text-[10px] font-black text-[#022D32]/60 uppercase block tracking-wider">
                                 {t.ptsFrom2 || 'Punti da 2 (2PT)'}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[11px] text-[#022D32]/70 font-mono">
                                 {profileMetrics.twoMade * 2} PTS • {profileMetrics.twoPerGame.toFixed(1)} 2PM/G
                               </span>
                             </div>
                           </div>
-                          <span className="font-mono text-xl font-black text-sky-400">
+                          <span className="font-mono text-xl font-black text-sky-700">
                             {profileMetrics.pct2.toFixed(1)}%
                           </span>
                         </div>
 
-                        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 flex items-center justify-between shadow-sm">
+                        <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] flex items-center justify-between shadow-xs">
                           <div className="flex items-center gap-2.5">
-                            <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 flex-none shadow-sm" />
+                            <span className="w-3.5 h-3.5 rounded-full bg-[#0CA17A] flex-none shadow-xs" />
                             <div>
-                              <span className="text-[10px] font-black text-slate-400 uppercase block tracking-wider">
+                              <span className="text-[10px] font-black text-[#022D32]/60 uppercase block tracking-wider">
                                 {t.ptsFrom3 || 'Punti da 3 (3PT)'}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[11px] text-[#022D32]/70 font-mono">
                                 {profileMetrics.threeMade * 3} PTS • {profileMetrics.threePerGame.toFixed(1)} 3PM/G
                               </span>
                             </div>
                           </div>
-                          <span className="font-mono text-xl font-black text-emerald-400">
+                          <span className="font-mono text-xl font-black text-[#0CA17A]">
                             {profileMetrics.pct3.toFixed(1)}%
                           </span>
                         </div>
 
-                        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 flex items-center justify-between shadow-sm">
+                        <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] flex items-center justify-between shadow-xs">
                           <div className="flex items-center gap-2.5">
-                            <span className="w-3.5 h-3.5 rounded-full bg-amber-500 flex-none shadow-sm" />
+                            <span className="w-3.5 h-3.5 rounded-full bg-amber-500 flex-none shadow-xs" />
                             <div>
-                              <span className="text-[10px] font-black text-slate-400 uppercase block tracking-wider">
+                              <span className="text-[10px] font-black text-[#022D32]/60 uppercase block tracking-wider">
                                 {t.ptsFromFt || 'Tiri Liberi (TL)'}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[11px] text-[#022D32]/70 font-mono">
                                 {profileMetrics.ftMade} PTS • {profileMetrics.ftAttPerGame.toFixed(1)} FTA/G ({profileMetrics.ftPct != null ? Math.round(profileMetrics.ftPct) + '%' : '—'})
                               </span>
                             </div>
                           </div>
-                          <span className="font-mono text-xl font-black text-amber-400">
+                          <span className="font-mono text-xl font-black text-amber-700">
                             {profileMetrics.pctFT.toFixed(1)}%
                           </span>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-slate-950 p-4 rounded-xl text-center text-xs text-slate-500 italic">
+                    <div className="bg-[#F8F9FA] p-4 rounded-xl text-center text-xs text-[#022D32]/60 italic border border-[#DDF3E9]">
                       Nessun punto registrato nel periodo di riferimento.
                     </div>
                   )}
                 </div>
 
                 {/* Tactical Badges with Coach Strategy Cards */}
-                <div className="bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3 shadow-xl">
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#DDF3E9] space-y-3 shadow-xs">
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-xs font-black uppercase text-slate-200 tracking-wider flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-rose-400" />
+                    <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-[#0CA17A]" />
                       {t.tacticalBadgesTitle || 'PROFILO TATTICO & ALERT COACH'}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setShowLegendModal(true)}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:text-amber-300 hover:underline cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0CA17A] hover:text-[#0CA17A]/80 hover:underline cursor-pointer"
                       >
-                        <HelpCircle className="w-3 h-3 text-amber-400" />
+                        <HelpCircle className="w-3 h-3 text-[#0CA17A]" />
                         <span>{t.legendBtn || 'Legenda Tag'}</span>
                       </button>
-                      <span className="text-[11px] font-bold text-slate-400">
+                      <span className="text-[11px] font-bold text-[#022D32]/70">
                         • {profileTags.length} {profileTags.length === 1 ? 'Tag Attivo' : 'Tag Attivi'}
                       </span>
                     </div>
@@ -2920,21 +4045,21 @@ export default function LeagueHub({ showToast }) {
                       {profileTags.map(tag => (
                         <div 
                           key={tag.id}
-                          className={`p-3.5 sm:p-4 rounded-xl border ${tag.badgeClass} shadow-sm`}
+                          className={`p-3.5 sm:p-4 rounded-xl border ${tag.badgeClass} shadow-xs`}
                         >
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="flex items-center gap-2.5">
                               <span className="text-2xl flex-none select-none">{tag.icon}</span>
                               <div>
-                                <span className="font-black text-sm uppercase tracking-wide text-white block">
+                                <span className="font-black text-sm uppercase tracking-wide text-[#022D32] block">
                                   {lang === 'it' ? tag.labelIt : tag.label}
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-mono">
+                                <span className="text-[10px] text-[#022D32]/70 font-mono">
                                   {lang === 'it' ? tag.criteriaDesc : tag.criteriaDescEn}
                                 </span>
                               </div>
                             </div>
-                            <span className="text-[10px] font-mono font-bold bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded text-amber-300">
+                            <span className="text-[10px] font-mono font-bold bg-white border border-[#DDF3E9] px-2 py-0.5 rounded text-[#022D32]">
                               {tag.criteria}
                             </span>
                           </div>
@@ -2942,10 +4067,10 @@ export default function LeagueHub({ showToast }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 flex items-center gap-3">
+                    <div className="bg-[#F8F9FA] p-4 rounded-xl border border-[#DDF3E9] text-xs text-[#022D32]/70 flex items-center gap-3">
                       <span className="text-xl select-none">⚖️</span>
                       <div>
-                        <strong className="block text-slate-300 font-bold mb-0.5">Profilo Bilanciato / Nessun Alert Estremo</strong>
+                        <strong className="block text-[#022D32] font-bold mb-0.5">Profilo Bilanciato / Nessun Alert Estremo</strong>
                         <span>{t.noActiveTags || 'Nessun tag tattico specifico attivato per i criteri di volume e precisione.'}</span>
                       </div>
                     </div>
@@ -2953,26 +4078,26 @@ export default function LeagueHub({ showToast }) {
                 </div>
 
                 {/* Shooting Splits */}
-                <div className="bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-3 shadow-md">
-                  <span className="text-xs font-black uppercase text-slate-300 tracking-wider flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-400" />
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#DDF3E9] space-y-3 shadow-xs">
+                  <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#0CA17A]" />
                     {t.modalSplitsTitle} (2025/2026)
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">{t.modal3pt}</span>
-                      <span className="font-mono text-xl font-black text-amber-300 my-1 block">{selectedPlayer.threePct}%</span>
-                      <span className="text-[11px] text-slate-400 block font-mono">{selectedPlayer.threeMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
+                    <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
+                      <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modal3pt}</span>
+                      <span className="font-mono text-xl font-black text-[#0CA17A] my-1 block">{selectedPlayer.threePct}%</span>
+                      <span className="text-[11px] text-[#022D32]/70 block font-mono">{selectedPlayer.threeMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
                     </div>
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">{t.modal2pt}</span>
-                      <span className="font-mono text-xl font-black text-sky-400 my-1 block">{selectedPlayer.twoPct}%</span>
-                      <span className="text-[11px] text-slate-400 block font-mono">{selectedPlayer.twoMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
+                    <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
+                      <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modal2pt}</span>
+                      <span className="font-mono text-xl font-black text-sky-700 my-1 block">{selectedPlayer.twoPct}%</span>
+                      <span className="text-[11px] text-[#022D32]/70 block font-mono">{selectedPlayer.twoMadeAVG.toFixed(1)} {t.modalMadePerGame}</span>
                     </div>
-                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">{t.modalFt}</span>
-                      <span className="font-mono text-xl font-black text-emerald-400 my-1 block">{selectedPlayer.ftPct}%</span>
-                      <span className="text-[11px] text-slate-400 block font-mono">Tiri Liberi</span>
+                    <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
+                      <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modalFt}</span>
+                      <span className="font-mono text-xl font-black text-[#022D32] my-1 block">{selectedPlayer.ftPct}%</span>
+                      <span className="text-[11px] text-[#022D32]/70 block font-mono">Tiri Liberi</span>
                     </div>
                   </div>
                 </div>
@@ -3334,17 +4459,17 @@ export default function LeagueHub({ showToast }) {
               if (!careerFtPct) careerFtPct = '—';
 
               return (
-                <div className="w-full bg-slate-900/90 p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
+                <div className="w-full bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#DDF3E9] flex-wrap gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-amber-400" />
+                      <div className="w-8 h-8 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-[#0CA17A]" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-black uppercase text-slate-200 tracking-wider">
+                        <h3 className="text-sm font-black uppercase text-[#022D32] tracking-wider">
                           {t.historyTableTitle || 'CARRIERA / STORICO FIP'}
                         </h3>
-                        <p className="text-[11px] text-slate-400 font-medium">
+                        <p className="text-[11px] text-[#022D32]/70 font-medium">
                           Statistiche aggregate e per stagione da database ufficiale FIP
                         </p>
                       </div>
@@ -3353,13 +4478,13 @@ export default function LeagueHub({ showToast }) {
                       <button
                         type="button"
                         onClick={() => setShowLegendModal(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9] border border-[#DDF3E9] text-[#022D32] text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
-                        <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+                        <HelpCircle className="w-3.5 h-3.5 text-[#0CA17A]" />
                         <span>{t.legendBtn || 'Legenda Tag'}</span>
                       </button>
                       {normalizedHistory.length > 0 && (
-                        <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/15 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                        <span className="text-xs font-mono font-bold text-[#0CA17A] bg-[#DDF3E9] px-3 py-1.5 rounded-xl border border-[#0CA17A]/30">
                           {normalizedHistory.length} {t.historySeason || 'STAGIONI'}
                         </span>
                       )}
@@ -3367,31 +4492,31 @@ export default function LeagueHub({ showToast }) {
                   </div>
 
                   {normalizedHistory.length > 0 ? (
-                    <div className="w-full overflow-x-auto rounded-xl border border-slate-800/80 bg-slate-950 shadow-inner">
+                    <div className="w-full overflow-x-auto rounded-xl border border-[#DDF3E9] bg-white shadow-xs">
                       <table className="w-full min-w-[760px] text-left text-xs border-collapse font-sans">
-                        <thead className="sticky top-0 z-20 shadow-md">
+                        <thead className="sticky top-0 z-20 shadow-xs">
                           {/* Column headers */}
-                          <tr className="border-b border-slate-800 bg-slate-900 text-slate-400 font-black uppercase text-[10px] tracking-wider">
-                            <th className="px-3.5 py-3 text-slate-300 font-bold whitespace-nowrap min-w-[130px]">{t.colSeason || 'Season'}</th>
-                            <th className="px-3.5 py-3 text-slate-300 font-bold min-w-[240px]">{t.colTeam || 'Team'}</th>
-                            <th className="px-2 py-3 text-center whitespace-nowrap min-w-[85px] text-amber-400/90" title="Tactical Scouting Tags">{t.colTags || 'TAGS'}</th>
+                          <tr className="border-b border-[#DDF3E9] bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider">
+                            <th className="px-3.5 py-3 text-[#022D32] font-bold whitespace-nowrap min-w-[130px]">{t.colSeason || 'Season'}</th>
+                            <th className="px-3.5 py-3 text-[#022D32] font-bold min-w-[240px]">{t.colTeam || 'Team'}</th>
+                            <th className="px-2 py-3 text-center whitespace-nowrap min-w-[85px] text-[#022D32]" title="Tactical Scouting Tags">{t.colTags || 'TAGS'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[50px]" title="Games Played">{t.colGp || 'GP'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px]" title="Points / Average">{t.colPpg || 'PTS/G'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px]" title="2-Pointers Made / Average">{t.col2pm || '2PM/G'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px]" title="3-Pointers Made / Average">{t.col3pm || '3PM/G'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px]" title="Free Throws">{t.colFtPct || 'FT%'}</th>
-                            <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px] text-amber-400/90" title="Fouls per game">{t.colFf || 'FF/P'}</th>
+                            <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px] text-[#022D32]" title="Fouls per game">{t.colFf || 'FF/P'}</th>
                             <th className="px-3 py-3 text-center whitespace-nowrap min-w-[65px]" title="Plus / Minus">{t.colPlusMinus || '+/-'}</th>
                           </tr>
 
                           {/* CAREER AGGREGATES HEADER ROW: MED (Career Average) */}
-                          <tr className="bg-slate-900/95 border-b-2 border-amber-500/40 text-xs font-mono font-bold">
+                          <tr className="bg-[#022D32] text-white border-b-2 border-[#0CA17A] text-xs font-mono font-bold">
                             <td className="px-3.5 py-3 whitespace-nowrap font-sans">
-                              <span className="font-black text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded text-[10px] border border-amber-500/40 inline-flex items-center gap-1">
+                              <span className="font-black text-white bg-[#0CA17A] px-2.5 py-1 rounded text-[10px] inline-flex items-center gap-1">
                                 {t.historyMed || 'MED'}
                               </span>
                             </td>
-                            <td className="px-3.5 py-3 text-amber-200/90 font-bold text-xs uppercase tracking-wider font-sans">
+                            <td className="px-3.5 py-3 text-white/90 font-bold text-xs uppercase tracking-wider font-sans">
                               {t.historyMedLabel || 'Media / Partita'}
                             </td>
                             <td className="px-2 py-3 text-center whitespace-nowrap">
@@ -3410,36 +4535,36 @@ export default function LeagueHub({ showToast }) {
                                     ))}
                                   </div>
                                 ) : (
-                                  <span className="text-slate-600 text-xs">—</span>
+                                  <span className="text-white/40 text-xs">—</span>
                                 );
                               })()}
                             </td>
-                            <td className="px-3 py-3 text-center text-slate-300 font-mono">
+                            <td className="px-3 py-3 text-center text-white font-mono">
                               {careerGames}
                             </td>
-                            <td className="px-3 py-3 text-center font-black text-rose-400 font-mono">
+                            <td className="px-3 py-3 text-center font-black text-emerald-300 font-mono">
                               {careerPpg.toFixed(1)}
                             </td>
-                            <td className="px-3 py-3 text-center text-sky-400 font-mono">
+                            <td className="px-3 py-3 text-center text-white font-mono font-bold">
                               {career2pm.toFixed(1)}
                             </td>
-                            <td className="px-3 py-3 text-center text-amber-300 font-mono">
+                            <td className="px-3 py-3 text-center text-emerald-300 font-mono font-bold">
                               {career3pm.toFixed(1)}
                             </td>
-                            <td className="px-3 py-3 text-center text-emerald-400 font-mono">
+                            <td className="px-3 py-3 text-center text-white font-mono font-bold">
                               {careerFtPct}
                             </td>
-                            <td className="px-3 py-3 text-center text-amber-300 font-mono">
+                            <td className="px-3 py-3 text-center text-white font-mono font-bold">
                               {careerFoulsAvg > 0 ? careerFoulsAvg.toFixed(1) : (careerFouls > 0 && careerGames > 0 ? (careerFouls / careerGames).toFixed(1) : '—')}
                             </td>
-                            <td className={`px-3 py-3 text-center font-mono ${careerPmAvg > 0 ? 'text-emerald-400' : careerPmAvg < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                            <td className={`px-3 py-3 text-center font-mono font-bold ${careerPmAvg > 0 ? 'text-emerald-300' : careerPmAvg < 0 ? 'text-rose-300' : 'text-white/80'}`}>
                               {careerPmAvg !== 0 ? (careerPmAvg > 0 ? `+${careerPmAvg.toFixed(1)}` : careerPmAvg.toFixed(1)) : '0.0'}
                             </td>
                           </tr>
                         </thead>
 
-                        <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
-                          {normalizedHistory.map((season) => {
+                        <tbody className="divide-y divide-[#DDF3E9]/80 font-mono text-xs">
+                          {normalizedHistory.map((season, sIdx) => {
                             const sKey = season.seasonName || season.seasonId || '—';
                             const teams = Array.isArray(season.teams) ? season.teams : [];
                             const hasTeams = teams.length > 0;
@@ -3464,28 +4589,14 @@ export default function LeagueHub({ showToast }) {
                                   : 0);
                             const sPm = rawPm !== 0 ? (rawPm > 0 ? `+${rawPm.toFixed(1)}` : rawPm.toFixed(1)) : '0.0';
 
-                            const rawReb = season.reboundsPerGame != null && Number(season.reboundsPerGame) > 0
-                              ? Number(season.reboundsPerGame)
-                              : (teams.length > 0 && teams.some(t => t.reboundsPerGame > 0)
-                                  ? (teams.reduce((a, t) => a + (t.games || 0) * (t.reboundsPerGame || 0), 0) / (sGames || 1))
-                                  : 0);
-                            const sReb = rawReb > 0 ? rawReb.toFixed(1) : '—';
-
-                            const rawAst = season.assistsPerGame != null && Number(season.assistsPerGame) > 0
-                              ? Number(season.assistsPerGame)
-                              : (teams.length > 0 && teams.some(t => t.assistsPerGame > 0)
-                                  ? (teams.reduce((a, t) => a + (t.games || 0) * (t.assistsPerGame || 0), 0) / (sGames || 1))
-                                  : 0);
-                            const sAst = rawAst > 0 ? rawAst.toFixed(1) : '—';
-
                             return (
                               <React.Fragment key={sKey}>
                                 {/* Main Season Aggregate Row */}
                                 <tr 
                                   onClick={() => hasTeams && toggleSeasonCollapse(sKey)}
-                                  className={`transition-colors ${hasTeams ? 'cursor-pointer' : ''} ${isCollapsed ? 'bg-slate-900/40 hover:bg-slate-800/50' : 'bg-slate-900/80 hover:bg-slate-800/70 border-t border-slate-800'}`}
+                                  className={`transition-colors ${hasTeams ? 'cursor-pointer' : ''} ${sIdx % 2 === 0 ? 'bg-[#DDF3E9]/25' : 'bg-white'} hover:bg-[#DDF3E9]/50 border-t border-[#DDF3E9] text-[#022D32]`}
                                 >
-                                  <td className="px-3.5 py-3 font-black text-amber-400 text-xs font-sans whitespace-nowrap">
+                                  <td className="px-3.5 py-3 font-black text-[#022D32] text-xs font-sans whitespace-nowrap">
                                     <div className="flex items-center gap-2">
                                       {hasTeams ? (
                                         <button
@@ -3494,35 +4605,35 @@ export default function LeagueHub({ showToast }) {
                                             e.stopPropagation();
                                             toggleSeasonCollapse(sKey);
                                           }}
-                                          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                                          className="p-1 rounded hover:bg-[#DDF3E9] text-[#022D32]/60 hover:text-[#022D32] transition-colors"
                                           aria-label="Toggle season teams"
                                         >
                                           {isCollapsed ? (
-                                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                                            <ChevronRight className="w-4 h-4 text-[#022D32]/60" />
                                           ) : (
-                                            <ChevronDown className="w-4 h-4 text-amber-400" />
+                                            <ChevronDown className="w-4 h-4 text-[#0CA17A]" />
                                           )}
                                         </button>
                                       ) : (
-                                        <span className="w-4 inline-block text-center text-slate-600 font-bold">•</span>
+                                        <span className="w-4 inline-block text-center text-[#022D32]/40 font-bold">•</span>
                                       )}
-                                      <span className="font-bold text-amber-300 text-sm">{season.seasonName || season.seasonId || '—'}</span>
+                                      <span className="font-bold text-[#022D32] text-sm">{season.seasonName || season.seasonId || '—'}</span>
                                     </div>
                                   </td>
-                                  <td className="px-3.5 py-3 text-slate-300 font-bold text-xs font-sans">
+                                  <td className="px-3.5 py-3 text-[#022D32] font-bold text-xs font-sans">
                                     {teams.length > 1 ? (
-                                      <span className="inline-flex items-center gap-1.5 text-slate-300 font-semibold text-xs">
-                                        <span className="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 text-[10px] uppercase font-bold">
+                                      <span className="inline-flex items-center gap-1.5 text-[#022D32] font-semibold text-xs">
+                                        <span className="text-[#065F46] bg-white px-2 py-0.5 rounded border border-[#0CA17A]/40 text-[10px] uppercase font-black">
                                           {t.seasonTotalBadge || 'TOTALE'}
                                         </span>
-                                        <span className="text-slate-400 italic">
+                                        <span className="text-[#022D32]/70 italic">
                                           {t.combinedTeams ? t.combinedTeams.replace('{count}', teams.length) : `(${teams.length} Squadre)`}
                                         </span>
                                       </span>
                                     ) : teams.length === 1 ? (
-                                      <span className="text-slate-200 font-bold">{teams[0].teamName || '—'}</span>
+                                      <span className="text-[#022D32] font-bold">{teams[0].teamName || '—'}</span>
                                     ) : (
-                                      <span className="text-slate-200 font-bold">{season.teamName || '—'}</span>
+                                      <span className="text-[#022D32] font-bold">{season.teamName || '—'}</span>
                                     )}
                                   </td>
                                   <td className="px-2 py-3 text-center whitespace-nowrap">
@@ -3541,29 +4652,29 @@ export default function LeagueHub({ showToast }) {
                                           ))}
                                         </div>
                                       ) : (
-                                        <span className="text-slate-600 text-xs">—</span>
+                                        <span className="text-[#022D32]/40 text-xs font-bold">—</span>
                                       );
                                     })()}
                                   </td>
-                                  <td className="px-3 py-3 text-center text-slate-200 font-bold font-mono">
+                                  <td className="px-3 py-3 text-center text-[#022D32] font-bold font-mono">
                                     {sGames}
                                   </td>
-                                  <td className="px-3 py-3 text-center font-black text-rose-400 font-mono text-sm">
+                                  <td className="px-3 py-3 text-center font-black text-[#022D32] font-mono text-sm">
                                     {sPpg}
                                   </td>
-                                  <td className="px-3 py-3 text-center text-sky-400 font-mono font-bold">
+                                  <td className="px-3 py-3 text-center text-[#022D32] font-mono font-bold">
                                     {s2pm}
                                   </td>
-                                  <td className="px-3 py-3 text-center text-amber-300 font-mono font-bold">
+                                  <td className="px-3 py-3 text-center text-[#022D32] font-mono font-bold">
                                     {s3pm}
                                   </td>
-                                  <td className="px-3 py-3 text-center text-emerald-400 font-mono font-bold">
+                                  <td className="px-3 py-3 text-center text-[#022D32] font-mono font-bold">
                                     {sFtPct}
                                   </td>
-                                  <td className="px-3 py-3 text-center text-amber-300 font-mono font-bold">
+                                  <td className="px-3 py-3 text-center text-[#022D32] font-mono font-bold">
                                     {sFouls}
                                   </td>
-                                  <td className={`px-3 py-3 text-center font-mono font-bold ${rawPm > 0 ? 'text-emerald-400' : rawPm < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                                  <td className={`px-3 py-3 text-center font-mono font-bold ${rawPm > 0 ? 'text-emerald-700' : rawPm < 0 ? 'text-rose-700' : 'text-[#022D32]'}`}>
                                     {sPm}
                                   </td>
                                 </tr>
@@ -3578,8 +4689,6 @@ export default function LeagueHub({ showToast }) {
                                   const tFouls = team.foulsPerGame != null && Number(team.foulsPerGame) > 0 ? Number(team.foulsPerGame).toFixed(1) : '—';
                                   const tPmRaw = team.plusMinusPerGame != null ? Number(team.plusMinusPerGame) : 0;
                                   const tPm = tPmRaw !== 0 ? (tPmRaw > 0 ? `+${tPmRaw.toFixed(1)}` : tPmRaw.toFixed(1)) : '0.0';
-                                  const tReb = team.reboundsPerGame != null && Number(team.reboundsPerGame) > 0 ? Number(team.reboundsPerGame).toFixed(1) : '—';
-                                  const tAst = team.assistsPerGame != null && Number(team.assistsPerGame) > 0 ? Number(team.assistsPerGame).toFixed(1) : '—';
 
                                   // Extract competition and clean team name
                                   let displayComp = team.competitionName ? team.competitionName.trim() : '';
@@ -3595,23 +4704,23 @@ export default function LeagueHub({ showToast }) {
                                   }
 
                                   return (
-                                    <tr key={`${sKey}-team-${tIdx}`} className="bg-slate-950/70 hover:bg-slate-900/50 border-b border-slate-800/40 transition-colors">
+                                    <tr key={`${sKey}-team-${tIdx}`} className="bg-white hover:bg-[#F8F9FA] border-b border-[#DDF3E9]/50 transition-colors text-[#022D32]">
                                       {/* Indented indicator */}
-                                      <td className="py-2.5 px-3.5 pl-8 text-slate-500 font-mono text-xs whitespace-nowrap">
-                                        <div className="flex items-center gap-1.5 text-slate-500">
-                                          <span className="text-slate-600 font-bold font-sans">↳</span>
-                                          <span className="text-xs font-sans text-slate-400 font-medium">{season.seasonName}</span>
+                                      <td className="py-2.5 px-3.5 pl-8 text-[#022D32]/60 font-mono text-xs whitespace-nowrap">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-[#0CA17A] font-bold font-sans">↳</span>
+                                          <span className="text-xs font-sans text-[#022D32]/60 font-medium">{season.seasonName}</span>
                                         </div>
                                       </td>
-                                      {/* Team details: competitionName in uppercase rose on top, teamName below */}
+                                      {/* Team details: competitionName in uppercase accent on top, teamName below */}
                                       <td className="py-2.5 px-3.5 text-xs font-sans whitespace-normal break-words min-w-[260px]">
                                         <div className="flex flex-col">
                                           {displayComp ? (
-                                            <span className="text-[10px] font-bold text-rose-400/90 tracking-wide uppercase leading-tight line-clamp-1" title={displayComp}>
+                                            <span className="text-[10px] font-bold text-[#0CA17A] tracking-wide uppercase leading-tight line-clamp-1" title={displayComp}>
                                               {displayComp}
                                             </span>
                                           ) : null}
-                                          <span className="text-xs font-bold text-slate-200 leading-tight">
+                                          <span className="text-xs font-bold text-[#022D32] leading-tight">
                                             {displayTeam}
                                           </span>
                                         </div>
@@ -3632,29 +4741,29 @@ export default function LeagueHub({ showToast }) {
                                               ))}
                                             </div>
                                           ) : (
-                                            <span className="text-slate-700 text-xs">—</span>
+                                            <span className="text-[#022D32]/30 text-xs">—</span>
                                           );
                                         })()}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center text-slate-300 font-mono">
+                                      <td className="py-2.5 px-3 text-center text-[#022D32]/80 font-mono">
                                         {tGames}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center font-bold text-rose-400/90 font-mono">
+                                      <td className="py-2.5 px-3 text-center font-bold text-[#022D32] font-mono">
                                         {tPpg}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center text-sky-400/90 font-mono">
+                                      <td className="py-2.5 px-3 text-center text-[#022D32]/80 font-mono">
                                         {t2pm}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center text-amber-300/90 font-mono">
+                                      <td className="py-2.5 px-3 text-center text-[#0CA17A] font-mono">
                                         {t3pm}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center text-emerald-400 font-mono">
+                                      <td className="py-2.5 px-3 text-center text-[#022D32]/80 font-mono">
                                         {tFtPct}
                                       </td>
-                                      <td className="py-2.5 px-3 text-center text-amber-300 font-mono">
+                                      <td className="py-2.5 px-3 text-center text-[#022D32]/80 font-mono">
                                         {tFouls}
                                       </td>
-                                      <td className={`py-2.5 px-3 text-center font-mono ${tPmRaw > 0 ? 'text-emerald-400' : tPmRaw < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                                      <td className={`py-2.5 px-3 text-center font-mono ${tPmRaw > 0 ? 'text-emerald-700 font-bold' : tPmRaw < 0 ? 'text-rose-700 font-bold' : 'text-[#022D32]'}`}>
                                         {tPm}
                                       </td>
                                     </tr>
@@ -3667,7 +4776,7 @@ export default function LeagueHub({ showToast }) {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 italic py-4 text-center">
+                    <p className="text-xs text-[#022D32]/60 italic py-4 text-center">
                       {t.noHistory || 'Nessun dato di carriera disponibile.'}
                     </p>
                   )}
@@ -3684,19 +4793,19 @@ export default function LeagueHub({ showToast }) {
       {/* TACTICAL TAGS SCOUTING LEGENDA MODAL                                      */}
       {/* ========================================================================= */}
       {showLegendModal && (
-        <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[100] bg-[#022D32]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-none">
-                  <Shield className="w-5 h-5 text-amber-400" />
+                <div className="w-9 h-9 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none">
+                  <Shield className="w-5 h-5 text-[#0CA17A]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-100 uppercase tracking-wider">
+                  <h3 className="text-base font-black text-[#022D32] uppercase tracking-wider">
                     {t.legendTitle || 'LEGENDA TAG TATTICI'}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#022D32]/70">
                     {t.legendSubtitle || 'Metriche di scouting avanzate e regole di classificazione applicate a profilo e stagioni'}
                   </p>
                 </div>
@@ -3704,7 +4813,7 @@ export default function LeagueHub({ showToast }) {
               <button
                 type="button"
                 onClick={() => setShowLegendModal(false)}
-                className="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+                className="text-[#022D32]/60 hover:text-[#022D32] p-1.5 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9] transition-colors cursor-pointer"
                 aria-label="Close legend modal"
               >
                 <X className="w-5 h-5" />
@@ -3716,20 +4825,20 @@ export default function LeagueHub({ showToast }) {
               {TACTICAL_TAGS_CONFIG.map(tag => (
                 <div 
                   key={tag.id}
-                  className={`p-3.5 sm:p-4 rounded-xl border ${tag.badgeClass} flex items-center justify-between gap-2 flex-wrap bg-slate-950/50`}
+                  className={`p-3.5 sm:p-4 rounded-xl border ${tag.badgeClass} flex items-center justify-between gap-2 flex-wrap bg-white shadow-xs`}
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="text-2xl flex-none select-none">{tag.icon}</span>
                     <div>
-                      <span className="font-black text-sm uppercase tracking-wide text-white block">
+                      <span className="font-black text-sm uppercase tracking-wide text-[#022D32] block">
                         {lang === 'it' ? tag.labelIt : tag.label}
                       </span>
-                      <span className="text-[11px] text-slate-400 font-medium">
+                      <span className="text-[11px] text-[#022D32]/70 font-medium">
                         {lang === 'it' ? tag.criteriaDesc : tag.criteriaDescEn}
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-mono font-bold bg-slate-900 border border-slate-700/80 px-2.5 py-1 rounded-lg text-amber-300">
+                  <span className="text-xs font-mono font-bold bg-[#F8F9FA] border border-[#DDF3E9] px-2.5 py-1 rounded-lg text-[#022D32]">
                     {tag.criteria}
                   </span>
                 </div>
@@ -3737,11 +4846,11 @@ export default function LeagueHub({ showToast }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end pt-3 border-t border-[#DDF3E9]">
               <button
                 type="button"
                 onClick={() => setShowLegendModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
               >
                 Chiudi Legenda
               </button>
@@ -3754,18 +4863,18 @@ export default function LeagueHub({ showToast }) {
       {/* 4. JSON IMPORTER MODAL                                                    */}
       {/* ========================================================================= */}
       {showImporter && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-[#022D32]/60 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center">
-                  <Upload className="w-4 h-4 text-rose-400" />
+                <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                  <Upload className="w-4 h-4 text-[#0CA17A]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-100 uppercase tracking-wider">
+                  <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider">
                     IMPORT LEAGUE JSON
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-[#022D32]/70">
                     Paste raw standings or roster JSON to update the Hub
                   </p>
                 </div>
@@ -3773,7 +4882,7 @@ export default function LeagueHub({ showToast }) {
               <button
                 type="button"
                 onClick={() => setShowImporter(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-md"
+                className="text-[#022D32]/60 hover:text-[#022D32] p-1 rounded-md"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3784,14 +4893,14 @@ export default function LeagueHub({ showToast }) {
               onChange={(e) => setJsonInputText(e.target.value)}
               rows={8}
               placeholder='[{"rank": 1, "teamFid": "...", "name": "...", "points": 28, "won": 14, "lost": 4}]'
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-400"
+              className="w-full bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-3 font-mono text-xs text-[#022D32] focus:outline-none focus:border-[#0CA17A]"
             />
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-between pt-2 border-t border-[#DDF3E9]">
               <button
                 type="button"
                 onClick={handleResetToDefault}
-                className="text-xs font-bold text-amber-400 hover:underline"
+                className="text-xs font-bold text-[#0CA17A] hover:underline"
               >
                 Reset to Default Sample League
               </button>
@@ -3799,7 +4908,7 @@ export default function LeagueHub({ showToast }) {
                 <button
                   type="button"
                   onClick={() => setShowImporter(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-1.5 rounded-lg text-xs"
+                  className="bg-[#F8F9FA] hover:bg-[#DDF3E9] text-[#022D32] font-bold px-3 py-1.5 rounded-lg text-xs transition-colors"
                 >
                   Cancel
                 </button>
@@ -3823,7 +4932,7 @@ export default function LeagueHub({ showToast }) {
                       setStatusMsg(`❌ JSON Error: ${err.message}`);
                     }
                   }}
-                  className="bg-rose-600 hover:bg-rose-500 text-white font-black px-4 py-1.5 rounded-lg text-xs transition-all shadow-md active:scale-95"
+                  className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-1.5 rounded-lg text-xs transition-all shadow-xs active:scale-95"
                 >
                   LOAD
                 </button>

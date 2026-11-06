@@ -4,18 +4,19 @@
 
 :root {
   /* Official BBA Club Brand Identity */
-  --team-primary: #032c32;
+  --team-primary: #022D32;
   --team-primary-light: #064E5B;
-  --team-accent: #F59E0B;
-  --team-accent-gold: #FBBF24;
+  --team-accent: #0CA17A;
+  --team-accent-gold: #F59E0B;
+  --team-tertiary: #DDF3E9;
   
   /* SaaS / Broadcast Surfaces & Borders */
-  --surface-main: #0B0F17;
-  --surface-card: #111827;
-  --surface-btn: #161F30;
-  --border-card: #1F2937;
-  --border-btn: #26334D;
-  --surface-btn-hover: #1E293B;
+  --surface-main: #F8F9FA;
+  --surface-card: #FFFFFF;
+  --surface-btn: #FFFFFF;
+  --border-card: #DDF3E9;
+  --border-btn: #C6E8DB;
+  --surface-btn-hover: #DDF3E9;
 }
 
 @layer base {
@@ -32,7 +33,7 @@ html, body, #root {
   width: 100vw;
   overflow: hidden !important;
   background-color: var(--surface-main);
-  color: #F1F5F9;
+  color: var(--team-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
@@ -41,58 +42,59 @@ html, body, #root {
 
 /* Custom Minimalist Precision Scrollbars */
 ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #F8F9FA;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1F2937;
-  border-radius: 2px;
+  background: #C6E8DB;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #0CA17A;
 }
 
 /* Professional Analytics Cards */
 .glass-card {
   background-color: var(--surface-card);
   border: 1px solid var(--border-card);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(2, 45, 50, 0.06);
 }
 
 /* Action Control Panels */
 .cluster-panel-dense {
   background-color: var(--surface-card);
   border: 1px solid var(--border-card);
-  border-radius: 6px;
-  padding: 5px 7px;
+  border-radius: 10px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 2px rgba(2, 45, 50, 0.04);
 }
 .cluster-header-title {
-  color: #94A3B8;
-  font-size: 0.65rem;
-  font-weight: 700;
+  color: #022D32;
+  font-size: 0.68rem;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-/* Professional Action Buttons — Sleek Dark-Surface Buttons with 3px Semantic Left Borders */
+/* Professional Action Buttons — Sleek Light-Surface Buttons with 3px Semantic Left Borders */
 .action-btn-dense {
   width: 100%;
-  height: 34px;
-  min-height: 34px;
+  height: 36px;
+  min-height: 36px;
   font-size: 0.74rem;
-  font-weight: 700;
-  border-radius: 6px;
-  background-color: var(--surface-btn);
-  border: 1px solid var(--border-btn);
-  color: #E2E8F0;
+  font-weight: 800;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+  border: 1px solid #C6E8DB;
+  color: #022D32;
   cursor: pointer;
   transition: all 0.12s ease;
   text-transform: uppercase;
@@ -100,15 +102,15 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   padding: 2px 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(2, 45, 50, 0.05);
   user-select: none;
 }
 .action-btn-dense:hover {
-  background-color: var(--surface-btn-hover);
-  border-color: #374151;
-  color: #FFFFFF;
+  background-color: #DDF3E9;
+  border-color: #0CA17A;
+  color: #022D32;
 }
 .action-btn-dense:active {
   transform: scale(0.97);
@@ -118,164 +120,178 @@ html, body, #root {
 
 /* Made Shots (Field Goals) - Emerald Accent */
 .btn-made-bg {
-  border-left: 3px solid #10B981 !important;
-  color: #ECFDF5;
+  border-left: 4px solid #0CA17A !important;
+  color: #022D32;
+  background-color: #F0FDF4;
 }
 .btn-made-bg:hover {
-  background-color: #064E3B;
-  border-color: #10B981;
+  background-color: #DCFCE7;
+  border-color: #0CA17A;
 }
 
 /* Free Throw Made - Emerald Accent */
 .btn-ft-made-bg {
-  border-left: 3px solid #10B981 !important;
-  color: #ECFDF5;
+  border-left: 4px solid #0CA17A !important;
+  color: #022D32;
+  background-color: #F0FDF4;
 }
 .btn-ft-made-bg:hover {
-  background-color: #064E3B;
-  border-color: #10B981;
+  background-color: #DCFCE7;
+  border-color: #0CA17A;
 }
 
 /* Missed Shots (Field Goals) - Crimson Accent */
 .btn-miss-bg {
-  border-left: 3px solid #F43F5E !important;
-  color: #FFF1F2;
+  border-left: 4px solid #F43F5E !important;
+  color: #9F1239;
+  background-color: #FFF1F2;
 }
 .btn-miss-bg:hover {
-  background-color: #4C0519;
+  background-color: #FFE4E6;
   border-color: #F43F5E;
 }
 
 /* Free Throw Missed - Crimson Accent */
 .btn-ft-miss-bg {
-  border-left: 3px solid #F43F5E !important;
-  color: #FFF1F2;
+  border-left: 4px solid #F43F5E !important;
+  color: #9F1239;
+  background-color: #FFF1F2;
 }
 .btn-ft-miss-bg:hover {
-  background-color: #4C0519;
+  background-color: #FFE4E6;
   border-color: #F43F5E;
 }
 
 /* Steals (Defensive takeaway) - Blue Accent */
 .btn-stl-bg {
-  border-left: 3px solid #3B82F6 !important;
-  color: #EFF6FF;
+  border-left: 4px solid #0284C7 !important;
+  color: #0369A1;
+  background-color: #F0F9FF;
 }
 .btn-stl-bg:hover {
-  background-color: #1E3A8A;
-  border-color: #3B82F6;
+  background-color: #E0F2FE;
+  border-color: #0284C7;
 }
 
 /* Turnovers (Lost possession) - Amber Accent */
 .btn-tov-bg {
-  border-left: 3px solid #F59E0B !important;
-  color: #FFFBEB;
+  border-left: 4px solid #D97706 !important;
+  color: #B45309;
+  background-color: #FFFBEB;
 }
 .btn-tov-bg:hover {
-  background-color: #451A03;
-  border-color: #F59E0B;
+  background-color: #FEF3C7;
+  border-color: #D97706;
 }
 
 /* Blocks (Rejection) - Indigo Accent */
 .btn-blk-bg {
-  border-left: 3px solid #6366F1 !important;
-  color: #EEF2FF;
+  border-left: 4px solid #4F46E5 !important;
+  color: #4338CA;
+  background-color: #EEF2FF;
 }
 .btn-blk-bg:hover {
-  background-color: #312E81;
-  border-color: #6366F1;
+  background-color: #E0E7FF;
+  border-color: #4F46E5;
 }
 
 /* Offensive Rebound - Warm Amber/Gold Accent */
 .btn-oreb-bg {
-  border-left: 3px solid #F59E0B !important;
-  color: #FEF3C7;
+  border-left: 4px solid #D97706 !important;
+  color: #92400E;
+  background-color: #FFFBEB;
 }
 .btn-oreb-bg:hover {
-  background-color: #451A03;
-  border-color: #F59E0B;
+  background-color: #FEF3C7;
+  border-color: #D97706;
 }
 
 /* Defensive Rebound - Sky Accent */
 .btn-dreb-bg {
-  border-left: 3px solid #0EA5E9 !important;
-  color: #F0F9FF;
+  border-left: 4px solid #0284C7 !important;
+  color: #075985;
+  background-color: #F0F9FF;
 }
 .btn-dreb-bg:hover {
-  background-color: #0C4A6E;
-  border-color: #0EA5E9;
+  background-color: #E0F2FE;
+  border-color: #0284C7;
 }
 
 /* Personal Foul - Rose Accent */
 .btn-foul-bg {
-  border-left: 3px solid #E11D48 !important;
-  color: #FFF1F2;
+  border-left: 4px solid #E11D48 !important;
+  color: #9F1239;
+  background-color: #FFF1F2;
 }
 .btn-foul-bg:hover {
-  background-color: #4C0519;
+  background-color: #FFE4E6;
   border-color: #E11D48;
 }
 
 /* Foul Drawn (Positive contact created) - Violet Accent */
 .btn-fd-bg {
-  border-left: 3px solid #8B5CF6 !important;
-  color: #F5F3FF;
+  border-left: 4px solid #7C3AED !important;
+  color: #6D28D9;
+  background-color: #F5F3FF;
 }
 .btn-fd-bg:hover {
-  background-color: #2E1065;
-  border-color: #8B5CF6;
+  background-color: #EDE9FE;
+  border-color: #7C3AED;
 }
 
 /* Undo Button - Clean Neutral Slate */
 .btn-undo-bg {
-  border-left: 3px solid #64748B !important;
-  color: #F1F5F9;
+  border-left: 4px solid #64748B !important;
+  color: #334155;
+  background-color: #F8FAFC;
 }
 .btn-undo-bg:hover {
-  background-color: #334155;
+  background-color: #F1F5F9;
   border-color: #64748B;
-  color: #FFFFFF;
+  color: #0F172A;
 }
 
 /* Tactical Techniques: Stagger - Violet Accent */
 .btn-tactics-stagger {
-  border-left: 3px solid #8B5CF6 !important;
-  color: #F5F3FF;
+  border-left: 4px solid #7C3AED !important;
+  color: #6D28D9;
+  background-color: #F5F3FF;
 }
 .btn-tactics-stagger:hover {
-  background-color: #2E1065;
-  border-color: #8B5CF6;
+  background-color: #EDE9FE;
+  border-color: #7C3AED;
 }
 
 /* Tactical Techniques: Ghost - Cyan Accent */
 .btn-tactics-ghost {
-  border-left: 3px solid #06B6D4 !important;
-  color: #ECFEFF;
+  border-left: 4px solid #0891B2 !important;
+  color: #0E7490;
+  background-color: #ECFEFF;
 }
 .btn-tactics-ghost:hover {
-  background-color: #164E63;
-  border-color: #06B6D4;
+  background-color: #CFFAFE;
+  border-color: #0891B2;
 }
 
 /* Opponent Scoring Action Buttons */
 .btn-opp-score {
-  background-color: #161F30;
-  border: 1px solid #374151;
-  border-left: 3px solid #F43F5E !important;
-  color: #FDA4AF;
+  background-color: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-left: 4px solid #F43F5E !important;
+  color: #9F1239;
   font-weight: 800;
-  padding: 2px 7px;
-  height: 28px;
-  font-size: 0.7rem;
-  border-radius: 5px;
+  padding: 2px 8px;
+  height: 30px;
+  font-size: 0.72rem;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.12s ease;
   user-select: none;
 }
 .btn-opp-score:hover {
-  background-color: #4C0519;
+  background-color: #FFE4E6;
   border-color: #F43F5E;
-  color: #FFFFFF;
+  color: #881337;
 }
 .btn-opp-score:active {
   transform: scale(0.95);
@@ -283,26 +299,28 @@ html, body, #root {
 
 /* Dense Live Stat Metric Pills */
 .stat-pill-dense {
-  background-color: #0B0F17;
-  border: 1px solid #1F2937;
-  border-radius: 4px;
-  padding: 2px 6px;
+  background-color: #FFFFFF;
+  border: 1px solid #DDF3E9;
+  border-radius: 6px;
+  padding: 2px 7px;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #022D32;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgba(2, 45, 50, 0.04);
 }
 
 .stat-pill-gold-dense {
-  background-color: #0B0F17;
-  color: var(--team-accent-gold);
-  border: 1px solid #78350F;
-  border-radius: 4px;
+  background-color: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  border-radius: 6px;
   padding: 2px 8px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -313,7 +331,7 @@ html, body, #root {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.45rem;
   font-weight: 800;
-  color: #F8FAFC;
+  color: #022D32;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
 }

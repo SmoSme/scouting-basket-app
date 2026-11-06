@@ -176,6 +176,45 @@ const QUERY_UNIQUE_PLAYER = `query UniquePlayer($uniquePlayerId: String!, $hideP
   }
 }`;
 
+// Step 3: Match Trends Query (Home/Away & Quarters Analysis)
+const QUERY_TEAM_MATCHES = `query GetTeamMatches($projectKey: String!, $competitionFid: String!, $teamFid: String!) {
+  teamMatch(projectKey: $projectKey, competitionFid: $competitionFid, teamFid: $teamFid) {
+    fid
+    date
+    status
+    roundName
+    homeTeam { fid name }
+    awayTeam { fid name }
+    scores {
+      total { homeScore awayScore }
+      partials { homeScore awayScore period }
+    }
+  }
+}`;
+
+// Step 4: Q1 Match Boxscore Query (Starting Frequency Analyzer)
+const QUERY_MATCH_BOXSCORE = `query GetMatchBoxscore($projectKey: String!, $matchFid: String!) {
+  matchBy(projectKey: $projectKey, fid: $matchFid) {
+    fid
+    boxscore(periods: [1]) {
+      homeTeam {
+        team { fid name }
+        players {
+          player { fid name lastName number }
+          stats { timePlayed points }
+        }
+      }
+      awayTeam {
+        team { fid name }
+        players {
+          player { fid name lastName number }
+          stats { timePlayed points }
+        }
+      }
+    }
+  }
+}`;
+
 /**
  * Execute a GraphQL query with timeout controller and exponential backoff retry.
  * Handles HTTP 503, 502, 429, timeouts, and network stalls stealthily.
@@ -698,17 +737,249 @@ async function buildLeaguePipeline() {
 
   // Save updated standings with continuityPct
   fs.writeFileSync(standingsFilePath, JSON.stringify(basicStandings, null, 2), 'utf-8');
+  console.log(`\n💾 [1/3] Saved league standings with retention to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
 
-  // Save the full rosters dictionary
+  // -----------------------------------------------------------------
+  // STEP 3: Opponent Match Trends & Quarter Splits Pipeline
+  // -----------------------------------------------------------------
+  console.log('\n[3/4] 📈 Processing Advanced Opponent Trends (Home/Away & Quarters)...');
+  const trendsFilePath = path.join(DATA_DIR, 'team_trends.json');
+  let existingTrends = {};
+  try {
+    if (fs.existsSync(trendsFilePath)) {
+      existingTrends = JSON.parse(fs.readFileSync(trendsFilePath, 'utf-8'));
+    }
+  } catch (e) {}
+
+  const allTrends = { ...existingTrends };
+
+  for (let i = 0; i < opponents.length; i++) {
+    const opp = opponents[i];
+    const oppFid = String(opp.fid);
+    const oppName = opp.name || oppFid;
+
+    try {
+      if (i > 0) await sleep(1200);
+
+      const matchesData = await executeGraphQL(
+        'GetTeamMatches',
+        QUERY_TEAM_MATCHES,
+        { projectKey: PROJECT_KEY, competitionFid: COMPETITION_ID, teamFid: oppFid },
+        { maxRetries: 2, baseDelay: 1500, timeoutMs: 10000 }
+      );
+
+      const matches = matchesData?.teamMatch || [];
+      const closedMatches = matches.filter(m => m.status === 'CLOSED').sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const stats = {
+        global: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+        home: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+        away: { games: 0, pointsScored: 0, pointsConceded: 0, wins: 0, losses: 0 },
+        quarters: {
+          Q1: { scored: 0, conceded: 0 },
+          Q2: { scored: 0, conceded: 0 },
+          Q3: { scored: 0, conceded: 0 },
+          Q4: { scored: 0, conceded: 0 }
+        },
+        streak: [],
+        log: []
+      };
+
+      for (const match of closedMatches) {
+        const isHome = match.homeTeam?.fid === oppFid;
+        const scores = match.scores?.total;
+        if (!scores) continue;
+
+        const scored = isHome ? scores.homeScore : scores.awayScore;
+        const conceded = isHome ? scores.awayScore : scores.homeScore;
+        const isWin = scored > conceded;
+
+        stats.log.push({
+          matchFid: match.fid,
+          date: match.date,
+          round: match.roundName || '',
+          homeTeam: match.homeTeam?.name || 'Casa',
+          awayTeam: match.awayTeam?.name || 'Trasferta',
+          homeScore: scores.homeScore,
+          awayScore: scores.awayScore,
+          isWin: isWin,
+          isHomeGame: isHome,
+          partials: match.scores?.partials || []
+        });
+
+        stats.global.games++;
+        stats.global.pointsScored += scored;
+        stats.global.pointsConceded += conceded;
+        isWin ? stats.global.wins++ : stats.global.losses++;
+
+        if (stats.streak.length < 5) stats.streak.push(isWin ? 'V' : 'P');
+
+        const loc = isHome ? stats.home : stats.away;
+        loc.games++;
+        loc.pointsScored += scored;
+        loc.pointsConceded += conceded;
+        isWin ? loc.wins++ : loc.losses++;
+
+        const partials = match.scores?.partials || [];
+        for (const p of partials) {
+          const qName = `Q${p.period}`;
+          if (stats.quarters[qName]) {
+            stats.quarters[qName].scored += isHome ? p.homeScore : p.awayScore;
+            stats.quarters[qName].conceded += isHome ? p.awayScore : p.homeScore;
+          }
+        }
+      }
+
+      stats.streak = stats.streak.reverse();
+
+      const g = stats.global.games;
+      const quarterAverages = {};
+      if (g > 0) {
+        ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => {
+          quarterAverages[q] = {
+            scoredAvg: Number((stats.quarters[q].scored / g).toFixed(1)),
+            concededAvg: Number((stats.quarters[q].conceded / g).toFixed(1)),
+            diff: Number(((stats.quarters[q].scored / g) - (stats.quarters[q].conceded / g)).toFixed(1))
+          };
+        });
+      }
+      stats.quarterAverages = quarterAverages;
+
+      allTrends[oppFid] = stats;
+      console.log(`    ✅ Calculated trends for "${oppName}" (${g} matches).`);
+    } catch (trendErr) {
+      console.warn(`    ⚠️ Note: Trends fetch for "${oppName}": ${trendErr.message}`);
+      if (!allTrends[oppFid] && existingTrends[oppFid]) {
+        allTrends[oppFid] = existingTrends[oppFid];
+      }
+    }
+  }
+
+  // Save team_trends.json
+  fs.writeFileSync(trendsFilePath, JSON.stringify(allTrends, null, 2), 'utf-8');
+  console.log(`💾 [2/3] Saved team trends to: ${path.relative(ROOT_DIR, trendsFilePath)}`);
+
+  // -----------------------------------------------------------------
+  // STEP 4: Starter Frequencies Analysis & Boxscore Extraction
+  // -----------------------------------------------------------------
+  console.log('\n[4/4] 🏀 Analyzing Starting Frequencies from Q1 Boxscores...');
+  const startersFilePath = path.join(DATA_DIR, 'team_starters.json');
+  let existingStarters = {};
+  try {
+    if (fs.existsSync(startersFilePath)) {
+      existingStarters = JSON.parse(fs.readFileSync(startersFilePath, 'utf-8'));
+    }
+  } catch (e) {}
+
+  const allTeamStarters = { ...existingStarters };
+
+  for (const [teamFid, teamData] of Object.entries(allTrends)) {
+    const matchLog = teamData.log || [];
+    if (matchLog.length === 0) continue;
+
+    // Check if already analyzed in existingStarters
+    if (existingStarters[teamFid] && existingStarters[teamFid].totalMatches >= matchLog.length) {
+      allTeamStarters[teamFid] = existingStarters[teamFid];
+      continue;
+    }
+
+    const playerStarterCounts = {};
+    let totalAnalyzedMatches = 0;
+
+    for (const matchItem of matchLog) {
+      const matchFid = matchItem.matchFid;
+      if (!matchFid) continue;
+
+      try {
+        await sleep(1000);
+        const boxData = await executeGraphQL(
+          'GetMatchBoxscore',
+          QUERY_MATCH_BOXSCORE,
+          { projectKey: PROJECT_KEY, matchFid: String(matchFid) },
+          { maxRetries: 2, baseDelay: 1000, timeoutMs: 8000 }
+        );
+
+        const matchObj = boxData?.matchBy?.[0];
+        const boxscore = matchObj?.boxscore;
+        if (!boxscore) continue;
+
+        const isHome = boxscore.homeTeam?.team?.fid === teamFid;
+        const teamBox = isHome ? boxscore.homeTeam : boxscore.awayTeam;
+        const rawPlayers = teamBox?.players || [];
+        if (rawPlayers.length === 0) continue;
+
+        const sortedByTime = rawPlayers
+          .filter(p => p && p.player)
+          .sort((a, b) => (b.stats?.timePlayed || 0) - (a.stats?.timePlayed || 0));
+
+        const top5 = sortedByTime.slice(0, 5);
+        totalAnalyzedMatches++;
+
+        for (const p of top5) {
+          const pFid = p.player.fid;
+          if (!playerStarterCounts[pFid]) {
+            playerStarterCounts[pFid] = {
+              fid: pFid,
+              name: p.player.name,
+              lastName: p.player.lastName,
+              number: p.player.number,
+              startsCount: 0
+            };
+          }
+          playerStarterCounts[pFid].startsCount++;
+        }
+      } catch (boxErr) {
+        // Continue on single match error
+      }
+    }
+
+    if (totalAnalyzedMatches > 0) {
+      const structuredStarters = Object.values(playerStarterCounts).map(player => ({
+        ...player,
+        startPercentage: Math.round((player.startsCount / totalAnalyzedMatches) * 100),
+        totalMatchesChecked: totalAnalyzedMatches
+      })).sort((a, b) => b.startPercentage - a.startPercentage);
+
+      allTeamStarters[teamFid] = {
+        totalMatches: totalAnalyzedMatches,
+        players: structuredStarters
+      };
+    }
+  }
+
+  // Save intermediate team_starters.json
+  fs.writeFileSync(startersFilePath, JSON.stringify(allTeamStarters, null, 2), 'utf-8');
+
+  // -----------------------------------------------------------------
+  // STEP 5: Enrich Rosters Dictionary with startPercentage
+  // -----------------------------------------------------------------
+  console.log('\n⭐ Enriching all rosters with starting frequency percentage (startPercentage)...');
+  for (const [teamFid, players] of Object.entries(rostersDictionary)) {
+    const teamStarters = allTeamStarters[teamFid]?.players || [];
+    const starterMap = new Map();
+    teamStarters.forEach(s => starterMap.set(String(s.fid), s));
+
+    players.forEach(p => {
+      const s = starterMap.get(String(p.fid));
+      if (s && s.startPercentage != null) {
+        p.startPercentage = `${s.startPercentage}%`;
+        p.startsCount = s.startsCount || 0;
+      } else {
+        p.startPercentage = p.starting ? '100%' : '0%';
+        p.startsCount = p.starting ? 1 : 0;
+      }
+    });
+  }
+
+  // Save final enriched league_rosters.json
   fs.writeFileSync(rostersFilePath, JSON.stringify(rostersDictionary, null, 2), 'utf-8');
-  console.log(`\n💾 Saved ${totalPlayersProcessed} players across ${Object.keys(rostersDictionary).length} opponent rosters.`);
-  console.log(`   Saved to: ${path.relative(ROOT_DIR, rostersFilePath)}`);
+  console.log(`💾 [3/3] Saved enriched rosters with startPercentage to: ${path.relative(ROOT_DIR, rostersFilePath)}`);
 
   console.log('\n=====================================================');
   console.log('🎉 PIPELINE COMPLETED SUCCESSFULLY!');
-  console.log(`   Standings: ${basicStandings.length} teams`);
-  console.log(`   Opponent Rosters: ${Object.keys(rostersDictionary).length} teams`);
-  console.log(`   Total Players: ${totalPlayersProcessed} players (with uniquePlayer.seasonStats)`);
+  console.log(`   1. Standings:        ${basicStandings.length} teams (${path.relative(ROOT_DIR, standingsFilePath)})`);
+  console.log(`   2. Enriched Rosters: ${Object.keys(rostersDictionary).length} teams (${path.relative(ROOT_DIR, rostersFilePath)})`);
+  console.log(`   3. Team Trends:      ${Object.keys(allTrends).length} teams (${path.relative(ROOT_DIR, trendsFilePath)})`);
   console.log('=====================================================\n');
 }
 

@@ -7,6 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        bba: {
+          primary: 'rgb(2, 45, 50)',
+          secondary: 'rgb(12, 161, 122)',
+          tertiary: 'rgb(221, 243, 233)',
+          light: '#F8F9FA',
+          border: 'rgb(198, 232, 219)',
+        },
         slate: {
           950: '#06090F',
           900: '#0F172A',

@@ -348,7 +348,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "439529",
@@ -601,7 +603,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "94062",
@@ -951,7 +955,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "578195",
@@ -1301,7 +1307,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "586227",
@@ -1651,7 +1659,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "148480",
@@ -1904,7 +1914,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1083593",
@@ -2254,7 +2266,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "163767",
@@ -2507,7 +2521,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "1315217",
@@ -2760,7 +2776,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "786337",
@@ -3110,7 +3128,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     }
   ],
   "207455": [
@@ -3268,7 +3288,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1097614",
@@ -3424,7 +3446,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "201433",
@@ -3677,7 +3701,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "211744",
@@ -3930,7 +3956,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "289131",
@@ -4327,7 +4355,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "288860",
@@ -4580,7 +4610,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "281770",
@@ -4833,7 +4865,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "335418",
@@ -5012,7 +5046,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "722074",
@@ -5362,7 +5398,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1501929",
@@ -5903,7 +5941,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1047475",
@@ -6253,7 +6293,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1938802",
@@ -6650,7 +6692,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1501910",
@@ -7238,7 +7282,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1047482",
@@ -7635,7 +7681,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "173261",
@@ -7888,7 +7936,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     }
   ],
   "207456": [
@@ -8240,7 +8290,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1223916",
@@ -8396,7 +8448,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1981986",
@@ -8672,7 +8726,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "271533",
@@ -8948,7 +9004,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "350737",
@@ -9201,7 +9259,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1141613",
@@ -9645,7 +9705,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1146105",
@@ -9898,7 +9960,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "165039",
@@ -10295,7 +10359,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "105560",
@@ -10692,7 +10758,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "424541",
@@ -11042,7 +11110,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1348454",
@@ -11392,7 +11462,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1143204",
@@ -11715,7 +11787,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1138495",
@@ -12159,7 +12233,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "160182",
@@ -12509,7 +12585,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1206894",
@@ -12906,7 +12984,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1201124",
@@ -13182,7 +13262,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     }
   ],
   "209328": [],
@@ -13438,7 +13520,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1083758",
@@ -13788,7 +13872,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1331078",
@@ -14041,7 +14127,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1370277",
@@ -14532,7 +14620,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1478123",
@@ -15117,7 +15207,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1643082",
@@ -15370,7 +15462,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "124613",
@@ -15767,7 +15861,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "156462",
@@ -16020,7 +16116,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1499181",
@@ -16417,7 +16515,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1263955",
@@ -16670,7 +16770,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "175213",
@@ -16923,7 +17025,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1257788",
@@ -17176,7 +17280,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "174454",
@@ -17429,7 +17535,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     }
   ],
   "211034": [
@@ -17828,7 +17936,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1436762",
@@ -18178,7 +18288,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1142896",
@@ -18575,7 +18687,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1204039",
@@ -19257,7 +19371,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1142903",
@@ -19654,7 +19770,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1204554",
@@ -20004,7 +20122,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "978186",
@@ -20354,7 +20474,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1124014",
@@ -20533,7 +20655,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "978185",
@@ -20883,7 +21007,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1032730",
@@ -21330,7 +21456,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "750934",
@@ -21680,7 +21808,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1333254",
@@ -22030,7 +22160,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     }
   ],
   "211179": [
@@ -22429,7 +22561,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "97988",
@@ -22682,7 +22816,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1440400",
@@ -23079,7 +23215,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "968129",
@@ -23429,7 +23567,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "966524",
@@ -23779,7 +23919,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "1130942",
@@ -24176,7 +24318,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "968123",
@@ -24429,7 +24573,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1775377",
@@ -24826,7 +24972,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "1262742",
@@ -25196,7 +25344,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "968164",
@@ -25546,7 +25696,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "1080537",
@@ -25896,7 +26048,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 1
     },
     {
       "fid": "1213375",
@@ -26293,7 +26447,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     }
   ],
   "211628": [
@@ -26786,7 +26942,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "86955",
@@ -27136,7 +27294,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "17405",
@@ -27533,7 +27693,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1208744",
@@ -27833,7 +27995,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1384637",
@@ -28227,7 +28391,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "26696",
@@ -28480,7 +28646,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1045268",
@@ -28733,7 +28901,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1704032",
@@ -29321,7 +29491,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1313244",
@@ -29621,7 +29793,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "159011",
@@ -29874,7 +30048,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1088457",
@@ -30224,7 +30400,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "167276",
@@ -30574,7 +30752,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1015788",
@@ -30730,7 +30910,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1375462",
@@ -31124,7 +31306,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     }
   ],
   "211630": [
@@ -31379,7 +31563,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "763022",
@@ -31632,7 +31818,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1958920",
@@ -31885,7 +32073,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "326405",
@@ -32138,7 +32328,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1649622",
@@ -32820,7 +33012,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1668765",
@@ -33361,7 +33555,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1845851",
@@ -33614,7 +33810,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "2084287",
@@ -33961,7 +34159,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1256245",
@@ -34140,7 +34340,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "41108",
@@ -34393,7 +34595,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1487967",
@@ -34693,7 +34897,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "38371",
@@ -34946,7 +35152,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "719490",
@@ -35296,7 +35504,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "757653",
@@ -35475,7 +35685,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     }
   ],
   "211635": [
@@ -35730,7 +35942,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1577002",
@@ -36053,7 +36267,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "335058",
@@ -36306,7 +36522,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "1835159",
@@ -36750,7 +36968,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "439184",
@@ -37100,7 +37320,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "1519560",
@@ -37400,7 +37622,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "501937",
@@ -37653,7 +37877,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "520643",
@@ -38003,7 +38229,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "1042266",
@@ -38159,7 +38387,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "598138",
@@ -38315,7 +38545,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "915650",
@@ -38471,7 +38703,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "100%",
+      "startsCount": 2
     },
     {
       "fid": "912906",
@@ -38771,7 +39005,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     },
     {
       "fid": "677176",
@@ -39024,7 +39260,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "50%",
+      "startsCount": 1
     },
     {
       "fid": "59878",
@@ -39277,7 +39515,9 @@
             }
           ]
         }
-      ]
+      ],
+      "startPercentage": "0%",
+      "startsCount": 0
     }
   ]
 }

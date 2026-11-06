@@ -13,6 +13,7 @@ export const DEFAULT_MASTER_ROSTER = [
   { number: "31", name: "Emanuele Cuomo", pos: "N/A" },
   { number: "32", name: "Armando Oddo Casano", pos: "N/A" },
   { number: "34", name: "Gerardo Spisso", pos: "N/A" },
+  { number: "35", name: "Marco Girardi", pos: "N/A" },
   { number: "43", name: "Antoine Ghanem", pos: "N/A" }
 ];
 
