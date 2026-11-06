@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Archive as ArchiveIcon, TrendingUp, Trophy,
-  WifiOff, Edit3, Settings, Shield, Lock, LogOut, Languages 
+  WifiOff, Edit3, Settings, Shield, Lock, LogOut, Languages, Upload 
 } from 'lucide-react';
 import bbaLogo from '../assets/bba-logo.png';
 import { useLanguage } from '../context/LanguageContext';
@@ -153,10 +153,10 @@ export default function Navbar({
           {offlineQueueCount > 0 && (
             <button
               onClick={onManualSync}
-              className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-1 rounded-lg hover:bg-amber-300 transition-colors flex items-center gap-1 shadow-sm"
+              className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-1 rounded-lg hover:bg-amber-300 transition-colors flex items-center gap-1.5 shadow-sm"
               title="Sync offline queue"
             >
-              <span>📦</span>
+              <Upload className="w-3 h-3 flex-none" />
               <span>{offlineQueueCount} SYNC</span>
             </button>
           )}

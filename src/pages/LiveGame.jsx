@@ -9,7 +9,8 @@ import OpponentPossessionPanel from '../components/OpponentPossessionPanel';
 import { COURT_ZONES } from '../data/roster';
 import { 
   Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, 
-  ArrowLeftRight, Eye, Shield, Lock, Target, Check, Sparkles, Zap, AlertCircle 
+  ArrowLeftRight, Eye, Shield, Lock, Target, Check, Sparkles, Zap, AlertCircle,
+  Home, Navigation, ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -537,7 +538,7 @@ export default function LiveGame({
                         : 'text-[#022D32]/70 hover:text-[#022D32] hover:bg-white'
                     }`}
                   >
-                    <span className="text-sm">🏠</span>
+                    <Home className="w-4 h-4 flex-none" />
                     <span>{t('home', 'Home')} ({ourLocation === 'Home' ? 'BBA Casa' : 'Casa'})</span>
                   </button>
                   <button
@@ -549,7 +550,7 @@ export default function LiveGame({
                         : 'text-[#022D32]/70 hover:text-[#022D32] hover:bg-white'
                     }`}
                   >
-                    <span className="text-sm">✈️</span>
+                    <Navigation className="w-4 h-4 flex-none" />
                     <span>{t('away', 'Away')} ({ourLocation === 'Away' ? 'BBA Trasferta' : 'Trasferta'})</span>
                   </button>
                 </div>
@@ -648,8 +649,8 @@ export default function LiveGame({
                     <span>{t('match_type', 'MATCH TYPE')}</span>
                     <span className="text-amber-800 font-mono text-[10px] font-bold">REQUIRED</span>
                   </label>
-                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#F8F9FA] rounded-xl border border-[#DDF3E9]">
-                    {['Official', 'Friendly', 'Scrimmage'].map((type) => {
+                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F8F9FA] rounded-xl border border-[#DDF3E9]">
+                    {['Official', 'Friendly'].map((type) => {
                       const isSel = matchType === type;
                       return (
                         <button
@@ -1055,7 +1056,7 @@ export default function LiveGame({
                     }`}
                   >
                     <Check className="w-4 h-4 stroke-[3]" />
-                    ✓ SHOT MADE
+                    SHOT MADE
                   </button>
                   <button
                     type="button"
@@ -1067,7 +1068,7 @@ export default function LiveGame({
                     }`}
                   >
                     <X className="w-4 h-4 stroke-[3]" />
-                    ✕ SHOT MISSED
+                    SHOT MISSED
                   </button>
                 </div>
 
@@ -1102,8 +1103,9 @@ export default function LiveGame({
             {courtShotPopover.step === 'ASSIST' && (
               <div className="space-y-3">
                 <div className="bg-[#DDF3E9] border border-[#0CA17A]/40 p-2.5 rounded-lg flex items-center justify-between">
-                  <span className="text-xs font-black text-[#022D32]">
-                    🎯 #{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MADE
+                  <span className="text-xs font-black text-[#022D32] flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
+                    <span>#{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MADE</span>
                   </span>
                 </div>
 
@@ -1118,7 +1120,7 @@ export default function LiveGame({
                   }`}
                 >
                   <Zap className={`w-4 h-4 ${courtShotPopover.isTransition ? 'fill-slate-950 text-slate-950' : 'text-amber-400'}`} />
-                  <span>⚡ FASTBREAK / TRANSITION PLAY</span>
+                  <span>FASTBREAK / TRANSITION PLAY</span>
                   {courtShotPopover.isTransition && (
                     <span className="text-[9px] bg-[#0CA17A] text-white px-1.5 py-0.5 rounded font-black uppercase">
                       ACTIVE
@@ -1154,7 +1156,7 @@ export default function LiveGame({
                     onClick={() => handleCompleteMadeShotUnassisted()}
                     className="w-full py-2.5 px-3 rounded-lg bg-[#022D32] hover:bg-[#022D32]/90 border border-[#022D32] text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
                   >
-                    <span>⚡ UNASSISTED / NO ASSIST</span>
+                    <span>UNASSISTED / NO ASSIST</span>
                   </button>
                 </div>
               </div>
@@ -1164,8 +1166,9 @@ export default function LiveGame({
             {courtShotPopover.step === 'REBOUND' && (
               <div className="space-y-3">
                 <div className="bg-rose-50 border border-rose-200 p-2.5 rounded-lg flex items-center justify-between">
-                  <span className="text-xs font-black text-rose-800">
-                    ✕ #{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MISSED
+                  <span className="text-xs font-black text-rose-800 flex items-center gap-1.5">
+                    <X className="w-3.5 h-3.5 text-rose-600" />
+                    <span>#{courtShotPopover.shooter?.number} {courtShotPopover.shooter?.name} — {COURT_ZONES[courtShotPopover.zoneKey]?.type} MISSED</span>
                   </span>
                 </div>
 
@@ -1180,7 +1183,7 @@ export default function LiveGame({
                   }`}
                 >
                   <Zap className={`w-4 h-4 ${courtShotPopover.isTransition ? 'fill-white text-white' : 'text-[#0CA17A]'}`} />
-                  <span>⚡ FASTBREAK / TRANSITION PLAY</span>
+                  <span>FASTBREAK / TRANSITION PLAY</span>
                   {courtShotPopover.isTransition && (
                     <span className="text-[9px] bg-[#0CA17A] text-white px-1.5 py-0.5 rounded font-black uppercase">
                       ACTIVE
@@ -1217,7 +1220,10 @@ export default function LiveGame({
                     onClick={() => handleSkipMissedShotRebound()}
                     className="w-full py-2 px-3 rounded-lg bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] text-[#022D32] font-bold text-xs uppercase transition-all flex items-center justify-center gap-1.5"
                   >
-                    <span>⏩ SKIP / OPPONENT DEF REB</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <ChevronRight className="w-3.5 h-3.5" />
+                      <span>SKIP / OPPONENT DEF REB</span>
+                    </span>
                   </button>
                 </div>
               </div>

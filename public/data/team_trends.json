@@ -1055,6 +1055,141 @@
       }
     }
   },
+  "211634": {
+    "global": {
+      "games": 2,
+      "pointsScored": 117,
+      "pointsConceded": 116,
+      "wins": 1,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 51,
+      "pointsConceded": 57,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 66,
+      "pointsConceded": 59,
+      "wins": 1,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 24,
+        "conceded": 36
+      },
+      "Q2": {
+        "scored": 18,
+        "conceded": 26
+      },
+      "Q3": {
+        "scored": 28,
+        "conceded": 30
+      },
+      "Q4": {
+        "scored": 47,
+        "conceded": 24
+      }
+    },
+    "streak": [
+      "P",
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786120",
+        "date": "2026-11-03T20:00:00.000Z",
+        "round": "2",
+        "homeTeam": "G.S. MINORI PALLACANESTRO",
+        "awayTeam": "BARONISSI BASKETBALL ACADEMY",
+        "homeScore": 59,
+        "awayScore": 66,
+        "isWin": true,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 19,
+            "awayScore": 10,
+            "period": 1
+          },
+          {
+            "homeScore": 15,
+            "awayScore": 8,
+            "period": 2
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 18,
+            "period": 3
+          },
+          {
+            "homeScore": 8,
+            "awayScore": 30,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786116",
+        "date": "2026-10-24T15:00:00.000Z",
+        "round": "1",
+        "homeTeam": "BARONISSI BASKETBALL ACADEMY",
+        "awayTeam": "S.L.Z. BASKET SOLOFRA",
+        "homeScore": 51,
+        "awayScore": 57,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 14,
+            "awayScore": 17,
+            "period": 1
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 11,
+            "period": 2
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 12,
+        "concededAvg": 18,
+        "diff": -6
+      },
+      "Q2": {
+        "scoredAvg": 9,
+        "concededAvg": 13,
+        "diff": -4
+      },
+      "Q3": {
+        "scoredAvg": 14,
+        "concededAvg": 15,
+        "diff": -1
+      },
+      "Q4": {
+        "scoredAvg": 23.5,
+        "concededAvg": 12,
+        "diff": 11.5
+      }
+    }
+  },
   "211635": {
     "global": {
       "games": 2,
@@ -1189,5 +1324,140 @@
         "diff": 7
       }
     }
+  },
+  "team_bba_academy": {
+    "global": {
+      "games": 2,
+      "pointsScored": 117,
+      "pointsConceded": 116,
+      "wins": 1,
+      "losses": 1
+    },
+    "home": {
+      "games": 1,
+      "pointsScored": 51,
+      "pointsConceded": 57,
+      "wins": 0,
+      "losses": 1
+    },
+    "away": {
+      "games": 1,
+      "pointsScored": 66,
+      "pointsConceded": 59,
+      "wins": 1,
+      "losses": 0
+    },
+    "quarters": {
+      "Q1": {
+        "scored": 24,
+        "conceded": 36
+      },
+      "Q2": {
+        "scored": 18,
+        "conceded": 26
+      },
+      "Q3": {
+        "scored": 28,
+        "conceded": 30
+      },
+      "Q4": {
+        "scored": 47,
+        "conceded": 24
+      }
+    },
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 12,
+        "concededAvg": 18,
+        "diff": -6
+      },
+      "Q2": {
+        "scoredAvg": 9,
+        "concededAvg": 13,
+        "diff": -4
+      },
+      "Q3": {
+        "scoredAvg": 14,
+        "concededAvg": 15,
+        "diff": -1
+      },
+      "Q4": {
+        "scoredAvg": 23.5,
+        "concededAvg": 12,
+        "diff": 11.5
+      }
+    },
+    "streak": [
+      "P",
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786119",
+        "date": "2026-11-03T20:00:00.000Z",
+        "round": "2",
+        "homeTeam": "G.S. MINORI PALLACANESTRO",
+        "awayTeam": "BARONISSI BASKETBALL ACADEMY",
+        "homeScore": 59,
+        "awayScore": 66,
+        "isWin": true,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 19,
+            "awayScore": 10,
+            "period": 1
+          },
+          {
+            "homeScore": 15,
+            "awayScore": 8,
+            "period": 2
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 18,
+            "period": 3
+          },
+          {
+            "homeScore": 8,
+            "awayScore": 30,
+            "period": 4
+          }
+        ]
+      },
+      {
+        "matchFid": "1786114",
+        "date": "2026-10-24T15:00:00.000Z",
+        "round": "1",
+        "homeTeam": "BARONISSI BASKETBALL ACADEMY",
+        "awayTeam": "S.L.Z. BASKET SOLOFRA",
+        "homeScore": 51,
+        "awayScore": 57,
+        "isWin": false,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 14,
+            "awayScore": 17,
+            "period": 1
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 11,
+            "period": 2
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 13,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      }
+    ]
   }
 }

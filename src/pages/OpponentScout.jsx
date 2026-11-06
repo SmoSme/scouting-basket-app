@@ -205,13 +205,13 @@ export default function OpponentScout({ showToast }) {
       };
 
       handleUpdateScoutData(normalized);
-      setStatusMsg(`✅ Successfully loaded report for "${teamName}" (${players.length} players)`);
-      if (showToast) showToast(`🎯 Loaded Opponent Report: ${teamName}`);
+      setStatusMsg(`Successfully loaded report for "${teamName}" (${players.length} players)`);
+      if (showToast) showToast(`Loaded Opponent Report: ${teamName}`);
       setActiveTab('DASHBOARD');
     } catch (err) {
       console.error('JSON parse error:', err);
-      setStatusMsg(`❌ Error parsing JSON: ${err.message}`);
-      if (showToast) showToast('❌ Error parsing JSON report');
+      setStatusMsg(`Error parsing JSON: ${err.message}`);
+      if (showToast) showToast('Error parsing JSON report');
     }
   };
 
@@ -247,8 +247,8 @@ export default function OpponentScout({ showToast }) {
 
   const handleLoadSample = () => {
     handleUpdateScoutData(DEFAULT_MOCK_OPPONENT);
-    setStatusMsg(`✅ Loaded default FIP sample report: "${DEFAULT_MOCK_OPPONENT.team.name}"`);
-    if (showToast) showToast('🎯 Loaded sample FIP opponent report');
+    setStatusMsg(`Loaded default FIP sample report: "${DEFAULT_MOCK_OPPONENT.team.name}"`);
+    if (showToast) showToast('Loaded sample FIP opponent report');
     setActiveTab('DASHBOARD');
   };
 

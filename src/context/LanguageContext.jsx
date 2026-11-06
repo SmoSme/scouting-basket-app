@@ -20,7 +20,7 @@ export const translations = {
     // Navigation Tabs
     nav_live: "GARA LIVE",
     nav_archive: "ARCHIVIO",
-    nav_trends: "TREND",
+    nav_trends: "HUB BBA",
     nav_league: "HUB CAMPIONATO",
     nav_scout: "SCOUTING AVVERSARIO",
 
@@ -161,9 +161,9 @@ export const translations = {
     steals: "RECUPERI",
     blocks: "STOPPATE",
 
-    // Season Trends Page
-    trends_title: "TREND STAGIONALI BBA",
-    trends_subtitle: "Analisi longitudinale delle prestazioni, efficienza offensiva e controllo del ritmo",
+    // Season Trends Page / BBA Hub
+    trends_title: "BBA SCOUTING & ANALYTICS HUB",
+    trends_subtitle: "Piattaforma Analitica Ufficiale • Modello Ibrido FIP King & Proprietary Scouting",
     rec_margin_title: "RECORD & MARGINE",
     shooting_eff_title: "TIRO ED EFFICIENZA (eFG%)",
     glass_title: "CONTROLLO RIMBALZI",
@@ -298,7 +298,7 @@ export const translations = {
     // Navigation Tabs
     nav_live: "LIVE GAME",
     nav_archive: "ARCHIVE",
-    nav_trends: "TRENDS",
+    nav_trends: "BBA HUB",
     nav_league: "LEAGUE HUB",
     nav_scout: "OPPONENT SCOUT",
 
@@ -439,9 +439,9 @@ export const translations = {
     steals: "STEALS",
     blocks: "BLOCKS",
 
-    // Season Trends Page
-    trends_title: "BBA SEASON TRENDS",
-    trends_subtitle: "Longitudinal performance analysis, offensive efficiency and pace control",
+    // Season Trends Page / BBA Hub
+    trends_title: "BBA SCOUTING & ANALYTICS HUB",
+    trends_subtitle: "Official Analytics Platform • FIP King & Proprietary Scouting Hybrid Model",
     rec_margin_title: "RECORD & MARGIN",
     shooting_eff_title: "SHOOTING EFFICIENCY (eFG%)",
     glass_title: "REBOUND CONTROL",

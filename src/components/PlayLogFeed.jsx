@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { History, Edit3, Trash2, Check, X } from 'lucide-react';
+import { History, Edit3, Trash2, Check, X, Zap, Shield } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster';
 
 const ACTION_OPTIONS = [
@@ -139,7 +139,7 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
                     }}
                     className="w-full bg-white border border-[#DDF3E9] text-[#022D32] font-bold p-1 rounded text-xs"
                   >
-                    <option value="-">⚡ TEAM (Tactical Screen / Team Play)</option>
+                    <option value="-">TEAM (Tactical Screen / Team Play)</option>
                     {roster.map(p => (
                       <option key={p.number} value={p.number}>
                         #{p.number} {p.name}
@@ -267,13 +267,15 @@ export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEdit
               <div className="font-black text-[11px] uppercase tracking-wide mt-0.5 flex items-center gap-1.5 flex-wrap">
                 <span style={{ color: badgeColor }}>{actionStr}</span>
                 {Boolean(ev?.isTransition) && (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-0.5">
-                    ⚡ TRANS
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5 text-amber-600 flex-none" />
+                    <span>TRANS</span>
                   </span>
                 )}
                 {Boolean(ev?.defenseType) && (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40">
-                    🛡️ {ev.defenseType}
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                    <Shield className="w-2.5 h-2.5 text-emerald-600 flex-none" />
+                    <span>{ev.defenseType}</span>
                   </span>
                 )}
               </div>

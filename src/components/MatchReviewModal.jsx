@@ -4,13 +4,14 @@ import {
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
   Check, ArrowRight, ArrowLeft, UserCheck, Flame, ChevronRight, ChevronLeft,
-  Info, AlertTriangle, BookOpen, HelpCircle, Tag, Edit3, Pencil
+  Info, AlertTriangle, BookOpen, HelpCircle, Tag, Edit3, Pencil, Loader2
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
 import ScoreOverrideModal from './ScoreOverrideModal';
 import { calculateMatchAnalytics, computeZoneStats } from '../utils/basketballAnalytics';
 import { getScoreOverride, saveScoreOverride, clearScoreOverride } from '../utils/scoreOverride';
+import { saveMatchMetadataToSupabase, formatDateForInput } from '../services/matchMetadataService';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate, onUpdateMatchType, onUpdateScoreOverride }) {
@@ -33,48 +34,57 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
     }
   }, [match?.name]);
 
-  // Match Date State for retroactive editing
+  // Match Date State for retroactive editing (Strictly Single Source of Truth in Supabase)
   const [matchDateValue, setMatchDateValue] = useState(() => {
-    if (match?.name) {
-      const stored = localStorage.getItem(`match_date_${match.name}`);
-      if (stored) return stored;
-    }
-    if (match?.matchDate) return match.matchDate;
-    try {
-      const d = new Date(match?.createdAt);
-      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-    } catch(e) {}
-    return new Date().toISOString().split('T')[0];
+    return formatDateForInput(match?.match_date || match?.matchDate) || formatDateForInput(match?.createdAt) || new Date().toISOString().split('T')[0];
   });
+  const [dateSaving, setDateSaving] = useState(false);
+  const [dateSaved, setDateSaved] = useState(false);
+  const dateInputRef = useRef(null);
 
-  const handleDateChange = (newDate) => {
-    setMatchDateValue(newDate);
-    if (match?.name) {
-      try {
-        localStorage.setItem(`match_date_${match.name}`, newDate);
-      } catch(e) {}
+  // Synchronize when active match changes or matchDate updates
+  useEffect(() => {
+    const formatted = formatDateForInput(match?.match_date || match?.matchDate) || formatDateForInput(match?.createdAt);
+    if (formatted) {
+      setMatchDateValue(formatted);
     }
-    if (onUpdateMatchDate && match?.name) {
-      onUpdateMatchDate(match.name, newDate);
+  }, [match?.name, match?.match_date, match?.matchDate, match?.createdAt]);
+
+  const handleDateChange = async (newDate) => {
+    if (!newDate) return;
+    setMatchDateValue(newDate);
+    setDateSaving(true);
+    setDateSaved(false);
+    try {
+      if (match?.name) {
+        await saveMatchMetadataToSupabase(match.name, { matchDate: newDate });
+      }
+      setDateSaving(false);
+      setDateSaved(true);
+      setTimeout(() => setDateSaved(false), 2000);
+      if (onUpdateMatchDate && match?.name) {
+        onUpdateMatchDate(match.name, newDate, false /* skip duplicate save */);
+      }
+    } catch(e) {
+      console.error('Failed to sync matchDate to Supabase:', e);
+      setDateSaving(false);
     }
   };
 
   // Match Type State for retroactive editing
   const [matchTypeValue, setMatchTypeValue] = useState(() => {
-    if (match?.name) {
-      const stored = localStorage.getItem(`match_type_${match.name}`);
-      if (stored) return stored;
-    }
     if (match?.matchType) return match.matchType;
     return 'Official';
   });
 
-  const handleMatchTypeChange = (newType) => {
+  const handleMatchTypeChange = async (newType) => {
     setMatchTypeValue(newType);
     if (match?.name) {
       try {
-        localStorage.setItem(`match_type_${match.name}`, newType);
-      } catch(e) {}
+        await saveMatchMetadataToSupabase(match.name, { matchType: newType });
+      } catch(e) {
+        console.error('Failed to sync matchType to Supabase:', e);
+      }
     }
     if (onUpdateMatchType && match?.name) {
       onUpdateMatchType(match.name, newType);
@@ -87,10 +97,36 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   const [playCategoryFilter, setPlayCategoryFilter] = useState('ALL');
   const [playPlayerFilter, setPlayPlayerFilter] = useState('ALL');
 
-  // Compute full analytics dataset
+  // STRICT DATA HIERARCHY: Resolve official scores from match object (scouting_matches / FIP)
+  const officialTeamScore = (match?.home_score !== undefined && match?.home_score !== null && Number(match.home_score) > 0)
+    ? Number(match.home_score)
+    : (match?.displayedTeamPts !== undefined && match?.displayedTeamPts !== null && Number(match.displayedTeamPts) > 0
+      ? Number(match.displayedTeamPts)
+      : (match?.pts !== undefined && match?.pts !== null && Number(match.pts) > 0
+        ? Number(match.pts)
+        : (overrideScores?.overrideTeamScore !== null && overrideScores?.overrideTeamScore !== undefined
+          ? Number(overrideScores.overrideTeamScore)
+          : null)));
+
+  const officialOppScore = (match?.away_score !== undefined && match?.away_score !== null && Number(match.away_score) > 0)
+    ? Number(match.away_score)
+    : (match?.displayedOppPts !== undefined && match?.displayedOppPts !== null && Number(match.displayedOppPts) > 0
+      ? Number(match.displayedOppPts)
+      : (match?.oppPts !== undefined && match?.oppPts !== null && Number(match.oppPts) > 0
+        ? Number(match.oppPts)
+        : (overrideScores?.overrideOppScore !== null && overrideScores?.overrideOppScore !== undefined
+          ? Number(overrideScores.overrideOppScore)
+          : null)));
+
+  // Compute full analytics dataset - NEVER dynamically recalculate final score from events if official scores exist
   const analytics = useMemo(() => {
-    return calculateMatchAnalytics(match?.events || []);
-  }, [match]);
+    return calculateMatchAnalytics(
+      match?.events || [], 
+      [], 
+      [], 
+      { teamScore: officialTeamScore, oppScore: officialOppScore }
+    );
+  }, [match?.events, officialTeamScore, officialOppScore]);
 
   // Unified shot zone stats strictly filtered for 2PT/3PT attempts and reacting to player filter
   const filteredShotMapEvents = useMemo(() => {
@@ -123,17 +159,22 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   // Fallback to fourFactors alias if efficiencyPillars is not defined
   const pillars = efficiencyPillars || fourFactors || {};
 
-  // Derived vs Overridden Official Scores
+  // Derived vs Overridden Official Scores (Strictly Single Source of Truth)
   const pbpTeamScore = teamOverview?.pts ?? 0;
   const pbpOppScore = teamOverview?.opponentScore ?? 0;
-  const displayedTeamScore = overrideScores?.overrideTeamScore !== null && overrideScores?.overrideTeamScore !== undefined 
-    ? overrideScores.overrideTeamScore 
-    : pbpTeamScore;
-  const displayedOppScore = overrideScores?.overrideOppScore !== null && overrideScores?.overrideOppScore !== undefined 
-    ? overrideScores.overrideOppScore 
-    : pbpOppScore;
+  const displayedTeamScore = officialTeamScore !== null ? officialTeamScore : pbpTeamScore;
+  const displayedOppScore = officialOppScore !== null ? officialOppScore : pbpOppScore;
   const displayedPointDiff = displayedTeamScore - displayedOppScore;
-  const isScoreOverridden = overrideScores !== null && (overrideScores.overrideTeamScore !== null || overrideScores.overrideOppScore !== null);
+  const isScoreOverridden = (overrideScores !== null && (overrideScores.overrideTeamScore !== null || overrideScores.overrideOppScore !== null)) ||
+                            (match?.home_score > 0 || match?.away_score > 0) ||
+                            Boolean(match?.isScoreOverridden);
+
+  // Synchronize teamOverview so all overview tabs, pillars, and child cards reflect official score
+  if (teamOverview) {
+    teamOverview.pts = displayedTeamScore;
+    teamOverview.opponentScore = displayedOppScore;
+    teamOverview.pointDifferential = displayedPointDiff;
+  }
 
   // Initialize selected player to top PIR player if none selected
   const activePlayer = useMemo(() => {
@@ -342,16 +383,27 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                   {totalEvents} {t('logged_plays')}
                 </span>
                 <span>•</span>
-                <span className="flex items-center gap-1.5 bg-[#011C20] px-2 py-0.5 rounded border border-[#0CA17A]/30">
-                  <Calendar className="w-3.5 h-3.5 text-[#A7F3D0]" />
+                <div 
+                  onClick={() => dateInputRef.current?.showPicker ? dateInputRef.current.showPicker() : dateInputRef.current?.focus()}
+                  className="flex items-center gap-1.5 bg-[#011C20] hover:bg-[#022D32] px-2.5 py-1 rounded-lg border border-[#0CA17A]/40 transition-colors cursor-pointer group shadow-xs"
+                  title={language === 'it' ? 'Clicca per modificare la data della partita (Supabase)' : 'Click to edit match date (Supabase)'}
+                >
+                  <Calendar className="w-3.5 h-3.5 text-[#0CA17A] group-hover:text-[#A7F3D0] transition-colors shrink-0" />
                   <input
+                    ref={dateInputRef}
                     type="date"
                     value={matchDateValue}
                     onChange={(e) => handleDateChange(e.target.value)}
-                    className="bg-transparent text-white font-bold text-xs focus:outline-none focus:border-sky-400 cursor-pointer"
-                    title="Click to edit match date (YYYY-MM-DD)"
+                    className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer [color-scheme:dark]"
                   />
-                </span>
+                  {dateSaving ? (
+                    <Loader2 className="w-3 h-3 text-[#0CA17A] animate-spin shrink-0" />
+                  ) : dateSaved ? (
+                    <Check className="w-3 h-3 text-[#0CA17A] shrink-0" />
+                  ) : (
+                    <Pencil className="w-2.5 h-2.5 text-white/50 group-hover:text-white transition-colors shrink-0" />
+                  )}
+                </div>
                 <span>•</span>
                 <span className="flex items-center gap-1.5 bg-[#011C20] px-2 py-0.5 rounded border border-[#0CA17A]/30" title="Click to retroactively edit match type">
                   <Tag className="w-3.5 h-3.5 text-[#A7F3D0]" />
@@ -362,7 +414,6 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                   >
                     <option value="Official" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Ufficiale' : 'Official'}</option>
                     <option value="Friendly" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Amichevole' : 'Friendly'}</option>
-                    <option value="Scrimmage" className="bg-white text-[#022D32] font-bold">Scrimmage</option>
                   </select>
                 </span>
                 <span>•</span>

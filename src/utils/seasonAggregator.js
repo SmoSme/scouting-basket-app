@@ -1,5 +1,6 @@
 import { calculateMatchAnalytics } from './basketballAnalytics.js';
 import { getScoreOverride } from './scoreOverride.js';
+import { matchesFilterType } from './hybridDataService.js';
 
 /**
  * Retrieve saved match type from localStorage or default to 'Official'
@@ -41,28 +42,69 @@ export function getStoredMatchDate(matchName, fallbackCreatedAt) {
  * @returns {Object} Aggregated totals, averages, shooting splits, rebounding percentages, and chronological timeline.
  */
 export function aggregateSeasonStats(rawMatches = [], filter = {}) {
-  const matchTypeFilter = (filter.matchType || 'ALL').toUpperCase();
-  const splitFilter = (filter.split || 'ALL').toUpperCase();
+  const filterObj = typeof filter === 'string' ? { matchType: filter, split: 'ALL' } : (filter || {});
+  const matchTypeFilter = (filterObj.matchType || 'ALL').toUpperCase();
+  const splitFilter = (filterObj.split || 'ALL').toUpperCase();
 
   if (!Array.isArray(rawMatches) || rawMatches.length === 0) {
     return getEmptyAggregateResult();
   }
 
-  // 1. Process and normalize each match with analytics
+  // 1. Process and normalize each match with analytics (respecting strict scores from scouting_matches/FIP)
   const processedMatches = rawMatches.map(m => {
     const name = m.name || m.Match_Name || m.match_name || 'Unnamed Match';
-    const matchType = m.matchType || getStoredMatchType(name);
-    const matchDate = m.matchDate || getStoredMatchDate(name, m.createdAt);
+    const matchType = m.match_type || m.matchType || getStoredMatchType(name);
+    const matchDate = m.match_date || m.matchDate || getStoredMatchDate(name, m.createdAt);
     const events = Array.isArray(m.events) ? m.events : [];
-    const analytics = m.analytics || calculateMatchAnalytics(events);
+    
+    // Strict Single Source of Truth for final match score:
+    // Read directly from m.home_score / m.away_score or m.pts / m.oppPts. NEVER dynamically reduce events!
+    const pts = (m.home_score !== undefined && m.home_score !== null && Number(m.home_score) > 0)
+      ? Number(m.home_score)
+      : (m.pts !== undefined && m.pts !== null ? Number(m.pts) : 0);
+
+    const oppPts = (m.away_score !== undefined && m.away_score !== null && Number(m.away_score) > 0)
+      ? Number(m.away_score)
+      : (m.oppPts !== undefined && m.oppPts !== null ? Number(m.oppPts) : 0);
+
+    let analytics = m.analytics || calculateMatchAnalytics(events, [], [], { teamScore: pts, oppScore: oppPts });
+    const finalPts = pts > 0 ? pts : (analytics?.teamOverview?.pts || 0);
+    const finalOppPts = oppPts > 0 ? oppPts : (analytics?.teamOverview?.opponentScore || 0);
+    const diff = finalPts - finalOppPts;
+    const isWin = finalPts > finalOppPts;
+
+    if (analytics) {
+      analytics = {
+        ...analytics,
+        teamOverview: {
+          ...(analytics.teamOverview || {}),
+          pts: finalPts,
+          opponentScore: finalOppPts,
+          pointDifferential: diff
+        }
+      };
+    }
 
     return {
+      ...m,
       name,
       matchType,
+      match_type: matchType,
       matchDate,
+      match_date: matchDate,
       createdAt: m.createdAt || matchDate,
       events,
-      analytics
+      analytics,
+      home_score: finalPts,
+      away_score: finalOppPts,
+      pts: finalPts,
+      oppPts: finalOppPts,
+      diff,
+      isWin,
+      isHomeGame: m.isHomeGame ?? (m.is_home !== undefined ? Boolean(m.is_home) : true),
+      fipVerified: m.fipVerified,
+      round: m.round,
+      opponent: m.opponent
     };
   });
 
@@ -78,15 +120,14 @@ export function aggregateSeasonStats(rawMatches = [], filter = {}) {
   // 3. Filter by Match Type
   let filtered = sortedMatches;
   if (matchTypeFilter !== 'ALL') {
-    filtered = filtered.filter(m => String(m.matchType).toUpperCase() === matchTypeFilter);
+    filtered = filtered.filter(m => matchesFilterType(m.matchType, matchTypeFilter));
   }
 
   // Count available by type for UI badges
   const typeCounts = {
     ALL: sortedMatches.length,
-    OFFICIAL: sortedMatches.filter(m => String(m.matchType).toUpperCase() === 'OFFICIAL').length,
-    FRIENDLY: sortedMatches.filter(m => String(m.matchType).toUpperCase() === 'FRIENDLY').length,
-    SCRIMMAGE: sortedMatches.filter(m => String(m.matchType).toUpperCase() === 'SCRIMMAGE').length
+    OFFICIAL: sortedMatches.filter(m => matchesFilterType(m.matchType, 'OFFICIAL')).length,
+    FRIENDLY: sortedMatches.filter(m => matchesFilterType(m.matchType, 'FRIENDLY')).length
   };
 
   // 4. Filter by Split (Last 5, Last 10, or All)
@@ -143,14 +184,14 @@ export function aggregateSeasonStats(rawMatches = [], filter = {}) {
     const reb = m.analytics.reboundingAnalysis;
     const opp = m.analytics.opponentShooting;
 
-    // Check for manual score override (official table sync)
+    // Check for manual score override (official table sync) or use normalized match score
     const override = getScoreOverride(m.name);
-    const pts = override?.overrideTeamScore !== null && override?.overrideTeamScore !== undefined 
-      ? override.overrideTeamScore 
-      : (t.pts || 0);
-    const oppPts = override?.overrideOppScore !== null && override?.overrideOppScore !== undefined 
-      ? override.overrideOppScore 
-      : (t.opponentScore || 0);
+    const pts = (override?.overrideTeamScore !== null && override?.overrideTeamScore !== undefined)
+      ? Number(override.overrideTeamScore)
+      : m.pts;
+    const oppPts = (override?.overrideOppScore !== null && override?.overrideOppScore !== undefined)
+      ? Number(override.overrideOppScore)
+      : m.oppPts;
     const diff = pts - oppPts;
     const isWin = diff > 0;
     const isLoss = diff < 0;
@@ -341,7 +382,7 @@ function getEmptyAggregateResult() {
     rebounding: { totalDreb: 0, totalOreb: 0, totalReb: 0, totalOppOreb: 0, avgReb: 0, avgDreb: 0, avgOreb: 0, drbPct: null, orebShare: 0 },
     ballControl: { totalAst: 0, avgAst: 0, totalTov: 0, avgTov: 0, astTovRatio: 0, totalStl: 0, avgStl: 0, totalBlk: 0, avgBlk: 0, totalPf: 0, avgPf: 0, totalPir: 0, avgPir: 0 },
     opponent: { totalOppFgm: 0, totalOppFga: 0, oppEfgPct: 0 },
-    typeCounts: { ALL: 0, OFFICIAL: 0, FRIENDLY: 0, SCRIMMAGE: 0 },
+    typeCounts: { ALL: 0, OFFICIAL: 0, FRIENDLY: 0 },
     timeline: [],
     matches: []
   };

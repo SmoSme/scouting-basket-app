@@ -77,7 +77,8 @@ async function buildStarterFrequencies() {
   }
 
   const trends = JSON.parse(fs.readFileSync(trendsPath, 'utf-8'));
-  const allTeamStarters = {};
+  const existingStarters = fs.existsSync(startersPath) ? JSON.parse(fs.readFileSync(startersPath, 'utf-8')) : {};
+  const allTeamStarters = { ...existingStarters };
   const teamFids = Object.keys(trends);
 
   console.log(`Analisi delle frequenze di quintetto per ${teamFids.length} squadre...\n`);
@@ -167,12 +168,15 @@ async function buildStarterFrequencies() {
       totalMatchesChecked: totalAnalyzedMatches
     })).sort((a, b) => b.startPercentage - a.startsCount); // Ordinati per frequenza
 
-    allTeamStarters[teamFid] = {
-      totalMatches: totalAnalyzedMatches,
-      players: structuredStarters
-    };
-
-    console.log(`  ✅ Analizzate ${totalAnalyzedMatches} partite. Calcolate le frequenze quintetto.`);
+    if (totalAnalyzedMatches > 0) {
+      allTeamStarters[teamFid] = {
+        totalMatches: totalAnalyzedMatches,
+        players: structuredStarters
+      };
+      console.log(`  ✅ Analizzate ${totalAnalyzedMatches} partite. Calcolate le frequenze quintetto.`);
+    } else if (existingStarters[teamFid]) {
+      console.log(`  ℹ️ Nessun nuovo boxscore estratto per FID ${teamFid}. Mantenuti dati esistenti.`);
+    }
   }
 
   fs.writeFileSync(startersPath, JSON.stringify(allTeamStarters, null, 2), 'utf-8');

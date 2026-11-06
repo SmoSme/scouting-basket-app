@@ -10,6 +10,7 @@ import LeagueHub from './pages/LeagueHub';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
+import { saveMatchMetadataToSupabase } from './services/matchMetadataService';
 import { calculatePlusMinus, calculateTeamScore, calculateOpponentScore } from './utils/basketballAnalytics';
 import { getScoreOverride, saveScoreOverride, clearScoreOverride } from './utils/scoreOverride';
 import {
@@ -35,13 +36,13 @@ export default function App() {
     setAuthRole(role);
     localStorage.setItem('bba_auth_role', role);
     setShowAuthModal(false);
-    showToast(role === 'admin' ? '🛡️ Logged in as Coach (Full Access)' : '👤 Guest Mode (Read-Only)');
+    showToast(role === 'admin' ? 'Logged in as Coach (Full Access)' : 'Guest Mode (Read-Only)');
   };
 
   const handleLogout = () => {
     setAuthRole('guest');
     localStorage.setItem('bba_auth_role', 'guest');
-    showToast('👤 Switched to Guest / Player view');
+    showToast('Switched to Guest / Player view');
   };
 
   const [gameSession, setGameSession] = useState(() => {
@@ -129,98 +130,91 @@ export default function App() {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedZoneKey, setSelectedZoneKey] = useState('PAINT');
   const [currentQuarter, setCurrentQuarter] = useState('Q1');
-  const [matchDate, setMatchDate] = useState(() => {
-    const session = localStorage.getItem('current_game_session');
-    if (session) {
-      const savedDate = localStorage.getItem(`match_date_${session}`);
-      if (savedDate) return savedDate;
-    }
-    return new Date().toISOString().split('T')[0];
-  });
+  const [matchDate, setMatchDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [matchType, setMatchType] = useState('Official');
+  const [overrideTeamScore, setOverrideTeamScore] = useState(null);
+  const [overrideOppScore, setOverrideOppScore] = useState(null);
 
-  const [matchType, setMatchType] = useState(() => {
-    const session = localStorage.getItem('current_game_session');
-    if (session) {
-      const savedType = localStorage.getItem(`match_type_${session}`);
-      if (savedType) return savedType;
-    }
-    return 'Official';
-  });
-
-  const [overrideTeamScore, setOverrideTeamScore] = useState(() => {
-    const session = localStorage.getItem('current_game_session');
-    if (session) {
-      const saved = getScoreOverride(session);
-      return saved?.overrideTeamScore ?? null;
-    }
-    return null;
-  });
-
-  const [overrideOppScore, setOverrideOppScore] = useState(() => {
-    const session = localStorage.getItem('current_game_session');
-    if (session) {
-      const saved = getScoreOverride(session);
-      return saved?.overrideOppScore ?? null;
-    }
-    return null;
-  });
-
-  const handleUpdateMatchDate = (newDate) => {
+  const handleUpdateMatchDate = async (newDate) => {
     setMatchDate(newDate);
     if (gameSession) {
       try {
-        localStorage.setItem(`match_date_${gameSession}`, newDate);
-      } catch (e) {}
+        await saveMatchMetadataToSupabase(gameSession, { matchDate: newDate });
+      } catch (e) {
+        console.error('Failed to sync matchDate to Supabase:', e);
+      }
     }
   };
 
-  const handleUpdateMatchType = (newType) => {
+  const handleUpdateMatchType = async (newType) => {
     setMatchType(newType);
     if (gameSession) {
       try {
-        localStorage.setItem(`match_type_${gameSession}`, newType);
-      } catch (e) {}
+        await saveMatchMetadataToSupabase(gameSession, { matchType: newType });
+      } catch (e) {
+        console.error('Failed to sync matchType to Supabase:', e);
+      }
     }
   };
 
-  const handleSaveScoreOverride = (newTeamScore, newOppScore, targetMatch = gameSession) => {
-    saveScoreOverride(targetMatch, newTeamScore, newOppScore);
+  const handleSaveScoreOverride = async (newTeamScore, newOppScore, targetMatch = gameSession) => {
     if (targetMatch === gameSession) {
       setOverrideTeamScore(newTeamScore);
       setOverrideOppScore(newOppScore);
     }
-    showToast('⚖️ Official score override saved');
+    try {
+      await saveMatchMetadataToSupabase(targetMatch, {
+        overrideTeamScore: newTeamScore,
+        overrideOppScore: newOppScore
+      });
+      showToast('Official score override saved to database');
+    } catch (e) {
+      console.error('Failed to save score override:', e);
+      showToast('Error saving score override to database');
+    }
   };
 
-  const handleClearScoreOverride = (targetMatch = gameSession) => {
-    clearScoreOverride(targetMatch);
+  const handleClearScoreOverride = async (targetMatch = gameSession) => {
     if (targetMatch === gameSession) {
       setOverrideTeamScore(null);
       setOverrideOppScore(null);
     }
-    showToast('🔄 Reverted to play-by-play calculated score');
+    try {
+      await saveMatchMetadataToSupabase(targetMatch, {
+        overrideTeamScore: null,
+        overrideOppScore: null
+      });
+      showToast('Reverted to play-by-play calculated score');
+    } catch (e) {
+      console.error('Failed to clear score override:', e);
+      showToast('Error resetting score override');
+    }
   };
 
   useEffect(() => {
-    if (gameSession) {
-      const savedDate = localStorage.getItem(`match_date_${gameSession}`);
-      if (savedDate) {
-        setMatchDate(savedDate);
-      } else {
-        setMatchDate(new Date().toISOString().split('T')[0]);
-      }
+    async function loadSessionMeta() {
+      if (!gameSession) return;
+      try {
+        const { data } = await supabase
+          .from('scouting_log')
+          .select('Zone')
+          .eq('Match_Name', gameSession)
+          .eq('Action', 'MATCH_METADATA');
 
-      const savedType = localStorage.getItem(`match_type_${gameSession}`);
-      if (savedType) {
-        setMatchType(savedType);
-      } else {
-        setMatchType('Official');
+        if (data && data.length > 0) {
+          try {
+            const parsed = JSON.parse(data[0].Zone);
+            if (parsed.matchDate) setMatchDate(parsed.matchDate);
+            if (parsed.matchType) setMatchType(parsed.matchType);
+            if (parsed.overrideTeamScore !== undefined) setOverrideTeamScore(parsed.overrideTeamScore);
+            if (parsed.overrideOppScore !== undefined) setOverrideOppScore(parsed.overrideOppScore);
+          } catch (e) {}
+        }
+      } catch (e) {
+        console.warn('Error loading session meta from Supabase:', e);
       }
-
-      const override = getScoreOverride(gameSession);
-      setOverrideTeamScore(override?.overrideTeamScore ?? null);
-      setOverrideOppScore(override?.overrideOppScore ?? null);
     }
+    loadSessionMeta();
   }, [gameSession]);
   const [events, setEvents] = useState(() => {
     const session = localStorage.getItem('current_game_session');
@@ -335,7 +329,7 @@ export default function App() {
       if (online) {
         cleanStaleOfflineQueue(gameSession);
         syncOfflineQueue((syncedCount) => {
-          showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+          showToast(`Synced ${syncedCount} offline events to Supabase`);
           setOfflineQueueCount(getOfflineQueue().length);
           fetchEvents();
         });
@@ -347,7 +341,7 @@ export default function App() {
 
     // Online listener
     const cleanupSync = setupOnlineSyncListener((syncedCount) => {
-      showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+      showToast(`Synced ${syncedCount} offline events to Supabase`);
       setOfflineQueueCount(getOfflineQueue().length);
       fetchEvents();
     });
@@ -357,7 +351,7 @@ export default function App() {
       setIsOnline(navigator.onLine);
       cleanStaleOfflineQueue(gameSession);
       syncOfflineQueue((syncedCount) => {
-        showToast(`⚡ Synced ${syncedCount} offline events to Supabase!`);
+        showToast(`Synced ${syncedCount} offline events to Supabase`);
         setOfflineQueueCount(getOfflineQueue().length);
       });
       setOfflineQueueCount(getOfflineQueue().length);
@@ -510,13 +504,13 @@ export default function App() {
     const effectivePlayer = targetPlayer || selectedPlayer;
 
     if (!isTeamEvent && !isOpponent && !isSub && !effectivePlayer) {
-      showToast('⚠️ Please select a player first!');
+      showToast('Please select a player first');
       return;
     }
 
     if (!gameSession) {
       setShowSessionModal(true);
-      showToast('⚠️ Please enter a match name first!');
+      showToast('Please enter a match name first');
       return;
     }
 
@@ -604,10 +598,10 @@ export default function App() {
           else if (isSub) label = `[SUB] ${actionName}`;
           else if (isTeamEvent) label = `[TEAM] ${actionName}`;
           else label = `#${playerNum} ${playerName} -> ${actionName}`;
-          showToast(`✅ ${label}`);
+          showToast(`${label}`);
         } else {
           console.warn('Supabase insert error:', error);
-          showToast(`⚠️ Supabase: ${error.message || 'Column/Permission error'}`);
+          showToast(`Supabase: ${error.message || 'Column/Permission error'}`);
         }
       } catch (err) {
         console.warn('Supabase network exception:', err);
@@ -619,7 +613,7 @@ export default function App() {
       saveToOfflineQueue({ ...supabasePayload, onCourtPlayerIds: [...currentOnCourt.map(id => String(id))] });
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
-      showToast(`📦 Saved to offline queue (${newQueueLength} pending sync)`);
+      showToast(`Saved to offline queue (${newQueueLength} pending sync)`);
     }
 
     // Local server fallback
@@ -639,7 +633,7 @@ export default function App() {
     if (!Array.isArray(actionsList) || actionsList.length === 0) return;
     if (!gameSession) {
       setShowSessionModal(true);
-      showToast('⚠️ Please enter a match name first!');
+      showToast('Please enter a match name first');
       return;
     }
 
@@ -727,7 +721,7 @@ export default function App() {
               return updated;
             });
           }
-          showToast(`✅ ${payloads.map(p => p.Action).join(' + ')}`);
+          showToast(`${payloads.map(p => p.Action).join(' + ')}`);
         }
       } catch (e) {
         console.warn('Supabase batch insert error:', e);
@@ -738,7 +732,7 @@ export default function App() {
       payloads.forEach(p => saveToOfflineQueue({ ...p, onCourtPlayerIds: [...currentOnCourt.map(id => String(id))] }));
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
-      showToast(`📦 Saved ${payloads.length} events to offline queue`);
+      showToast(`Saved ${payloads.length} events to offline queue`);
     }
 
     payloads.forEach(p => {
@@ -813,7 +807,7 @@ export default function App() {
     const outName = outPlayer ? `#${outPlayer.number} ${outPlayer.name}` : `#${outStr}`;
     const inName = inPlayer ? `#${inPlayer.number} ${inPlayer.name}` : `#${inStr}`;
 
-    showToast(`🔁 SUB: ${outName} ➔ BENCH | ${inName} ➔ COURT`);
+    showToast(`SUB: ${outName} → BENCH | ${inName} → COURT`);
 
     if (gameSession) {
       const subAction = `SUB: ${inName} IN for ${outName} - ${currentQuarter}`;
@@ -823,7 +817,7 @@ export default function App() {
 
   const handleUndo = async () => {
     if (events.length === 0) {
-      showToast('⚠️ No action to undo!');
+      showToast('No action to undo');
       return;
     }
 
@@ -887,7 +881,7 @@ export default function App() {
     if (window.confirm(`Clear current live screen tracking for "${gameSession || 'Current Match'}"? (Archived database data will remain safe in Supabase)`)) {
       persistMatchState([]);
       setSelectedPlayer(null);
-      showToast('🧹 Live screen cleared! Match remains saved in Archive.');
+      showToast('Live screen cleared. Match remains saved in Archive.');
     }
   };
 
@@ -916,7 +910,7 @@ export default function App() {
     // 5. Purge from offline queue if queued
     removeFromOfflineQueue(eventId, targetEv);
 
-    showToast('🗑️ Event deleted from feed!');
+    showToast('Event deleted from feed');
 
     // 6. Delete from Supabase Cloud
     if (navigator.onLine) {
@@ -976,7 +970,7 @@ export default function App() {
     });
 
     persistMatchState(updatedEvents);
-    showToast('✏️ Event updated!');
+    showToast('Event updated');
 
     // 2. Supabase Cloud update
     if (navigator.onLine && eventId) {
@@ -1012,16 +1006,16 @@ export default function App() {
     setOfflineQueueCount(getOfflineQueue().length);
     
     if (res.syncedCount > 0) {
-      showToast(`⚡ Successfully synced ${res.syncedCount} events to Supabase!`);
+      showToast(`Successfully synced ${res.syncedCount} events to Supabase`);
       fetchEvents();
     } else if (res.unconfigured) {
-      showToast(`⚠️ ${res.message}`);
+      showToast(`${res.message}`);
     } else if (res.error) {
-      showToast(`❌ Supabase Sync Error: ${res.error}`);
+      showToast(`Supabase Sync Error: ${res.error}`);
     } else if (res.offline) {
-      showToast('⚠️ Still offline. Connect to Wi-Fi to sync.');
+      showToast('Still offline. Connect to Wi-Fi to sync.');
     } else if (res.queueEmpty) {
-      showToast('ℹ️ No offline events in queue.');
+      showToast('No offline events in queue');
     }
   };
 
@@ -1108,6 +1102,10 @@ export default function App() {
           />
           <Route
             path="/trends"
+            element={<SeasonTrends showToast={showToast} authRole={authRole} />}
+          />
+          <Route
+            path="/bba-analytics"
             element={<SeasonTrends showToast={showToast} authRole={authRole} />}
           />
           <Route

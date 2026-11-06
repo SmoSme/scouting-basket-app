@@ -72,15 +72,16 @@ async function buildTrends() {
   }
 
   const standings = JSON.parse(fs.readFileSync(standingsPath, 'utf-8'));
-  const opponents = standings.filter(t => t.fid !== BBA_TEAM_ID);
+  // Analyze ALL teams including BBA for complete league & self-scouting
+  const teamsToAnalyze = standings;
   
-  console.log(`Trovate ${opponents.length} squadre avversarie da analizzare.\n`);
+  console.log(`Trovate ${teamsToAnalyze.length} squadre da analizzare (incluso BBA).\n`);
 
   const allTrends = {};
 
-  for (let i = 0; i < opponents.length; i++) {
-    const team = opponents[i];
-    console.log(`[${i+1}/${opponents.length}] Calcolo trend per: ${team.name} (FID: ${team.fid})...`);
+  for (let i = 0; i < teamsToAnalyze.length; i++) {
+    const team = teamsToAnalyze[i];
+    console.log(`[${i+1}/${teamsToAnalyze.length}] Calcolo trend per: ${team.name} (FID: ${team.fid})...`);
     
     // Politeness delay di 1.5 secondi tra una squadra e l'altra per evitare blocchi
     if (i > 0) await sleep(1500);

@@ -215,7 +215,7 @@ export default function PlayerSelector({
           <div className="flex items-center gap-1.5 font-bold text-amber-900 truncate">
             <RefreshCw className="w-3.5 h-3.5 text-amber-700 flex-none" />
             <span className="truncate">
-              SUB: #{subBenchPlayer.number} {subBenchPlayer.name} ➔ Select ON-COURT player to replace
+              SUB: #{subBenchPlayer.number} {subBenchPlayer.name} → Select ON-COURT player to replace
             </span>
           </div>
           <button

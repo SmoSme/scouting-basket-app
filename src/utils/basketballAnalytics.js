@@ -480,7 +480,7 @@ export function computeZoneStats(events = []) {
  * Advanced Basketball Analytics Engine
  * Computes direct and derived metrics according to FIBA / EuroLeague analytical standards.
  */
-export function calculateMatchAnalytics(events = [], customRoster = [], startingOnCourtNums = []) {
+export function calculateMatchAnalytics(events = [], customRoster = [], startingOnCourtNums = [], scoreOverrides = null) {
   const safeEvents = Array.isArray(events) ? events : [];
 
   // 1. Build comprehensive player map.
@@ -623,9 +623,16 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
   const orebShare = (teamOthers.reb > 0) ? (teamOthers.oreb / teamOthers.reb) * 100 : 0;
   const tacticsPerPoss = (totalTactics / estimatedPossessions) * 100;
 
-  // Opponent Scoring and Point Differential
-  const opponentScore = calculateOpponentScore(safeEvents);
-  const pointDifferential = teamShooting.pts - opponentScore;
+  // Opponent Scoring and Point Differential (respecting strict scores from scouting_matches/overrides)
+  const opponentScore = (scoreOverrides?.oppScore !== undefined && scoreOverrides?.oppScore !== null && Number(scoreOverrides.oppScore) > 0)
+    ? Number(scoreOverrides.oppScore)
+    : calculateOpponentScore(safeEvents);
+
+  const finalTeamPts = (scoreOverrides?.teamScore !== undefined && scoreOverrides?.teamScore !== null && Number(scoreOverrides.teamScore) > 0)
+    ? Number(scoreOverrides.teamScore)
+    : teamShooting.pts;
+
+  const pointDifferential = finalTeamPts - opponentScore;
 
   // Shot Profile Distribution: Paint vs Mid vs 3PT
   const totalFga = teamShooting.fga > 0 ? teamShooting.fga : 1;
@@ -813,6 +820,7 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
 
   const teamOverview = {
     ...teamShooting,
+    pts: finalTeamPts,
     ...teamOthers,
     opponentScore,
     pointDifferential,

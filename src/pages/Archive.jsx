@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { 
   Archive as ArchiveIcon, Download, Trash2, RefreshCw, Calendar, 
-  Hash, FileSpreadsheet, Eye
+  Hash, FileSpreadsheet, Eye, Pencil, Loader2
 } from 'lucide-react';
 import MatchReviewModal from '../components/MatchReviewModal';
 import { calculateOpponentScore } from '../utils/basketballAnalytics';
-import { getScoreOverride } from '../utils/scoreOverride';
+import { 
+  extractMatchMetadataMap, 
+  saveMatchMetadataToSupabase, 
+  formatDateForInput, 
+  fetchScoutingMatches, 
+  updateScoutingMatchInSupabase, 
+  subscribeToMatchCache 
+} from '../services/matchMetadataService';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Archive({ showToast, authRole = 'admin' }) {
@@ -21,12 +28,19 @@ export default function Archive({ showToast, authRole = 'admin' }) {
 
   useEffect(() => {
     fetchArchive();
+    const unsubscribe = subscribeToMatchCache(() => {
+      fetchArchive();
+    });
+    return () => unsubscribe();
   }, []);
 
   const fetchArchive = async () => {
     setLoading(true);
     try {
-      // Query all records from Supabase scouting_log
+      // 1. Fetch normalized matches from scouting_matches
+      const normalizedMatches = await fetchScoutingMatches();
+
+      // 2. Fetch all events from Supabase scouting_log
       const { data, error } = await supabase
         .from('scouting_log')
         .select('*')
@@ -34,85 +48,118 @@ export default function Archive({ showToast, authRole = 'admin' }) {
 
       if (error) {
         console.error('Supabase archive fetch error:', error);
-        setMatches([]);
-        setLoading(false);
-        return;
       }
 
-      if (!data || data.length === 0) {
-        setMatches([]);
-        setLoading(false);
-        return;
-      }
+      const rawLogs = data || [];
+      const metaMap = extractMatchMetadataMap(rawLogs);
 
-      // Group events by distinct Match_Name (or fallback to nome_partita)
-      const grouped = {};
-      (data || []).forEach(item => {
+      // Group events by match_id and by Match_Name
+      const eventsByMatchId = {};
+      const eventsByName = {};
+
+      rawLogs.forEach(item => {
+        if (item.Action === 'MATCH_METADATA' || item.Player === 'METADATA') return;
+
+        if (item.match_id) {
+          if (!eventsByMatchId[item.match_id]) eventsByMatchId[item.match_id] = [];
+          eventsByMatchId[item.match_id].push(item);
+        }
+
         const gameName = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || 'Unnamed Match';
-        if (!grouped[gameName]) {
-          grouped[gameName] = {
-            name: gameName,
-            events: [],
-            createdAt: item.created_at || item.Timestamp || item.timestamp || 'n.a.'
+        if (!eventsByName[gameName]) {
+          eventsByName[gameName] = [];
+        }
+        eventsByName[gameName].push(item);
+      });
+
+      let matchSummaries = [];
+
+      if (normalizedMatches && normalizedMatches.length > 0) {
+        // Use normalized matches as primary relational structure
+        matchSummaries = normalizedMatches.map(nm => {
+          const mEvents = eventsByMatchId[nm.id] || eventsByName[nm.match_name] || [];
+          const teamPts = mEvents.reduce((acc, ev) => {
+            const az = ev.Action || ev.action || ev.Azione || ev.azione || '';
+            if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
+            if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
+            if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
+            return acc;
+          }, 0);
+          const oppPts = calculateOpponentScore(mEvents);
+
+          const meta = metaMap[nm.match_name] || {};
+          const overrideTeamScore = nm.home_score || meta.overrideTeamScore;
+          const overrideOppScore = nm.away_score || meta.overrideOppScore;
+          const isScoreOverridden = (overrideTeamScore > 0 || overrideOppScore > 0) || (meta.overrideTeamScore !== null && meta.overrideTeamScore !== undefined);
+
+          const displayedTeamPts = isScoreOverridden && overrideTeamScore ? overrideTeamScore : teamPts;
+          const displayedOppPts = isScoreOverridden && overrideOppScore ? overrideOppScore : oppPts;
+          const resolvedDate = nm.match_date ? String(nm.match_date).split('T')[0] : (meta.matchDate || (nm.created_at ? nm.created_at.split('T')[0] : 'n.a.'));
+
+          return {
+            id: nm.id,
+            name: nm.match_name,
+            opponentName: nm.opponent_name || nm.match_name.replace(/^BBA\s*(vs|contro|-)\s*/i, '').trim(),
+            isHome: nm.is_home,
+            eventCount: mEvents.length,
+            home_score: displayedTeamPts,
+            away_score: displayedOppPts,
+            pts: displayedTeamPts,
+            oppPts: displayedOppPts,
+            displayedTeamPts,
+            displayedOppPts,
+            isScoreOverridden,
+            createdAt: nm.created_at,
+            matchType: nm.match_type || meta.matchType || 'Official',
+            matchDate: resolvedDate,
+            match_date: resolvedDate,
+            events: mEvents
           };
-        }
-        grouped[gameName].events.push(item);
-      });
+        });
+      } else {
+        // Fallback to grouping by Match_Name
+        matchSummaries = Object.keys(eventsByName).map(name => {
+          const mEvents = eventsByName[name] || [];
+          const teamPts = mEvents.reduce((acc, ev) => {
+            const az = ev.Action || ev.action || ev.Azione || ev.azione || '';
+            if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
+            if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
+            if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
+            return acc;
+          }, 0);
+          const oppPts = calculateOpponentScore(mEvents);
 
-      // Also scan localStorage for any local match sessions
-      try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('bba_events_')) {
-            const gameName = key.replace('bba_events_', '');
-            if (gameName && !grouped[gameName]) {
-              try {
-                const localEvs = JSON.parse(localStorage.getItem(key));
-                if (Array.isArray(localEvs) && localEvs.length > 0) {
-                  grouped[gameName] = {
-                    name: gameName,
-                    events: localEvs,
-                    createdAt: localEvs[0]?.timestamp || new Date().toISOString()
-                  };
-                }
-              } catch (e) {}
-            }
-          }
-        }
-      } catch (e) {}
+          const meta = metaMap[name] || {};
+          const matchType = meta.matchType || 'Official';
+          const matchDate = meta.matchDate || (mEvents[0]?.created_at ? mEvents[0].created_at.split('T')[0] : 'n.a.');
+          const overrideTeamScore = meta.overrideTeamScore;
+          const overrideOppScore = meta.overrideOppScore;
+          const isScoreOverridden = overrideTeamScore !== null || overrideOppScore !== null;
 
-      // Convert to array of match summaries
-      const matchSummaries = Object.values(grouped).map(m => {
-        const teamPts = m.events.reduce((acc, ev) => {
-          const az = ev.Action || ev.action || ev.Azione || ev.azione || '';
-          if (az === '2PT Made' || az === '2PT Fatto') return acc + 2;
-          if (az === '3PT Made' || az === '3PT Fatto') return acc + 3;
-          if (az === 'FT Made' || az === 'TL Fatto') return acc + 1;
-          return acc;
-        }, 0);
-        const oppPts = calculateOpponentScore(m.events);
+          const displayedTeamPts = isScoreOverridden && overrideTeamScore !== null ? overrideTeamScore : teamPts;
+          const displayedOppPts = isScoreOverridden && overrideOppScore !== null ? overrideOppScore : oppPts;
 
-        const storedType = localStorage.getItem(`match_type_${m.name}`) || 'Official';
-        const storedDate = localStorage.getItem(`match_date_${m.name}`) || (m.createdAt ? m.createdAt.split('T')[0] : 'n.a.');
-        const override = getScoreOverride(m.name);
-        const displayedTeamPts = override?.overrideTeamScore !== null && override?.overrideTeamScore !== undefined ? override.overrideTeamScore : teamPts;
-        const displayedOppPts = override?.overrideOppScore !== null && override?.overrideOppScore !== undefined ? override.overrideOppScore : oppPts;
-        const isScoreOverridden = override !== null && (override.overrideTeamScore !== null || override.overrideOppScore !== null);
-
-        return {
-          name: m.name,
-          eventCount: m.events.length,
-          pts: teamPts,
-          oppPts,
-          displayedTeamPts,
-          displayedOppPts,
-          isScoreOverridden,
-          createdAt: m.createdAt,
-          matchType: storedType,
-          matchDate: storedDate,
-          events: m.events
-        };
-      });
+          return {
+            id: meta.matchId || null,
+            name,
+            opponentName: name.replace(/^BBA\s*(vs|contro|-)\s*/i, '').trim(),
+            isHome: true,
+            eventCount: mEvents.length,
+            home_score: displayedTeamPts,
+            away_score: displayedOppPts,
+            pts: displayedTeamPts,
+            oppPts: displayedOppPts,
+            displayedTeamPts,
+            displayedOppPts,
+            isScoreOverridden,
+            createdAt: mEvents[0]?.created_at || 'n.a.',
+            matchType,
+            matchDate,
+            match_date: matchDate,
+            events: mEvents
+          };
+        });
+      }
 
       setMatches(matchSummaries);
     } catch (err) {
@@ -122,37 +169,62 @@ export default function Archive({ showToast, authRole = 'admin' }) {
     }
   };
 
-  const handleUpdateMatchDate = (matchName, newDate) => {
+  const handleUpdateMatchDate = async (matchIdentifier, newDate, shouldSave = true) => {
+    if (!newDate) return;
     try {
-      localStorage.setItem(`match_date_${matchName}`, newDate);
-    } catch (e) {}
-    setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchDate: newDate } : m));
-    if (reviewMatch && reviewMatch.name === matchName) {
-      setReviewMatch(prev => ({ ...prev, matchDate: newDate }));
+      if (shouldSave) {
+        await updateScoutingMatchInSupabase(matchIdentifier, { match_date: newDate });
+      }
+      setMatches(prev => prev.map(m => (m.id === matchIdentifier || m.name === matchIdentifier) ? { ...m, matchDate: newDate } : m));
+      if (reviewMatch && (reviewMatch.id === matchIdentifier || reviewMatch.name === matchIdentifier)) {
+        setReviewMatch(prev => ({ ...prev, matchDate: newDate }));
+      }
+      if (showToast) showToast(language === 'it' ? 'Data salvata su Supabase' : 'Date saved to Supabase');
+    } catch (e) {
+      console.error('Failed to update match date in Supabase:', e);
+      if (showToast) showToast(language === 'it' ? 'Errore nel salvataggio della data' : 'Error saving date');
     }
   };
 
-  const handleUpdateMatchType = (matchName, newType) => {
+  const handleUpdateMatchType = async (matchIdentifier, newType) => {
     try {
-      localStorage.setItem(`match_type_${matchName}`, newType);
-    } catch (e) {}
-    setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchType: newType } : m));
-    if (reviewMatch && reviewMatch.name === matchName) {
-      setReviewMatch(prev => ({ ...prev, matchType: newType }));
+      await updateScoutingMatchInSupabase(matchIdentifier, { match_type: newType });
+      setMatches(prev => prev.map(m => (m.id === matchIdentifier || m.name === matchIdentifier) ? { ...m, matchType: newType } : m));
+      if (reviewMatch && (reviewMatch.id === matchIdentifier || reviewMatch.name === matchIdentifier)) {
+        setReviewMatch(prev => ({ ...prev, matchType: newType }));
+      }
+      if (showToast) showToast(language === 'it' ? 'Tipo partita salvato su Supabase' : 'Match type saved to Supabase');
+    } catch (e) {
+      console.error('Failed to update match type in Supabase:', e);
     }
   };
 
-  const handleUpdateScoreOverride = (matchName, tScore, oScore) => {
-    setMatches(prev => prev.map(m => {
-      if (m.name !== matchName) return m;
-      const isOver = tScore !== null || oScore !== null;
-      return {
+  const handleUpdateScoreOverride = async (matchIdentifier, tScore, oScore) => {
+    try {
+      await updateScoutingMatchInSupabase(matchIdentifier, {
+        home_score: tScore,
+        away_score: oScore,
+        overrideTeamScore: tScore,
+        overrideOppScore: oScore
+      });
+      setMatches(prev => prev.map(m => (m.id === matchIdentifier || m.name === matchIdentifier) ? {
         ...m,
         displayedTeamPts: tScore !== null ? tScore : m.pts,
         displayedOppPts: oScore !== null ? oScore : m.oppPts,
-        isScoreOverridden: isOver
-      };
-    }));
+        isScoreOverridden: tScore !== null || oScore !== null
+      } : m));
+      if (reviewMatch && (reviewMatch.id === matchIdentifier || reviewMatch.name === matchIdentifier)) {
+        setReviewMatch(prev => ({
+          ...prev,
+          displayedTeamPts: tScore !== null ? tScore : prev.pts,
+          displayedOppPts: oScore !== null ? oScore : prev.oppPts,
+          isScoreOverridden: tScore !== null || oScore !== null
+        }));
+      }
+      if (showToast) showToast(language === 'it' ? 'Punteggio salvato su Supabase' : 'Score saved to Supabase');
+    } catch (e) {
+      console.error('Failed to update score override in Supabase:', e);
+    }
   };
 
   // Action: Open Match Review Modal
@@ -184,17 +256,30 @@ export default function Archive({ showToast, authRole = 'admin' }) {
       }
 
       const sortedEvents = [...(events || [])].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+      const resolvedDate = match.match_date || match.matchDate || (match.createdAt ? match.createdAt.split('T')[0] : 'n.a.');
+      const resolvedTeamScore = match.home_score ?? match.displayedTeamPts ?? match.pts;
+      const resolvedOppScore = match.away_score ?? match.displayedOppPts ?? match.oppPts;
+
       setReviewMatch({
+        ...match,
+        id: match.id,
         name: match.name,
         events: sortedEvents,
-        pts: match.pts,
+        home_score: resolvedTeamScore,
+        away_score: resolvedOppScore,
+        pts: resolvedTeamScore,
+        oppPts: resolvedOppScore,
+        displayedTeamPts: resolvedTeamScore,
+        displayedOppPts: resolvedOppScore,
+        is_home: match.isHome ?? match.is_home ?? true,
         createdAt: match.createdAt,
-        matchType: match.matchType || localStorage.getItem(`match_type_${match.name}`) || 'Official',
-        matchDate: match.matchDate || localStorage.getItem(`match_date_${match.name}`)
+        matchType: match.matchType || 'Official',
+        matchDate: resolvedDate,
+        match_date: resolvedDate
       });
     } catch (err) {
       console.error('Error opening match review:', err);
-      if (showToast) showToast('❌ Error loading match details');
+      if (showToast) showToast('Error loading match details');
     } finally {
       setReviewLoading(false);
     }
@@ -252,10 +337,10 @@ export default function Archive({ showToast, authRole = 'admin' }) {
       link.click();
       document.body.removeChild(link);
       
-      if (showToast) showToast(`📥 Exported CSV for "${matchName}"`);
+      if (showToast) showToast(`Exported CSV for "${matchName}"`);
     } catch (err) {
       console.error('Download CSV error:', err);
-      if (showToast) showToast(`❌ Error exporting CSV file`);
+      if (showToast) showToast(`Error exporting CSV file`);
     } finally {
       setActionLoading(null);
     }
@@ -283,14 +368,14 @@ export default function Archive({ showToast, authRole = 'admin' }) {
         if (fallback.error) throw fallback.error;
       }
 
-      if (showToast) showToast(`🗑️ Match "${matchName}" deleted from Supabase!`);
+      if (showToast) showToast(`Match "${matchName}" deleted from Supabase`);
       if (reviewMatch && reviewMatch.name === matchName) {
         setReviewMatch(null);
       }
       fetchArchive();
     } catch (err) {
       console.error('Delete match error:', err);
-      if (showToast) showToast(`❌ Error deleting match from Supabase`);
+      if (showToast) showToast(`Error deleting match from Supabase`);
     } finally {
       setActionLoading(null);
     }
@@ -352,13 +437,9 @@ export default function Archive({ showToast, authRole = 'admin' }) {
                     <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
                       m.matchType === 'Official'
                         ? 'bg-[#DDF3E9] text-[#022D32] border-[#0CA17A]/40'
-                        : m.matchType === 'Friendly'
-                          ? 'bg-sky-50 text-sky-800 border-sky-300'
-                          : 'bg-purple-50 text-purple-800 border-purple-300'
+                        : 'bg-sky-50 text-sky-800 border-sky-300'
                     }`}>
-                      {m.matchType === 'Official' ? (language === 'it' ? 'Ufficiale' : 'Official') :
-                       m.matchType === 'Friendly' ? (language === 'it' ? 'Amichevole' : 'Friendly') :
-                       (language === 'it' ? 'Allenamento' : 'Scrimmage')}
+                      {m.matchType === 'Official' ? (language === 'it' ? 'Ufficiale' : 'Official') : (language === 'it' ? 'Amichevole' : 'Friendly')}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -380,15 +461,19 @@ export default function Archive({ showToast, authRole = 'admin' }) {
                     <Hash className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {m.eventCount} {language === 'it' ? 'Azioni Registrate' : 'Tracked Events'}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A]" />
-                    {(() => {
-                      const stored = m.matchDate || localStorage.getItem(`match_date_${m.name}`);
-                      const loc = language === 'it' ? 'it-IT' : 'en-US';
-                      if (stored) return new Date(stored + 'T12:00:00').toLocaleDateString(loc, { day: '2-digit', month: '2-digit', year: 'numeric' });
-                      try { return new Date(m.createdAt).toLocaleDateString(loc); } catch(e) { return m.createdAt || 'n.a.'; }
-                    })()}
-                  </span>
+                  <div 
+                    className="flex items-center gap-1.5 bg-[#DDF3E9]/50 hover:bg-[#DDF3E9] px-2 py-0.5 rounded-md border border-[#0CA17A]/20 transition-colors group cursor-pointer"
+                    title={language === 'it' ? 'Modifica data partita (Supabase)' : 'Edit match date (Supabase)'}
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A] shrink-0" />
+                    <input
+                      type="date"
+                      value={formatDateForInput(m.matchDate) || formatDateForInput(m.createdAt) || ''}
+                      onChange={(e) => handleUpdateMatchDate(m.id || m.name, e.target.value, true)}
+                      className="bg-transparent text-[#022D32] font-bold text-xs focus:outline-none cursor-pointer [color-scheme:light]"
+                    />
+                    <Pencil className="w-2.5 h-2.5 text-[#022D32]/40 group-hover:text-[#022D32] transition-colors shrink-0" />
+                  </div>
                 </div>
               </div>
 

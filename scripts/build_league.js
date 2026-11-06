@@ -622,28 +622,24 @@ async function buildLeaguePipeline() {
   console.log(`  💾 Saved directly to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
 
   // -----------------------------------------------------------------
-  // STEP 2: Opponent Rosters & Deep UniquePlayer Historical Career Stats
+  // STEP 2: Team Rosters & Deep UniquePlayer Historical Career Stats (All Teams including BBA)
   // -----------------------------------------------------------------
-  console.log('\n[2/2] 👥 Fetching Opponent Rosters & Deep UniquePlayer Career Stats...');
+  console.log('\n[2/4] 👥 Fetching Team Rosters & Deep UniquePlayer Career Stats (including BBA)...');
 
-  const opponents = basicStandings.filter(team => {
-    const isBba = String(team.fid) === String(BBA_TEAM_ID) || 
-                  (team.name && team.name.toLowerCase().includes('bba')) ||
-                  (team.name && team.name.toLowerCase().includes('baronissi'));
-    return !isBba;
-  });
+  // Process all teams including BBA for full self-scouting
+  const teamsToProcess = basicStandings;
 
-  console.log(`  Found ${opponents.length} opponent teams (excluding BBA team ${BBA_TEAM_ID}).`);
+  console.log(`  Found ${teamsToProcess.length} total teams to process (including BBA team ${BBA_TEAM_ID}).`);
 
   const rostersDictionary = { ...existingRosters };
   let totalPlayersProcessed = 0;
 
-  for (let i = 0; i < opponents.length; i++) {
-    const opponent = opponents[i];
+  for (let i = 0; i < teamsToProcess.length; i++) {
+    const opponent = teamsToProcess[i];
     const teamFid = String(opponent.fid);
     const teamName = (opponent.name || '').trim();
 
-    console.log(`\n  [${i + 1}/${opponents.length}] Processing roster for "${teamName}" (FID: ${teamFid})...`);
+    console.log(`\n  [${i + 1}/${teamsToProcess.length}] Processing roster for "${teamName}" (FID: ${teamFid})...`);
 
     let players = [];
     try {
@@ -753,8 +749,8 @@ async function buildLeaguePipeline() {
 
   const allTrends = { ...existingTrends };
 
-  for (let i = 0; i < opponents.length; i++) {
-    const opp = opponents[i];
+  for (let i = 0; i < teamsToProcess.length; i++) {
+    const opp = teamsToProcess[i];
     const oppFid = String(opp.fid);
     const oppName = opp.name || oppFid;
 
@@ -957,13 +953,29 @@ async function buildLeaguePipeline() {
   for (const [teamFid, players] of Object.entries(rostersDictionary)) {
     const teamStarters = allTeamStarters[teamFid]?.players || [];
     const starterMap = new Map();
-    teamStarters.forEach(s => starterMap.set(String(s.fid), s));
+    const numberMap = new Map();
+    teamStarters.forEach(s => {
+      if (s.fid) starterMap.set(String(s.fid), s);
+      if (s.number) numberMap.set(String(s.number), s);
+    });
 
     players.forEach(p => {
-      const s = starterMap.get(String(p.fid));
+      let s = null;
+      if (p.fid && starterMap.has(String(p.fid))) {
+        s = starterMap.get(String(p.fid));
+      } else if (p.number && numberMap.has(String(p.number))) {
+        const candidate = numberMap.get(String(p.number));
+        if (!candidate.fid || !p.fid || String(candidate.fid) === String(p.fid)) {
+          s = candidate;
+        }
+      }
+
       if (s && s.startPercentage != null) {
         p.startPercentage = `${s.startPercentage}%`;
         p.startsCount = s.startsCount || 0;
+      } else if (teamStarters.length > 0) {
+        p.startPercentage = '0%';
+        p.startsCount = 0;
       } else {
         p.startPercentage = p.starting ? '100%' : '0%';
         p.startsCount = p.starting ? 1 : 0;
