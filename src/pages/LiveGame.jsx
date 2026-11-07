@@ -13,6 +13,9 @@ import {
   Home, Navigation, ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../services/supabase';
+import { generateUUID } from '../utils/uuid';
+import { saveToOfflineQueue, removeFromOfflineQueue } from '../services/offlineSync';
 
 export default function LiveGame({
   gameSession,
@@ -50,6 +53,9 @@ export default function LiveGame({
   onUpdateMatchDate,
   matchType: matchTypeProp,
   onUpdateMatchType,
+  matchId,
+  setMatchId,
+  onStartNewMatchSession,
   overrideTeamScore,
   overrideOppScore,
   onSaveScoreOverride,
@@ -78,6 +84,33 @@ export default function LiveGame({
   // Opponent Missed Shot Rebound Prompt State
   const [opponentMissPopover, setOpponentMissPopover] = useState(null); // { shotType: 'FT' | '2PT' | '3PT' }
 
+  // 400ms Action Debounce Guard to Prevent Courtside Double-Tapping
+  const [actionDebounce, setActionDebounce] = useState(false);
+  const actionDebounceTimerRef = React.useRef(null);
+
+  const triggerWithDebounce = (actionFn) => {
+    if (actionDebounce) return;
+    setActionDebounce(true);
+    try {
+      actionFn();
+    } finally {
+      if (actionDebounceTimerRef.current) {
+        clearTimeout(actionDebounceTimerRef.current);
+      }
+      actionDebounceTimerRef.current = setTimeout(() => {
+        setActionDebounce(false);
+      }, 400);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (actionDebounceTimerRef.current) {
+        clearTimeout(actionDebounceTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleDefenseChange = (scheme) => {
     setDefenseType(scheme);
     try {
@@ -86,14 +119,16 @@ export default function LiveGame({
   };
 
   const handleOpponentShot = (shotType, isMade) => {
-    if (!isAdmin) return;
+    if (!isAdmin || actionDebounce) return;
     if (isMade) {
-      if (dispatchOpponentShot) {
-        dispatchOpponentShot(shotType, true, defenseType);
-      } else if (dispatchOpponentScore) {
-        const pts = (shotType === '3PT') ? 3 : (shotType === '2PT') ? 2 : 1;
-        dispatchOpponentScore(pts);
-      }
+      triggerWithDebounce(() => {
+        if (dispatchOpponentShot) {
+          dispatchOpponentShot(shotType, true, defenseType);
+        } else if (dispatchOpponentScore) {
+          const pts = (shotType === '3PT') ? 3 : (shotType === '2PT') ? 2 : 1;
+          dispatchOpponentScore(pts);
+        }
+      });
     } else {
       // Missed shot opens contextual rebound popover
       setOpponentMissPopover({ shotType: shotType || '2PT' });
@@ -101,36 +136,39 @@ export default function LiveGame({
   };
 
   const handleResolveOpponentMissRebound = (optionType, bbaPlayer = null) => {
+    if (actionDebounce) return;
     try {
       if (!opponentMissPopover) return;
       const shotType = opponentMissPopover.shotType || '2PT';
 
-      if (optionType === 'BBA_DEF_REB' && bbaPlayer) {
-        if (dispatchOpponentShot) {
-          dispatchOpponentShot(shotType, false, defenseType, {
-            actionName: 'Def Rebound',
-            categoryName: 'Rebound',
-            zoneName: null,
-            targetPlayer: bbaPlayer,
-            defenseType
-          });
+      triggerWithDebounce(() => {
+        if (optionType === 'BBA_DEF_REB' && bbaPlayer) {
+          if (dispatchOpponentShot) {
+            dispatchOpponentShot(shotType, false, defenseType, {
+              actionName: 'Def Rebound',
+              categoryName: 'Rebound',
+              zoneName: null,
+              targetPlayer: bbaPlayer,
+              defenseType
+            });
+          }
+        } else if (optionType === 'OPP_OFF_REB') {
+          if (dispatchOpponentShot) {
+            dispatchOpponentShot(shotType, false, defenseType, {
+              actionName: 'OPP_OFF_REBOUND',
+              categoryName: 'Opponent',
+              zoneName: null,
+              targetPlayer: { number: 'OPP', name: 'OPPONENT' },
+              defenseType
+            });
+          }
+        } else {
+          // DEAD_BALL or SKIP
+          if (dispatchOpponentShot) {
+            dispatchOpponentShot(shotType, false, defenseType);
+          }
         }
-      } else if (optionType === 'OPP_OFF_REB') {
-        if (dispatchOpponentShot) {
-          dispatchOpponentShot(shotType, false, defenseType, {
-            actionName: 'OPP_OFF_REBOUND',
-            categoryName: 'Opponent',
-            zoneName: null,
-            targetPlayer: { number: 'OPP', name: 'OPPONENT' },
-            defenseType
-          });
-        }
-      } else {
-        // DEAD_BALL or SKIP
-        if (dispatchOpponentShot) {
-          dispatchOpponentShot(shotType, false, defenseType);
-        }
-      }
+      });
     } catch (err) {
       console.warn('Error resolving opponent miss rebound:', err);
     } finally {
@@ -139,8 +177,10 @@ export default function LiveGame({
   };
 
   const handleOpponentTurnover = () => {
-    if (!isAdmin) return;
-    dispatchAction('OPP_TURNOVER', 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, null, { defenseType });
+    if (!isAdmin || actionDebounce) return;
+    triggerWithDebounce(() => {
+      dispatchAction('OPP_TURNOVER', 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, null, { defenseType });
+    });
   };
 
   const isDefensiveAction = (act, cat) => {
@@ -157,7 +197,14 @@ export default function LiveGame({
   };
 
   const onCourtSet = new Set(onCourtPlayerNums.map(n => String(n)));
-  const onCourtPlayers = roster.filter(p => onCourtSet.has(String(p.number)));
+  const onCourtPlayers = roster.filter(p => {
+    const num = String(p.number ?? p.Number ?? '');
+    return p.is_on_court === true || p.isOnCourt === true || onCourtSet.has(num);
+  });
+  const benchPlayers = roster.filter(p => {
+    const num = String(p.number ?? p.Number ?? '');
+    return !(p.is_on_court === true || p.isOnCourt === true || onCourtSet.has(num));
+  });
 
   // New Match Session Creation Form States
   const [ourLocation, setOurLocation] = useState('Home');
@@ -296,7 +343,7 @@ export default function LiveGame({
     setNewName('');
   };
 
-  const handleStartSession = (e) => {
+  const handleStartSession = async (e) => {
     e.preventDefault();
     const derivedAuto = (homeTeam.trim() && awayTeam.trim())
       ? `${homeTeam.trim()} vs ${awayTeam.trim()}`
@@ -312,22 +359,27 @@ export default function LiveGame({
 
     // Filter master roster to selected match squad
     const matchSquad = masterRoster.filter(p => selectedSquadNums.includes(String(p.number)));
-    
-    setGameSession(matchName);
-    localStorage.setItem('current_game_session', matchName);
-    // Save match date and match type
     const todayDate = matchDate || new Date().toISOString().split('T')[0];
-    if (onUpdateMatchDate) {
-      onUpdateMatchDate(todayDate);
-    } else {
-      try { localStorage.setItem(`match_date_${matchName}`, todayDate); } catch(e) {}
-    }
     const currentType = matchType || 'Official';
-    if (onUpdateMatchType) {
-      onUpdateMatchType(currentType);
+    const isHome = ourLocation === 'Home';
+    const opponentName = isHome ? (awayTeam.trim() || 'Avversario') : (homeTeam.trim() || 'Avversario');
+
+    if (onStartNewMatchSession) {
+      await onStartNewMatchSession({
+        matchName,
+        matchDate: todayDate,
+        matchType: currentType,
+        opponentName,
+        isHome,
+        squad: matchSquad
+      });
     } else {
-      try { localStorage.setItem(`match_type_${matchName}`, currentType); } catch(e) {}
+      setGameSession(matchName);
+      localStorage.setItem('current_game_session', matchName);
+      if (onUpdateMatchDate) onUpdateMatchDate(todayDate);
+      if (onUpdateMatchType) onUpdateMatchType(currentType);
     }
+
     setRoster(matchSquad);
     if (setOnCourtPlayerNums && matchSquad.length >= 5) {
       const startingFive = matchSquad.slice(0, 5).map(p => String(p.number));
@@ -353,7 +405,7 @@ export default function LiveGame({
   };
 
   const handleRecordShot = (isMade) => {
-    if (!isAdmin) return;
+    if (!isAdmin || actionDebounce) return;
     const shooter = selectedPlayer;
     if (shooter) {
       setCourtShotPopover({
@@ -374,18 +426,70 @@ export default function LiveGame({
     }
   };
 
-  const handleRecordAction = (actionName, categoryName) => {
-    if (!isAdmin) return;
-    const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
-    const isDef = isDefensiveAction(actionName, categoryName);
+  const handleDebouncedUndo = () => {
+    if (actionDebounce) return;
+    triggerWithDebounce(() => {
+      if (handleUndo) handleUndo();
+    });
+  };
 
-    let situ = {};
-    if (isDef) situ.defenseType = defenseType;
+  const handleDebouncedRecordOpponentScore = (pts) => {
+    if (actionDebounce) return;
+    triggerWithDebounce(() => {
+      if (dispatchOpponentScore) dispatchOpponentScore(pts);
+    });
+  };
+
+const handleExecutePendingAction = (player) => {
+    if (!pendingActionPrompt || !player) return;
+
+    const { actionName, categoryName } = pendingActionPrompt;
+    const situ = { defenseType }; // Costruito in modo identico a handleRecordAction
+
+    try {
+      // Usiamo il debounce esattamente come fa il flusso funzionante
+      triggerWithDebounce(() => {
+        if (typeof dispatchAction === 'function') {
+          dispatchAction(actionName, categoryName, null, player, null, situ);
+        }
+      });
+    } catch (err) {
+      console.error('[LiveGame] Crash:', err);
+    } finally {
+      // Pulisce la UI
+      setPendingActionPrompt(null);
+      setSelectedPlayer(null);
+    }
+  };
+
+  const handleSelectPlayer = (player) => {
+    try {
+      if (pendingActionPrompt && player) {
+        handleExecutePendingAction(player);
+        return;
+      }
+      setSelectedPlayer(player);
+    } catch (err) {
+      console.error('[LiveGame] Error in handleSelectPlayer:', err);
+      setPendingActionPrompt(null);
+      setSelectedPlayer(null);
+    }
+  };
+
+  const handleRecordAction = (actionName, categoryName) => {
+    if (!isAdmin || actionDebounce) return;
+    const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+
+    let situ = { defenseType };
 
     if (isTeamEvent) {
-      dispatchAction(actionName, categoryName, null, null, null, situ);
+      triggerWithDebounce(() => {
+        dispatchAction(actionName, categoryName, null, null, null, situ);
+      });
     } else if (selectedPlayer) {
-      dispatchAction(actionName, categoryName, null, selectedPlayer, null, situ);
+      triggerWithDebounce(() => {
+        dispatchAction(actionName, categoryName, null, selectedPlayer, null, situ);
+      });
     } else {
       setPendingActionPrompt({ actionName, categoryName, zoneName: null });
     }
@@ -409,84 +513,100 @@ export default function LiveGame({
   };
 
   const handleCompleteMadeShotWithAssist = (assistPlayer) => {
+    if (actionDebounce) return;
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
 
-    if (dispatchMultipleActions) {
-      dispatchMultipleActions([
-        {
-          actionName: `${shotType} Made`,
-          categoryName: 'Shot',
-          zoneName: zoneInfo.name,
-          targetPlayer: shooter,
-          isTransition: isTrans
-        },
-        {
-          actionName: 'Assist',
-          categoryName: 'Passing',
-          zoneName: null,
-          targetPlayer: assistPlayer,
-          isTransition: isTrans
-        }
-      ], null, { isTransition: isTrans });
-    } else {
-      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans });
-      dispatchAction('Assist', 'Passing', null, assistPlayer, null, { isTransition: isTrans });
-    }
+    triggerWithDebounce(() => {
+      if (dispatchMultipleActions) {
+        dispatchMultipleActions([
+          {
+            actionName: `${shotType} Made`,
+            categoryName: 'Shot',
+            zoneName: zoneInfo.name,
+            targetPlayer: shooter,
+            isTransition: isTrans,
+            defenseType
+          },
+          {
+            actionName: 'Assist',
+            categoryName: 'Passing',
+            zoneName: null,
+            targetPlayer: assistPlayer,
+            isTransition: isTrans,
+            defenseType
+          }
+        ], null, { isTransition: isTrans, defenseType });
+      } else {
+        dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+        dispatchAction('Assist', 'Passing', null, assistPlayer, null, { isTransition: isTrans, defenseType });
+      }
+    });
 
     setCourtShotPopover(null);
   };
 
   const handleCompleteMadeShotUnassisted = () => {
+    if (actionDebounce) return;
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
 
-    dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans });
+    triggerWithDebounce(() => {
+      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+    });
     setCourtShotPopover(null);
   };
 
   const handleCompleteMissedShotRebound = (rebAction, rebPlayer) => {
+    if (actionDebounce) return;
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
 
-    if (dispatchMultipleActions) {
-      dispatchMultipleActions([
-        {
-          actionName: `${shotType} Missed`,
-          categoryName: 'Shot',
-          zoneName: zoneInfo.name,
-          targetPlayer: shooter,
-          isTransition: isTrans
-        },
-        {
-          actionName: rebAction,
-          categoryName: 'Rebound',
-          zoneName: null,
-          targetPlayer: rebPlayer,
-          isTransition: isTrans
-        }
-      ], null, { isTransition: isTrans });
-    } else {
-      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans });
-      dispatchAction(rebAction, 'Rebound', null, rebPlayer, null, { isTransition: isTrans });
-    }
+    triggerWithDebounce(() => {
+      if (dispatchMultipleActions) {
+        dispatchMultipleActions([
+          {
+            actionName: `${shotType} Missed`,
+            categoryName: 'Shot',
+            zoneName: zoneInfo.name,
+            targetPlayer: shooter,
+            isTransition: isTrans,
+            defenseType
+          },
+          {
+            actionName: rebAction,
+            categoryName: 'Rebound',
+            zoneName: null,
+            targetPlayer: rebPlayer,
+            isTransition: isTrans,
+            defenseType
+          }
+        ], null, { isTransition: isTrans, defenseType });
+      } else {
+        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+        dispatchAction(rebAction, 'Rebound', null, rebPlayer, null, { isTransition: isTrans, defenseType });
+      }
+    });
 
     setCourtShotPopover(null);
   };
 
   const handleSkipMissedShotRebound = () => {
+    if (actionDebounce) return;
     const zoneInfo = COURT_ZONES[courtShotPopover.zoneKey] || COURT_ZONES.PAINT;
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
 
-    dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans });
+    triggerWithDebounce(() => {
+      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+    });
     setCourtShotPopover(null);
   };
 
@@ -1140,8 +1260,9 @@ export default function LiveGame({
                         <button
                           key={teammate.number}
                           type="button"
+                          disabled={actionDebounce}
                           onClick={() => handleCompleteMadeShotWithAssist(teammate)}
-                          className="p-2.5 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center gap-2 transition-all active:scale-98 group text-left"
+                          className="p-2.5 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center gap-2 transition-all active:scale-98 group text-left disabled:opacity-50 disabled:pointer-events-none"
                         >
                           <span className="w-6 h-6 rounded bg-[#022D32] flex items-center justify-center font-mono font-bold text-xs text-[#A7F3D0] border border-[#022D32]">
                             #{teammate.number}
@@ -1153,8 +1274,9 @@ export default function LiveGame({
 
                   <button
                     type="button"
+                    disabled={actionDebounce}
                     onClick={() => handleCompleteMadeShotUnassisted()}
-                    className="w-full py-2.5 px-3 rounded-lg bg-[#022D32] hover:bg-[#022D32]/90 border border-[#022D32] text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                    className="w-full py-2.5 px-3 rounded-lg bg-[#022D32] hover:bg-[#022D32]/90 border border-[#022D32] text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <span>UNASSISTED / NO ASSIST</span>
                   </button>
@@ -1201,8 +1323,9 @@ export default function LiveGame({
                       <button
                         key={p.number}
                         type="button"
+                        disabled={actionDebounce}
                         onClick={() => handleCompleteMissedShotRebound('Off Rebound', p)}
-                        className="p-2 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center gap-1.5 transition-all active:scale-98 text-left"
+                        className="p-2 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center gap-1.5 transition-all active:scale-98 text-left disabled:opacity-50 disabled:pointer-events-none"
                       >
                         <span className="w-6 h-6 rounded bg-[#022D32] flex items-center justify-center font-mono font-bold text-xs text-[#A7F3D0] border border-[#022D32]">
                           #{p.number}
@@ -1217,8 +1340,9 @@ export default function LiveGame({
 
                   <button
                     type="button"
+                    disabled={actionDebounce}
                     onClick={() => handleSkipMissedShotRebound()}
-                    className="w-full py-2 px-3 rounded-lg bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] text-[#022D32] font-bold text-xs uppercase transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2 px-3 rounded-lg bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] text-[#022D32] font-bold text-xs uppercase transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1232,57 +1356,79 @@ export default function LiveGame({
         </div>
       )}
 
-      {/* 5. NON-SHOT SINGLE-CLICK 5-PLAYER ACTION PROMPT */}
+      {/* 5. ACTION-FIRST PLAYER ASSIGNMENT MODAL */}
       {isAdmin && pendingActionPrompt && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
-          <div className="bg-white max-w-sm w-full p-4 border border-[#DDF3E9] shadow-2xl rounded-2xl space-y-3 my-auto text-[#022D32]">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-[#0CA17A]" />
-                <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                  ASSIGN: {pendingActionPrompt.actionName.toUpperCase()}
-                </h3>
+        <div className="fixed inset-0 z-50 bg-[#022D32]/75 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
+          <div className="bg-white max-w-md w-full p-4 sm:p-5 border border-[#DDF3E9] shadow-2xl rounded-2xl space-y-3.5 my-auto text-[#022D32]">
+            <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none">
+                  <Zap className="w-4 h-4 text-[#0CA17A]" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
+                    {language === 'it' ? 'ASSEGNA' : 'ASSIGN'}: {pendingActionPrompt.actionName.toUpperCase()}
+                  </h3>
+                  <p className="text-[10px] text-[#022D32]/70 font-semibold">
+                    {language === 'it' ? 'Seleziona il giocatore che ha compiuto l\'azione' : 'Select player who executed this action'}
+                  </p>
+                </div>
               </div>
               <button
+                type="button"
                 onClick={() => setPendingActionPrompt(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+                className="text-[#022D32]/60 hover:text-[#022D32] p-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9] transition-colors cursor-pointer"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              SELECT ON-COURT PLAYER:
-            </div>
+            {/* ON COURT PLAYERS (5 ONLY) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-[#022D32] uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#0CA17A]" />
+                  <span>ON COURT ({onCourtPlayers.length})</span>
+                </span>
+                <span className="text-[10px] font-bold text-[#0CA17A]">
+                  {pendingActionPrompt.actionName}
+                </span>
+              </div>
 
-            <div className="grid grid-cols-1 gap-1.5">
-              {onCourtPlayers.map(p => (
-                <button
-                  key={p.number}
-                  type="button"
-                  onClick={() => {
-                    const isDef = isDefensiveAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName);
-                    const isOff = isOffensiveAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName);
-                    let situ = {};
-                    if (isDef) situ.defenseType = defenseType;
-                    if (isOff && isTransition) {
-                      situ.isTransition = true;
-                      setIsTransition(false);
-                    }
-                    dispatchAction(pendingActionPrompt.actionName, pendingActionPrompt.categoryName, null, p, null, situ);
-                    setPendingActionPrompt(null);
-                  }}
-                  className="p-2.5 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9]/50 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center justify-between transition-all active:scale-98 group text-left"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-7 h-7 rounded bg-[#022D32] flex items-center justify-center font-mono font-black text-xs text-[#A7F3D0] border border-[#022D32]">
-                      #{p.number}
-                    </span>
-                    <span className="text-xs font-black text-[#022D32]">{p.name}</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-[#0CA17A] uppercase tracking-wider">{pendingActionPrompt.actionName}</span>
-                </button>
-              ))}
+              {onCourtPlayers.length === 0 ? (
+                <div className="p-4 text-center text-xs text-[#022D32]/60 font-semibold bg-[#F8F9FA] rounded-xl border border-[#DDF3E9]">
+                  {language === 'it' 
+                    ? 'Nessun giocatore in campo. Seleziona prima il quintetto attivo.' 
+                    : 'No players on court. Please set the 5 active players first.'}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-0.5">
+                  {onCourtPlayers.map(p => (
+                    <button
+                      key={p.number}
+                      type="button"
+                      onClick={() => handleExecutePendingAction(p)}
+                      className="p-3 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9]/60 border border-[#DDF3E9] hover:border-[#0CA17A] flex items-center justify-between transition-all active:scale-98 group text-left cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-[#022D32] flex items-center justify-center font-mono font-black text-xs text-[#A7F3D0] border border-[#022D32]">
+                          #{p.number}
+                        </span>
+                        <div>
+                          <span className="text-xs font-black text-[#022D32] block leading-tight">{p.name}</span>
+                          {p.pos && p.pos !== 'N/A' && (
+                            <span className="text-[10px] text-[#022D32]/60 font-semibold">{p.pos}</span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-black text-[#0CA17A] bg-[#DDF3E9] px-2.5 py-1 rounded-md border border-[#0CA17A]/30 uppercase tracking-wider group-hover:bg-[#0CA17A] group-hover:text-white transition-colors">
+                        {pendingActionPrompt.actionName}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1369,8 +1515,8 @@ export default function LiveGame({
         events={events}
         currentQuarter={currentQuarter}
         setCurrentQuarter={setCurrentQuarter}
-        onUndo={handleUndo}
-        onRecordOpponentScore={dispatchOpponentScore}
+        onUndo={handleDebouncedUndo}
+        onRecordOpponentScore={handleDebouncedRecordOpponentScore}
         plusMinusMap={plusMinusMap}
         isAdmin={isAdmin}
         matchDate={matchDate}
@@ -1470,7 +1616,7 @@ export default function LiveGame({
                   roster={roster}
                   onCourtPlayerNums={onCourtPlayerNums}
                   selectedPlayer={selectedPlayer}
-                  onSelectPlayer={setSelectedPlayer}
+                  onSelectPlayer={handleSelectPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
                   plusMinusMap={plusMinusMap}
@@ -1493,6 +1639,7 @@ export default function LiveGame({
                     selectedZoneKey={selectedZoneKey}
                     onRecordShot={handleRecordShot}
                     onRecordAction={handleRecordAction}
+                    disabled={actionDebounce}
                   />
                 ) : (
                   <div className="bg-white p-3 border border-[#DDF3E9] text-center rounded-xl space-y-1.5 shadow-sm text-[#022D32]">
@@ -1515,7 +1662,8 @@ export default function LiveGame({
                     onDefenseChange={handleDefenseChange}
                     onOpponentShot={handleOpponentShot}
                     onOpponentTurnover={handleOpponentTurnover}
-                    onRecordOpponentScore={dispatchOpponentScore}
+                    onRecordOpponentScore={handleDebouncedRecordOpponentScore}
+                    disabled={actionDebounce}
                   />
                 )}
                 <div className="flex-1 min-h-0 overflow-hidden">
@@ -1538,7 +1686,7 @@ export default function LiveGame({
                   roster={roster}
                   onCourtPlayerNums={onCourtPlayerNums}
                   selectedPlayer={selectedPlayer}
-                  onSelectPlayer={setSelectedPlayer}
+                  onSelectPlayer={handleSelectPlayer}
                   onSwapSubstitution={handleSwapSubstitution}
                   events={events}
                   plusMinusMap={plusMinusMap}
@@ -1561,6 +1709,7 @@ export default function LiveGame({
                     selectedZoneKey={selectedZoneKey}
                     onRecordShot={handleRecordShot}
                     onRecordAction={handleRecordAction}
+                    disabled={actionDebounce}
                   />
                 ) : (
                   <div className="bg-white p-3 border border-[#DDF3E9] text-center rounded-xl space-y-1.5 shadow-sm text-[#022D32]">
@@ -1580,7 +1729,8 @@ export default function LiveGame({
                     onDefenseChange={handleDefenseChange}
                     onOpponentShot={handleOpponentShot}
                     onOpponentTurnover={handleOpponentTurnover}
-                    onRecordOpponentScore={dispatchOpponentScore}
+                    onRecordOpponentScore={handleDebouncedRecordOpponentScore}
+                    disabled={actionDebounce}
                   />
                 )}
 
@@ -1605,8 +1755,19 @@ export default function LiveGame({
                     onCourtPlayerNums={onCourtPlayerNums}
                     selectedPlayer={selectedPlayer}
                     onSelectPlayer={(p) => {
-                      setSelectedPlayer(p);
-                      if (p) setMobileView('COURT'); // Auto switch to court after selecting player
+                      try {
+                        if (pendingActionPrompt && p) {
+                          handleExecutePendingAction(p);
+                          setMobileView('COURT');
+                          return;
+                        }
+                        setSelectedPlayer(p);
+                        if (p) setMobileView('COURT'); // Auto switch to court after selecting player
+                      } catch (err) {
+                        console.error('[LiveGame] Mobile onSelectPlayer error:', err);
+                        setPendingActionPrompt(null);
+                        setSelectedPlayer(null);
+                      }
                     }}
                     onSwapSubstitution={handleSwapSubstitution}
                     events={events}
@@ -1626,12 +1787,25 @@ export default function LiveGame({
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
                         5:
                       </span>
-                      {roster.filter(p => onCourtSet.has(String(p.number))).map(p => {
+                      {onCourtPlayers.map(p => {
                         const isSel = selectedPlayer && String(selectedPlayer.number) === String(p.number);
                         return (
                           <button
                             key={p.number}
-                            onClick={() => setSelectedPlayer(isSel ? null : p)}
+                            onClick={() => {
+                              try {
+                                const target = isSel ? null : p;
+                                if (pendingActionPrompt && target) {
+                                  handleExecutePendingAction(target);
+                                  return;
+                                }
+                                setSelectedPlayer(target);
+                              } catch (err) {
+                                console.error('[LiveGame] Quick player click error:', err);
+                                setPendingActionPrompt(null);
+                                setSelectedPlayer(null);
+                              }
+                            }}
                             className={`px-2 py-1 text-xs font-semibold rounded flex items-center gap-1 flex-none transition-all ${
                               isSel
                                 ? 'bg-[#0CA17A] text-white font-black shadow-md scale-105'
@@ -1669,6 +1843,7 @@ export default function LiveGame({
                       selectedZoneKey={selectedZoneKey}
                       onRecordShot={handleRecordShot}
                       onRecordAction={handleRecordAction}
+                      disabled={actionDebounce}
                     />
                   ) : (
                     <div className="bg-white p-3 border border-[#DDF3E9] text-center rounded-xl space-y-1.5 shadow-sm text-[#022D32]">
@@ -1688,7 +1863,8 @@ export default function LiveGame({
                       onDefenseChange={handleDefenseChange}
                       onOpponentShot={handleOpponentShot}
                       onOpponentTurnover={handleOpponentTurnover}
-                      onRecordOpponentScore={dispatchOpponentScore}
+                      onRecordOpponentScore={handleDebouncedRecordOpponentScore}
+                      disabled={actionDebounce}
                     />
                   )}
                 </div>
@@ -1715,6 +1891,14 @@ export default function LiveGame({
           </div>
         )}
       </div>
+
+      {/* Courtside Instant Tap Feedback Badge */}
+      {actionDebounce && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#022D32] text-white shadow-2xl border border-[#0CA17A] text-xs font-black tracking-wider animate-pulse select-none">
+          <div className="w-2 h-2 rounded-full bg-[#0CA17A] animate-ping flex-none" />
+          <span>REGISTRATO</span>
+        </div>
+      )}
     </div>
   );
 }

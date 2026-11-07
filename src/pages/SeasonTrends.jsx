@@ -28,7 +28,8 @@ import {
   saveMatchMetadataToSupabase, 
   fetchScoutingMatches, 
   updateScoutingMatchInSupabase, 
-  subscribeToMatchCache 
+  subscribeToMatchCache,
+  getMatchEvents
 } from '../services/matchMetadataService';
 import { TacticalTagIcon, getTacticalTags, formatMinutes } from './LeagueHub';
 import PlayerProfileModal from '../components/PlayerProfileModal';
@@ -469,28 +470,15 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     }
   };
 
-  // Open match review
+  // Open match review strictly via match_id
   const handleOpenReview = async (match) => {
     setReviewLoading(true);
     try {
+      const matchId = match.id || match.rawSupa?.id;
       let events = match.events;
-      if (!events || events.length === 0) {
-        let { data, error } = await supabase
-          .from('scouting_log')
-          .select('*')
-          .eq('Match_Name', match.name)
-          .order('id', { ascending: true });
 
-        if (error || !data || data.length === 0) {
-          const fallback = await supabase
-            .from('scouting_log')
-            .select('*')
-            .eq('nome_partita', match.name)
-            .order('id', { ascending: true });
-          if (!fallback.error && fallback.data) data = fallback.data;
-        }
-
-        events = data || [];
+      if ((!events || events.length === 0) && matchId) {
+        events = await getMatchEvents(matchId);
       }
 
       const sortedEvents = [...(events || [])].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
@@ -500,8 +488,8 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
       setReviewMatch({
         ...match,
-        id: match.id,
-        name: match.name,
+        id: matchId,
+        name: match.name || match.opponent,
         events: sortedEvents,
         home_score: resolvedTeamScore,
         away_score: resolvedOppScore,
@@ -1605,9 +1593,9 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                         )}
                       </td>
                       <td className="p-3 text-right">
-                        {(item.rawSupa && Array.isArray(item.rawSupa.events) && item.rawSupa.events.length > 0) || (Array.isArray(item.events) && item.events.length > 0) ? (
+                        {(item.rawSupa && Array.isArray(item.rawSupa.events) && item.rawSupa.events.length > 0) || (Array.isArray(item.events) && item.events.length > 0) || (item.rawSupa?.id || item.id) ? (
                           <button
-                            onClick={() => handleOpenReview({ ...(item.rawSupa || {}), ...item, events: item.rawSupa?.events || item.events })}
+                            onClick={() => handleOpenReview({ ...(item.rawSupa || {}), ...item, id: item.rawSupa?.id || item.id, events: item.rawSupa?.events || item.events })}
                             className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs flex items-center gap-1.5 ml-auto active:scale-95 cursor-pointer"
                             title="Apri analisi approfondita del match"
                           >
@@ -2008,6 +1996,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       {reviewMatch && (
         <MatchReviewModal
           match={reviewMatch}
+          matchId={reviewMatch.id}
           onClose={() => setReviewMatch(null)}
           onDownloadCSV={() => {}}
           onUpdateMatchDate={handleUpdateMatchDate}

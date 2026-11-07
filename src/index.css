@@ -115,6 +115,12 @@ html, body, #root {
 .action-btn-dense:active {
   transform: scale(0.97);
 }
+.action-btn-dense:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+}
 
 /* Semantic Crisp 3px Accent Left Borders */
 

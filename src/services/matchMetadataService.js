@@ -98,6 +98,34 @@ export async function fetchScoutingMatches() {
 }
 
 /**
+ * Fetches all scouting_log events strictly by match_id (UUID relational foreign key).
+ * Completely eliminates legacy string-matching on Match_Name or dates.
+ */
+export async function getMatchEvents(matchId) {
+  if (!matchId) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('scouting_log')
+      .select('*')
+      .eq('match_id', matchId)
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.error('[Supabase] getMatchEvents query error for matchId:', matchId, error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('[Supabase] getMatchEvents exception for matchId:', matchId, err);
+    return [];
+  }
+}
+
+export const fetchMatchEvents = getMatchEvents;
+
+/**
  * Executes direct UPDATE on the normalized `scouting_matches` table.
  * Upon success, broadcasts cache invalidation so BBA Hub updates immediately.
  */
@@ -272,6 +300,126 @@ async function saveLegacyMatchMetadata(matchName, partialMetadata = {}) {
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * Synchronizes home_score and away_score to scouting_matches.
+ * Ensures the normalized table always reflects the true score.
+ */
+export async function syncMatchScores(matchIdOrName, homeScore = 0, awayScore = 0) {
+  if (!matchIdOrName) return null;
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(matchIdOrName));
+  const payload = {
+    home_score: Math.max(0, Number(homeScore) || 0),
+    away_score: Math.max(0, Number(awayScore) || 0),
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    let query = supabase.from('scouting_matches').update(payload);
+    if (isUuid) {
+      query = query.eq('id', matchIdOrName);
+    } else {
+      query = query.eq('match_name', matchIdOrName);
+    }
+    const { data, error } = await query.select();
+    if (!error && data && data.length > 0) {
+      invalidateMatchCache({ matchIdOrName, homeScore, awayScore });
+      return data[0];
+    }
+  } catch (err) {
+    console.warn('[Supabase] syncMatchScores failed:', err);
+  }
+  return null;
+}
+
+/**
+ * Finds or creates a normalized record in scouting_matches table.
+ * Returns the match object containing { id, match_name, match_date, match_type, home_score, away_score, is_home }
+ */
+export async function findOrCreateScoutingMatch({
+  matchName,
+  matchDate,
+  matchType = 'Official',
+  opponentName,
+  isHome = true
+}) {
+  if (!matchName) return null;
+
+  const normalizedDate = formatDateForInput(matchDate) || new Date().toISOString().split('T')[0];
+  const normalizedType = matchType === 'Friendly' ? 'Friendly' : 'Official';
+  const { opponent, isHome: parsedIsHome } = parseMatchNameComponents(matchName);
+  const finalOpponent = opponentName || opponent || 'Avversario';
+  const finalIsHome = isHome !== undefined ? Boolean(isHome) : parsedIsHome;
+
+  try {
+    // 1. Try to find existing match by match_name
+    const { data: existing, error: findError } = await supabase
+      .from('scouting_matches')
+      .select('*')
+      .eq('match_name', matchName)
+      .maybeSingle();
+
+    if (existing && existing.id) {
+      // If date or type changed, update them
+      const needsUpdate = (normalizedDate && existing.match_date !== normalizedDate) ||
+                          (existing.match_type !== normalizedType);
+      if (needsUpdate) {
+        const { data: updated } = await supabase
+          .from('scouting_matches')
+          .update({
+            match_date: normalizedDate || existing.match_date,
+            match_type: normalizedType,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .maybeSingle();
+        if (updated) {
+          invalidateMatchCache({ matchName, updated });
+          return updated;
+        }
+      }
+      return existing;
+    }
+
+    // 2. Insert new match record
+    const newRecord = {
+      match_name: matchName,
+      match_date: normalizedDate,
+      opponent_name: finalOpponent,
+      match_type: normalizedType,
+      home_score: 0,
+      away_score: 0,
+      is_home: finalIsHome
+    };
+
+    const { data: created, error: insertError } = await supabase
+      .from('scouting_matches')
+      .insert([newRecord])
+      .select()
+      .maybeSingle();
+
+    if (!insertError && created) {
+      invalidateMatchCache({ matchName, created });
+      return created;
+    }
+
+    // If duplicate race condition, fetch again
+    if (insertError) {
+      const { data: fallback } = await supabase
+        .from('scouting_matches')
+        .select('*')
+        .eq('match_name', matchName)
+        .maybeSingle();
+      if (fallback) return fallback;
+    }
+  } catch (err) {
+    console.warn('[Supabase] findOrCreateScoutingMatch error:', err);
+  }
+
+  return null;
 }
 
 /**

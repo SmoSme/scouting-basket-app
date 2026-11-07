@@ -1,6 +1,8 @@
 import { supabase } from './supabase.js';
+import { generateUUID } from '../utils/uuid.js';
 
 const OFFLINE_QUEUE_KEY = 'scouting_offline_queue';
+let isSyncInProgress = false;
 
 export function getOfflineQueue() {
   try {
@@ -14,8 +16,29 @@ export function getOfflineQueue() {
 
 export function saveToOfflineQueue(eventData) {
   try {
-    const currentQueue = getOfflineQueue();
+    const rawQueue = getOfflineQueue();
+    // Enforce client-side idempotency: every event MUST have a fixed UUIDv4
+    const id = eventData.id || generateUUID();
+
+    // Prevent duplicate entries by id or by identical (timestamp + action + number)
+    const exists = rawQueue.some(item => {
+      if (item && item.id && String(item.id) === String(id)) return true;
+      const ts = item.Timestamp || item.timestamp;
+      const act = item.Action || item.action;
+      const num = String(item.Number ?? item.number ?? '');
+      const evTs = eventData.Timestamp || eventData.timestamp;
+      const evAct = eventData.Action || eventData.action;
+      const evNum = String(eventData.Number ?? eventData.number ?? '');
+      return ts && act && ts === evTs && act === evAct && num === evNum;
+    });
+
+    if (exists) {
+      console.warn('[OfflineSync] Event already in offline queue, skipping duplicate:', id);
+      return;
+    }
+
     // Normalize to exact schema columns before storing in queue
+    const match_id = eventData.match_id || eventData.matchId || null;
     const Timestamp = eventData.Timestamp || eventData.timestamp || '';
     const Quarter = eventData.Quarter || eventData.quarter || eventData.Quarto || eventData.quarto || '';
     const NumberVal = String(eventData.Number ?? eventData.number ?? eventData.Numero ?? eventData.numero ?? '');
@@ -29,7 +52,9 @@ export function saveToOfflineQueue(eventData) {
     const isTransition = Boolean(eventData.isTransition);
     const defenseType = eventData.defenseType || null;
 
-    currentQueue.push({
+    rawQueue.push({
+      id,
+      match_id,
       Timestamp,
       Quarter,
       Number: NumberVal,
@@ -43,7 +68,7 @@ export function saveToOfflineQueue(eventData) {
       defenseType,
       _queuedAt: new Date().toISOString()
     });
-    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(currentQueue));
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(rawQueue));
   } catch (err) {
     console.error('Failed to save event to offline queue:', err);
   }
@@ -105,8 +130,13 @@ export function cleanStaleOfflineQueue(currentMatchName) {
 }
 
 export async function syncOfflineQueue(onSyncSuccess) {
-  const queue = getOfflineQueue();
-  if (queue.length === 0) return { syncedCount: 0, queueEmpty: true };
+  if (isSyncInProgress) {
+    console.log('[OfflineSync] Sync already in flight, skipping concurrent trigger.');
+    return { syncedCount: 0, inFlight: true };
+  }
+
+  const rawQueue = getOfflineQueue();
+  if (!rawQueue || rawQueue.length === 0) return { syncedCount: 0, queueEmpty: true };
 
   if (!navigator.onLine) {
     console.warn('Network offline. Postponing Supabase queue sync.');
@@ -118,19 +148,43 @@ export async function syncOfflineQueue(onSyncSuccess) {
     return { syncedCount: 0, unconfigured: true, message: 'Supabase API keys not configured in .env file' };
   }
 
+  isSyncInProgress = true;
   try {
-    // Sanitize payload: ONLY include exact columns that exist in the Supabase schema
-    const payload = queue.map(item => {
+    // 1. Ensure EVERY single item in rawQueue has a persistent ID in localStorage before dispatch
+    let queueDirty = false;
+    const queueWithIds = rawQueue.map(item => {
+      if (!item || typeof item !== 'object') return null;
+      if (!item.id) {
+        item.id = generateUUID();
+        queueDirty = true;
+      }
+      return item;
+    }).filter(Boolean);
+
+    if (queueDirty) {
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queueWithIds));
+    }
+
+    if (queueWithIds.length === 0) {
+      clearOfflineQueue();
+      return { syncedCount: 0, queueEmpty: true };
+    }
+
+    // 2. Prepare sanitized payload using fixed client-side UUIDs
+    const payload = queueWithIds.map(item => {
+      const id = String(item.id);
+      const match_id = item.match_id || item.matchId || null;
       const Timestamp = item.Timestamp || item.timestamp || '';
       const Quarter = item.Quarter || item.quarter || item.Quarto || item.quarto || '';
       const NumberVal = String(item.Number ?? item.number ?? item.Numero ?? item.numero ?? '');
       const Player = item.Player || item.player || item.Giocatore || item.giocatore || '';
       const Action = item.Action || item.action || item.Azione || item.azione || '';
       const Category = item.Category || item.category || item.Categoria || item.categoria || '';
-      const Zone = item.Zone || item.zone || item.Zona || item.zona || '';
+      const Zone = item.Zone || item.zone || item.Zona || item.zona || null;
       const Match_Name = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || '';
 
-      return {
+      const p = {
+        id,
         Timestamp,
         Quarter,
         Number: NumberVal,
@@ -140,28 +194,67 @@ export async function syncOfflineQueue(onSyncSuccess) {
         Zone,
         Match_Name
       };
+      if (match_id) {
+        p.match_id = match_id;
+      }
+      return p;
     });
     
+    // 3. Backfill match_id for any queued rows missing it by querying scouting_matches
+    const missingMatches = [...new Set(payload.filter(p => !p.match_id && p.Match_Name).map(p => p.Match_Name))];
+    if (missingMatches.length > 0) {
+      try {
+        const { data: matchedRows } = await supabase
+          .from('scouting_matches')
+          .select('id, match_name')
+          .in('match_name', missingMatches);
+        if (matchedRows && matchedRows.length > 0) {
+          const map = Object.fromEntries(matchedRows.map(m => [m.match_name, m.id]));
+          payload.forEach(p => {
+            if (!p.match_id && map[p.Match_Name]) {
+              p.match_id = map[p.Match_Name];
+            }
+          });
+        }
+      } catch (err) {}
+    }
+    
+    // 4. Perform idempotent upsert by primary key id (ignoreDuplicates: true prevents any duplicate rows)
     const { data, error } = await supabase
       .from('scouting_log')
-      .insert(payload);
+      .upsert(payload, { onConflict: 'id', ignoreDuplicates: true });
 
-    if (error) {
+    // If success OR error code 23505 (unique_violation / already exists in DB):
+    if (!error || error.code === '23505') {
+      // STRICT SAFEGUARD: Aggressively filter successfully synced events out of local offline queue the millisecond Promise resolves
+      const syncedIds = new Set(payload.map(p => String(p.id)));
+      const latestQueue = getOfflineQueue();
+      const remainingQueue = latestQueue.filter(item => {
+        if (!item || !item.id) return false;
+        return !syncedIds.has(String(item.id));
+      });
+
+      if (remainingQueue.length === 0) {
+        clearOfflineQueue();
+      } else {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(remainingQueue));
+      }
+
+      const syncedCount = payload.length;
+      if (onSyncSuccess) {
+        onSyncSuccess(syncedCount);
+      }
+      
+      return { syncedCount, data };
+    } else {
       console.error('Supabase batch sync error:', error);
       return { syncedCount: 0, error: error.message || JSON.stringify(error) };
     }
-
-    const syncedCount = queue.length;
-    clearOfflineQueue();
-    
-    if (onSyncSuccess) {
-      onSyncSuccess(syncedCount);
-    }
-    
-    return { syncedCount, data };
   } catch (err) {
     console.error('Unexpected error during offline queue sync:', err);
     return { syncedCount: 0, error: err.message || 'Connection error' };
+  } finally {
+    isSyncInProgress = false;
   }
 }
 
@@ -187,16 +280,21 @@ export function removeFromOfflineQueue(eventId, eventObj) {
     const queue = getOfflineQueue();
     if (!queue || queue.length === 0) return;
 
+    const targetIdStr = eventId ? String(eventId) : null;
+    const targetTs = eventObj?.Timestamp || eventObj?.timestamp || null;
+    const targetNum = String(eventObj?.Number ?? eventObj?.number ?? '');
+    const targetAction = eventObj?.Action || eventObj?.action || null;
+
     const filtered = queue.filter(item => {
-      if (eventId && item.id && String(item.id) === String(eventId)) return false;
+      if (!item) return false;
+      const itemIdStr = item.id ? String(item.id) : null;
+      if (targetIdStr && itemIdStr && targetIdStr === itemIdStr) {
+        return false;
+      }
       const ts = item.Timestamp || item.timestamp;
-      const num = String(item.Number ?? item.number);
+      const num = String(item.Number ?? item.number ?? '');
       const action = item.Action || item.action;
       
-      const targetTs = eventObj?.Timestamp || eventObj?.timestamp;
-      const targetNum = String(eventObj?.Number ?? eventObj?.number ?? '');
-      const targetAction = eventObj?.Action || eventObj?.action;
-
       if (targetTs && targetAction && ts === targetTs && action === targetAction && num === targetNum) {
         return false;
       }

@@ -10,9 +10,20 @@ import LeagueHub from './pages/LeagueHub';
 import AuthModal from './components/AuthModal';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
-import { saveMatchMetadataToSupabase } from './services/matchMetadataService';
-import { calculatePlusMinus, calculateTeamScore, calculateOpponentScore } from './utils/basketballAnalytics';
+import {
+  saveMatchMetadataToSupabase,
+  findOrCreateScoutingMatch,
+  syncMatchScores,
+  updateScoutingMatchInSupabase
+} from './services/matchMetadataService';
+import {
+  calculatePlusMinus,
+  calculateTeamScore,
+  calculateOpponentScore,
+  isOpponentScoreEvent
+} from './utils/basketballAnalytics';
 import { getScoreOverride, saveScoreOverride, clearScoreOverride } from './utils/scoreOverride';
+import { generateUUID } from './utils/uuid';
 import {
   saveToOfflineQueue,
   removeFromOfflineQueue,
@@ -127,6 +138,10 @@ export default function App() {
     localStorage.setItem('current_on_court_nums', JSON.stringify(newNums));
   };
 
+  const [currentMatchId, setCurrentMatchId] = useState(() => {
+    return localStorage.getItem('current_match_id') || null;
+  });
+
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedZoneKey, setSelectedZoneKey] = useState('PAINT');
   const [currentQuarter, setCurrentQuarter] = useState('Q1');
@@ -135,8 +150,79 @@ export default function App() {
   const [overrideTeamScore, setOverrideTeamScore] = useState(null);
   const [overrideOppScore, setOverrideOppScore] = useState(null);
 
+  // Sync / resolve active match_id whenever gameSession changes
+  useEffect(() => {
+    let isCancelled = false;
+    async function resolveActiveSession() {
+      if (!gameSession) {
+        setCurrentMatchId(null);
+        localStorage.removeItem('current_match_id');
+        return;
+      }
+      try {
+        const matchRecord = await findOrCreateScoutingMatch({
+          matchName: gameSession,
+          matchDate,
+          matchType
+        });
+        if (!isCancelled && matchRecord?.id) {
+          setCurrentMatchId(matchRecord.id);
+          localStorage.setItem('current_match_id', matchRecord.id);
+        }
+      } catch (err) {
+        console.warn('Could not resolve active session match_id:', err);
+      }
+    }
+    resolveActiveSession();
+    return () => { isCancelled = true; };
+  }, [gameSession]);
+
+  const handleStartNewMatchSession = async ({
+    matchName,
+    matchDate: newDate,
+    matchType: newType,
+    opponentName,
+    isHome,
+    squad
+  }) => {
+    setGameSession(matchName);
+    localStorage.setItem('current_game_session', matchName);
+    const finalDate = newDate || new Date().toISOString().split('T')[0];
+    const finalType = newType || 'Official';
+    setMatchDate(finalDate);
+    setMatchType(finalType);
+
+    try {
+      const matchRecord = await findOrCreateScoutingMatch({
+        matchName,
+        matchDate: finalDate,
+        matchType: finalType,
+        opponentName,
+        isHome
+      });
+      if (matchRecord?.id) {
+        setCurrentMatchId(matchRecord.id);
+        localStorage.setItem('current_match_id', matchRecord.id);
+      }
+      // Also update legacy metadata row for backward compatibility
+      await saveMatchMetadataToSupabase(matchName, { matchDate: finalDate, matchType: finalType });
+      return matchRecord;
+    } catch (e) {
+      console.warn('Error during match initialization in Supabase:', e);
+    }
+    return null;
+  };
+
   const handleUpdateMatchDate = async (newDate) => {
     setMatchDate(newDate);
+    const activeId = currentMatchId || localStorage.getItem('current_match_id');
+    if (activeId) {
+      try {
+        await updateScoutingMatchInSupabase(activeId, { match_date: newDate });
+      } catch (e) {
+        console.error('Failed to sync match_date to scouting_matches:', e);
+      }
+    }
     if (gameSession) {
       try {
         await saveMatchMetadataToSupabase(gameSession, { matchDate: newDate });
@@ -148,6 +234,14 @@ export default function App() {
 
   const handleUpdateMatchType = async (newType) => {
     setMatchType(newType);
+    const activeId = currentMatchId || localStorage.getItem('current_match_id');
+    if (activeId) {
+      try {
+        await updateScoutingMatchInSupabase(activeId, { match_type: newType });
+      } catch (e) {
+        console.error('Failed to sync match_type to scouting_matches:', e);
+      }
+    }
     if (gameSession) {
       try {
         await saveMatchMetadataToSupabase(gameSession, { matchType: newType });
@@ -326,14 +420,6 @@ export default function App() {
     const handleOnlineStatus = () => {
       const online = navigator.onLine;
       setIsOnline(online);
-      if (online) {
-        cleanStaleOfflineQueue(gameSession);
-        syncOfflineQueue((syncedCount) => {
-          showToast(`Synced ${syncedCount} offline events to Supabase`);
-          setOfflineQueueCount(getOfflineQueue().length);
-          fetchEvents();
-        });
-      }
     };
 
     window.addEventListener('online', handleOnlineStatus);
@@ -434,15 +520,34 @@ export default function App() {
     }
 
     try {
-      // Query using Match_Name primary column
-      let { data, error } = await supabase
-        .from('scouting_log')
-        .select('*')
-        .eq('Match_Name', gameSession)
-        .order('id', { ascending: true });
+      const activeMatchId = currentMatchId || localStorage.getItem('current_match_id');
+      let data = null;
+      let error = null;
 
-      if (error || !data || data.length === 0) {
-        // Fallback to nome_partita column
+      if (activeMatchId) {
+        const res = await supabase
+          .from('scouting_log')
+          .select('*')
+          .eq('match_id', activeMatchId)
+          .order('id', { ascending: true });
+        data = res.data;
+        error = res.error;
+      }
+
+      if (!data || data.length === 0) {
+        const res = await supabase
+          .from('scouting_log')
+          .select('*')
+          .eq('Match_Name', gameSession)
+          .order('id', { ascending: true });
+        if (!res.error && res.data && res.data.length > 0) {
+          data = res.data;
+          error = null;
+        }
+      }
+
+      if ((!data || data.length === 0) && !activeMatchId) {
+        // Fallback to legacy nome_partita column
         const fallback = await supabase
           .from('scouting_log')
           .select('*')
@@ -455,7 +560,7 @@ export default function App() {
         }
       }
 
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         const tombstones = getDeletedTombstones();
         const nonDeleted = data.filter(ev => !isEventTombstoned(ev, tombstones));
         persistMatchState(normalizeEvents(nonDeleted));
@@ -464,17 +569,6 @@ export default function App() {
     } catch (err) {
       console.warn('Supabase fetch failed:', err);
     }
-
-    // Local API fallback
-    try {
-      const res = await fetch('/api/events');
-      if (res.ok) {
-        const data = await res.json();
-        const tombstones = getDeletedTombstones();
-        const nonDeleted = Array.isArray(data) ? data.filter(ev => !isEventTombstoned(ev, tombstones)) : [];
-        persistMatchState(normalizeEvents(nonDeleted));
-      }
-    } catch (err) {}
   };
 
   const showToast = (msg) => {
@@ -523,10 +617,10 @@ export default function App() {
       playerName = 'OPPONENT';
     } else if (isSub) {
       playerNum = 'SUB';
-      playerName = targetPlayer?.name || 'SUB';
+      playerName = targetPlayer?.name || targetPlayer?.Player || 'SUB';
     } else if (!isTeamEvent && effectivePlayer) {
-      playerNum = String(effectivePlayer.number);
-      playerName = effectivePlayer.name;
+      playerNum = String(effectivePlayer.number ?? effectivePlayer.Number ?? effectivePlayer.numero ?? effectivePlayer.num ?? '-');
+      playerName = String(effectivePlayer.name ?? effectivePlayer.Player ?? effectivePlayer.nome ?? effectivePlayer.playerName ?? 'Player');
     }
 
     const currentOnCourt = (
@@ -535,29 +629,61 @@ export default function App() {
         : onCourtPlayerNums
     ).map(id => String(id));
 
-    // Strict schema hygiene: Only true 2PT/3PT field goal events carry a court zone; all other events get null
+    // Strict schema hygiene: 2PT/3PT carry court zone; non-shot events carry active defensive scheme in Zone
     const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
                          actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato') && !isOpponent;
     const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
 
     const isTransition = situational.isTransition === true;
-    const defenseType = situational.defenseType || null;
+    const defenseType = situational.defenseType || (zoneName && (zoneName === 'MAN' || zoneName === 'ZONE' || zoneName === 'PRESS') ? zoneName : null);
 
-    // Exact schema payload matching the 8 Supabase scouting_log columns
+    // Resolve active match_id from situational, state, localStorage, or Supabase
+    let activeMatchId = situational.match_id || currentMatchId || localStorage.getItem('current_match_id');
+    if (!activeMatchId && gameSession) {
+      try {
+        const m = await findOrCreateScoutingMatch({ matchName: gameSession, matchDate, matchType });
+        if (m?.id) {
+          activeMatchId = m.id;
+          setCurrentMatchId(m.id);
+          localStorage.setItem('current_match_id', m.id);
+        }
+      } catch (err) {}
+    }
+
+    // Failsafe: if activeMatchId is still missing, generate an RFC4122 UUID so events are never blocked
+    if (!activeMatchId && gameSession) {
+      activeMatchId = generateUUID();
+      setCurrentMatchId(activeMatchId);
+      localStorage.setItem('current_match_id', activeMatchId);
+    }
+
+    // Generate RFC4122 UUIDv4 on client at exact millisecond 0 or reuse provided id
+    const eventId = situational.id || generateUUID();
+
+    // Exact schema payload matching the Supabase scouting_log columns (including client-generated id & match_id)
     const supabasePayload = {
+      id: eventId,
+      match_id: activeMatchId,
       Timestamp: timestamp,
       Quarter: currentQuarter,
       Number: playerNum,
       Player: playerName,
       Action: actionName,
       Category: categoryName,
-      Zone: safeZone,
+      Zone: safeZone || defenseType || null,
       Match_Name: gameSession
     };
+
+    // Strict validation failsafe check: prevent orphaned events without match_id
+    if (!supabasePayload.match_id) {
+      console.error('[CRITICAL] Missing match_id in event payload:', supabasePayload);
+      throw new Error(`Missing match_id for match session "${gameSession}". Events cannot be orphaned.`);
+    }
 
     // 1. Instant local state update (<5ms) with onCourtPlayerIds snapshot and synchronous persistence
     const localEv = {
       ...supabasePayload,
+      id: eventId,
       action: actionName,
       player: playerName,
       number: playerNum,
@@ -570,29 +696,37 @@ export default function App() {
       isTransition,
       defenseType
     };
-    persistMatchState([...events, localEv]);
+    const nextEvents = [...events, localEv];
+    if (!situational.skipLocalPush) {
+      persistMatchState(nextEvents);
+    }
 
-    // 2. Try Supabase insert with .select() to retrieve generated ID
+    // Live Score Synchronization: Update scouting_matches if this action affected the score
+    const isBbaScore = (actionName === '2PT Made' || actionName === '2PT Fatto' ||
+                        actionName === '3PT Made' || actionName === '3PT Fatto' ||
+                        actionName === 'FT Made' || actionName === 'TL Fatto') && !isOpponent;
+    const isOppScore = isOpponent || isOpponentScoreEvent({ Action: actionName, Category: categoryName, Number: playerNum, Player: playerName });
+
+    if (isBbaScore || isOppScore) {
+      const nextTeamScore = calculateTeamScore(nextEvents);
+      const nextOppScore = calculateOpponentScore(nextEvents);
+      syncMatchScores(activeMatchId, nextTeamScore, nextOppScore);
+    }
+
+    // 2. Try Supabase idempotent upsert using client-generated primary key id
     let cloudSynced = false;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('scouting_log')
-          .insert([supabasePayload])
-          .select();
+          .upsert([supabasePayload], { onConflict: 'id', ignoreDuplicates: true });
 
-        if (!error) {
+        if (!error || error.code === '23505') {
           cloudSynced = true;
-          if (data && data[0]?.id) {
-            localEv.id = data[0].id;
-            setEvents(prev => {
-              const updated = prev.map(e => (e === localEv || (!e.id && e.timestamp === timestamp && e.action === actionName && e.number === playerNum)) ? { ...e, id: data[0].id } : e);
-              persistMatchState(updated);
-              return updated;
-            });
-          }
+          // AGGRESSIVELY PURGE FROM OFFLINE QUEUE THE EXACT MILLISECOND PROMISE RESOLVES
+          removeFromOfflineQueue(eventId, supabasePayload);
           let label = actionName;
           if (isOpponent) label = `[OPP] ${actionName}`;
           else if (isSub) label = `[SUB] ${actionName}`;
@@ -600,7 +734,7 @@ export default function App() {
           else label = `#${playerNum} ${playerName} -> ${actionName}`;
           showToast(`${label}`);
         } else {
-          console.warn('Supabase insert error:', error);
+          console.warn('Supabase upsert error:', error);
           showToast(`Supabase: ${error.message || 'Column/Permission error'}`);
         }
       } catch (err) {
@@ -616,15 +750,6 @@ export default function App() {
       showToast(`Saved to offline queue (${newQueueLength} pending sync)`);
     }
 
-    // Local server fallback
-    try {
-      fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(supabasePayload)
-      });
-    } catch (e) {}
-
     // Strict State Reset after Every Logged Action: Clear selected player immediately
     setSelectedPlayer(null);
   };
@@ -635,6 +760,31 @@ export default function App() {
       setShowSessionModal(true);
       showToast('Please enter a match name first');
       return;
+    }
+
+    // Resolve active match_id from state, localStorage, or Supabase
+    let activeMatchId = currentMatchId || localStorage.getItem('current_match_id');
+    if (!activeMatchId && gameSession) {
+      try {
+        const m = await findOrCreateScoutingMatch({ matchName: gameSession, matchDate, matchType });
+        if (m?.id) {
+          activeMatchId = m.id;
+          setCurrentMatchId(m.id);
+          localStorage.setItem('current_match_id', m.id);
+        }
+      } catch (err) {}
+    }
+
+    // Failsafe: if activeMatchId is still missing, generate an RFC4122 UUID so events are never blocked
+    if (!activeMatchId && gameSession) {
+      activeMatchId = generateUUID();
+      setCurrentMatchId(activeMatchId);
+      localStorage.setItem('current_match_id', activeMatchId);
+    }
+
+    if (!activeMatchId) {
+      console.error('[CRITICAL] Missing match_id for batch events');
+      throw new Error(`Missing match_id for match session "${gameSession}". Events cannot be orphaned.`);
     }
 
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -661,30 +811,37 @@ export default function App() {
         playerName = 'OPPONENT';
       } else if (isSub) {
         playerNum = 'SUB';
-        playerName = targetPlayer?.name || 'SUB';
+        playerName = targetPlayer?.name || targetPlayer?.Player || 'SUB';
       } else if (!isTeamEvent && effectivePlayer) {
-        playerNum = String(effectivePlayer.number);
-        playerName = effectivePlayer.name;
+        playerNum = String(effectivePlayer.number ?? effectivePlayer.Number ?? effectivePlayer.numero ?? effectivePlayer.num ?? '-');
+        playerName = String(effectivePlayer.name ?? effectivePlayer.Player ?? effectivePlayer.nome ?? effectivePlayer.playerName ?? 'Player');
       }
 
-      // Only true 2PT/3PT field goals carry a court zone
+      // Only true 2PT/3PT field goals carry a court zone; non-shot events carry active scheme
       const isShotEvent = (actionName === '2PT Made' || actionName === '2PT Missed' || actionName === '2PT Fatto' || actionName === '2PT Sbagliato' ||
                            actionName === '3PT Made' || actionName === '3PT Missed' || actionName === '3PT Fatto' || actionName === '3PT Sbagliato') && !isOpponent;
       const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
+      const effectiveDef = itemDef !== undefined ? itemDef : (situational.defenseType || (zoneName && (zoneName === 'MAN' || zoneName === 'ZONE' || zoneName === 'PRESS') ? zoneName : null));
+
+      // Generate unique RFC4122 UUIDv4 for each batch action item
+      const itemEventId = generateUUID();
 
       const p = {
+        id: itemEventId,
+        match_id: activeMatchId,
         Timestamp: timestamp,
         Quarter: currentQuarter,
         Number: playerNum,
         Player: playerName,
         Action: actionName,
         Category: categoryName,
-        Zone: safeZone,
+        Zone: safeZone || effectiveDef || null,
         Match_Name: gameSession
       };
       payloads.push(p);
       localEvs.push({
         ...p,
+        id: itemEventId,
         action: actionName,
         player: playerName,
         number: playerNum,
@@ -699,32 +856,41 @@ export default function App() {
       });
     });
 
-    persistMatchState([...events, ...localEvs]);
+    const nextEvents = [...events, ...localEvs];
+    persistMatchState(nextEvents);
+
+    // Live score synchronization for batch actions
+    const hasScoringAction = actionsList.some(item => {
+      const az = item.actionName;
+      const cat = item.categoryName;
+      const isOpp = cat === 'Opponent' || az.startsWith('Opponent') || az.startsWith('OPP_');
+      const isBba = (az === '2PT Made' || az === '2PT Fatto' || az === '3PT Made' || az === '3PT Fatto' || az === 'FT Made' || az === 'TL Fatto') && !isOpp;
+      return isBba || isOpp || isOpponentScoreEvent({ Action: az, Category: cat });
+    });
+
+    if (hasScoringAction) {
+      const nextTeamScore = calculateTeamScore(nextEvents);
+      const nextOppScore = calculateOpponentScore(nextEvents);
+      syncMatchScores(activeMatchId, nextTeamScore, nextOppScore);
+    }
 
     let cloudSynced = false;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { data, error } = await supabase.from('scouting_log').insert(payloads).select();
-        if (!error) {
+        const { error } = await supabase
+          .from('scouting_log')
+          .upsert(payloads, { onConflict: 'id', ignoreDuplicates: true });
+        if (!error || error.code === '23505') {
           cloudSynced = true;
-          if (Array.isArray(data) && data.length > 0) {
-            setEvents(prev => {
-              const updated = [...prev];
-              for (let i = 0; i < data.length; i++) {
-                const targetIdx = updated.length - data.length + i;
-                if (updated[targetIdx] && data[i]?.id) {
-                  updated[targetIdx] = { ...updated[targetIdx], id: data[i].id };
-                }
-              }
-              persistMatchState(updated);
-              return updated;
-            });
-          }
+          // AGGRESSIVELY PURGE FROM OFFLINE QUEUE THE EXACT MILLISECOND PROMISE RESOLVES
+          payloads.forEach(p => removeFromOfflineQueue(p.id, p));
           showToast(`${payloads.map(p => p.Action).join(' + ')}`);
+        } else {
+          console.warn('Supabase batch upsert error:', error);
         }
       } catch (e) {
-        console.warn('Supabase batch insert error:', e);
+        console.warn('Supabase batch upsert exception:', e);
       }
     }
 
@@ -734,16 +900,6 @@ export default function App() {
       setOfflineQueueCount(newQueueLength);
       showToast(`Saved ${payloads.length} events to offline queue`);
     }
-
-    payloads.forEach(p => {
-      try {
-        fetch('/api/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(p)
-        });
-      } catch (e) {}
-    });
 
     // Clear selected player immediately
     setSelectedPlayer(null);
@@ -823,16 +979,25 @@ export default function App() {
 
     const lastEv = events[events.length - 1];
     const updatedEvents = events.slice(0, -1);
+    const resolvedId = lastEv?.id;
 
     // 1. Immediately persist mutated array and derived states to localStorage
     persistMatchState(updatedEvents);
     setSelectedPlayer(null);
 
-    // 2. Record tombstone and purge from offline queue
-    recordDeletedEvent(lastEv.id, lastEv);
-    removeFromOfflineQueue(lastEv.id, lastEv);
+    // Sync score update to scouting_matches
+    const activeUndoId = currentMatchId || localStorage.getItem('current_match_id');
+    if (activeUndoId) {
+      const nextTeamScore = calculateTeamScore(updatedEvents);
+      const nextOppScore = calculateOpponentScore(updatedEvents);
+      syncMatchScores(activeUndoId, nextTeamScore, nextOppScore);
+    }
 
-    showToast(`↩️ Undone: #${lastEv.Number || lastEv.number || lastEv.Numero} ${lastEv.Action || lastEv.action || lastEv.Azione}`);
+    // 2. Record tombstone and purge from offline queue
+    recordDeletedEvent(resolvedId, lastEv);
+    removeFromOfflineQueue(resolvedId, lastEv);
+
+    showToast(`Undone: #${lastEv.Number || lastEv.number || lastEv.Numero} ${lastEv.Action || lastEv.action || lastEv.Azione}`);
 
     // 3. If undone event was a SUB, revert onCourtPlayerNums
     const lastAz = String(lastEv.Action || lastEv.action || '');
@@ -850,31 +1015,17 @@ export default function App() {
       }
     }
 
-    // 4. Delete from Supabase Cloud
-    if (navigator.onLine) {
+    // 4. Delete from Supabase Cloud strictly by id
+    if (navigator.onLine && resolvedId) {
       try {
-        if (lastEv.id) {
-          await supabase
-            .from('scouting_log')
-            .delete()
-            .eq('id', lastEv.id);
-        } else if (gameSession) {
-          const actionVal = lastEv.Action || lastEv.action;
-          const numVal = String(lastEv.Number ?? lastEv.number);
-          const tsVal = lastEv.Timestamp || lastEv.timestamp;
-
-          let query = supabase.from('scouting_log').delete().eq('Match_Name', gameSession);
-          if (actionVal) query = query.eq('Action', actionVal);
-          if (numVal && numVal !== '-') query = query.eq('Number', numVal);
-          if (tsVal) query = query.eq('Timestamp', tsVal);
-          await query;
-        }
-      } catch (e) {}
+        await supabase
+          .from('scouting_log')
+          .delete()
+          .eq('id', String(resolvedId));
+      } catch (e) {
+        console.warn('Supabase undo delete error:', e);
+      }
     }
-
-    try {
-      await fetch('/api/events/last', { method: 'DELETE' });
-    } catch (e) {}
   };
 
   const handleResetGame = () => {
@@ -888,11 +1039,12 @@ export default function App() {
   const handleDeleteEvent = async (eventId, eventIndex, targetEventObj = null) => {
     // 1. Identify the event being deleted
     const targetEv = targetEventObj || events[eventIndex] || events.find(e => eventId && e.id === eventId);
+    const resolvedId = eventId || targetEv?.id;
 
     // 2. Compute updated events immutably
     const updatedEvents = events.filter((ev, idx) => {
-      if (eventId && ev.id) return ev.id !== eventId;
-      if (targetEv && !ev.id && !eventId) {
+      if (resolvedId && ev.id) return String(ev.id) !== String(resolvedId);
+      if (targetEv && !ev.id && !resolvedId) {
         const matchTs = (ev.Timestamp || ev.timestamp) === (targetEv.Timestamp || targetEv.timestamp);
         const matchNum = String(ev.Number ?? ev.number) === String(targetEv.Number ?? targetEv.number);
         const matchAction = (ev.Action || ev.action) === (targetEv.Action || targetEv.action);
@@ -901,44 +1053,36 @@ export default function App() {
       return idx !== eventIndex;
     });
 
-    // 3. CRITICAL: Immediately persist mutated array and derived states to localStorage INSIDE delete handler
+    // 3. Immediately persist mutated array and derived states to localStorage INSIDE delete handler
     persistMatchState(updatedEvents);
 
+    // Sync score update to scouting_matches
+    const activeDelId = currentMatchId || localStorage.getItem('current_match_id');
+    if (activeDelId) {
+      const nextTeamScore = calculateTeamScore(updatedEvents);
+      const nextOppScore = calculateOpponentScore(updatedEvents);
+      syncMatchScores(activeDelId, nextTeamScore, nextOppScore);
+    }
+
     // 4. Record tombstone so background fetchEvents never resurrects it
-    recordDeletedEvent(eventId, targetEv);
+    recordDeletedEvent(resolvedId, targetEv);
 
     // 5. Purge from offline queue if queued
-    removeFromOfflineQueue(eventId, targetEv);
+    removeFromOfflineQueue(resolvedId, targetEv);
 
     showToast('Event deleted from feed');
 
-    // 6. Delete from Supabase Cloud
-    if (navigator.onLine) {
+    // 6. Delete from Supabase Cloud strictly by id
+    if (navigator.onLine && resolvedId) {
       try {
-        if (eventId) {
-          await supabase
-            .from('scouting_log')
-            .delete()
-            .eq('id', eventId);
-        } else if (targetEv && gameSession) {
-          const actionVal = targetEv.Action || targetEv.action;
-          const numVal = String(targetEv.Number ?? targetEv.number);
-          const tsVal = targetEv.Timestamp || targetEv.timestamp;
-
-          let query = supabase.from('scouting_log').delete().eq('Match_Name', gameSession);
-          if (actionVal) query = query.eq('Action', actionVal);
-          if (numVal && numVal !== '-') query = query.eq('Number', numVal);
-          if (tsVal) query = query.eq('Timestamp', tsVal);
-          await query;
-        }
+        await supabase
+          .from('scouting_log')
+          .delete()
+          .eq('id', String(resolvedId));
       } catch (e) {
         console.warn('Supabase delete event error:', e);
       }
     }
-
-    try {
-      if (eventId) fetch(`/api/events/${eventId}`, { method: 'DELETE' });
-    } catch (e) {}
   };
 
   const handleEditEvent = async (eventId, eventIndex, updatedFields) => {
@@ -1056,6 +1200,9 @@ export default function App() {
               <LiveGame
                 gameSession={gameSession}
                 setGameSession={setGameSession}
+                matchId={currentMatchId}
+                setMatchId={setCurrentMatchId}
+                onStartNewMatchSession={handleStartNewMatchSession}
                 events={events}
                 setEvents={setEvents}
                 masterRoster={masterRoster}

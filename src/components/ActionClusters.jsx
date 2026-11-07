@@ -5,29 +5,39 @@ import { COURT_ZONES } from '../data/roster.js';
 export default function ActionClusters({
   selectedZoneKey,
   onRecordShot,
-  onRecordAction
+  onRecordAction,
+  disabled = false
 }) {
   const currentZone = COURT_ZONES[selectedZoneKey] || COURT_ZONES.PAINT;
 
   return (
-    <div className="space-y-1.5">
+    <div className={`space-y-1.5 transition-opacity duration-150 ${disabled ? 'opacity-70 pointer-events-none' : ''}`}>
       {/* CLUSTER 1: FIELD GOALS */}
       <div className="cluster-panel-dense">
-        <div className="cluster-header-title">
-          <Target className="w-3 h-3 text-[#0CA17A]" />
-          1. FIELD GOAL — TARGET ZONE: {currentZone.name.toUpperCase()} ({currentZone.type})
+        <div className="cluster-header-title flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Target className="w-3 h-3 text-[#0CA17A]" />
+            <span>1. FIELD GOAL — TARGET ZONE: {currentZone.name.toUpperCase()} ({currentZone.type})</span>
+          </div>
+          {disabled && (
+            <span className="text-[9px] font-bold text-[#0CA17A] tracking-wider animate-pulse uppercase">
+              REGISTRAZIONE...
+            </span>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordShot(true)}
-            className="action-btn-dense btn-made-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-made-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check className="w-3.5 h-3.5 stroke-[3]" />
             SHOT MADE ({currentZone.type})
           </button>
           <button
             onClick={() => onRecordShot(false)}
-            className="action-btn-dense btn-miss-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-miss-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-3.5 h-3.5 stroke-[3]" />
             SHOT MISSED ({currentZone.type})
@@ -44,14 +54,16 @@ export default function ActionClusters({
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordAction('FT Made', 'Shot')}
-            className="action-btn-dense btn-ft-made-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-ft-made-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check className="w-3.5 h-3.5 stroke-[3]" />
             FT MADE
           </button>
           <button
             onClick={() => onRecordAction('FT Missed', 'Shot')}
-            className="action-btn-dense btn-ft-miss-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-ft-miss-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-3.5 h-3.5 stroke-[3]" />
             FT MISSED
@@ -68,19 +80,22 @@ export default function ActionClusters({
         <div className="grid grid-cols-3 gap-1.5">
           <button
             onClick={() => onRecordAction('Steal', 'Defense')}
-            className="action-btn-dense btn-stl-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-stl-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             STEAL (STL)
           </button>
           <button
             onClick={() => onRecordAction('Turnover', 'Turnover')}
-            className="action-btn-dense btn-tov-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-tov-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             TURNOVER (TOV)
           </button>
           <button
             onClick={() => onRecordAction('Block', 'Defense')}
-            className="action-btn-dense btn-blk-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-blk-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             BLOCK (BLK)
           </button>
@@ -96,13 +111,15 @@ export default function ActionClusters({
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordAction('Off Rebound', 'Rebound')}
-            className="action-btn-dense btn-oreb-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-oreb-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             OFF REB
           </button>
           <button
             onClick={() => onRecordAction('Def Rebound', 'Rebound')}
-            className="action-btn-dense btn-dreb-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-dreb-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             DEF REB
           </button>
@@ -118,13 +135,15 @@ export default function ActionClusters({
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordAction('Personal Foul', 'Foul')}
-            className="action-btn-dense btn-foul-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-foul-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             PERSONAL FOUL (PF)
           </button>
           <button
             onClick={() => onRecordAction('Foul Drawn', 'Foul')}
-            className="action-btn-dense btn-fd-bg"
+            disabled={disabled}
+            className="action-btn-dense btn-fd-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             FOUL DRAWN (FD)
           </button>
@@ -140,14 +159,16 @@ export default function ActionClusters({
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onRecordAction('Stagger', 'Technique')}
-            className="action-btn-dense btn-tactics-stagger"
+            disabled={disabled}
+            className="action-btn-dense btn-tactics-stagger disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
             STAGGER
           </button>
           <button
             onClick={() => onRecordAction('Ghost', 'Technique')}
-            className="action-btn-dense btn-tactics-ghost"
+            disabled={disabled}
+            className="action-btn-dense btn-tactics-ghost disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Ghost className="w-3.5 h-3.5 stroke-[2.5]" />
             GHOST

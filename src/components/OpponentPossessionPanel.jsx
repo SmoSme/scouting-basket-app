@@ -6,10 +6,11 @@ export default function OpponentPossessionPanel({
   onDefenseChange,
   onOpponentShot,
   onOpponentTurnover,
-  onRecordOpponentScore
+  onRecordOpponentScore,
+  disabled = false
 }) {
   return (
-    <div className="bg-white p-3.5 border border-[#DDF3E9] shadow-xs rounded-2xl space-y-2.5 flex-none text-[#022D32]">
+    <div className={`bg-white p-3.5 border border-[#DDF3E9] shadow-xs rounded-2xl space-y-2.5 flex-none text-[#022D32] transition-opacity duration-150 ${disabled ? 'opacity-70 pointer-events-none' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between pb-1.5 border-b border-[#DDF3E9]">
         <div className="flex items-center gap-1.5">
@@ -18,16 +19,22 @@ export default function OpponentPossessionPanel({
             OPPONENT POSSESSION
           </h3>
         </div>
-        <span className="text-[10px] font-bold text-[#022D32]/60 uppercase tracking-wide">
-          DEFENSE & OPP OUTCOMES
-        </span>
+        {disabled ? (
+          <span className="text-[9px] font-bold text-[#0CA17A] tracking-wider animate-pulse uppercase">
+            REGISTRAZIONE...
+          </span>
+        ) : (
+          <span className="text-[10px] font-bold text-[#022D32]/60 uppercase tracking-wide">
+            DEFENSE & OPP OUTCOMES
+          </span>
+        )}
       </div>
 
       {/* 1. Defense Type Selector */}
       <div className="bg-[#F8F9FA] p-1 rounded-xl border border-[#DDF3E9] flex items-center justify-between gap-1">
         <span className="text-[10px] font-black text-[#022D32]/70 uppercase tracking-wider px-1.5 flex items-center gap-1 flex-none">
           <span className="w-1.5 h-1.5 rounded-full bg-[#0CA17A] inline-block" />
-          DEF SCHEME:
+          OPP DEF SCHEME:
         </span>
         <div className="flex gap-1 flex-1 justify-end">
           {['MAN', 'ZONE', 'PRESS'].map((scheme) => {
@@ -36,6 +43,7 @@ export default function OpponentPossessionPanel({
               <button
                 key={scheme}
                 type="button"
+                disabled={disabled}
                 onClick={() => onDefenseChange && onDefenseChange(scheme)}
                 className={`px-3 py-1 text-xs font-black rounded-md transition-all ${
                   isActive
@@ -61,8 +69,9 @@ export default function OpponentPossessionPanel({
           <div className="grid grid-cols-1 gap-1">
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('2PT', true)}
-              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent 2PT Made (+2)"
             >
               <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -70,8 +79,9 @@ export default function OpponentPossessionPanel({
             </button>
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('2PT', false)}
-              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent 2PT Missed & Resolve Rebound"
             >
               <X className="w-3.5 h-3.5 stroke-[3]" />
@@ -88,8 +98,9 @@ export default function OpponentPossessionPanel({
           <div className="grid grid-cols-1 gap-1">
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('3PT', true)}
-              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent 3PT Made (+3)"
             >
               <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -97,8 +108,9 @@ export default function OpponentPossessionPanel({
             </button>
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('3PT', false)}
-              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent 3PT Missed & Resolve Rebound"
             >
               <X className="w-3.5 h-3.5 stroke-[3]" />
@@ -115,8 +127,9 @@ export default function OpponentPossessionPanel({
           <div className="grid grid-cols-1 gap-1">
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('FT', true)}
-              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent Free Throw Made (+1)"
             >
               <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -124,8 +137,9 @@ export default function OpponentPossessionPanel({
             </button>
             <button
               type="button"
+              disabled={disabled}
               onClick={() => onOpponentShot && onOpponentShot('FT', false)}
-              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+              className="py-1.5 px-2 rounded bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-black text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Log Opponent Free Throw Missed & Resolve Rebound"
             >
               <X className="w-3.5 h-3.5 stroke-[3]" />
@@ -139,8 +153,9 @@ export default function OpponentPossessionPanel({
       <div className="grid grid-cols-12 gap-1.5 pt-0.5">
         <button
           type="button"
+          disabled={disabled}
           onClick={() => onOpponentTurnover && onOpponentTurnover()}
-          className="col-span-8 py-2 px-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+          className="col-span-8 py-2 px-3 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           title={`Log Opponent Turnover (tagged with defense scheme: ${defenseType})`}
         >
           <AlertTriangle className="w-3.5 h-3.5 text-amber-700 flex-none" />
@@ -150,8 +165,9 @@ export default function OpponentPossessionPanel({
         {onRecordOpponentScore && (
           <button
             type="button"
+            disabled={disabled}
             onClick={() => onRecordOpponentScore(-1)}
-            className="col-span-4 py-2 px-2 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9] border border-[#DDF3E9] text-[#022D32] font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+            className="col-span-4 py-2 px-2 rounded-lg bg-[#F8F9FA] hover:bg-[#DDF3E9] border border-[#DDF3E9] text-[#022D32] font-bold text-xs flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             title="Subtract 1 from Opponent Score"
           >
             <RotateCcw className="w-3 h-3 text-[#022D32]/70" />

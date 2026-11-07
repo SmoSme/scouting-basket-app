@@ -507,11 +507,6 @@ export function buildSuperchargedBbaRoster(
       const ptsTotal = supaData ? (supaData.fg2m * 2 + supaData.fg3m * 3 + supaData.ftm) : 0;
       const ptsAvg = gp > 0 ? Number((ptsTotal / gp).toFixed(1)) : 0.0;
 
-      const supaFta = supaData?.fta || 0;
-      const supaFtm = supaData?.ftm || 0;
-      const ftAttAvg = gp > 0 ? Number((supaFta / gp).toFixed(1)) : 0.0;
-      const ftMadeAvg = gp > 0 ? Number((supaFtm / gp).toFixed(1)) : 0.0;
-
       return {
         ...player,
         fid: player.fid || `bba_p_${num}`,
@@ -542,20 +537,6 @@ export function buildSuperchargedBbaRoster(
         blkAvg: supaData ? supaData.blkAvg : null,
         efgPct: supaData ? supaData.efgPct : null,
 
-        // Free Throws Volume & Efficiency (Supabase)
-        ftAtt: supaFta,
-        ftAttAvg: ftAttAvg,
-        ftMade: supaFtm,
-        ftMadeAvg: ftMadeAvg,
-
-        // Volumes from Supabase (for Shooting Volumes display)
-        fg2m: supaData?.fg2m || 0,
-        fg2a: supaData?.fg2a || 0,
-        fg3m: supaData?.fg3m || 0,
-        fg3a: supaData?.fg3a || 0,
-        ftm: supaFtm,
-        fta: supaFta,
-
         fipVerified: false,
         hasSupabaseStats: Boolean(supaData && gp > 0),
         stats: {
@@ -569,36 +550,16 @@ export function buildSuperchargedBbaRoster(
     // Case B: Default (ALL or OFFICIAL)
     // PG (Presenze/Convocazioni): Count of official matches player appears in FIP roster
     const rawPg = Number(fipStats.games ?? player.games ?? 0);
-
-    // STRICT RULE: Ignore the native FIP player.starting flag. 
-    // Trust ONLY the Q1 boxscore data (starterEntry) or the explicitly tracked starts.
-    const startsCount = Number(starterEntry?.startsCount ?? (player.startPercentage !== '—' && player.startsCount ? player.startsCount : 0));
-
-    // Ensure PG is always at least equal to startsCount to prevent percentages > 100%
+    // IGNORIAMO il flag nativo player.starting della FIP (che genera 8 titolari finti).
+    // Ci fidiamo ESCLUSIVAMENTE del nostro incrocio col boxscore Q1 (starterEntry).
+    const startsCount = Number(starterEntry?.startsCount ?? (player.startPercentage !== '—' && player.startsCount ? player.startsCount : 0));    // Ensure PG is always at least equal to startsCount to prevent percentages > 100%
     const pg = Math.max(rawPg, startsCount);
 
-    // Calculate startPct strictly as Math.min(100, Math.round((startsCount / pg) * 100)) + '%'
-    const startPct = pg > 0 ? `${Math.min(100, Math.round((startsCount / pg) * 100))}%` : '0%';
-
-    // Free Throw calculations (FIP + Supabase Hybrid)
-    // In FIP: points = 2*inArc + 3*outArc + ftMade => ftMade = totalPoints - (2*twoMade + 3*threeMade)
-    const ppg = Number(fipStats.pointsAVG ?? player.pointsAVG ?? 0);
-    const totalPts = Math.round(pg * ppg);
-    const twoMadeTotal = Math.round(pg * Number(fipStats.inArcThrowsAVG ?? fipStats.twoMadeAVG ?? player.twoMadeAVG ?? 0));
-    const threeMadeTotal = Math.round(pg * Number(fipStats.outArcThrowsAVG ?? fipStats.threeMadeAVG ?? player.threeMadeAVG ?? 0));
-    const fipFtMade = Math.max(0, totalPts - (twoMadeTotal * 2 + threeMadeTotal * 3));
-    const fipFtPctNum = fipStats.freeThrowsPercentage != null ? Number(fipStats.freeThrowsPercentage) : null;
-    const fipFtAtt = (fipFtPctNum != null && fipFtPctNum > 0) 
-      ? Math.round(fipFtMade / (fipFtPctNum / 100)) 
-      : (fipFtMade > 0 ? fipFtMade : 0);
-
-    const supaFta = supaData?.fta || 0;
-    const supaFtm = supaData?.ftm || 0;
-    const totalFtAtt = (supaData && supaFta > 0) ? supaFta : fipFtAtt;
-    const totalFtMade = (supaData && supaFta > 0) ? supaFtm : fipFtMade;
-    const ftAttAvg = pg > 0 ? Number((totalFtAtt / pg).toFixed(1)) : 0.0;
-    const ftMadeAvg = pg > 0 ? Number((totalFtMade / pg).toFixed(1)) : 0.0;
-    const ftPct = supaData?.ftPct ?? (fipFtPctNum != null ? Math.round(fipFtPctNum) : null);
+    // START %: Strictly (Games Started / PG) * 100, capped at 100%
+    let startPct = '0%';
+    if (pg > 0) {
+      startPct = `${Math.min(100, Math.round((startsCount / pg) * 100))}%`;
+    }
 
     return {
       ...player,
@@ -606,7 +567,7 @@ export function buildSuperchargedBbaRoster(
       number: num,
       name: cleanName,
       captain: Boolean(player.captain),
-      starting: Boolean(startsCount > 0),
+      starting: Boolean(player.starting || (startsCount > 0)),
       startPercentage: startPct,
       startsCount,
 
@@ -619,16 +580,12 @@ export function buildSuperchargedBbaRoster(
       foulsAVG: fipStats.foulsAVG ?? player.foulsAVG ?? 0,
       plusMinusAVG: fipStats.plusMinusAVG ?? player.plusMinusAVG ?? 0,
 
-      // Free Throws Volume & Efficiency
-      ftAtt: totalFtAtt,
-      ftAttAvg: ftAttAvg,
-      ftMade: totalFtMade,
-      ftMadeAvg: ftMadeAvg,
-      ftPct: ftPct,
-
       // Supabase Proprietary Columns (Truth for Efficiency, Playmaking & Hustle)
+      // STRICT RULE: Efficiency metrics come EXCLUSIVELY from Supabase.
+      // If Supabase scouting is absent, they are null ('—') - NEVER FIP 100%.
       twoPct: supaData?.twoPct ?? null,
       threePct: supaData?.threePct ?? null,
+      ftPct: supaData?.ftPct ?? null,
       rebAvg: supaData ? supaData.rebAvg : null,
       astAvg: supaData ? supaData.astAvg : null,
       tovAvg: supaData ? supaData.tovAvg : null,
@@ -638,17 +595,9 @@ export function buildSuperchargedBbaRoster(
       blkAvg: supaData ? supaData.blkAvg : null,
       efgPct: supaData ? supaData.efgPct : null,
 
-      // Volumes from Supabase (for Shooting Volumes display)
-      fg2m: supaData?.fg2m || 0,
-      fg2a: supaData?.fg2a || 0,
-      fg3m: supaData?.fg3m || 0,
-      fg3a: supaData?.fg3a || 0,
-      ftm: totalFtMade,
-      fta: totalFtAtt,
-
       // Badging & Verification Status
       fipVerified: true,
-      hasSupabaseStats: Boolean(supaData && supaData.gpSupabase > 0),
+      hasSupabaseStats: Boolean(supaData),
       stats: {
         ...fipStats,
         games: pg,

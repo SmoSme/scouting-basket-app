@@ -774,48 +774,113 @@ export function calculateMatchAnalytics(events = [], customRoster = [], starting
   const halfCourt = calcSituational(halfCourtEvents);
 
   // =========================================================================
-  // DEFENSIVE SCHEMES BREAKDOWN (MAN, ZONE, PRESS)
+  // OFFENSIVE EFFICIENCY VS OPPONENT DEFENSIVE SCHEMES (MAN, ZONE, PRESS)
+  // Evaluates BBA's offensive execution (PTS, eFG%, AST, TOV, O-REB, AST/TOV)
   // =========================================================================
-  const calcDefScheme = (schemeName) => {
+  const isBbaOffensive = (e) => {
+    if (isOpponentScoreEvent(e) || isOppEvent(e)) return false;
+    const num = getNum(e);
+    if (num === 'OPP' || num === 'SUB') return false;
+    const cat = String(e?.Category || e?.category || '').toLowerCase();
+    if (cat === 'opponent' || cat === 'substitution') return false;
+    return true;
+  };
+
+  const getEventDefenseScheme = (e) => {
+    // 1. Check Zone column (which stores scheme: Man, Zone, Press)
+    const z = String(e?.Zone || e?.zone || e?.Zona || e?.zona || '').trim().toUpperCase();
+    if (z.includes('PRESS')) return 'PRESS';
+    if (z === 'ZONE' || z === 'ZONA' || z.startsWith('ZONE') || z.startsWith('ZONA')) return 'ZONE';
+    if (z === 'MAN' || z.includes('MAN') || z.includes('UOMO')) return 'MAN';
+
+    // 2. Check defenseType attribute
+    const d = String(e?.defenseType || e?.Defense_Type || e?.defense_type || '').trim().toUpperCase();
+    if (d.includes('PRESS')) return 'PRESS';
+    if (d === 'ZONE' || d === 'ZONA' || d.startsWith('ZONE') || d.startsWith('ZONA')) return 'ZONE';
+    if (d === 'MAN' || d.includes('MAN') || d.includes('UOMO')) return 'MAN';
+
+    return null;
+  };
+
+  const calcSchemeEfficiency = (schemeName) => {
     const schemeEvents = safeEvents.filter(e => {
-      const def = e.defenseType || 'MAN';
-      return def === schemeName;
+      const scheme = getEventDefenseScheme(e);
+      if (scheme) return scheme === schemeName;
+      // Default un-categorized events to baseline MAN
+      return schemeName === 'MAN';
     });
 
-    const ptsAllowed = schemeEvents.reduce((acc, ev) => {
-      if (isOpponentScoreEvent(ev)) return acc + getOpponentPoints(ev);
-      return acc;
-    }, 0);
+    let ptsScored = 0;
+    let fg2m = 0, fg2miss = 0;
+    let fg3m = 0, fg3miss = 0;
+    let ftm = 0, ftmiss = 0;
+    let ast = 0, tov = 0, oreb = 0;
 
-    const sOpp2m = schemeEvents.filter(e => getAz(e) === 'OPP_2PT_MADE' || (isOppEvent(e) && getAz(e).includes('+2'))).length;
-    const sOpp2miss = schemeEvents.filter(e => getAz(e) === 'OPP_2PT_MISSED').length;
-    const sOpp3m = schemeEvents.filter(e => getAz(e) === 'OPP_3PT_MADE' || (isOppEvent(e) && getAz(e).includes('+3'))).length;
-    const sOpp3miss = schemeEvents.filter(e => getAz(e) === 'OPP_3PT_MISSED').length;
-    const fga = sOpp2m + sOpp2miss + sOpp3m + sOpp3miss;
-    const efg = fga > 0 ? Math.round(((sOpp2m + sOpp3m + 0.5 * sOpp3m) / fga) * 1000) / 10 : 0;
+    schemeEvents.forEach(ev => {
+      if (!isBbaOffensive(ev)) return;
+      const az = getAz(ev);
 
-    const stl = schemeEvents.filter(e => getAz(e) === 'Steal' || getAz(e) === 'Palla Recuperata').length;
-    const blk = schemeEvents.filter(e => getAz(e) === 'Block' || getAz(e) === 'Stoppata Data').length;
-    const dreb = schemeEvents.filter(e => getAz(e) === 'Def Rebound' || getAz(e) === 'Rimb Difensivo').length;
-    const fouls = schemeEvents.filter(e => getAz(e) === 'Personal Foul' || getAz(e) === 'Fallo Fatto').length;
+      if (az === '2PT Made' || az === '2PT Fatto') {
+        fg2m++;
+        ptsScored += 2;
+      } else if (az === '2PT Missed' || az === '2PT Sbagliato') {
+        fg2miss++;
+      } else if (az === '3PT Made' || az === '3PT Fatto') {
+        fg3m++;
+        ptsScored += 3;
+      } else if (az === '3PT Missed' || az === '3PT Sbagliato') {
+        fg3miss++;
+      } else if (az === 'FT Made' || az === 'TL Fatto') {
+        ftm++;
+        ptsScored += 1;
+      } else if (az === 'FT Missed' || az === 'TL Sbagliato') {
+        ftmiss++;
+      } else if (az === 'Assist') {
+        ast++;
+      } else if (az === 'Turnover' || az === 'Palla Persa') {
+        tov++;
+      } else if (az === 'Off Rebound' || az === 'Rimb Offensivo') {
+        oreb++;
+      }
+    });
+
+    const fg2a = fg2m + fg2miss;
+    const fg3a = fg3m + fg3miss;
+    const fgm = fg2m + fg3m;
+    const fga = fg2a + fg3a;
+    const fta = ftm + ftmiss;
+    const efg = fga > 0 ? Math.round(((fgm + 0.5 * fg3m) / fga) * 1000) / 10 : 0;
+    const astTovRatio = tov > 0 ? Math.round((ast / tov) * 100) / 100 : (ast > 0 ? ast : null);
 
     return {
       schemeName,
-      eventsCount: schemeEvents.length,
-      ptsAllowed,
+      eventsCount: schemeEvents.filter(isBbaOffensive).length,
+      ptsScored,
+      pts: ptsScored,
+      ptsAllowed: ptsScored, // legacy fallback
+      fg2m,
+      fg2miss,
+      fg2a,
+      fg3m,
+      fg3miss,
+      fg3a,
+      fgm,
       fga,
+      ftm,
+      ftmiss,
+      fta,
       efg,
-      stl,
-      blk,
-      dreb,
-      fouls
+      ast,
+      tov,
+      oreb,
+      astTovRatio
     };
   };
 
   const defensiveSchemes = {
-    MAN: calcDefScheme('MAN'),
-    ZONE: calcDefScheme('ZONE'),
-    PRESS: calcDefScheme('PRESS')
+    MAN: calcSchemeEfficiency('MAN'),
+    ZONE: calcSchemeEfficiency('ZONE'),
+    PRESS: calcSchemeEfficiency('PRESS')
   };
 
   const teamOverview = {

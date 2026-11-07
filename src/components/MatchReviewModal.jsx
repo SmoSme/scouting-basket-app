@@ -11,10 +11,23 @@ import MetricGuideModal from './MetricGuideModal';
 import ScoreOverrideModal from './ScoreOverrideModal';
 import { calculateMatchAnalytics, computeZoneStats } from '../utils/basketballAnalytics';
 import { getScoreOverride, saveScoreOverride, clearScoreOverride } from '../utils/scoreOverride';
-import { saveMatchMetadataToSupabase, formatDateForInput } from '../services/matchMetadataService';
+import { 
+  saveMatchMetadataToSupabase, 
+  updateScoutingMatchInSupabase, 
+  formatDateForInput,
+  getMatchEvents
+} from '../services/matchMetadataService';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpdateMatchDate, onUpdateMatchType, onUpdateScoreOverride }) {
+export default function MatchReviewModal({ 
+  match, 
+  matchId, 
+  onClose, 
+  onDownloadCSV, 
+  onUpdateMatchDate, 
+  onUpdateMatchType, 
+  onUpdateScoreOverride 
+}) {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
   const [selectedPlayerNum, setSelectedPlayerNum] = useState(null);
@@ -24,6 +37,39 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
   const [boxScoreSortAsc, setBoxScoreSortAsc] = useState(false);
   const [activeMetricGuideKey, setActiveMetricGuideKey] = useState(null); // 'pillars' | 'efg' | 'ts' | 'oreb' | 'asttov' | 'ballControl' | 'pir' | 'gamescore' | 'pps'
   
+  // Relational match_id resolution and strict event fetching
+  const activeMatchId = matchId || match?.id || match?.match_id;
+  const [events, setEvents] = useState(() => Array.isArray(match?.events) ? match.events : []);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadEvents() {
+      if (!activeMatchId) {
+        if (Array.isArray(match?.events)) {
+          setEvents(match.events);
+        }
+        return;
+      }
+      setLoadingEvents(true);
+      try {
+        const data = await getMatchEvents(activeMatchId);
+        if (isMounted) {
+          setEvents(data || []);
+        }
+      } catch (err) {
+        console.error('[MatchReviewModal] Error loading match events for match_id:', activeMatchId, err);
+      } finally {
+        if (isMounted) setLoadingEvents(false);
+      }
+    }
+
+    loadEvents();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeMatchId]);
+
   // Manual Score Override State
   const [overrideScores, setOverrideScores] = useState(() => match?.name ? getScoreOverride(match.name) : null);
   const [showScoreOverrideModal, setShowScoreOverrideModal] = useState(false);
@@ -56,14 +102,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
     setDateSaving(true);
     setDateSaved(false);
     try {
-      if (match?.name) {
-        await saveMatchMetadataToSupabase(match.name, { matchDate: newDate });
+      const matchIdentifier = activeMatchId || match?.name;
+      if (matchIdentifier) {
+        await updateScoutingMatchInSupabase(matchIdentifier, { match_date: newDate });
       }
       setDateSaving(false);
       setDateSaved(true);
       setTimeout(() => setDateSaved(false), 2000);
-      if (onUpdateMatchDate && match?.name) {
-        onUpdateMatchDate(match.name, newDate, false /* skip duplicate save */);
+      if (onUpdateMatchDate && matchIdentifier) {
+        onUpdateMatchDate(matchIdentifier, newDate, false /* skip duplicate save */);
       }
     } catch(e) {
       console.error('Failed to sync matchDate to Supabase:', e);
@@ -79,15 +126,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
   const handleMatchTypeChange = async (newType) => {
     setMatchTypeValue(newType);
-    if (match?.name) {
+    const matchIdentifier = activeMatchId || match?.name;
+    if (matchIdentifier) {
       try {
-        await saveMatchMetadataToSupabase(match.name, { matchType: newType });
+        await updateScoutingMatchInSupabase(matchIdentifier, { match_type: newType });
       } catch(e) {
         console.error('Failed to sync matchType to Supabase:', e);
       }
     }
-    if (onUpdateMatchType && match?.name) {
-      onUpdateMatchType(match.name, newType);
+    if (onUpdateMatchType && matchIdentifier) {
+      onUpdateMatchType(matchIdentifier, newType);
     }
   };
 
@@ -118,24 +166,24 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
           ? Number(overrideScores.overrideOppScore)
           : null)));
 
-  // Compute full analytics dataset - NEVER dynamically recalculate final score from events if official scores exist
+  // Compute full analytics dataset strictly from relational events array
   const analytics = useMemo(() => {
     return calculateMatchAnalytics(
-      match?.events || [], 
+      events || [], 
       [], 
       [], 
       { teamScore: officialTeamScore, oppScore: officialOppScore }
     );
-  }, [match?.events, officialTeamScore, officialOppScore]);
+  }, [events, officialTeamScore, officialOppScore]);
 
   // Unified shot zone stats strictly filtered for 2PT/3PT attempts and reacting to player filter
   const filteredShotMapEvents = useMemo(() => {
-    let evs = match?.events || [];
+    let evs = events || [];
     if (shotMapPlayerFilter) {
       evs = evs.filter(e => String(e.Number ?? e.number ?? e.Numero ?? e.numero ?? '') === String(shotMapPlayerFilter.number));
     }
     return evs;
-  }, [match?.events, shotMapPlayerFilter]);
+  }, [events, shotMapPlayerFilter]);
 
   const activeZoneStats = useMemo(() => {
     return computeZoneStats(filteredShotMapEvents);
@@ -277,7 +325,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
 
   // Filtered play-by-play events
   const filteredEvents = useMemo(() => {
-    const rawEvents = match?.events || [];
+    const rawEvents = events || [];
     return rawEvents.filter(ev => {
       const q = String(ev.Quarter || ev.quarter || ev.Quarto || ev.quarto || 'Q1');
       const num = String(ev.Number ?? ev.number ?? ev.Numero ?? ev.numero ?? '');
@@ -434,8 +482,8 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
               <span>{t('metric_guide')}</span>
             </button>
             <button
-              onClick={() => onDownloadCSV && onDownloadCSV(match?.name || 'Match', match?.events || [])}
-              className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
+              onClick={() => onDownloadCSV && onDownloadCSV(activeMatchId || match?.name || 'Match', match?.name || 'Match', events || [])}
+              className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
               title={t('export_csv')}
             >
               <Download className="w-3.5 h-3.5" />
@@ -544,7 +592,15 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
         {/* 3. MODAL CONTENT CONTAINER                                                */}
         {/* ========================================================================= */}
         <div className="p-3 sm:p-5 overflow-y-auto flex-1 bg-[#F8F9FA] text-[#022D32]">
-
+          {loadingEvents && events.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-3 bg-white border border-[#DDF3E9] rounded-2xl shadow-xs">
+              <Loader2 className="w-8 h-8 text-[#0CA17A] animate-spin" />
+              <p className="text-xs font-black text-[#022D32] uppercase tracking-wider">
+                {language === 'it' ? 'Caricamento azioni da Supabase (match_id)...' : 'Loading events from Supabase (match_id)...'}
+              </p>
+            </div>
+          ) : (
+            <>
           {/* ===================================================================== */}
           {/* TAB 1: EXECUTIVE OVERVIEW & FOUR FACTORS                              */}
           {/* ===================================================================== */}
@@ -1242,34 +1298,55 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                 </div>
               </div>
 
-              {/* 3. DEFENSIVE SCHEMES BREAKDOWN (MAN vs ZONE vs PRESS) */}
+              {/* 3. OFFENSIVE EFFICIENCY VS OPPONENT DEFENSIVE SCHEMES (MAN vs ZONE vs PRESS) */}
               <div className="glass-card p-3 sm:p-4 border-[#DDF3E9] space-y-3">
                 <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-2">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-[#0CA17A]" />
+                    <Target className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      DEFENSIVE SCHEME PERFORMANCE (MAN vs ZONE vs PRESS)
+                      {language === 'it' 
+                        ? 'EFFICIENZA OFFENSIVA VS DIFESE AVVERSARIE' 
+                        : 'OFFENSIVE EFFICIENCY VS OPPONENT SCHEMES'}
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold text-[#022D32]/65">
-                    Defensive stats & opponent conversion per scheme
+                    {language === 'it' 
+                      ? "Rendimento dell'attacco BBA contro le difese avversarie" 
+                      : "BBA offensive production & execution vs opponent defenses"}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { key: 'MAN', label: 'MAN-TO-MAN (MAN)', scheme: defensiveSchemes?.MAN, color: 'sky' },
-                    { key: 'ZONE', label: 'ZONE DEFENSE (ZONE)', scheme: defensiveSchemes?.ZONE, color: 'purple' },
-                    { key: 'PRESS', label: 'FULL-COURT PRESS (PRESS)', scheme: defensiveSchemes?.PRESS, color: 'amber' }
+                    { 
+                      key: 'MAN', 
+                      label: language === 'it' ? 'DIFESA A UOMO (MAN)' : 'MAN-TO-MAN (MAN)', 
+                      scheme: defensiveSchemes?.MAN, 
+                      color: 'sky' 
+                    },
+                    { 
+                      key: 'ZONE', 
+                      label: language === 'it' ? 'DIFESA A ZONA (ZONE)' : 'ZONE DEFENSE (ZONE)', 
+                      scheme: defensiveSchemes?.ZONE, 
+                      color: 'purple' 
+                    },
+                    { 
+                      key: 'PRESS', 
+                      label: language === 'it' ? 'PRESSING A TUTTO CAMPO (PRESS)' : 'FULL-COURT PRESS (PRESS)', 
+                      scheme: defensiveSchemes?.PRESS, 
+                      color: 'amber' 
+                    }
                   ].map(({ key, label, scheme }) => {
                     const count = scheme?.eventsCount || 0;
-                    const pts = scheme?.ptsAllowed || 0;
+                    const pts = scheme?.ptsScored !== undefined ? scheme.ptsScored : (scheme?.pts || scheme?.ptsAllowed || 0);
                     const fga = scheme?.fga || 0;
                     const efg = scheme?.efg || 0;
-                    const stl = scheme?.stl || 0;
-                    const blk = scheme?.blk || 0;
-                    const dreb = scheme?.dreb || 0;
-                    const fouls = scheme?.fouls || 0;
+                    const ast = scheme?.ast || 0;
+                    const tov = scheme?.tov || 0;
+                    const oreb = scheme?.oreb || 0;
+                    const astTovRatio = scheme?.astTovRatio !== undefined && scheme?.astTovRatio !== null
+                      ? scheme.astTovRatio.toFixed(1)
+                      : (tov > 0 ? (ast / tov).toFixed(1) : (ast > 0 ? `${ast}.0` : '—'));
 
                     return (
                       <div
@@ -1282,43 +1359,48 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                               {label}
                             </span>
                             <span className="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded text-[#022D32]/80 border border-[#DDF3E9]">
-                              {count} Events
+                              {count} {language === 'it' ? 'Azioni' : 'Events'}
                             </span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 my-2">
-                            <div className="bg-white/70 p-2 rounded-lg border border-[#DDF3E9]/80">
-                              <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">PTS ALLOWED</div>
-                              <div className="font-mono text-xl font-black text-rose-700">
+                            <div className="bg-[#DDF3E9]/40 p-2 rounded-lg border border-[#DDF3E9]">
+                              <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">
+                                {language === 'it' ? 'PTS SEGNATI' : 'PTS SCORED'}
+                              </div>
+                              <div className="font-mono text-xl font-black text-[#0CA17A]">
                                 {pts} PTS
                               </div>
                             </div>
-                            <div className="bg-white/70 p-2 rounded-lg border border-[#DDF3E9]/80">
-                              <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">OPP eFG%</div>
+                            <div className="bg-[#DDF3E9]/40 p-2 rounded-lg border border-[#DDF3E9]">
+                              <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">
+                                {language === 'it' ? 'BBA eFG%' : 'OUR eFG%'}
+                              </div>
                               <div className="font-mono text-xl font-black text-[#022D32]">
-                                {fga > 0 ? `${efg}%` : 'N/A'}
+                                {fga > 0 ? `${efg}%` : '—'}
                               </div>
                               <div className="text-[9px] text-[#022D32]/60 font-semibold">{fga} FGA</div>
                             </div>
                           </div>
                         </div>
 
+                        {/* Bottom Row: Offensive Execution Metrics (AST, TOV, O-REB, AST/TOV) */}
                         <div className="grid grid-cols-4 gap-1 pt-2 border-t border-[#DDF3E9] text-center">
                           <div className="bg-[#F8F9FA] p-1 rounded border border-[#DDF3E9]/40">
-                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">STL</div>
-                            <div className="font-mono text-xs font-black text-emerald-700">{stl}</div>
+                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">AST</div>
+                            <div className="font-mono text-xs font-black text-emerald-700">{ast}</div>
                           </div>
                           <div className="bg-[#F8F9FA] p-1 rounded border border-[#DDF3E9]/40">
-                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">BLK</div>
-                            <div className="font-mono text-xs font-black text-[#022D32]">{blk}</div>
+                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">TOV</div>
+                            <div className="font-mono text-xs font-black text-rose-700">{tov}</div>
                           </div>
                           <div className="bg-[#F8F9FA] p-1 rounded border border-[#DDF3E9]/40">
-                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">D-REB</div>
-                            <div className="font-mono text-xs font-black text-[#022D32]">{dreb}</div>
+                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">O-REB</div>
+                            <div className="font-mono text-xs font-black text-sky-700">{oreb}</div>
                           </div>
                           <div className="bg-[#F8F9FA] p-1 rounded border border-[#DDF3E9]/40">
-                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">PF</div>
-                            <div className="font-mono text-xs font-black text-rose-700">{fouls}</div>
+                            <div className="text-[8px] font-black text-[#022D32]/70 uppercase">AST/TOV</div>
+                            <div className="font-mono text-xs font-black text-[#022D32]">{astTovRatio}</div>
                           </div>
                         </div>
                       </div>
@@ -1676,7 +1758,7 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
                           selectedPlayer={{ number: activePlayer.number, name: activePlayer.name }}
                           selectedZoneKey={shotMapSelectedZone}
                           onSelectZone={(k) => setShotMapSelectedZone(k)}
-                          events={match.events}
+                          events={events}
                         />
 
                         {/* Shot Distribution Bars */}
@@ -2287,6 +2369,8 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
             </div>
           )}
 
+            </>
+          )}
         </div>
       </div>
 
@@ -2300,14 +2384,16 @@ export default function MatchReviewModal({ match, onClose, onDownloadCSV, onUpda
         currentOverrideTeamScore={overrideScores?.overrideTeamScore ?? null}
         currentOverrideOppScore={overrideScores?.overrideOppScore ?? null}
         onSaveOverride={(t, o) => {
+          const matchIdentifier = activeMatchId || match?.name;
           saveScoreOverride(match?.name, t, o);
           setOverrideScores({ overrideTeamScore: t, overrideOppScore: o });
-          if (onUpdateScoreOverride) onUpdateScoreOverride(match?.name, t, o);
+          if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, t, o);
         }}
         onClearOverride={() => {
+          const matchIdentifier = activeMatchId || match?.name;
           clearScoreOverride(match?.name);
           setOverrideScores(null);
-          if (onUpdateScoreOverride) onUpdateScoreOverride(match?.name, null, null);
+          if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, null, null);
         }}
       />
 
