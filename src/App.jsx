@@ -626,7 +626,9 @@ export default function App() {
     const currentOnCourt = (
       Array.isArray(customOnCourt) && customOnCourt.length > 0
         ? customOnCourt
-        : onCourtPlayerNums
+        : (Array.isArray(situational.on_court) && situational.on_court.length > 0
+            ? situational.on_court
+            : onCourtPlayerNums)
     ).map(id => String(id));
 
     // Strict schema hygiene: 2PT/3PT carry court zone; non-shot events carry active defensive scheme in Zone
@@ -660,7 +662,7 @@ export default function App() {
     // Generate RFC4122 UUIDv4 on client at exact millisecond 0 or reuse provided id
     const eventId = situational.id || generateUUID();
 
-    // Exact schema payload matching the Supabase scouting_log columns (including client-generated id & match_id)
+    // Exact schema payload matching the Supabase scouting_log columns (including client-generated id, match_id & on_court snapshot)
     const supabasePayload = {
       id: eventId,
       match_id: activeMatchId,
@@ -671,7 +673,8 @@ export default function App() {
       Action: actionName,
       Category: categoryName,
       Zone: safeZone || defenseType || null,
-      Match_Name: gameSession
+      Match_Name: gameSession,
+      on_court: currentOnCourt
     };
 
     // Strict validation failsafe check: prevent orphaned events without match_id
@@ -680,7 +683,7 @@ export default function App() {
       throw new Error(`Missing match_id for match session "${gameSession}". Events cannot be orphaned.`);
     }
 
-    // 1. Instant local state update (<5ms) with onCourtPlayerIds snapshot and synchronous persistence
+    // 1. Instant local state update (<5ms) with on_court snapshot and synchronous persistence
     const localEv = {
       ...supabasePayload,
       id: eventId,
@@ -691,8 +694,9 @@ export default function App() {
       zone: safeZone,
       category: categoryName,
       timestamp,
-      onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
-      onCourtNums: [...currentOnCourt.map(id => String(id))],
+      on_court: currentOnCourt,
+      onCourtPlayerIds: currentOnCourt,
+      onCourtNums: currentOnCourt,
       isTransition,
       defenseType
     };
@@ -719,9 +723,19 @@ export default function App() {
     
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { error } = await supabase
+        let { error } = await supabase
           .from('scouting_log')
           .upsert([supabasePayload], { onConflict: 'id', ignoreDuplicates: true });
+
+        // Graceful fallback if on_court column does not exist yet in DB schema cache
+        if (error && (error.code === '42703' || String(error.message || '').includes('on_court'))) {
+          console.warn('[Supabase] Column on_court pending in DB schema, retrying without on_court column:', error.message);
+          const { on_court, ...legacyPayload } = supabasePayload;
+          const retryRes = await supabase
+            .from('scouting_log')
+            .upsert([legacyPayload], { onConflict: 'id', ignoreDuplicates: true });
+          error = retryRes.error;
+        }
 
         if (!error || error.code === '23505') {
           cloudSynced = true;
@@ -794,7 +808,9 @@ export default function App() {
     const currentOnCourt = (
       Array.isArray(customOnCourt) && customOnCourt.length > 0
         ? customOnCourt
-        : onCourtPlayerNums
+        : (Array.isArray(situational.on_court) && situational.on_court.length > 0
+            ? situational.on_court
+            : onCourtPlayerNums)
     ).map(id => String(id));
 
     actionsList.forEach(item => {
@@ -823,6 +839,13 @@ export default function App() {
       const safeZone = isShotEvent && zoneName && zoneName !== 'Generic' && zoneName !== 'Bench' ? zoneName : null;
       const effectiveDef = itemDef !== undefined ? itemDef : (situational.defenseType || (zoneName && (zoneName === 'MAN' || zoneName === 'ZONE' || zoneName === 'PRESS') ? zoneName : null));
 
+      // Determine item-level on_court snapshot
+      const itemOnCourt = (
+        Array.isArray(item.on_court) && item.on_court.length > 0
+          ? item.on_court
+          : currentOnCourt
+      ).map(id => String(id));
+
       // Generate unique RFC4122 UUIDv4 for each batch action item
       const itemEventId = generateUUID();
 
@@ -836,7 +859,8 @@ export default function App() {
         Action: actionName,
         Category: categoryName,
         Zone: safeZone || effectiveDef || null,
-        Match_Name: gameSession
+        Match_Name: gameSession,
+        on_court: itemOnCourt
       };
       payloads.push(p);
       localEvs.push({
@@ -849,8 +873,9 @@ export default function App() {
         zone: safeZone,
         category: categoryName,
         timestamp,
-        onCourtPlayerIds: [...currentOnCourt.map(id => String(id))],
-        onCourtNums: [...currentOnCourt.map(id => String(id))],
+        on_court: itemOnCourt,
+        onCourtPlayerIds: itemOnCourt,
+        onCourtNums: itemOnCourt,
         isTransition: itemTrans !== undefined ? Boolean(itemTrans) : (situational.isTransition === true),
         defenseType: itemDef !== undefined ? itemDef : (situational.defenseType || null)
       });
@@ -878,9 +903,20 @@ export default function App() {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (navigator.onLine && supabaseUrl && !supabaseUrl.includes('your-supabase-project')) {
       try {
-        const { error } = await supabase
+        let { error } = await supabase
           .from('scouting_log')
           .upsert(payloads, { onConflict: 'id', ignoreDuplicates: true });
+
+        // Graceful fallback if on_court column does not exist yet in DB schema cache
+        if (error && (error.code === '42703' || String(error.message || '').includes('on_court'))) {
+          console.warn('[Supabase] Column on_court pending in DB schema, retrying batch without on_court column:', error.message);
+          const fallbackPayloads = payloads.map(({ on_court, ...rest }) => rest);
+          const retryRes = await supabase
+            .from('scouting_log')
+            .upsert(fallbackPayloads, { onConflict: 'id', ignoreDuplicates: true });
+          error = retryRes.error;
+        }
+
         if (!error || error.code === '23505') {
           cloudSynced = true;
           // AGGRESSIVELY PURGE FROM OFFLINE QUEUE THE EXACT MILLISECOND PROMISE RESOLVES
@@ -895,7 +931,7 @@ export default function App() {
     }
 
     if (!cloudSynced) {
-      payloads.forEach(p => saveToOfflineQueue({ ...p, onCourtPlayerIds: [...currentOnCourt.map(id => String(id))] }));
+      payloads.forEach(p => saveToOfflineQueue({ ...p, on_court: currentOnCourt, onCourtPlayerIds: currentOnCourt }));
       const newQueueLength = getOfflineQueue().length;
       setOfflineQueueCount(newQueueLength);
       showToast(`Saved ${payloads.length} events to offline queue`);
@@ -905,7 +941,7 @@ export default function App() {
     setSelectedPlayer(null);
   };
 
-  const dispatchOpponentScore = (points) => {
+  const dispatchOpponentScore = (points, customOnCourt = null) => {
     const bbaPts = calculateTeamScore(events);
     const oppPts = calculateOpponentScore(events);
     const newOppPts = Math.max(0, oppPts + points);
@@ -915,10 +951,16 @@ export default function App() {
       actionName = `Opponent Score Corrected ${points} (${bbaPts}-${newOppPts})`;
     }
 
-    dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' });
+    const effectiveOnCourt = (
+      Array.isArray(customOnCourt) && customOnCourt.length > 0
+        ? customOnCourt
+        : onCourtPlayerNums
+    ).map(String);
+
+    dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, effectiveOnCourt, { on_court: effectiveOnCourt });
   };
 
-  const dispatchOpponentShot = (shotType, isMade, defenseType = 'MAN', extraReboundAction = null) => {
+  const dispatchOpponentShot = (shotType, isMade, defenseType = 'MAN', extraReboundAction = null, customOnCourt = null) => {
     let actionName = '';
     if (isMade) {
       if (shotType === 'FT' || shotType === '1PT') actionName = 'OPP_FT_MADE';
@@ -932,6 +974,12 @@ export default function App() {
       else actionName = `OPP_${shotType}_MISSED`;
     }
 
+    const effectiveOnCourt = (
+      Array.isArray(customOnCourt) && customOnCourt.length > 0
+        ? customOnCourt
+        : onCourtPlayerNums
+    ).map(String);
+
     if (extraReboundAction) {
       dispatchMultipleActions([
         {
@@ -939,12 +987,16 @@ export default function App() {
           categoryName: 'Opponent',
           zoneName: null,
           targetPlayer: { number: 'OPP', name: 'OPPONENT' },
-          defenseType
+          defenseType,
+          on_court: effectiveOnCourt
         },
-        extraReboundAction
-      ], null, { defenseType });
+        {
+          ...extraReboundAction,
+          on_court: effectiveOnCourt
+        }
+      ], effectiveOnCourt, { defenseType, on_court: effectiveOnCourt });
     } else {
-      dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, null, { defenseType });
+      dispatchAction(actionName, 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, effectiveOnCourt, { defenseType, on_court: effectiveOnCourt });
     }
   };
 

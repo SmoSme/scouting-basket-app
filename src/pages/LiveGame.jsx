@@ -120,13 +120,14 @@ export default function LiveGame({
 
   const handleOpponentShot = (shotType, isMade) => {
     if (!isAdmin || actionDebounce) return;
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
     if (isMade) {
       triggerWithDebounce(() => {
         if (dispatchOpponentShot) {
-          dispatchOpponentShot(shotType, true, defenseType);
+          dispatchOpponentShot(shotType, true, defenseType, null, onCourtSnapshot);
         } else if (dispatchOpponentScore) {
           const pts = (shotType === '3PT') ? 3 : (shotType === '2PT') ? 2 : 1;
-          dispatchOpponentScore(pts);
+          dispatchOpponentScore(pts, onCourtSnapshot);
         }
       });
     } else {
@@ -140,6 +141,7 @@ export default function LiveGame({
     try {
       if (!opponentMissPopover) return;
       const shotType = opponentMissPopover.shotType || '2PT';
+      const onCourtSnapshot = onCourtPlayerNums.map(String);
 
       triggerWithDebounce(() => {
         if (optionType === 'BBA_DEF_REB' && bbaPlayer) {
@@ -149,8 +151,9 @@ export default function LiveGame({
               categoryName: 'Rebound',
               zoneName: null,
               targetPlayer: bbaPlayer,
-              defenseType
-            });
+              defenseType,
+              on_court: onCourtSnapshot
+            }, onCourtSnapshot);
           }
         } else if (optionType === 'OPP_OFF_REB') {
           if (dispatchOpponentShot) {
@@ -159,13 +162,14 @@ export default function LiveGame({
               categoryName: 'Opponent',
               zoneName: null,
               targetPlayer: { number: 'OPP', name: 'OPPONENT' },
-              defenseType
-            });
+              defenseType,
+              on_court: onCourtSnapshot
+            }, onCourtSnapshot);
           }
         } else {
           // DEAD_BALL or SKIP
           if (dispatchOpponentShot) {
-            dispatchOpponentShot(shotType, false, defenseType);
+            dispatchOpponentShot(shotType, false, defenseType, null, onCourtSnapshot);
           }
         }
       });
@@ -178,8 +182,9 @@ export default function LiveGame({
 
   const handleOpponentTurnover = () => {
     if (!isAdmin || actionDebounce) return;
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
     triggerWithDebounce(() => {
-      dispatchAction('OPP_TURNOVER', 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, null, { defenseType });
+      dispatchAction('OPP_TURNOVER', 'Opponent', null, { number: 'OPP', name: 'OPPONENT' }, onCourtSnapshot, { defenseType, on_court: onCourtSnapshot });
     });
   };
 
@@ -435,22 +440,37 @@ export default function LiveGame({
 
   const handleDebouncedRecordOpponentScore = (pts) => {
     if (actionDebounce) return;
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
     triggerWithDebounce(() => {
-      if (dispatchOpponentScore) dispatchOpponentScore(pts);
+      if (dispatchOpponentScore) dispatchOpponentScore(pts, onCourtSnapshot);
     });
   };
 
-const handleExecutePendingAction = (player) => {
+  const handleExecutePendingAction = (player) => {
     if (!pendingActionPrompt || !player) return;
 
     const { actionName, categoryName } = pendingActionPrompt;
-    const situ = { defenseType }; // Costruito in modo identico a handleRecordAction
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
+    const situ = { defenseType, on_court: onCourtSnapshot }; // Costruito in modo identico a handleRecordAction
 
     try {
+      const safePlayerNum = String(
+        player.number ?? player.Number ?? player.numero ?? player.num ?? ''
+      ).trim();
+      const safePlayerName = String(
+        player.name ?? player.Player ?? player.nome ?? player.playerName ?? 'Player'
+      ).trim();
+
+      const safePlayer = {
+        ...player,
+        number: safePlayerNum || '0',
+        name: safePlayerName || 'Player'
+      };
+
       // Usiamo il debounce esattamente come fa il flusso funzionante
       triggerWithDebounce(() => {
         if (typeof dispatchAction === 'function') {
-          dispatchAction(actionName, categoryName, null, player, null, situ);
+          dispatchAction(actionName, categoryName, null, safePlayer, onCourtSnapshot, situ);
         }
       });
     } catch (err) {
@@ -479,16 +499,17 @@ const handleExecutePendingAction = (player) => {
   const handleRecordAction = (actionName, categoryName) => {
     if (!isAdmin || actionDebounce) return;
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
 
-    let situ = { defenseType };
+    let situ = { defenseType, on_court: onCourtSnapshot };
 
     if (isTeamEvent) {
       triggerWithDebounce(() => {
-        dispatchAction(actionName, categoryName, null, null, null, situ);
+        dispatchAction(actionName, categoryName, null, null, onCourtSnapshot, situ);
       });
     } else if (selectedPlayer) {
       triggerWithDebounce(() => {
-        dispatchAction(actionName, categoryName, null, selectedPlayer, null, situ);
+        dispatchAction(actionName, categoryName, null, selectedPlayer, onCourtSnapshot, situ);
       });
     } else {
       setPendingActionPrompt({ actionName, categoryName, zoneName: null });
@@ -518,6 +539,7 @@ const handleExecutePendingAction = (player) => {
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
 
     triggerWithDebounce(() => {
       if (dispatchMultipleActions) {
@@ -528,7 +550,8 @@ const handleExecutePendingAction = (player) => {
             zoneName: zoneInfo.name,
             targetPlayer: shooter,
             isTransition: isTrans,
-            defenseType
+            defenseType,
+            on_court: onCourtSnapshot
           },
           {
             actionName: 'Assist',
@@ -536,12 +559,13 @@ const handleExecutePendingAction = (player) => {
             zoneName: null,
             targetPlayer: assistPlayer,
             isTransition: isTrans,
-            defenseType
+            defenseType,
+            on_court: onCourtSnapshot
           }
-        ], null, { isTransition: isTrans, defenseType });
+        ], onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
       } else {
-        dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
-        dispatchAction('Assist', 'Passing', null, assistPlayer, null, { isTransition: isTrans, defenseType });
+        dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
+        dispatchAction('Assist', 'Passing', null, assistPlayer, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
       }
     });
 
@@ -554,9 +578,10 @@ const handleExecutePendingAction = (player) => {
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
 
     triggerWithDebounce(() => {
-      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+      dispatchAction(`${shotType} Made`, 'Shot', zoneInfo.name, shooter, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
     });
     setCourtShotPopover(null);
   };
@@ -567,6 +592,7 @@ const handleExecutePendingAction = (player) => {
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
 
     triggerWithDebounce(() => {
       if (dispatchMultipleActions) {
@@ -577,7 +603,8 @@ const handleExecutePendingAction = (player) => {
             zoneName: zoneInfo.name,
             targetPlayer: shooter,
             isTransition: isTrans,
-            defenseType
+            defenseType,
+            on_court: onCourtSnapshot
           },
           {
             actionName: rebAction,
@@ -585,12 +612,13 @@ const handleExecutePendingAction = (player) => {
             zoneName: null,
             targetPlayer: rebPlayer,
             isTransition: isTrans,
-            defenseType
+            defenseType,
+            on_court: onCourtSnapshot
           }
-        ], null, { isTransition: isTrans, defenseType });
+        ], onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
       } else {
-        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
-        dispatchAction(rebAction, 'Rebound', null, rebPlayer, null, { isTransition: isTrans, defenseType });
+        dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
+        dispatchAction(rebAction, 'Rebound', null, rebPlayer, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
       }
     });
 
@@ -603,9 +631,10 @@ const handleExecutePendingAction = (player) => {
     const shotType = zoneInfo.type;
     const shooter = courtShotPopover.shooter;
     const isTrans = Boolean(courtShotPopover.isTransition);
+    const onCourtSnapshot = onCourtPlayerNums.map(String);
 
     triggerWithDebounce(() => {
-      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, null, { isTransition: isTrans, defenseType });
+      dispatchAction(`${shotType} Missed`, 'Shot', zoneInfo.name, shooter, onCourtSnapshot, { isTransition: isTrans, defenseType, on_court: onCourtSnapshot });
     });
     setCourtShotPopover(null);
   };

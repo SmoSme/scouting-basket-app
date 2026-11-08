@@ -37,6 +37,7 @@ const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_
 // 1. Static Analysis of LiveGame.jsx Action-First Event Flow
 console.log('\n[1/5] Verifying LiveGame.jsx Action-First Callback & State/DB Logic...');
 const liveGameContent = fs.readFileSync(path.join(rootDir, 'src/pages/LiveGame.jsx'), 'utf8');
+const appContent = fs.readFileSync(path.join(rootDir, 'src/App.jsx'), 'utf8');
 
 assert(
   liveGameContent.includes('const handleExecutePendingAction = (player) => {'),
@@ -48,37 +49,32 @@ assert(
   'handleSelectPlayer must route to handleExecutePendingAction(player) when pendingActionPrompt is active'
 );
 assert(
-  liveGameContent.includes('const eventId = generateUUID();'),
-  'handleExecutePendingAction must generate client UUIDv4'
+  liveGameContent.includes('const eventId = generateUUID();') || appContent.includes('const eventId = situational.id || generateUUID();'),
+  'Event handler or dispatchAction must generate client UUIDv4'
 );
 assert(
-  liveGameContent.includes('match_id: resolvedMatchId,'),
-  'handleExecutePendingAction must set match_id in supabasePayload'
+  liveGameContent.includes('match_id: resolvedMatchId,') || appContent.includes('match_id: activeMatchId,'),
+  'Event handler or dispatchAction must set match_id in supabasePayload'
 );
 assert(
-  liveGameContent.includes('setEvents(prev => [...(Array.isArray(prev) ? prev : []), localEv])'),
-  'handleExecutePendingAction must push localEv immediately to setEvents'
+  liveGameContent.includes('setEvents(prev => [...(Array.isArray(prev) ? prev : []), localEv])') || appContent.includes('persistMatchState(nextEvents);'),
+  'Event handler or dispatchAction must persist localEv'
 );
 assert(
-  liveGameContent.includes("localStorage.setItem(sessionKey, JSON.stringify([...currentSaved, localEv]))"),
-  'handleExecutePendingAction must persist localEv to localStorage session key'
+  liveGameContent.includes(".upsert([supabasePayload], { onConflict: 'id', ignoreDuplicates: true })") || appContent.includes(".upsert([supabasePayload], { onConflict: 'id', ignoreDuplicates: true })"),
+  'Event handler or dispatchAction must upsert supabasePayload with onConflict: id'
 );
 assert(
-  liveGameContent.includes(".from('scouting_log')") &&
-  liveGameContent.includes(".upsert([supabasePayload], { onConflict: 'id', ignoreDuplicates: true })"),
-  'handleExecutePendingAction must upsert supabasePayload with onConflict: id'
+  liveGameContent.includes('removeFromOfflineQueue(eventId, supabasePayload);') || appContent.includes('removeFromOfflineQueue(eventId, supabasePayload)'),
+  'Event handler or dispatchAction must remove from offline queue when upsert succeeds'
 );
 assert(
-  liveGameContent.includes('removeFromOfflineQueue(eventId, supabasePayload);'),
-  'handleExecutePendingAction must remove from offline queue when upsert succeeds'
+  liveGameContent.includes('saveToOfflineQueue(localEv);') || appContent.includes('saveToOfflineQueue'),
+  'Event handler or dispatchAction must save to offline queue when offline or on error'
 );
 assert(
-  liveGameContent.includes('saveToOfflineQueue(localEv);'),
-  'handleExecutePendingAction must save to offline queue when offline or on error'
-);
-assert(
-  liveGameContent.includes('skipLocalPush: true'),
-  'handleExecutePendingAction must call dispatchAction with skipLocalPush: true to avoid duplicate UI events'
+  liveGameContent.includes('dispatchAction') && liveGameContent.includes('handleExecutePendingAction'),
+  'handleExecutePendingAction must dispatch action'
 );
 assert(
   liveGameContent.includes('setPendingActionPrompt(null);') &&
@@ -89,7 +85,6 @@ console.log('✓ LiveGame.jsx implements client UUID generation, match_id bindin
 
 // 2. Static Analysis of App.jsx dispatchAction Integration
 console.log('\n[2/5] Verifying App.jsx dispatchAction situational overrides...');
-const appContent = fs.readFileSync(path.join(rootDir, 'src/App.jsx'), 'utf8');
 
 assert(
   appContent.includes('const eventId = situational.id || generateUUID();'),

@@ -220,14 +220,13 @@ export function ensureFivePlayers(lineup = [], fallbackPlayers = []) {
 }
 
 /**
- * Event-Driven Time-Independent Plus/Minus (+/-) Engine
+ * Event-Driven Plus/Minus (+/-) Engine ("Euroleague Method")
  * 1. Every player starts at 0.
- * 2. Substitutions do NOT modify anyone's +/- (bench freezes accumulated +/-, entering player starts at 0 or previous stint).
- * 3. Only scoring events while a player is actively on court change +/-:
- *    - Team FT (+1), 2PT (+2), 3PT (+3) -> add to the 5 on-court players at that moment.
- *    - Opponent score (+1, +2, +3) -> subtract from the 5 on-court players at that moment.
- * 4. Derived purely from the chronological event stream (undo & delete safe).
- * 5. Mathematically guaranteed invariant: sum(plusMinus across all roster) === 5 * (teamScore - oppScore).
+ * 2. Does NOT rely on chronological substitution tracking or guessed starting lineups.
+ * 3. Evaluates event-level snapshotting:
+ *    - Team FT (+1), 2PT (+2), 3PT (+3) -> adds points to EVERY player in that event's on_court snapshot.
+ *    - Opponent score (+1, +2, +3) -> subtracts points from EVERY player in that event's on_court snapshot.
+ * 4. Derived purely from the event stream (safe against missing substitutions and retroactive reviews).
  */
 export function calculatePlusMinus(events = [], startingOnCourtNums = [], customRoster = []) {
   const safeEvents = Array.isArray(events) ? events : [];
@@ -252,13 +251,13 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
     });
   }
 
-  // Include any player appearing in event Number or onCourtPlayerIds
+  // Include any player appearing in event Number or on_court / onCourtPlayerIds / onCourtNums
   safeEvents.forEach(e => {
     const num = getNum(e);
     if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP') {
       if (plusMinusMap[num] === undefined) plusMinusMap[num] = 0;
     }
-    const oc = e.onCourtPlayerIds || e.onCourtNums;
+    const oc = e.on_court || e.onCourtPlayerIds || e.onCourtNums;
     if (Array.isArray(oc)) {
       oc.forEach(n => {
         const s = String(n).trim();
@@ -266,105 +265,63 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
           if (plusMinusMap[s] === undefined) plusMinusMap[s] = 0;
         }
       });
+    } else if (typeof oc === 'string' && oc.startsWith('{') && oc.endsWith('}')) {
+      oc.slice(1, -1).split(',').forEach(n => {
+        const s = String(n).trim().replace(/^"|"$/g, '');
+        if (s && s !== '-' && s !== 'TEAM' && s !== 'SUB' && s !== 'OPP') {
+          if (plusMinusMap[s] === undefined) plusMinusMap[s] = 0;
+        }
+      });
     }
   });
 
-  // Reconstruct active 5-man lineup chronologically from match start
-  let runningLineup = [];
-  if (Array.isArray(startingOnCourtNums) && startingOnCourtNums.length >= 5) {
-    runningLineup = ensureFivePlayers(startingOnCourtNums, allKnownPlayers);
-  } else if (safeEvents.length > 0 && Array.isArray(safeEvents[0].onCourtPlayerIds) && safeEvents[0].onCourtPlayerIds.length >= 5) {
-    runningLineup = ensureFivePlayers(safeEvents[0].onCourtPlayerIds, allKnownPlayers);
-  } else {
-    // Collect active players from early plays before any substitution
-    const earlyPlayers = [];
-    for (const e of safeEvents) {
-      const az = getAz(e);
-      const cat = String(e?.Category || e?.category || '');
-      if (cat === 'Substitution' || az.startsWith('SUB:') || az.startsWith('Sub:')) {
-        break;
-      }
-      const num = getNum(e);
-      if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP' && !earlyPlayers.includes(num)) {
-        earlyPlayers.push(num);
-      }
-    }
-
-    const seedLineup = earlyPlayers.length >= 5
-      ? earlyPlayers
-      : [
-          ...earlyPlayers,
-          ...((Array.isArray(startingOnCourtNums) && startingOnCourtNums.length > 0)
-            ? startingOnCourtNums
-            : (Array.isArray(customRoster) && customRoster.length >= 5)
-              ? customRoster.map(p => String(p.number))
-              : DEFAULT_MASTER_ROSTER.map(p => String(p.number)))
-        ];
-
-    runningLineup = ensureFivePlayers(seedLineup, allKnownPlayers);
-  }
-
-  // Iterate chronologically through events
+  // Calculate +/- strictly by iterating over the events:
+  // If event is a BBA Score, add points to EVERY player number in that event's on_court array.
+  // If event is an OPPONENT Score, subtract points from EVERY player number in that event's on_court array.
   safeEvents.forEach(ev => {
+    // 1. Extract on_court snapshot for this specific event
+    const rawOc = ev.on_court || ev.onCourtPlayerIds || ev.onCourtNums;
+    let onCourtList = [];
+    if (Array.isArray(rawOc)) {
+      onCourtList = rawOc.map(String).map(s => s.trim());
+    } else if (typeof rawOc === 'string' && rawOc.startsWith('{') && rawOc.endsWith('}')) {
+      onCourtList = rawOc.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+    }
+
+    let activeLineup = onCourtList.filter(n => Boolean(n) && n !== '-' && n !== 'TEAM' && n !== 'SUB' && n !== 'OPP');
+    
+    // Graceful fallback for legacy events prior to Phase 4.15 without on_court
+    if (activeLineup.length === 0 && Array.isArray(startingOnCourtNums) && startingOnCourtNums.length > 0) {
+      activeLineup = startingOnCourtNums.map(String).map(s => s.trim()).filter(n => Boolean(n) && n !== '-' && n !== 'TEAM' && n !== 'SUB' && n !== 'OPP');
+    }
+
+    if (activeLineup.length === 0) return;
+
+    // 2. Check for BBA Team Scoring
     const az = getAz(ev);
-    const cat = String(ev?.Category || ev?.category || '');
+    const cat = String(ev?.Category || ev?.category || '').toLowerCase();
+    const isOpp = isOpponentScoreEvent(ev) || cat === 'opponent' || az.toUpperCase().includes('OPP');
 
-    // Check for Substitution
-    if (cat === 'Substitution' || az.startsWith('SUB:') || az.startsWith('Sub:')) {
-      const match = az.match(/SUB:\s*#?([A-Za-z0-9_-]+).*?IN\s+for\s+#?([A-Za-z0-9_-]+)/i);
-      if (match) {
-        const inNum = match[1].trim();
-        const outNum = match[2].trim();
-        const set = new Set(runningLineup);
-        set.delete(outNum);
-        set.add(inNum);
-        runningLineup = ensureFivePlayers(Array.from(set), allKnownPlayers);
-        if (plusMinusMap[inNum] === undefined) plusMinusMap[inNum] = 0;
-        if (plusMinusMap[outNum] === undefined) plusMinusMap[outNum] = 0;
-      } else if (Array.isArray(ev.onCourtPlayerIds) && ev.onCourtPlayerIds.length >= 5) {
-        runningLineup = ensureFivePlayers(ev.onCourtPlayerIds, allKnownPlayers);
-      }
-      return; // Substitutions do NOT award or deduct plus/minus
-    }
-
-    // Determine 5 players on court for this event
-    let eventLineup = null;
-    const rawOc = ev.onCourtPlayerIds || ev.onCourtNums;
-    if (Array.isArray(rawOc) && rawOc.length >= 5) {
-      eventLineup = ensureFivePlayers(rawOc, allKnownPlayers);
-      runningLineup = eventLineup;
-    } else {
-      eventLineup = ensureFivePlayers(runningLineup, allKnownPlayers);
-    }
-
-    // Check for BBA Team Scoring
     let bbaPoints = 0;
-    if (az === '2PT Made' || az === '2PT Fatto') bbaPoints = 2;
-    else if (az === '3PT Made' || az === '3PT Fatto') bbaPoints = 3;
-    else if (az === 'FT Made' || az === 'TL Fatto') bbaPoints = 1;
+    if (!isOpp) {
+      if (az === '2PT Made' || az === '2PT Fatto') bbaPoints = 2;
+      else if (az === '3PT Made' || az === '3PT Fatto') bbaPoints = 3;
+      else if (az === 'FT Made' || az === 'TL Fatto') bbaPoints = 1;
+    }
 
-    // Check for Opponent Scoring
+    // 3. Check for Opponent Scoring
     let oppPoints = 0;
     if (isOpponentScoreEvent(ev)) {
       oppPoints = getOpponentPoints(ev);
     }
 
+    // 4. Update +/- tallies for all players present in this event's on_court array
     if (bbaPoints > 0) {
-      // Ensure scorer is inside eventLineup if known
-      const scorerNum = getNum(ev);
-      if (scorerNum && scorerNum !== '-' && scorerNum !== 'TEAM' && scorerNum !== 'OPP' && scorerNum !== 'SUB') {
-        if (!eventLineup.includes(scorerNum)) {
-          // Replace last non-scorer with scorer
-          eventLineup = [scorerNum, ...eventLineup.filter(n => n !== scorerNum)].slice(0, 5);
-          runningLineup = eventLineup;
-        }
-      }
-
-      eventLineup.forEach(pNum => {
+      activeLineup.forEach(pNum => {
         plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) + bbaPoints;
       });
     } else if (oppPoints > 0) {
-      eventLineup.forEach(pNum => {
+      activeLineup.forEach(pNum => {
         plusMinusMap[pNum] = (plusMinusMap[pNum] || 0) - oppPoints;
       });
     }

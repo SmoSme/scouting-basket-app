@@ -48,7 +48,7 @@ export function saveToOfflineQueue(eventData) {
     const Zone = eventData.Zone || eventData.zone || eventData.Zona || eventData.zona || '';
     const Match_Name = eventData.Match_Name || eventData.match_name || eventData.nome_partita || eventData.Nome_Partita || '';
 
-    const onCourtPlayerIds = eventData.onCourtPlayerIds || eventData.onCourtNums || null;
+    const onCourtPlayerIds = eventData.on_court || eventData.onCourtPlayerIds || eventData.onCourtNums || null;
     const isTransition = Boolean(eventData.isTransition);
     const defenseType = eventData.defenseType || null;
 
@@ -63,6 +63,7 @@ export function saveToOfflineQueue(eventData) {
       Category,
       Zone,
       Match_Name,
+      on_court: Array.isArray(onCourtPlayerIds) ? onCourtPlayerIds.map(String) : [],
       onCourtPlayerIds: Array.isArray(onCourtPlayerIds) ? onCourtPlayerIds.map(String) : [],
       isTransition,
       defenseType,
@@ -182,6 +183,7 @@ export async function syncOfflineQueue(onSyncSuccess) {
       const Category = item.Category || item.category || item.Categoria || item.categoria || '';
       const Zone = item.Zone || item.zone || item.Zona || item.zona || null;
       const Match_Name = item.Match_Name || item.match_name || item.nome_partita || item.Nome_Partita || '';
+      const on_court = Array.isArray(item.on_court) ? item.on_court.map(String) : (Array.isArray(item.onCourtPlayerIds) ? item.onCourtPlayerIds.map(String) : []);
 
       const p = {
         id,
@@ -196,6 +198,9 @@ export async function syncOfflineQueue(onSyncSuccess) {
       };
       if (match_id) {
         p.match_id = match_id;
+      }
+      if (on_court && on_court.length > 0) {
+        p.on_court = on_court;
       }
       return p;
     });
@@ -220,9 +225,20 @@ export async function syncOfflineQueue(onSyncSuccess) {
     }
     
     // 4. Perform idempotent upsert by primary key id (ignoreDuplicates: true prevents any duplicate rows)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('scouting_log')
       .upsert(payload, { onConflict: 'id', ignoreDuplicates: true });
+
+    // Graceful fallback if on_court column does not exist yet in DB schema cache
+    if (error && (error.code === '42703' || String(error.message || '').includes('on_court'))) {
+      console.warn('[OfflineSync] Column on_court pending in DB schema, retrying batch without on_court column:', error.message);
+      const fallbackPayload = payload.map(({ on_court, ...rest }) => rest);
+      const retryRes = await supabase
+        .from('scouting_log')
+        .upsert(fallbackPayload, { onConflict: 'id', ignoreDuplicates: true });
+      data = retryRes.data;
+      error = retryRes.error;
+    }
 
     // If success OR error code 23505 (unique_violation / already exists in DB):
     if (!error || error.code === '23505') {
