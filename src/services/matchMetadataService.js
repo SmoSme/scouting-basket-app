@@ -337,6 +337,10 @@ export async function syncMatchScores(matchIdOrName, homeScore = 0, awayScore = 
 /**
  * Finds or creates a normalized record in scouting_matches table.
  * Returns the match object containing { id, match_name, match_date, match_type, home_score, away_score, is_home }
+ * 
+ * STRICT IMMUTABILITY (Phase 4.16):
+ * If the match already exists in scouting_matches, NEVER update or overwrite match_date!
+ * The date must only be set on INITIAL creation, or modified via an explicit edit in Archive.
  */
 export async function findOrCreateScoutingMatch({
   matchName,
@@ -347,12 +351,6 @@ export async function findOrCreateScoutingMatch({
 }) {
   if (!matchName) return null;
 
-  const normalizedDate = formatDateForInput(matchDate) || new Date().toISOString().split('T')[0];
-  const normalizedType = matchType === 'Friendly' ? 'Friendly' : 'Official';
-  const { opponent, isHome: parsedIsHome } = parseMatchNameComponents(matchName);
-  const finalOpponent = opponentName || opponent || 'Avversario';
-  const finalIsHome = isHome !== undefined ? Boolean(isHome) : parsedIsHome;
-
   try {
     // 1. Try to find existing match by match_name
     const { data: existing, error: findError } = await supabase
@@ -362,29 +360,19 @@ export async function findOrCreateScoutingMatch({
       .maybeSingle();
 
     if (existing && existing.id) {
-      // If date or type changed, update them
-      const needsUpdate = (normalizedDate && existing.match_date !== normalizedDate) ||
-                          (existing.match_type !== normalizedType);
-      if (needsUpdate) {
-        const { data: updated } = await supabase
-          .from('scouting_matches')
-          .update({
-            match_date: normalizedDate || existing.match_date,
-            match_type: normalizedType,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id)
-          .select()
-          .maybeSingle();
-        if (updated) {
-          invalidateMatchCache({ matchName, updated });
-          return updated;
-        }
-      }
+      // STRICT IMMUTABILITY RULE (Phase 4.16):
+      // The match already exists! NEVER overwrite or mutate its match_date during event tracking.
+      // Postgres retains the persistent original value chosen by the coach.
       return existing;
     }
 
-    // 2. Insert new match record
+    // 2. Insert new match record ONLY upon INITIAL creation
+    const normalizedDate = formatDateForInput(matchDate) || new Date().toISOString().split('T')[0];
+    const normalizedType = matchType === 'Friendly' ? 'Friendly' : 'Official';
+    const { opponent, isHome: parsedIsHome } = parseMatchNameComponents(matchName);
+    const finalOpponent = opponentName || opponent || 'Avversario';
+    const finalIsHome = isHome !== undefined ? Boolean(isHome) : parsedIsHome;
+
     const newRecord = {
       match_name: matchName,
       match_date: normalizedDate,
@@ -406,7 +394,7 @@ export async function findOrCreateScoutingMatch({
       return created;
     }
 
-    // If duplicate race condition, fetch again
+    // If duplicate race condition, fetch again and return without modifying date
     if (insertError) {
       const { data: fallback } = await supabase
         .from('scouting_matches')
@@ -431,7 +419,8 @@ export async function saveMatchMetadataToSupabase(matchName, partialMetadata = {
 
   try {
     // 1. Try to update or upsert in the normalized scouting_matches table
-    const normalizedDate = formatDateForInput(partialMetadata.matchDate || partialMetadata.match_date);
+    const explicitDate = partialMetadata.matchDate || partialMetadata.match_date;
+    const normalizedDate = explicitDate ? formatDateForInput(explicitDate) : null;
     const normalizedType = (partialMetadata.matchType || partialMetadata.match_type) === 'Friendly' ? 'Friendly' : 'Official';
     const { opponent, isHome } = parseMatchNameComponents(matchName);
 
@@ -443,14 +432,22 @@ export async function saveMatchMetadataToSupabase(matchName, partialMetadata = {
         .maybeSingle();
 
       if (existingMatch) {
-        await supabase
-          .from('scouting_matches')
-          .update({
-            match_date: normalizedDate || existingMatch.match_date,
-            match_type: normalizedType,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingMatch.id);
+        const updatePayload = {
+          updated_at: new Date().toISOString()
+        };
+        // STRICT RULE (Phase 4.16): ONLY update match_date if explicitly passed in partialMetadata!
+        if (normalizedDate) {
+          updatePayload.match_date = normalizedDate;
+        }
+        if (partialMetadata.matchType || partialMetadata.match_type) {
+          updatePayload.match_type = normalizedType;
+        }
+        if (Object.keys(updatePayload).length > 1) { // more than just updated_at
+          await supabase
+            .from('scouting_matches')
+            .update(updatePayload)
+            .eq('id', existingMatch.id);
+        }
       } else {
         await supabase
           .from('scouting_matches')

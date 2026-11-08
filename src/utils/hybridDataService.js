@@ -631,7 +631,7 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
     // Find corresponding match in Supabase
     const matchedSupa = (supabaseMatches || []).find(sm => {
       if (matchedSupaNames.has(sm.name)) return false;
-      const sDate = (sm.matchDate || sm.createdAt || '').slice(0, 10);
+      const sDate = (sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || sm.createdAt || '')).slice(0, 10);
       const sName = (sm.name || '').toLowerCase();
       const sOpp = (sm.opponentName || sm.opponent || '').toLowerCase();
 
@@ -678,8 +678,8 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
     const diff = finalScored - finalConceded;
     const isWin = finalScored > finalConceded;
 
-    // Date override: Supabase manual date overrides FIP date
-    const manualDate = matchedSupa?.matchDate || supaMeta?.matchDate;
+    // Date override: Stored DB match_date takes absolute priority over FIP / fallbacks
+    const manualDate = matchedSupa?.match_date ? String(matchedSupa.match_date).split('T')[0] : (matchedSupa?.matchDate || supaMeta?.matchDate);
     const finalDate = (manualDate && manualDate !== 'n.a.') ? manualDate : (fipDate || 'n.a.');
 
     const displayName = matchedSupa?.name || (isHome ? `BBA vs ${oppName}` : `${oppName} vs BBA`);
@@ -843,7 +843,7 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
 
       // Search for match in Supabase by date or opponent name keyword
       const matchedSupa = (supabaseMatches || []).find(sm => {
-        const sDate = (sm.matchDate || sm.createdAt || '').slice(0, 10);
+        const sDate = (sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || sm.createdAt || '')).slice(0, 10);
         const sName = (sm.name || '').toLowerCase();
         const sOpp = (sm.opponentName || sm.opponent || '').toLowerCase();
 
@@ -885,7 +885,7 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       const diff = finalPts - finalOppPts;
       const isWin = finalPts > finalOppPts;
 
-      const manualDate = matchedSupa?.matchDate || supaMeta?.matchDate;
+      const manualDate = matchedSupa?.match_date ? String(matchedSupa.match_date).split('T')[0] : (matchedSupa?.matchDate || supaMeta?.matchDate);
       const finalDate = (manualDate && manualDate !== 'n.a.') ? manualDate : (fipDate || 'n.a.');
 
       const normalizedPartials = normalizeFipPartials(fipMatch.partials || [], isHome);
@@ -965,7 +965,7 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
     const isWin = pts > oppPts;
 
     // Strict date from scouting_matches: match_date takes absolute priority over createdAt
-    const rawDate = sm.match_date || sm.matchDate || supaMeta.matchDate || (sm.createdAt ? sm.createdAt.split('T')[0] : 'n.a.');
+    const rawDate = sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || supaMeta.matchDate || (sm.createdAt ? sm.createdAt.split('T')[0] : 'n.a.'));
     const sDate = rawDate && rawDate !== 'n.a.' ? String(rawDate).slice(0, 10) : 'n.a.';
     const sName = sm.name || sm.match_name || `Partita ${smIdx + 1}`;
     const oppName = sm.opponent || sm.opponentName || sm.opponent_name || sName.replace(/^BBA\s*(vs|contro|-)\s*/i, '').trim() || sName;

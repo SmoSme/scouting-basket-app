@@ -160,14 +160,20 @@ export default function App() {
         return;
       }
       try {
+        // Resolve match from DB without mutating or sending a fallback date
         const matchRecord = await findOrCreateScoutingMatch({
-          matchName: gameSession,
-          matchDate,
-          matchType
+          matchName: gameSession
         });
         if (!isCancelled && matchRecord?.id) {
           setCurrentMatchId(matchRecord.id);
           localStorage.setItem('current_match_id', matchRecord.id);
+          // Strict date preservation (Phase 4.16): hydrate local state from persistent DB match_date
+          if (matchRecord.match_date) {
+            setMatchDate(String(matchRecord.match_date).split('T')[0]);
+          }
+          if (matchRecord.match_type) {
+            setMatchType(matchRecord.match_type);
+          }
         }
       } catch (err) {
         console.warn('Could not resolve active session match_id:', err);
@@ -643,11 +649,14 @@ export default function App() {
     let activeMatchId = situational.match_id || currentMatchId || localStorage.getItem('current_match_id');
     if (!activeMatchId && gameSession) {
       try {
-        const m = await findOrCreateScoutingMatch({ matchName: gameSession, matchDate, matchType });
+        const m = await findOrCreateScoutingMatch({ matchName: gameSession });
         if (m?.id) {
           activeMatchId = m.id;
           setCurrentMatchId(m.id);
           localStorage.setItem('current_match_id', m.id);
+          if (m.match_date) {
+            setMatchDate(String(m.match_date).split('T')[0]);
+          }
         }
       } catch (err) {}
     }
@@ -780,11 +789,14 @@ export default function App() {
     let activeMatchId = currentMatchId || localStorage.getItem('current_match_id');
     if (!activeMatchId && gameSession) {
       try {
-        const m = await findOrCreateScoutingMatch({ matchName: gameSession, matchDate, matchType });
+        const m = await findOrCreateScoutingMatch({ matchName: gameSession });
         if (m?.id) {
           activeMatchId = m.id;
           setCurrentMatchId(m.id);
           localStorage.setItem('current_match_id', m.id);
+          if (m.match_date) {
+            setMatchDate(String(m.match_date).split('T')[0]);
+          }
         }
       } catch (err) {}
     }
