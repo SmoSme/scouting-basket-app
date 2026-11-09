@@ -3,7 +3,7 @@
     "fid": "211630",
     "name": "GG MONTORO ",
     "position": "1",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 2,
       "wonMatches": 2,
@@ -17,7 +17,7 @@
     "fid": "211034",
     "name": "PALL. BAIANO 1988",
     "position": "2",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 2,
       "wonMatches": 2,
@@ -31,7 +31,7 @@
     "fid": "209329",
     "name": "INDOMITA PAGANI ",
     "position": "3",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 2,
       "wonMatches": 2,
@@ -45,7 +45,7 @@
     "fid": "207455",
     "name": "S.L.Z. BASKET SOLOFRA",
     "position": "4",
-    "logo": "",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 2,
       "wonMatches": 1,
@@ -53,7 +53,7 @@
       "pointsPerGame": 59,
       "opponentsPointsPerGame": 58
     },
-    "continuityPct": 47
+    "continuityPct": 50
   },
   {
     "fid": "211634",
@@ -70,10 +70,24 @@
     "continuityPct": 0
   },
   {
+    "fid": "211628",
+    "name": "VISION SPORTS",
+    "position": "6",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 2,
+      "wonMatches": 1,
+      "lostMatches": 1,
+      "pointsPerGame": 58.5,
+      "opponentsPointsPerGame": 59
+    },
+    "continuityPct": 50
+  },
+  {
     "fid": "209328",
     "name": "TEKLA SCAFATI",
-    "position": "6",
-    "logo": "",
+    "position": "7",
+    "logo": "N/A",
     "stats": {
       "playedMatches": 0,
       "wonMatches": 0,
@@ -86,7 +100,7 @@
   {
     "fid": "211179",
     "name": "G.S. MINORI PALLACANESTRO",
-    "position": "7",
+    "position": "8",
     "logo": "N/A",
     "stats": {
       "playedMatches": 1,
@@ -95,21 +109,7 @@
       "pointsPerGame": 59,
       "opponentsPointsPerGame": 66
     },
-    "continuityPct": 83
-  },
-  {
-    "fid": "207456",
-    "name": "PONTE BASKET",
-    "position": "8",
-    "logo": "N/A",
-    "stats": {
-      "playedMatches": 1,
-      "wonMatches": 0,
-      "lostMatches": 1,
-      "pointsPerGame": 70,
-      "opponentsPointsPerGame": 79
-    },
-    "continuityPct": 25
+    "continuityPct": 86
   },
   {
     "fid": "211635",
@@ -126,18 +126,18 @@
     "continuityPct": 0
   },
   {
-    "fid": "211628",
-    "name": "VISION SPORTS",
+    "fid": "207456",
+    "name": "PONTE BASKET",
     "position": "10",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 1,
+      "playedMatches": 2,
       "wonMatches": 0,
-      "lostMatches": 1,
-      "pointsPerGame": 50,
-      "opponentsPointsPerGame": 63
+      "lostMatches": 2,
+      "pointsPerGame": 62.5,
+      "opponentsPointsPerGame": 73
     },
-    "continuityPct": 50
+    "continuityPct": 29
   },
   {
     "fid": "206399",

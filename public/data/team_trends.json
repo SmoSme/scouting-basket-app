@@ -102,11 +102,11 @@
   },
   "207455": {
     "global": {
-      "games": 2,
-      "pointsScored": 113,
-      "pointsConceded": 107,
+      "games": 3,
+      "pointsScored": 175,
+      "pointsConceded": 177,
       "wins": 1,
-      "losses": 1
+      "losses": 2
     },
     "home": {
       "games": 1,
@@ -116,35 +116,69 @@
       "losses": 1
     },
     "away": {
-      "games": 1,
-      "pointsScored": 57,
-      "pointsConceded": 51,
+      "games": 2,
+      "pointsScored": 119,
+      "pointsConceded": 121,
       "wins": 1,
-      "losses": 0
+      "losses": 1
     },
     "quarters": {
       "Q1": {
-        "scored": 28,
-        "conceded": 29
+        "scored": 42,
+        "conceded": 46
       },
       "Q2": {
-        "scored": 22,
-        "conceded": 21
+        "scored": 36,
+        "conceded": 35
       },
       "Q3": {
-        "scored": 34,
-        "conceded": 24
+        "scored": 50,
+        "conceded": 42
       },
       "Q4": {
-        "scored": 29,
-        "conceded": 33
+        "scored": 47,
+        "conceded": 54
       }
     },
     "streak": [
       "V",
+      "P",
       "P"
     ],
     "log": [
+      {
+        "matchFid": "1786125",
+        "date": "2026-11-08T18:00:00.000Z",
+        "round": "3",
+        "homeTeam": "PONTE BASKET",
+        "awayTeam": "S.L.Z. BASKET SOLOFRA",
+        "homeScore": 70,
+        "awayScore": 62,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 17,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 14,
+            "period": 2
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 16,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786119",
         "date": "2026-11-02T20:00:00.000Z",
@@ -215,39 +249,39 @@
     "quarterAverages": {
       "Q1": {
         "scoredAvg": 14,
-        "concededAvg": 14.5,
-        "diff": -0.5
+        "concededAvg": 15.3,
+        "diff": -1.3
       },
       "Q2": {
-        "scoredAvg": 11,
-        "concededAvg": 10.5,
-        "diff": 0.5
+        "scoredAvg": 12,
+        "concededAvg": 11.7,
+        "diff": 0.3
       },
       "Q3": {
-        "scoredAvg": 17,
-        "concededAvg": 12,
-        "diff": 5
+        "scoredAvg": 16.7,
+        "concededAvg": 14,
+        "diff": 2.7
       },
       "Q4": {
-        "scoredAvg": 14.5,
-        "concededAvg": 16.5,
-        "diff": -2
+        "scoredAvg": 15.7,
+        "concededAvg": 18,
+        "diff": -2.3
       }
     }
   },
   "207456": {
     "global": {
-      "games": 2,
-      "pointsScored": 125,
-      "pointsConceded": 146,
-      "wins": 0,
+      "games": 3,
+      "pointsScored": 195,
+      "pointsConceded": 208,
+      "wins": 1,
       "losses": 2
     },
     "home": {
-      "games": 1,
-      "pointsScored": 70,
-      "pointsConceded": 79,
-      "wins": 0,
+      "games": 2,
+      "pointsScored": 140,
+      "pointsConceded": 141,
+      "wins": 1,
       "losses": 1
     },
     "away": {
@@ -259,27 +293,61 @@
     },
     "quarters": {
       "Q1": {
-        "scored": 35,
-        "conceded": 32
+        "scored": 52,
+        "conceded": 46
       },
       "Q2": {
-        "scored": 31,
-        "conceded": 48
+        "scored": 45,
+        "conceded": 62
       },
       "Q3": {
-        "scored": 36,
-        "conceded": 28
+        "scored": 54,
+        "conceded": 44
       },
       "Q4": {
-        "scored": 23,
-        "conceded": 38
+        "scored": 44,
+        "conceded": 56
       }
     },
     "streak": [
       "P",
-      "P"
+      "P",
+      "V"
     ],
     "log": [
+      {
+        "matchFid": "1786125",
+        "date": "2026-11-08T18:00:00.000Z",
+        "round": "3",
+        "homeTeam": "PONTE BASKET",
+        "awayTeam": "S.L.Z. BASKET SOLOFRA",
+        "homeScore": 70,
+        "awayScore": 62,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 17,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 14,
+            "period": 2
+          },
+          {
+            "homeScore": 18,
+            "awayScore": 16,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 18,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786122",
         "date": "2026-11-04T20:15:00.000Z",
@@ -349,40 +417,40 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 17.5,
-        "concededAvg": 16,
-        "diff": 1.5
+        "scoredAvg": 17.3,
+        "concededAvg": 15.3,
+        "diff": 2
       },
       "Q2": {
-        "scoredAvg": 15.5,
-        "concededAvg": 24,
-        "diff": -8.5
+        "scoredAvg": 15,
+        "concededAvg": 20.7,
+        "diff": -5.7
       },
       "Q3": {
         "scoredAvg": 18,
-        "concededAvg": 14,
-        "diff": 4
+        "concededAvg": 14.7,
+        "diff": 3.3
       },
       "Q4": {
-        "scoredAvg": 11.5,
-        "concededAvg": 19,
-        "diff": -7.5
+        "scoredAvg": 14.7,
+        "concededAvg": 18.7,
+        "diff": -4
       }
     }
   },
   "209328": {
     "global": {
-      "games": 0,
-      "pointsScored": 0,
-      "pointsConceded": 0,
-      "wins": 0,
+      "games": 1,
+      "pointsScored": 49,
+      "pointsConceded": 47,
+      "wins": 1,
       "losses": 0
     },
     "home": {
-      "games": 0,
-      "pointsScored": 0,
-      "pointsConceded": 0,
-      "wins": 0,
+      "games": 1,
+      "pointsScored": 49,
+      "pointsConceded": 47,
+      "wins": 1,
       "losses": 0
     },
     "away": {
@@ -394,39 +462,96 @@
     },
     "quarters": {
       "Q1": {
-        "scored": 0,
-        "conceded": 0
+        "scored": 9,
+        "conceded": 12
       },
       "Q2": {
-        "scored": 0,
-        "conceded": 0
+        "scored": 14,
+        "conceded": 9
       },
       "Q3": {
-        "scored": 0,
-        "conceded": 0
+        "scored": 10,
+        "conceded": 19
       },
       "Q4": {
-        "scored": 0,
-        "conceded": 0
+        "scored": 16,
+        "conceded": 7
       }
     },
-    "streak": [],
-    "log": [],
-    "quarterAverages": {}
+    "streak": [
+      "V"
+    ],
+    "log": [
+      {
+        "matchFid": "1786124",
+        "date": "2026-11-07T17:00:00.000Z",
+        "round": "3",
+        "homeTeam": "TEKLA SCAFATI",
+        "awayTeam": "VISION SPORTS",
+        "homeScore": 49,
+        "awayScore": 47,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 9,
+            "awayScore": 12,
+            "period": 1
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 9,
+            "period": 2
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 19,
+            "period": 3
+          },
+          {
+            "homeScore": 16,
+            "awayScore": 7,
+            "period": 4
+          }
+        ]
+      }
+    ],
+    "quarterAverages": {
+      "Q1": {
+        "scoredAvg": 9,
+        "concededAvg": 12,
+        "diff": -3
+      },
+      "Q2": {
+        "scoredAvg": 14,
+        "concededAvg": 9,
+        "diff": 5
+      },
+      "Q3": {
+        "scoredAvg": 10,
+        "concededAvg": 19,
+        "diff": -9
+      },
+      "Q4": {
+        "scoredAvg": 16,
+        "concededAvg": 7,
+        "diff": 9
+      }
+    }
   },
   "209329": {
     "global": {
-      "games": 2,
-      "pointsScored": 127,
-      "pointsConceded": 116,
-      "wins": 1,
+      "games": 3,
+      "pointsScored": 197,
+      "pointsConceded": 178,
+      "wins": 2,
       "losses": 1
     },
     "home": {
-      "games": 1,
-      "pointsScored": 71,
-      "pointsConceded": 60,
-      "wins": 1,
+      "games": 2,
+      "pointsScored": 141,
+      "pointsConceded": 122,
+      "wins": 2,
       "losses": 0
     },
     "away": {
@@ -438,27 +563,61 @@
     },
     "quarters": {
       "Q1": {
-        "scored": 31,
-        "conceded": 27
+        "scored": 49,
+        "conceded": 47
       },
       "Q2": {
-        "scored": 32,
-        "conceded": 28
+        "scored": 49,
+        "conceded": 38
       },
       "Q3": {
-        "scored": 33,
-        "conceded": 30
+        "scored": 47,
+        "conceded": 41
       },
       "Q4": {
-        "scored": 31,
-        "conceded": 31
+        "scored": 52,
+        "conceded": 52
       }
     },
     "streak": [
       "V",
-      "P"
+      "P",
+      "V"
     ],
     "log": [
+      {
+        "matchFid": "1786126",
+        "date": "2026-11-07T19:00:00.000Z",
+        "round": "3",
+        "homeTeam": "INDOMITA PAGANI ",
+        "awayTeam": "G.S. MINORI PALLACANESTRO",
+        "homeScore": 70,
+        "awayScore": 62,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 18,
+            "awayScore": 20,
+            "period": 1
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 10,
+            "period": 2
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 11,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 21,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786119",
         "date": "2026-11-02T20:00:00.000Z",
@@ -528,40 +687,40 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 15.5,
-        "concededAvg": 13.5,
-        "diff": 2
+        "scoredAvg": 16.3,
+        "concededAvg": 15.7,
+        "diff": 0.7
       },
       "Q2": {
-        "scoredAvg": 16,
-        "concededAvg": 14,
-        "diff": 2
+        "scoredAvg": 16.3,
+        "concededAvg": 12.7,
+        "diff": 3.7
       },
       "Q3": {
-        "scoredAvg": 16.5,
-        "concededAvg": 15,
-        "diff": 1.5
+        "scoredAvg": 15.7,
+        "concededAvg": 13.7,
+        "diff": 2
       },
       "Q4": {
-        "scoredAvg": 15.5,
-        "concededAvg": 15.5,
+        "scoredAvg": 17.3,
+        "concededAvg": 17.3,
         "diff": 0
       }
     }
   },
   "211034": {
     "global": {
-      "games": 2,
-      "pointsScored": 109,
-      "pointsConceded": 92,
-      "wins": 2,
+      "games": 3,
+      "pointsScored": 173,
+      "pointsConceded": 151,
+      "wins": 3,
       "losses": 0
     },
     "home": {
-      "games": 1,
-      "pointsScored": 63,
-      "pointsConceded": 50,
-      "wins": 1,
+      "games": 2,
+      "pointsScored": 127,
+      "pointsConceded": 109,
+      "wins": 2,
       "losses": 0
     },
     "away": {
@@ -573,27 +732,61 @@
     },
     "quarters": {
       "Q1": {
-        "scored": 32,
-        "conceded": 23
+        "scored": 57,
+        "conceded": 37
       },
       "Q2": {
-        "scored": 21,
-        "conceded": 20
+        "scored": 30,
+        "conceded": 29
       },
       "Q3": {
-        "scored": 30,
-        "conceded": 20
+        "scored": 43,
+        "conceded": 40
       },
       "Q4": {
-        "scored": 26,
-        "conceded": 29
+        "scored": 43,
+        "conceded": 45
       }
     },
     "streak": [
       "V",
+      "V",
       "V"
     ],
     "log": [
+      {
+        "matchFid": "1786127",
+        "date": "2026-11-07T17:30:00.000Z",
+        "round": "3",
+        "homeTeam": "PALL. BAIANO 1988",
+        "awayTeam": "GG MONTORO ",
+        "homeScore": 64,
+        "awayScore": 59,
+        "isWin": true,
+        "isHomeGame": true,
+        "partials": [
+          {
+            "homeScore": 25,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 9,
+            "awayScore": 9,
+            "period": 2
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 20,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786121",
         "date": "2026-11-01T18:30:00.000Z",
@@ -663,34 +856,34 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 16,
-        "concededAvg": 11.5,
-        "diff": 4.5
+        "scoredAvg": 19,
+        "concededAvg": 12.3,
+        "diff": 6.7
       },
       "Q2": {
-        "scoredAvg": 10.5,
-        "concededAvg": 10,
-        "diff": 0.5
+        "scoredAvg": 10,
+        "concededAvg": 9.7,
+        "diff": 0.3
       },
       "Q3": {
-        "scoredAvg": 15,
-        "concededAvg": 10,
-        "diff": 5
+        "scoredAvg": 14.3,
+        "concededAvg": 13.3,
+        "diff": 1
       },
       "Q4": {
-        "scoredAvg": 13,
-        "concededAvg": 14.5,
-        "diff": -1.5
+        "scoredAvg": 14.3,
+        "concededAvg": 15,
+        "diff": -0.7
       }
     }
   },
   "211179": {
     "global": {
-      "games": 1,
-      "pointsScored": 59,
-      "pointsConceded": 66,
+      "games": 2,
+      "pointsScored": 121,
+      "pointsConceded": 136,
       "wins": 0,
-      "losses": 1
+      "losses": 2
     },
     "home": {
       "games": 1,
@@ -700,34 +893,68 @@
       "losses": 1
     },
     "away": {
-      "games": 0,
-      "pointsScored": 0,
-      "pointsConceded": 0,
+      "games": 1,
+      "pointsScored": 62,
+      "pointsConceded": 70,
       "wins": 0,
-      "losses": 0
+      "losses": 1
     },
     "quarters": {
       "Q1": {
-        "scored": 19,
-        "conceded": 10
+        "scored": 39,
+        "conceded": 28
       },
       "Q2": {
-        "scored": 15,
-        "conceded": 8
+        "scored": 25,
+        "conceded": 25
       },
       "Q3": {
-        "scored": 17,
-        "conceded": 18
+        "scored": 28,
+        "conceded": 32
       },
       "Q4": {
-        "scored": 8,
-        "conceded": 30
+        "scored": 29,
+        "conceded": 51
       }
     },
     "streak": [
+      "P",
       "P"
     ],
     "log": [
+      {
+        "matchFid": "1786126",
+        "date": "2026-11-07T19:00:00.000Z",
+        "round": "3",
+        "homeTeam": "INDOMITA PAGANI ",
+        "awayTeam": "G.S. MINORI PALLACANESTRO",
+        "homeScore": 70,
+        "awayScore": 62,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 18,
+            "awayScore": 20,
+            "period": 1
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 10,
+            "period": 2
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 11,
+            "period": 3
+          },
+          {
+            "homeScore": 21,
+            "awayScore": 21,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786120",
         "date": "2026-11-03T20:00:00.000Z",
@@ -764,34 +991,34 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 19,
-        "concededAvg": 10,
-        "diff": 9
+        "scoredAvg": 19.5,
+        "concededAvg": 14,
+        "diff": 5.5
       },
       "Q2": {
-        "scoredAvg": 15,
-        "concededAvg": 8,
-        "diff": 7
+        "scoredAvg": 12.5,
+        "concededAvg": 12.5,
+        "diff": 0
       },
       "Q3": {
-        "scoredAvg": 17,
-        "concededAvg": 18,
-        "diff": -1
+        "scoredAvg": 14,
+        "concededAvg": 16,
+        "diff": -2
       },
       "Q4": {
-        "scoredAvg": 8,
-        "concededAvg": 30,
-        "diff": -22
+        "scoredAvg": 14.5,
+        "concededAvg": 25.5,
+        "diff": -11
       }
     }
   },
   "211628": {
     "global": {
-      "games": 2,
-      "pointsScored": 117,
-      "pointsConceded": 118,
+      "games": 3,
+      "pointsScored": 164,
+      "pointsConceded": 167,
       "wins": 1,
-      "losses": 1
+      "losses": 2
     },
     "home": {
       "games": 1,
@@ -801,35 +1028,69 @@
       "losses": 0
     },
     "away": {
-      "games": 1,
-      "pointsScored": 50,
-      "pointsConceded": 63,
+      "games": 2,
+      "pointsScored": 97,
+      "pointsConceded": 112,
       "wins": 0,
-      "losses": 1
+      "losses": 2
     },
     "quarters": {
       "Q1": {
-        "scored": 23,
-        "conceded": 33
+        "scored": 35,
+        "conceded": 42
       },
       "Q2": {
-        "scored": 39,
-        "conceded": 21
+        "scored": 48,
+        "conceded": 35
       },
       "Q3": {
-        "scored": 27,
-        "conceded": 38
+        "scored": 46,
+        "conceded": 48
       },
       "Q4": {
-        "scored": 28,
-        "conceded": 26
+        "scored": 35,
+        "conceded": 42
       }
     },
     "streak": [
       "P",
-      "V"
+      "V",
+      "P"
     ],
     "log": [
+      {
+        "matchFid": "1786124",
+        "date": "2026-11-07T17:00:00.000Z",
+        "round": "3",
+        "homeTeam": "TEKLA SCAFATI",
+        "awayTeam": "VISION SPORTS",
+        "homeScore": 49,
+        "awayScore": 47,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 9,
+            "awayScore": 12,
+            "period": 1
+          },
+          {
+            "homeScore": 14,
+            "awayScore": 9,
+            "period": 2
+          },
+          {
+            "homeScore": 10,
+            "awayScore": 19,
+            "period": 3
+          },
+          {
+            "homeScore": 16,
+            "awayScore": 7,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786122",
         "date": "2026-11-04T20:15:00.000Z",
@@ -899,34 +1160,34 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 11.5,
-        "concededAvg": 16.5,
-        "diff": -5
+        "scoredAvg": 11.7,
+        "concededAvg": 14,
+        "diff": -2.3
       },
       "Q2": {
-        "scoredAvg": 19.5,
-        "concededAvg": 10.5,
-        "diff": 9
+        "scoredAvg": 16,
+        "concededAvg": 11.7,
+        "diff": 4.3
       },
       "Q3": {
-        "scoredAvg": 13.5,
-        "concededAvg": 19,
-        "diff": -5.5
+        "scoredAvg": 15.3,
+        "concededAvg": 16,
+        "diff": -0.7
       },
       "Q4": {
-        "scoredAvg": 14,
-        "concededAvg": 13,
-        "diff": 1
+        "scoredAvg": 11.7,
+        "concededAvg": 14,
+        "diff": -2.3
       }
     }
   },
   "211630": {
     "global": {
-      "games": 2,
-      "pointsScored": 159,
-      "pointsConceded": 128,
+      "games": 3,
+      "pointsScored": 218,
+      "pointsConceded": 192,
       "wins": 2,
-      "losses": 0
+      "losses": 1
     },
     "home": {
       "games": 1,
@@ -936,35 +1197,69 @@
       "losses": 0
     },
     "away": {
-      "games": 1,
-      "pointsScored": 79,
-      "pointsConceded": 70,
+      "games": 2,
+      "pointsScored": 138,
+      "pointsConceded": 134,
       "wins": 1,
-      "losses": 0
+      "losses": 1
     },
     "quarters": {
       "Q1": {
-        "scored": 42,
-        "conceded": 31
+        "scored": 56,
+        "conceded": 56
       },
       "Q2": {
-        "scored": 45,
-        "conceded": 40
+        "scored": 54,
+        "conceded": 49
       },
       "Q3": {
-        "scored": 37,
-        "conceded": 31
+        "scored": 57,
+        "conceded": 44
       },
       "Q4": {
-        "scored": 35,
-        "conceded": 26
+        "scored": 51,
+        "conceded": 43
       }
     },
     "streak": [
       "V",
-      "V"
+      "V",
+      "P"
     ],
     "log": [
+      {
+        "matchFid": "1786127",
+        "date": "2026-11-07T17:30:00.000Z",
+        "round": "3",
+        "homeTeam": "PALL. BAIANO 1988",
+        "awayTeam": "GG MONTORO ",
+        "homeScore": 64,
+        "awayScore": 59,
+        "isWin": false,
+        "isHomeGame": false,
+        "partials": [
+          {
+            "homeScore": 25,
+            "awayScore": 14,
+            "period": 1
+          },
+          {
+            "homeScore": 9,
+            "awayScore": 9,
+            "period": 2
+          },
+          {
+            "homeScore": 13,
+            "awayScore": 20,
+            "period": 3
+          },
+          {
+            "homeScore": 17,
+            "awayScore": 16,
+            "period": 4
+          }
+        ]
+      },
       {
         "matchFid": "1786123",
         "date": "2026-10-31T18:00:00.000Z",
@@ -1034,24 +1329,24 @@
     ],
     "quarterAverages": {
       "Q1": {
-        "scoredAvg": 21,
-        "concededAvg": 15.5,
-        "diff": 5.5
+        "scoredAvg": 18.7,
+        "concededAvg": 18.7,
+        "diff": 0
       },
       "Q2": {
-        "scoredAvg": 22.5,
-        "concededAvg": 20,
-        "diff": 2.5
+        "scoredAvg": 18,
+        "concededAvg": 16.3,
+        "diff": 1.7
       },
       "Q3": {
-        "scoredAvg": 18.5,
-        "concededAvg": 15.5,
-        "diff": 3
+        "scoredAvg": 19,
+        "concededAvg": 14.7,
+        "diff": 4.3
       },
       "Q4": {
-        "scoredAvg": 17.5,
-        "concededAvg": 13,
-        "diff": 4.5
+        "scoredAvg": 17,
+        "concededAvg": 14.3,
+        "diff": 2.7
       }
     }
   },
