@@ -1,71 +1,71 @@
 [
   {
-    "fid": "211630",
-    "name": "GG MONTORO ",
+    "fid": "211034",
+    "name": "PALL. BAIANO 1988",
     "position": "1",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 2,
-      "wonMatches": 2,
+      "playedMatches": 3,
+      "wonMatches": 3,
       "lostMatches": 0,
-      "pointsPerGame": 79.5,
-      "opponentsPointsPerGame": 64
-    },
-    "continuityPct": 0
-  },
-  {
-    "fid": "211034",
-    "name": "PALL. BAIANO 1988",
-    "position": "2",
-    "logo": "N/A",
-    "stats": {
-      "playedMatches": 2,
-      "wonMatches": 2,
-      "lostMatches": 0,
-      "pointsPerGame": 54.5,
-      "opponentsPointsPerGame": 46
+      "pointsPerGame": 57.666668,
+      "opponentsPointsPerGame": 50.333332
     },
     "continuityPct": 75
   },
   {
     "fid": "209329",
     "name": "INDOMITA PAGANI ",
-    "position": "3",
+    "position": "2",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 2,
-      "wonMatches": 2,
+      "playedMatches": 3,
+      "wonMatches": 3,
       "lostMatches": 0,
-      "pointsPerGame": 68,
-      "opponentsPointsPerGame": 60.5
+      "pointsPerGame": 68.666664,
+      "opponentsPointsPerGame": 61
     },
     "continuityPct": 0
   },
   {
-    "fid": "207455",
-    "name": "S.L.Z. BASKET SOLOFRA",
-    "position": "4",
+    "fid": "211630",
+    "name": "GG MONTORO ",
+    "position": "3",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 2,
-      "wonMatches": 1,
+      "playedMatches": 3,
+      "wonMatches": 2,
       "lostMatches": 1,
-      "pointsPerGame": 59,
-      "opponentsPointsPerGame": 58
+      "pointsPerGame": 72.666664,
+      "opponentsPointsPerGame": 64
     },
-    "continuityPct": 50
+    "continuityPct": 0
   },
   {
     "fid": "211634",
     "name": "BARONISSI BASKETBALL ACADEMY",
+    "position": "4",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 3,
+      "wonMatches": 2,
+      "lostMatches": 1,
+      "pointsPerGame": 62,
+      "opponentsPointsPerGame": 57
+    },
+    "continuityPct": 0
+  },
+  {
+    "fid": "209328",
+    "name": "TEKLA SCAFATI",
     "position": "5",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 2,
+      "playedMatches": 1,
       "wonMatches": 1,
-      "lostMatches": 1,
-      "pointsPerGame": 58.5,
-      "opponentsPointsPerGame": 58
+      "lostMatches": 0,
+      "pointsPerGame": 49,
+      "opponentsPointsPerGame": 47
     },
     "continuityPct": 0
   },
@@ -75,69 +75,69 @@
     "position": "6",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 2,
+      "playedMatches": 3,
       "wonMatches": 1,
-      "lostMatches": 1,
-      "pointsPerGame": 58.5,
-      "opponentsPointsPerGame": 59
+      "lostMatches": 2,
+      "pointsPerGame": 54.666668,
+      "opponentsPointsPerGame": 55.666668
     },
     "continuityPct": 50
   },
   {
-    "fid": "209328",
-    "name": "TEKLA SCAFATI",
+    "fid": "207456",
+    "name": "PONTE BASKET",
     "position": "7",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 0,
-      "wonMatches": 0,
-      "lostMatches": 0,
-      "pointsPerGame": 0,
-      "opponentsPointsPerGame": 0
+      "playedMatches": 3,
+      "wonMatches": 1,
+      "lostMatches": 2,
+      "pointsPerGame": 65,
+      "opponentsPointsPerGame": 69.333336
     },
-    "continuityPct": 0
+    "continuityPct": 29
+  },
+  {
+    "fid": "207455",
+    "name": "S.L.Z. BASKET SOLOFRA",
+    "position": "8",
+    "logo": "N/A",
+    "stats": {
+      "playedMatches": 3,
+      "wonMatches": 1,
+      "lostMatches": 2,
+      "pointsPerGame": 60,
+      "opponentsPointsPerGame": 62
+    },
+    "continuityPct": 50
   },
   {
     "fid": "211179",
     "name": "G.S. MINORI PALLACANESTRO",
-    "position": "8",
+    "position": "9",
     "logo": "N/A",
     "stats": {
-      "playedMatches": 1,
+      "playedMatches": 2,
       "wonMatches": 0,
-      "lostMatches": 1,
-      "pointsPerGame": 59,
-      "opponentsPointsPerGame": 66
+      "lostMatches": 2,
+      "pointsPerGame": 60.5,
+      "opponentsPointsPerGame": 68
     },
     "continuityPct": 86
   },
   {
     "fid": "211635",
     "name": "CITTADELLA DELLO SPORT",
-    "position": "9",
+    "position": "10",
     "logo": "",
     "stats": {
-      "playedMatches": 2,
+      "playedMatches": 3,
       "wonMatches": 0,
-      "lostMatches": 2,
-      "pointsPerGame": 51,
-      "opponentsPointsPerGame": 58.5
+      "lostMatches": 3,
+      "pointsPerGame": 52.333332,
+      "opponentsPointsPerGame": 62
     },
     "continuityPct": 0
-  },
-  {
-    "fid": "207456",
-    "name": "PONTE BASKET",
-    "position": "10",
-    "logo": "N/A",
-    "stats": {
-      "playedMatches": 2,
-      "wonMatches": 0,
-      "lostMatches": 2,
-      "pointsPerGame": 62.5,
-      "opponentsPointsPerGame": 73
-    },
-    "continuityPct": 29
   },
   {
     "fid": "206399",
