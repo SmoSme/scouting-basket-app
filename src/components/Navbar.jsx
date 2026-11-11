@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Archive as ArchiveIcon, TrendingUp, Trophy,
-  WifiOff, Edit3, Settings, Shield, Lock, LogOut, Languages, Upload 
+  WifiOff, Edit3, Settings, Shield, Lock, LogOut, Languages, Upload, Play 
 } from 'lucide-react';
 import bbaLogo from '../assets/bba-logo.png';
 import { useLanguage } from '../context/LanguageContext';
@@ -161,21 +161,32 @@ export default function Navbar({
             </button>
           )}
 
-          {/* Match Name Display */}
+          {/* Match Name Display / New Match Shortcut */}
           {isAdmin ? (
-            <button
-              onClick={onEditGameSession}
-              className="flex items-center gap-1.5 bg-[#011C20] border border-[#0CA17A]/40 hover:border-[#0CA17A] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
-              title="Edit Game Session Name"
-            >
-              <span className="text-[10px] text-[#A7F3D0] uppercase font-black hidden sm:inline">{t('match')}</span>
-              <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-medium">{gameSession || 'Match'}</span>
-              <Edit3 className="w-3 h-3 text-[#A7F3D0] flex-none" />
-            </button>
+            gameSession ? (
+              <button
+                onClick={onEditGameSession}
+                className="flex items-center gap-1.5 bg-[#011C20] border border-[#0CA17A]/40 hover:border-[#0CA17A] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                title="Edit Game Session Name"
+              >
+                <span className="text-[10px] text-[#A7F3D0] uppercase font-black hidden sm:inline">{t('match')}</span>
+                <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-medium">{gameSession}</span>
+                <Edit3 className="w-3 h-3 text-[#A7F3D0] flex-none" />
+              </button>
+            ) : (
+              <button
+                onClick={onEditGameSession}
+                className="flex items-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#0CA17A]"
+                title={language === 'it' ? 'Inizia Nuova Partita' : 'Start New Match'}
+              >
+                <Play className="w-3 h-3 text-white fill-white flex-none" />
+                <span className="text-[11px] font-black uppercase tracking-wider">{language === 'it' ? 'Nuova Partita' : 'New Match'}</span>
+              </button>
+            )
           ) : (
             <div className="flex items-center gap-1 bg-[#011C20] border border-[#0CA17A]/30 px-2.5 py-1.5 rounded-lg text-xs">
               <span className="text-[10px] text-[#A7F3D0] uppercase font-bold hidden sm:inline">{t('match')}</span>
-              <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-bold">{gameSession || 'Match'}</span>
+              <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-bold">{gameSession || (language === 'it' ? 'Nessuna' : 'None')}</span>
             </div>
           )}
 

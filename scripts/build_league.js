@@ -2,8 +2,8 @@
  * scripts/build_league.js
  * 
  * Master FIP Data Pipeline built on GraphQL Introspection (scripts/schema.json).
- * Extracts official standings and opponent rosters with deep historical player
- * career stats (UniquePlayer cross-referenced with players array).
+ * Extracts official standings, enriched rosters (with exact integer totals),
+ * and match logs complete with per-game player boxscores and Q1 starters.
  * 
  * Usage:
  *   node scripts/build_league.js
@@ -86,7 +86,7 @@ const QUERY_GET_STANDINGS = `query GetStandings($projectKey: String, $provider: 
   }
 }`;
 
-// Step 2a: Opponent Players Query
+// Step 2a: Team Players Query (Upgraded with exact integer totals, omitting buggy NON_NULL freeThrowsMadeAVG)
 const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competitionFid: String!, $teamFid: String!) {
   playersByTeam(projectKey: $projectKey, competitionFid: $competitionFid, teamFid: $teamFid) {
     fid
@@ -108,9 +108,12 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         points
         pointsPerGame
         freeThrowsMade
+        freeThrowsFailed
         freeThrowsPercentage
         inArcThrowsMade
+        inArcThrowsFailed
         outArcThrowsMade
+        outArcThrowsFailed
         fouls
         plusMinus
         rebounds
@@ -122,10 +125,13 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
         points
         pointsPerGame
         freeThrowsMade
+        freeThrowsFailed
         freeThrowsPercentage
         inArcThrowsMade
+        inArcThrowsFailed
         inArcThrowsMadePerGame
         outArcThrowsMade
+        outArcThrowsFailed
         outArcThrowsMadePerGame
         fouls
         plusMinus
@@ -136,20 +142,38 @@ const QUERY_GET_PLAYERS = `query GetPlayersByTeam($projectKey: String!, $competi
     }
     stats {
       games
+      points
       pointsPerGame
       pointsAVG
+      fouls
       foulsAVG
+      receivedFouls
+      inArcThrowsMade
+      inArcThrowsFailed
       inArcThrowsPercentage
-      outArcThrowsPercentage
       inArcThrowsAVG
+      outArcThrowsMade
+      outArcThrowsFailed
+      outArcThrowsPercentage
       outArcThrowsAVG
+      freeThrowsMade
+      freeThrowsFailed
       freeThrowsPercentage
+      plusMinus
       plusMinusAVG
+      rebounds
       reboundsAVG
+      offensiveRebounds
+      defensiveRebounds
+      assists
       assistsAVG
+      steals
       stealsAVG
+      blocks
       blocksAVG
+      turnovers
       turnoversAVG
+      timePlayed
       timePlayedAVG
     }
   }
@@ -160,18 +184,18 @@ const QUERY_UNIQUE_PLAYER = `query UniquePlayer($uniquePlayerId: String!, $hideP
   uniquePlayer(id: $uniquePlayerId, hidePersonalData: $hidePersonalData) {
     id
     stats {
-      games points pointsPerGame freeThrowsMade freeThrowsPercentage inArcThrowsMade outArcThrowsMade fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
+      games points pointsPerGame freeThrowsMade freeThrowsFailed freeThrowsPercentage inArcThrowsMade outArcThrowsMade fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
     }
     players {
       season { id name }
-      competition { name }
-      team { name }
+      competition { fid name }
+      team { fid name }
       stats {
-        games pointsPerGame freeThrowsPercentage inArcThrowsAVG outArcThrowsAVG foulsAVG plusMinusAVG reboundsAVG assistsAVG
+        games points pointsPerGame freeThrowsMade freeThrowsFailed freeThrowsPercentage inArcThrowsMade inArcThrowsAVG outArcThrowsMade outArcThrowsAVG fouls foulsAVG plusMinus plusMinusAVG reboundsAVG assistsAVG timePlayed timePlayedAVG
       }
     }
     seasonStats {
-      seasonId games points pointsPerGame freeThrowsPercentage inArcThrowsMadePerGame outArcThrowsMadePerGame fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
+      seasonId games points pointsPerGame freeThrowsMade freeThrowsFailed freeThrowsPercentage inArcThrowsMade inArcThrowsMadePerGame outArcThrowsMade outArcThrowsMadePerGame fouls foulsPerGame plusMinus plusMinusPerGame rebounds reboundsPerGame assists assistsPerGame
     }
   }
 }`;
@@ -192,11 +216,63 @@ const QUERY_TEAM_MATCHES = `query GetTeamMatches($projectKey: String!, $competit
   }
 }`;
 
-// Step 4: Q1 Match Boxscore Query (Starting Frequency Analyzer)
+// Step 4: Full Match Boxscore + Q1 Boxscore Query in a single request
 const QUERY_MATCH_BOXSCORE = `query GetMatchBoxscore($projectKey: String!, $matchFid: String!) {
   matchBy(projectKey: $projectKey, fid: $matchFid) {
     fid
-    boxscore(periods: [1]) {
+    fullBoxscore: boxscore {
+      homeTeam {
+        team { fid name }
+        players {
+          player { fid name lastName number starting captain }
+          stats {
+            timePlayed
+            points
+            inArcThrowsMade
+            inArcThrowsFailed
+            outArcThrowsMade
+            outArcThrowsFailed
+            freeThrowsMade
+            freeThrowsFailed
+            fouls
+            receivedFouls
+            plusMinus
+            offensiveRebounds
+            defensiveRebounds
+            assists
+            turnovers
+            steals
+            blocks
+          }
+        }
+      }
+      awayTeam {
+        team { fid name }
+        players {
+          player { fid name lastName number starting captain }
+          stats {
+            timePlayed
+            points
+            inArcThrowsMade
+            inArcThrowsFailed
+            outArcThrowsMade
+            outArcThrowsFailed
+            freeThrowsMade
+            freeThrowsFailed
+            fouls
+            receivedFouls
+            plusMinus
+            offensiveRebounds
+            defensiveRebounds
+            assists
+            turnovers
+            steals
+            blocks
+          }
+        }
+      }
+    }
+    q1Boxscore: boxscore(periods: [1]) {
       homeTeam {
         team { fid name }
         players {
@@ -215,10 +291,6 @@ const QUERY_MATCH_BOXSCORE = `query GetMatchBoxscore($projectKey: String!, $matc
   }
 }`;
 
-/**
- * Execute a GraphQL query with timeout controller and exponential backoff retry.
- * Handles HTTP 503, 502, 429, timeouts, and network stalls stealthily.
- */
 async function executeGraphQL(operationName, query, variables, { maxRetries = 3, baseDelay = 3000, timeoutMs = 15000 } = {}) {
   let attempt = 0;
 
@@ -290,16 +362,10 @@ async function executeGraphQL(operationName, query, variables, { maxRetries = 3,
   }
 }
 
-/**
- * Helper to rate-limit requests
- */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Normalizes team names for continuity comparison
- */
 function normalizeTeamName(name) {
   if (!name) return '';
   return name.toLowerCase()
@@ -316,46 +382,34 @@ function isSameTeam(nameA, nameB) {
   return a === b || a.includes(b) || b.includes(a);
 }
 
-/**
- * Calculates Roster Continuity dynamically.
- * It finds the most recent season for the team, determines the previous season string 
- * (e.g. from "2026/2027" to "2025/2026"), and checks what percentage of the current 
- * roster played for the exact same team in that preceding season.
- */
 function calculateRosterContinuity(players, currentTeamName) {
   if (!Array.isArray(players) || players.length === 0) return 0;
 
-  // 1. Determine the active season from the first valid player
   let activeSeason = '';
   for (const p of players) {
     const history = p.history || p.uniquePlayer?.history || [];
     if (history.length > 0 && history[0].seasonName) {
-      activeSeason = history[0].seasonName; // Array is sorted newest to oldest
+      activeSeason = history[0].seasonName;
       break;
     }
   }
 
   if (!activeSeason || !activeSeason.includes('/')) return 0;
 
-  // 2. Calculate the previous season string (e.g. "2026/2027" -> "2025/2026")
   const [startYear, endYear] = activeSeason.split('/').map(Number);
   const prevSeasonName = `${startYear - 1}/${endYear - 1}`;
 
-  // 3. Count retained players
   let retainedCount = 0;
   for (const p of players) {
     const history = p.history || p.uniquePlayer?.history || [];
     const playedForSameTeamLastYear = history.find(h => {
       const isPrevSeason = String(h.seasonName) === prevSeasonName;
-      
-      // Look through the nested teams array for a match
       let matchedTeam = false;
       if (h.teams && Array.isArray(h.teams)) {
         matchedTeam = h.teams.some(t => isSameTeam(t.teamName, currentTeamName));
       } else {
         matchedTeam = isSameTeam(h.teamName, currentTeamName);
       }
-
       return isPrevSeason && matchedTeam;
     });
 
@@ -367,28 +421,6 @@ function calculateRosterContinuity(players, currentTeamName) {
   return Math.round((retainedCount / players.length) * 100);
 }
 
-/**
- * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history.
- * Strictly cross-references seasonId from seasonStats with the players array
- * to extract actual text season.name and team.name.
- * NO artificial/hallucinated fallbacks!
- * 
- * Schema per item:
- * {
- *   seasonId: string,
- *   seasonName: string, // e.g. "2025/2026"
- *   teamName: string,   // e.g. "GG MONTORO"
- *   games: number,      // GP
- *   pointsPerGame: number, // PTS/G
- *   twoMadePerGame: number, // 2PM/G
- *   threeMadePerGame: number, // 3PM/G
- *   freeThrowsPercentage: number | null // FT%
- * }
- */
-/**
- * Merges uniquePlayer.seasonStats with uniquePlayer.players into player.history.
- * Supports multi-team seasons (e.g. Under 19 + DR2) and sorts newest to oldest.
- */
 function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {}) {
   const up = uniquePlayer || {};
   const rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
@@ -413,7 +445,10 @@ function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {})
 
       return {
         teamName: fullTeamName,
+        competitionFid: st.competition?.fid || null,
+        teamFid: st.team?.fid || null,
         games: Number(tStats.games || 0),
+        points: tStats.points != null ? Number(tStats.points) : Math.round(Number(tStats.games || 0) * Number(tStats.pointsPerGame || 0)),
         pointsPerGame: tStats.pointsPerGame != null ? Number(tStats.pointsPerGame) : 0,
         twoMadePerGame: tStats.inArcThrowsAVG != null ? Number(tStats.inArcThrowsAVG) : 0,
         threeMadePerGame: tStats.outArcThrowsAVG != null ? Number(tStats.outArcThrowsAVG) : 0,
@@ -452,45 +487,38 @@ function buildPlayerHistory(uniquePlayer, fallbackTeamName = '', seasonMap = {})
   return history;
 }
 
-/**
- * Normalizes player career data strictly from merged API data.
- * No hardcoded years, no synthetic "BASKET BELLIZZI" or artificial 2024/2025 rows.
- */
 function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
   const up = p.uniquePlayer || {};
   let stats = up.stats || null;
   let rawSeasonStats = Array.isArray(up.seasonStats) ? up.seasonStats : [];
   let playersList = Array.isArray(up.players) ? up.players : [];
 
-  // Se mancano le stats live globali, le calcoliamo dalle stats di quest'anno
   if (!stats && p.stats) {
     const s = p.stats;
     const games = Number(s.games || 0);
     const ppg = Number(s.pointsPerGame || s.pointsAVG || 0);
     stats = {
       games,
-      points: Math.round(games * ppg),
+      points: s.points != null ? Number(s.points) : Math.round(games * ppg),
       pointsPerGame: ppg,
       freeThrowsMade: s.freeThrowsMade != null ? Number(s.freeThrowsMade) : 0,
+      freeThrowsFailed: s.freeThrowsFailed != null ? Number(s.freeThrowsFailed) : 0,
       freeThrowsPercentage: s.freeThrowsPercentage != null ? Number(s.freeThrowsPercentage) : null,
-      inArcThrowsMade: Math.round(games * Number(s.inArcThrowsAVG || 0)),
-      outArcThrowsMade: Math.round(games * Number(s.outArcThrowsAVG || 0)),
-      fouls: Math.round(games * Number(s.foulsAVG || 0)),
-      plusMinus: Math.round(games * Number(s.plusMinusAVG || 0))
+      inArcThrowsMade: s.inArcThrowsMade != null ? Number(s.inArcThrowsMade) : Math.round(games * Number(s.inArcThrowsAVG || 0)),
+      outArcThrowsMade: s.outArcThrowsMade != null ? Number(s.outArcThrowsMade) : Math.round(games * Number(s.outArcThrowsAVG || 0)),
+      fouls: s.fouls != null ? Number(s.fouls) : Math.round(games * Number(s.foulsAVG || 0)),
+      plusMinus: s.plusMinus != null ? Number(s.plusMinus) : Math.round(games * Number(s.plusMinusAVG || 0))
     };
   }
 
-  // Cross-reference seasonId with players array to resolve seasonName
-  // NOTE: Added filter(Boolean) and a check to prevent "Cannot read properties of null"
   let seasonStats = rawSeasonStats.filter(Boolean).map(s => {
     if (!s) return null;
     const rawId = s.seasonId != null ? String(s.seasonId) : '';
     const matchedPlayer = playersList.find(pl => pl && pl.season && String(pl.season.id) === rawId);
     const seasonName = matchedPlayer?.season?.name || seasonMap[rawId] || s.seasonName || rawId;
     return { ...s, seasonId: rawId, seasonName };
-  }).filter(Boolean); // Double check to remove any empty maps
+  }).filter(Boolean);
 
-  // If player has games in active season but seasonStats was empty, create single current season entry
   if (seasonStats.length === 0 && stats && stats.games > 0) {
     const activeSeasonId = String(COMPETITION_ID || '14544');
     const activeSeasonName = seasonMap[activeSeasonId] || activeSeasonId;
@@ -498,9 +526,13 @@ function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
       seasonId: activeSeasonId,
       seasonName: activeSeasonName,
       games: stats.games,
+      points: stats.points,
       pointsPerGame: stats.pointsPerGame,
+      freeThrowsMade: stats.freeThrowsMade,
       freeThrowsPercentage: stats.freeThrowsPercentage,
+      inArcThrowsMade: stats.inArcThrowsMade,
       inArcThrowsMadePerGame: stats.games > 0 ? Number((stats.inArcThrowsMade / stats.games).toFixed(1)) : 0,
+      outArcThrowsMade: stats.outArcThrowsMade,
       outArcThrowsMadePerGame: stats.games > 0 ? Number((stats.outArcThrowsMade / stats.games).toFixed(1)) : 0
     }];
 
@@ -512,7 +544,6 @@ function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
     }
   }
 
-  // Build history strictly from merged API data
   const history = buildPlayerHistory({ seasonStats, players: playersList }, fallbackTeamName, seasonMap);
 
   return {
@@ -524,9 +555,6 @@ function normalizeUniquePlayer(p, idx, seasonMap = {}, fallbackTeamName = '') {
   };
 }
 
-/**
- * Master Data Pipeline
- */
 async function buildLeaguePipeline() {
   console.log('=====================================================');
   console.log('🏀 FIP STATS MASTER DATA EXTRACTION PIPELINE');
@@ -560,7 +588,7 @@ async function buildLeaguePipeline() {
   // -----------------------------------------------------------------
   // STEP 0: Fetch Seasons Dictionary
   // -----------------------------------------------------------------
-  console.log('\n[0/2] 📅 Fetching Seasons Dictionary...');
+  console.log('\n[0/4] 📅 Fetching Seasons Dictionary...');
   const seasonMap = {
     "14544": "2025/2026"
   };
@@ -579,9 +607,9 @@ async function buildLeaguePipeline() {
   }
 
   // -----------------------------------------------------------------
-  // STEP 1: Standings Extraction (Direct GetStandings query)
+  // STEP 1: Standings Extraction
   // -----------------------------------------------------------------
-  console.log('\n[1/2] 📊 Fetching League Standings...');
+  console.log('\n[1/4] 📊 Fetching League Standings...');
 
   try {
     const standingsData = await executeGraphQL(
@@ -608,7 +636,6 @@ async function buildLeaguePipeline() {
     }
   }
 
-  // Save the basic GetStandings data directly to league_standings.json
   const basicStandings = standings.map(team => ({
     fid: String(team.fid),
     name: team.name,
@@ -619,20 +646,14 @@ async function buildLeaguePipeline() {
 
   fs.writeFileSync(standingsFilePath, JSON.stringify(basicStandings, null, 2), 'utf-8');
   console.log(`  ✅ Extracted ${basicStandings.length} teams.`);
-  console.log(`  💾 Saved directly to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
 
   // -----------------------------------------------------------------
-  // STEP 2: Team Rosters & Deep UniquePlayer Historical Career Stats (All Teams including BBA)
+  // STEP 2: Team Rosters & Deep UniquePlayer Historical Career Stats
   // -----------------------------------------------------------------
-  console.log('\n[2/4] 👥 Fetching Team Rosters & Deep UniquePlayer Career Stats (including BBA)...');
+  console.log('\n[2/4] 👥 Fetching Team Rosters & Exact PlayerStats Totals (including BBA)...');
 
-  // Process all teams including BBA for full self-scouting
   const teamsToProcess = basicStandings;
-
-  console.log(`  Found ${teamsToProcess.length} total teams to process (including BBA team ${BBA_TEAM_ID}).`);
-
   const rostersDictionary = { ...existingRosters };
-  let totalPlayersProcessed = 0;
 
   for (let i = 0; i < teamsToProcess.length; i++) {
     const opponent = teamsToProcess[i];
@@ -644,11 +665,9 @@ async function buildLeaguePipeline() {
     let players = [];
     try {
       if (i > 0) {
-        console.log(`    ⏳ Pacing: attesa 1500ms tra squadre...`);
         await sleep(1500);
       }
 
-      // Estrae il roster di base
       const playersData = await executeGraphQL(
         'GetPlayersByTeam',
         QUERY_GET_PLAYERS,
@@ -658,13 +677,12 @@ async function buildLeaguePipeline() {
 
       const livePlayers = playersData?.playersByTeam || [];
 
-      // Estrae la storia profonda di OGNI giocatore incrociando lo UniquePlayer
       for (let pIdx = 0; pIdx < livePlayers.length; pIdx++) {
         const p = livePlayers[pIdx];
         const upId = p.uniquePlayer?.id;
         
         if (upId) {
-          await sleep(300); // Pausa leggera per non farsi bloccare dal server
+          await sleep(300);
           try {
             const deepUpData = await executeGraphQL(
               'UniquePlayer',
@@ -673,7 +691,6 @@ async function buildLeaguePipeline() {
               { maxRetries: 2, baseDelay: 1000, timeoutMs: 8000 }
             );
             
-            // Inietta i dati storici reali nel giocatore
             if (deepUpData?.uniquePlayer) {
               p.uniquePlayer.stats = deepUpData.uniquePlayer.stats || p.uniquePlayer.stats;
               p.uniquePlayer.players = deepUpData.uniquePlayer.players || [];
@@ -701,7 +718,6 @@ async function buildLeaguePipeline() {
       }
     }
 
-    // Enrich players with uniquePlayer and career seasonStats
     const enrichedPlayers = (players || []).map((p, pIdx) => {
       const up = normalizeUniquePlayer(p, pIdx, seasonMap, teamName);
       return {
@@ -711,17 +727,13 @@ async function buildLeaguePipeline() {
       };
     });
 
-    // Calculate Roster Continuity percentage for this team
     const continuityPct = calculateRosterContinuity(enrichedPlayers, opponent.name);
     opponent.continuityPct = continuityPct;
-    console.log(`    📊 Roster Continuity: ${continuityPct}%`);
 
     rostersDictionary[teamFid] = enrichedPlayers;
-    totalPlayersProcessed += enrichedPlayers.length;
-    console.log(`    ✅ Stored ${enrichedPlayers.length} players with historical career splits & history array.`);
+    console.log(`    ✅ Stored ${enrichedPlayers.length} players.`);
   }
 
-  // Also inject continuity for our BBA team (70% core retention default if 0 players)
   const bbaTeam = basicStandings.find(t => 
     String(t.fid) === String(BBA_TEAM_ID) || 
     (t.name && t.name.toLowerCase().includes('baronissi')) ||
@@ -731,14 +743,12 @@ async function buildLeaguePipeline() {
     bbaTeam.continuityPct = 70;
   }
 
-  // Save updated standings with continuityPct
   fs.writeFileSync(standingsFilePath, JSON.stringify(basicStandings, null, 2), 'utf-8');
-  console.log(`\n💾 [1/3] Saved league standings with retention to: ${path.relative(ROOT_DIR, standingsFilePath)}`);
 
   // -----------------------------------------------------------------
-  // STEP 3: Opponent Match Trends & Quarter Splits Pipeline
+  // STEP 3: Match Trends & Quarter Splits Pipeline
   // -----------------------------------------------------------------
-  console.log('\n[3/4] 📈 Processing Advanced Opponent Trends (Home/Away & Quarters)...');
+  console.log('\n[3/4] 📈 Processing Match Trends (Home/Away & Quarters)...');
   const trendsFilePath = path.join(DATA_DIR, 'team_trends.json');
   let existingTrends = {};
   try {
@@ -781,6 +791,16 @@ async function buildLeaguePipeline() {
         log: []
       };
 
+      // Preserve any already-fetched per-match players boxscore from existingTrends
+      const oldLogMap = new Map();
+      if (existingTrends[oppFid]?.log) {
+        existingTrends[oppFid].log.forEach(oldM => {
+          if (oldM.matchFid && Array.isArray(oldM.players) && oldM.players.length > 0) {
+            oldLogMap.set(String(oldM.matchFid), oldM.players);
+          }
+        });
+      }
+
       for (const match of closedMatches) {
         const isHome = match.homeTeam?.fid === oppFid;
         const scores = match.scores?.total;
@@ -800,7 +820,8 @@ async function buildLeaguePipeline() {
           awayScore: scores.awayScore,
           isWin: isWin,
           isHomeGame: isHome,
-          partials: match.scores?.partials || []
+          partials: match.scores?.partials || [],
+          players: oldLogMap.get(String(match.fid)) || []
         });
 
         stats.global.games++;
@@ -851,14 +872,10 @@ async function buildLeaguePipeline() {
     }
   }
 
-  // Save team_trends.json
-  fs.writeFileSync(trendsFilePath, JSON.stringify(allTrends, null, 2), 'utf-8');
-  console.log(`💾 [2/3] Saved team trends to: ${path.relative(ROOT_DIR, trendsFilePath)}`);
-
   // -----------------------------------------------------------------
-  // STEP 4: Starter Frequencies Analysis & Boxscore Extraction
+  // STEP 4: Full Match Boxscores & Q1 Starting Frequencies
   // -----------------------------------------------------------------
-  console.log('\n[4/4] 🏀 Analyzing Starting Frequencies from Q1 Boxscores...');
+  console.log('\n[4/4] 🏀 Extracting Full Match Boxscores & Q1 Starting Frequencies...');
   const startersFilePath = path.join(DATA_DIR, 'team_starters.json');
   let existingStarters = {};
   try {
@@ -873,8 +890,8 @@ async function buildLeaguePipeline() {
     const matchLog = teamData.log || [];
     if (matchLog.length === 0) continue;
 
-    // Check if already analyzed in existingStarters
-    if (existingStarters[teamFid] && existingStarters[teamFid].totalMatches >= matchLog.length) {
+    const needsBoxscores = matchLog.some(m => !Array.isArray(m.players) || m.players.length === 0);
+    if (!needsBoxscores && existingStarters[teamFid] && existingStarters[teamFid].totalMatches >= matchLog.length) {
       allTeamStarters[teamFid] = existingStarters[teamFid];
       continue;
     }
@@ -887,7 +904,7 @@ async function buildLeaguePipeline() {
       if (!matchFid) continue;
 
       try {
-        await sleep(1000);
+        await sleep(800);
         const boxData = await executeGraphQL(
           'GetMatchBoxscore',
           QUERY_MATCH_BOXSCORE,
@@ -896,33 +913,74 @@ async function buildLeaguePipeline() {
         );
 
         const matchObj = boxData?.matchBy?.[0];
-        const boxscore = matchObj?.boxscore;
-        if (!boxscore) continue;
+        if (!matchObj) continue;
 
-        const isHome = boxscore.homeTeam?.team?.fid === teamFid;
-        const teamBox = isHome ? boxscore.homeTeam : boxscore.awayTeam;
-        const rawPlayers = teamBox?.players || [];
-        if (rawPlayers.length === 0) continue;
+        // A. Store Full Per-Game Player Boxscore inside matchItem.players
+        const fullBox = matchObj.fullBoxscore;
+        if (fullBox) {
+          const isHomeFull = fullBox.homeTeam?.team?.fid === teamFid;
+          const teamFullBox = isHomeFull ? fullBox.homeTeam : fullBox.awayTeam;
+          const fullPlayers = teamFullBox?.players || [];
 
-        const sortedByTime = rawPlayers
-          .filter(p => p && p.player)
-          .sort((a, b) => (b.stats?.timePlayed || 0) - (a.stats?.timePlayed || 0));
-
-        const top5 = sortedByTime.slice(0, 5);
-        totalAnalyzedMatches++;
-
-        for (const p of top5) {
-          const pFid = p.player.fid;
-          if (!playerStarterCounts[pFid]) {
-            playerStarterCounts[pFid] = {
-              fid: pFid,
+          matchItem.players = fullPlayers
+            .filter(p => p && p.player)
+            .map(p => ({
+              fid: p.player.fid,
               name: p.player.name,
               lastName: p.player.lastName,
               number: p.player.number,
-              startsCount: 0
-            };
+              starting: Boolean(p.player.starting),
+              captain: Boolean(p.player.captain),
+              timePlayed: Number(p.stats?.timePlayed ?? 0),
+              pts: Number(p.stats?.points ?? 0),
+              points: Number(p.stats?.points ?? 0),
+              fg2m: Number(p.stats?.inArcThrowsMade ?? 0),
+              fg2Failed: Number(p.stats?.inArcThrowsFailed ?? 0),
+              fg3m: Number(p.stats?.outArcThrowsMade ?? 0),
+              fg3Failed: Number(p.stats?.outArcThrowsFailed ?? 0),
+              ftm: Number(p.stats?.freeThrowsMade ?? 0),
+              ftFailed: Number(p.stats?.freeThrowsFailed ?? 0),
+              fta: Number(p.stats?.freeThrowsMade ?? 0) + Number(p.stats?.freeThrowsFailed ?? 0),
+              fouls: Number(p.stats?.fouls ?? 0),
+              receivedFouls: Number(p.stats?.receivedFouls ?? 0),
+              plusMinus: Number(p.stats?.plusMinus ?? 0),
+              oreb: Number(p.stats?.offensiveRebounds ?? 0),
+              dreb: Number(p.stats?.defensiveRebounds ?? 0),
+              ast: Number(p.stats?.assists ?? 0),
+              tov: Number(p.stats?.turnovers ?? 0),
+              stl: Number(p.stats?.steals ?? 0),
+              blk: Number(p.stats?.blocks ?? 0)
+            }));
+        }
+
+        // B. Q1 Starting Lineup Frequency
+        const q1Box = matchObj.q1Boxscore;
+        if (q1Box) {
+          const isHomeQ1 = q1Box.homeTeam?.team?.fid === teamFid;
+          const teamQ1Box = isHomeQ1 ? q1Box.homeTeam : q1Box.awayTeam;
+          const rawQ1Players = teamQ1Box?.players || [];
+          if (rawQ1Players.length > 0) {
+            const sortedByTime = rawQ1Players
+              .filter(p => p && p.player)
+              .sort((a, b) => (b.stats?.timePlayed || 0) - (a.stats?.timePlayed || 0));
+
+            const top5 = sortedByTime.slice(0, 5);
+            totalAnalyzedMatches++;
+
+            for (const p of top5) {
+              const pFid = p.player.fid;
+              if (!playerStarterCounts[pFid]) {
+                playerStarterCounts[pFid] = {
+                  fid: pFid,
+                  name: p.player.name,
+                  lastName: p.player.lastName,
+                  number: p.player.number,
+                  startsCount: 0
+                };
+              }
+              playerStarterCounts[pFid].startsCount++;
+            }
           }
-          playerStarterCounts[pFid].startsCount++;
         }
       } catch (boxErr) {
         // Continue on single match error
@@ -942,6 +1000,10 @@ async function buildLeaguePipeline() {
       };
     }
   }
+
+  // Save updated team_trends.json (now enriched with per-match player boxscores!)
+  fs.writeFileSync(trendsFilePath, JSON.stringify(allTrends, null, 2), 'utf-8');
+  console.log(`💾 [2/3] Saved team trends & per-match boxscores to: ${path.relative(ROOT_DIR, trendsFilePath)}`);
 
   // Save intermediate team_starters.json
   fs.writeFileSync(startersFilePath, JSON.stringify(allTeamStarters, null, 2), 'utf-8');
@@ -983,19 +1045,14 @@ async function buildLeaguePipeline() {
     });
   }
 
-  // Save final enriched league_rosters.json
   fs.writeFileSync(rostersFilePath, JSON.stringify(rostersDictionary, null, 2), 'utf-8');
   console.log(`💾 [3/3] Saved enriched rosters with startPercentage to: ${path.relative(ROOT_DIR, rostersFilePath)}`);
 
   console.log('\n=====================================================');
   console.log('🎉 PIPELINE COMPLETED SUCCESSFULLY!');
-  console.log(`   1. Standings:        ${basicStandings.length} teams (${path.relative(ROOT_DIR, standingsFilePath)})`);
-  console.log(`   2. Enriched Rosters: ${Object.keys(rostersDictionary).length} teams (${path.relative(ROOT_DIR, rostersFilePath)})`);
-  console.log(`   3. Team Trends:      ${Object.keys(allTrends).length} teams (${path.relative(ROOT_DIR, trendsFilePath)})`);
   console.log('=====================================================\n');
 }
 
-// Execute
 buildLeaguePipeline().catch(err => {
   console.error('\n❌ Unhandled pipeline error:', err);
   process.exit(1);

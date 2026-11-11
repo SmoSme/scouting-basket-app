@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ScoreboardHeader from '../components/ScoreboardHeader';
 import PlayerSelector from '../components/PlayerSelector';
 import CourtPitchMap from '../components/CourtPitchMap';
@@ -10,7 +11,7 @@ import { COURT_ZONES } from '../data/roster';
 import { 
   Play, CheckSquare, Square, Plus, Users, UserPlus, Trash2, X, 
   ArrowLeftRight, Eye, Shield, Lock, Target, Check, Sparkles, Zap, AlertCircle,
-  Home, Navigation, ChevronRight
+  Home, Navigation, ChevronRight, Radio, Archive as ArchiveIcon
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../services/supabase';
@@ -63,6 +64,7 @@ export default function LiveGame({
 }) {
   const isAdmin = authRole === 'admin';
   const { language, t } = useLanguage();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'
   const [mobileView, setMobileView] = useState('COURT'); // 'COURT' | 'ROSTER' | 'STREAM'
   const [showMobileQuickSub, setShowMobileQuickSub] = useState(false);
@@ -659,16 +661,14 @@ export default function LiveGame({
                   </p>
                 </div>
               </div>
-              {gameSession && (
-                <button
-                  type="button"
-                  onClick={() => setShowSessionModal(false)}
-                  className="text-[#022D32]/60 hover:text-[#022D32] p-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9] transition-colors cursor-pointer"
-                  aria-label="Close"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowSessionModal(false)}
+                className="text-[#022D32]/60 hover:text-[#022D32] p-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#DDF3E9] transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <form onSubmit={handleStartSession} className="space-y-4">
@@ -915,15 +915,13 @@ export default function LiveGame({
                   <Play className="w-4 h-4 text-[#0CA17A]" />
                   <span>{t('start_match_session_btn', 'START MATCH SESSION')}</span>
                 </button>
-                {gameSession && (
-                  <button
-                    type="button"
-                    onClick={() => setShowSessionModal(false)}
-                    className="bg-white text-[#022D32] font-bold px-5 py-3 rounded-xl text-xs hover:bg-[#F8F9FA] transition-all border border-[#DDF3E9] cursor-pointer"
-                  >
-                    {t('cancel', 'CANCEL')}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowSessionModal(false)}
+                  className="bg-white text-[#022D32] font-bold px-5 py-3 rounded-xl text-xs hover:bg-[#F8F9FA] transition-all border border-[#DDF3E9] cursor-pointer"
+                >
+                  {t('cancel', 'CANCEL')}
+                </button>
               </div>
             </form>
           </div>
@@ -1538,8 +1536,64 @@ export default function LiveGame({
         </div>
       )}
 
-      {/* Top Scoreboard Status Bar */}
-      <ScoreboardHeader
+      {/* 7. IDLE STATE PLACEHOLDER OR ACTIVE COURTSIDE SCOUTING CONSOLE */}
+      {!gameSession ? (
+        <div className="flex-1 min-h-0 overflow-y-auto flex items-center justify-center p-4 sm:p-8 bg-[#F8F9FA]">
+          <div className="max-w-xl w-full bg-white rounded-3xl border border-[#DDF3E9] p-6 sm:p-10 shadow-xl text-center space-y-6 animate-fade-in my-auto">
+            {/* Top Icon Badge */}
+            <div className="relative mx-auto w-20 h-20 rounded-3xl bg-[#DDF3E9] border-2 border-[#0CA17A]/30 flex items-center justify-center shadow-inner">
+              <Radio className="w-10 h-10 text-[#0CA17A]" />
+              <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0CA17A] opacity-75" />
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-[#0CA17A] border-2 border-white" />
+              </span>
+            </div>
+
+            {/* Status Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#DDF3E9]/80 text-[#022D32] border border-[#0CA17A]/30 text-xs font-black uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-[#0CA17A]" />
+              <span>LIVE SCOUTING CONSOLE • IDLE</span>
+            </div>
+
+            {/* Typography */}
+            <div className="space-y-2.5">
+              <h2 className="text-xl sm:text-2xl font-black text-[#022D32] uppercase tracking-tight">
+                {language === 'it' ? 'Nessuna Partita in Corso' : 'No Active Match'}
+              </h2>
+              <p className="text-xs sm:text-sm text-[#022D32]/70 font-medium leading-relaxed max-w-md mx-auto">
+                {language === 'it'
+                  ? 'Nessuna partita attualmente in fase di scouting dal vivo. Puoi avviare una nuova partita ora oppure sfogliare l\'archivio per riprendere un match già iniziato.'
+                  : 'No active match currently being scouted. You can start a new match now or browse the archive to resume an existing match session.'}
+              </p>
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowSessionModal(true)}
+                  className="flex-1 flex items-center justify-center gap-2.5 bg-[#022D32] hover:bg-[#022D32]/90 text-white font-black py-3.5 px-5 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer border border-[#022D32]"
+                >
+                  <Play className="w-4 h-4 text-[#0CA17A] fill-[#0CA17A]" />
+                  <span>{language === 'it' ? 'Inizia Nuova Partita' : 'Start New Match'}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => navigate('/archive')}
+                className="flex-1 flex items-center justify-center gap-2.5 bg-[#DDF3E9] hover:bg-[#DDF3E9]/80 text-[#022D32] font-black py-3.5 px-5 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer border border-[#0CA17A]/40"
+              >
+                <ArchiveIcon className="w-4 h-4 text-[#0CA17A]" />
+                <span>{language === 'it' ? 'Sfoglia Archivio per Riprendere' : 'Browse Archive to Resume'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Top Scoreboard Status Bar */}
+          <ScoreboardHeader
         selectedPlayer={selectedPlayer}
         events={events}
         currentQuarter={currentQuarter}
@@ -1619,9 +1673,10 @@ export default function LiveGame({
             </button>
             <button
               onClick={handleResetGame}
-              className="text-[11px] bg-white hover:bg-[#F8F9FA] text-[#022D32] font-semibold px-2.5 py-1 rounded transition-colors border border-[#DDF3E9]"
+              className="text-[11px] bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 font-bold px-2.5 py-1 rounded transition-colors border border-rose-200 shadow-xs cursor-pointer"
+              title={language === 'it' ? 'Termina la sessione di scouting dal vivo e torna alla schermata iniziale' : 'Close live session and return to idle state'}
             >
-              {t('clear_screen')}
+              {language === 'it' ? 'CHIUDI SESSIONE' : 'END SESSION'}
             </button>
           </div>
         ) : (
@@ -1927,6 +1982,8 @@ export default function LiveGame({
           <div className="w-2 h-2 rounded-full bg-[#0CA17A] animate-ping flex-none" />
           <span>REGISTRATO</span>
         </div>
+      )}
+        </>
       )}
     </div>
   );

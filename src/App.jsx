@@ -14,7 +14,8 @@ import {
   saveMatchMetadataToSupabase,
   findOrCreateScoutingMatch,
   syncMatchScores,
-  updateScoutingMatchInSupabase
+  updateScoutingMatchInSupabase,
+  getMatchEvents
 } from './services/matchMetadataService';
 import {
   calculatePlusMinus,
@@ -331,7 +332,7 @@ export default function App() {
   });
   const [toastMsg, setToastMsg] = useState(null);
   const [showRosterModal, setShowRosterModal] = useState(false);
-  const [showSessionModal, setShowSessionModal] = useState(!localStorage.getItem('current_game_session'));
+  const [showSessionModal, setShowSessionModal] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [offlineQueueCount, setOfflineQueueCount] = useState(() => {
     return cleanStaleOfflineQueue(localStorage.getItem('current_game_session') || '').length;
@@ -1093,11 +1094,144 @@ export default function App() {
   };
 
   const handleResetGame = () => {
-    if (window.confirm(`Clear current live screen tracking for "${gameSession || 'Current Match'}"? (Archived database data will remain safe in Supabase)`)) {
+    const sessionName = gameSession || 'Current Match';
+    if (window.confirm(`Terminare la sessione di scouting dal vivo per "${sessionName}"? Lo schermo tornerà allo stato iniziale. I dati rimarranno archiviati al sicuro in Supabase.`)) {
+      setGameSession('');
+      setCurrentMatchId(null);
+      localStorage.removeItem('current_game_session');
+      localStorage.removeItem('current_match_id');
       persistMatchState([]);
       setSelectedPlayer(null);
-      showToast('Live screen cleared. Match remains saved in Archive.');
+      showToast('Sessione chiusa. Schermata tornata in attesa.');
     }
+  };
+
+  const handleResumeMatchSession = async (targetMatch, matchEvents = null) => {
+    if (!targetMatch) return;
+    const matchName = targetMatch.name || targetMatch.match_name || targetMatch.Nome_Partita;
+    const matchId = targetMatch.id || targetMatch.match_id;
+    if (!matchName) return;
+
+    // 1. Set basic match session state
+    setGameSession(matchName);
+    localStorage.setItem('current_game_session', matchName);
+
+    if (matchId) {
+      setCurrentMatchId(matchId);
+      localStorage.setItem('current_match_id', matchId);
+    }
+
+    const resolvedDate = targetMatch.match_date || targetMatch.matchDate || (targetMatch.createdAt ? String(targetMatch.createdAt).split('T')[0] : new Date().toISOString().split('T')[0]);
+    const resolvedType = targetMatch.match_type || targetMatch.matchType || 'Official';
+    setMatchDate(resolvedDate);
+    setMatchType(resolvedType);
+
+    // 2. Fetch or resolve events for this match
+    let currentEvents = Array.isArray(matchEvents) && matchEvents.length > 0 ? matchEvents : [];
+    if (currentEvents.length === 0 && matchId) {
+      try {
+        currentEvents = await getMatchEvents(matchId);
+      } catch (err) {
+        console.warn('Error fetching events during match resumption:', err);
+      }
+    }
+    if (currentEvents.length === 0 && matchName) {
+      try {
+        const { data } = await supabase
+          .from('scouting_log')
+          .select('*')
+          .eq('Match_Name', matchName)
+          .order('id', { ascending: true });
+        if (Array.isArray(data) && data.length > 0) {
+          currentEvents = data;
+        }
+      } catch (err) {}
+    }
+
+    // 3. Query the most recent event to find the snapshot of on_court
+    let lastOnCourt = null;
+    let lastQuarter = null;
+
+    if (currentEvents.length > 0) {
+      for (let i = currentEvents.length - 1; i >= 0; i--) {
+        const ev = currentEvents[i];
+        if (!lastQuarter && (ev.Quarter || ev.quarter)) {
+          lastQuarter = ev.Quarter || ev.quarter;
+        }
+        const oc = ev.on_court || ev.onCourtPlayerIds || ev.onCourtNums;
+        if (Array.isArray(oc) && oc.length >= 5) {
+          lastOnCourt = oc.map(String);
+          break;
+        } else if (typeof oc === 'string' && oc.startsWith('{') && oc.endsWith('}')) {
+          const parsed = oc.slice(1, -1).split(',').map(s => s.replace(/"/g, '').trim()).filter(Boolean);
+          if (parsed.length >= 5) {
+            lastOnCourt = parsed;
+            break;
+          }
+        }
+      }
+    }
+
+    // If not found in loaded events, make a targeted query for the most recent event with on_court
+    if (!lastOnCourt && matchId) {
+      try {
+        const { data: lastRows } = await supabase
+          .from('scouting_log')
+          .select('*')
+          .eq('match_id', matchId)
+          .order('id', { ascending: false })
+          .limit(10);
+
+        if (Array.isArray(lastRows)) {
+          for (const row of lastRows) {
+            if (!lastQuarter && (row.Quarter || row.quarter)) {
+              lastQuarter = row.Quarter || row.quarter;
+            }
+            const oc = row.on_court || row.onCourtPlayerIds || row.onCourtNums;
+            if (Array.isArray(oc) && oc.length >= 5) {
+              lastOnCourt = oc.map(String);
+              break;
+            } else if (typeof oc === 'string' && oc.startsWith('{') && oc.endsWith('}')) {
+              const parsed = oc.slice(1, -1).split(',').map(s => s.replace(/"/g, '').trim()).filter(Boolean);
+              if (parsed.length >= 5) {
+                lastOnCourt = parsed;
+                break;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Error querying last event on_court from Supabase:', err);
+      }
+    }
+
+    // 4. Restore on-court players if found
+    if (lastOnCourt && lastOnCourt.length >= 5) {
+      const fiveOnCourt = lastOnCourt.slice(0, 5);
+      updateOnCourtPlayerNums(fiveOnCourt);
+
+      // Ensure all 5 on-court players exist in activeRoster
+      const activeNumSet = new Set(activeRoster.map(p => String(p.number)));
+      const missing = fiveOnCourt.filter(n => !activeNumSet.has(String(n)));
+      if (missing.length > 0) {
+        const toAdd = missing.map(n => {
+          const fromMaster = masterRoster.find(mp => String(mp.number) === String(n));
+          return fromMaster || { number: String(n), name: `Player #${n}`, pos: 'N/A' };
+        });
+        updateActiveRoster([...activeRoster, ...toAdd]);
+      }
+    }
+
+    if (lastQuarter) {
+      setCurrentQuarter(lastQuarter);
+    }
+
+    // 5. Update local events state and cache
+    const normalized = normalizeEvents(currentEvents);
+    persistMatchState(normalized);
+    setSelectedPlayer(null);
+
+    showToast(`Ripresa partita: "${matchName}"`);
   };
 
   const handleDeleteEvent = async (eventId, eventIndex, targetEventObj = null) => {
@@ -1309,7 +1443,13 @@ export default function App() {
           />
           <Route
             path="/archive"
-            element={<Archive showToast={showToast} authRole={authRole} />}
+            element={
+              <Archive 
+                showToast={showToast} 
+                authRole={authRole} 
+                onResumeMatch={handleResumeMatchSession} 
+              />
+            }
           />
           <Route
             path="/trends"

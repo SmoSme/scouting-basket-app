@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { 
   Archive as ArchiveIcon, Download, Trash2, RefreshCw, Calendar, 
-  Hash, FileSpreadsheet, Eye, Pencil, Loader2
+  Hash, FileSpreadsheet, Eye, Pencil, Loader2, Play
 } from 'lucide-react';
 import MatchReviewModal from '../components/MatchReviewModal';
 import { 
@@ -15,7 +16,8 @@ import {
 import { getOfflineQueue, clearOfflineQueue } from '../services/offlineSync';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function Archive({ showToast, authRole = 'admin' }) {
+export default function Archive({ showToast, authRole = 'admin', onResumeMatch }) {
+  const navigate = useNavigate();
   const { language, t } = useLanguage();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,14 @@ export default function Archive({ showToast, authRole = 'admin' }) {
   // Match Review Modal State
   const [reviewMatch, setReviewMatch] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+
+  const handleResumeMatch = (targetMatch, matchEvents) => {
+    if (onResumeMatch) {
+      onResumeMatch(targetMatch, matchEvents);
+    }
+    setReviewMatch(null);
+    navigate('/');
+  };
 
   useEffect(() => {
     fetchArchive();
@@ -444,6 +454,17 @@ export default function Archive({ showToast, authRole = 'admin' }) {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 pt-3 border-t border-[#DDF3E9]">
+                {authRole === 'admin' && (
+                  <button
+                    onClick={() => handleResumeMatch(m, m.events)}
+                    disabled={actionLoading === m.id || actionLoading === m.name}
+                    className="flex items-center justify-center gap-1.5 bg-[#DDF3E9] hover:bg-[#0CA17A] text-[#022D32] hover:text-white font-extrabold py-2.5 px-3 rounded-xl text-xs transition-all active:scale-95 cursor-pointer border border-[#0CA17A]/40 shadow-xs"
+                    title={language === 'it' ? 'Riprendi Live Scouting' : 'Resume Live Scouting'}
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current flex-none" />
+                    <span>{language === 'it' ? 'Riprendi' : 'Resume'}</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleOpenMatchReview(m)}
                   disabled={actionLoading === m.id || actionLoading === m.name}
@@ -487,6 +508,7 @@ export default function Archive({ showToast, authRole = 'admin' }) {
           onUpdateMatchDate={handleUpdateMatchDate}
           onUpdateMatchType={handleUpdateMatchType}
           onUpdateScoreOverride={handleUpdateScoreOverride}
+          onResumeScouting={handleResumeMatch}
         />
       )}
     </div>

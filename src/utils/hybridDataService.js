@@ -4,13 +4,14 @@
  * BBA Hybrid Analytics Engine
  * Unifies 100% reliable FIP Official Data with Supabase Advanced Scouting Data.
  * 
- * Hierarchy of Truth:
- * - FIP is King: Points, Scores, Partials, Record, Minutes, Starting %, FG%/FT%, Fouls.
- * - Supabase is King: Assists (AST), Turnovers (TOV), Rebounds (OREB, DREB, DRB%), Steals, Blocks, eFG%.
+ * Hierarchy of Truth (Bottom-Up Match-by-Match):
+ * - Scouting (Supabase) is King for every match where scouting exists.
+ * - FIP Official Data is used as fallback for Official matches without scouting (FIP ONLY),
+ *   and for FIP-exclusive metrics (Minutes Played, Starting %).
  */
 
 import { DEFAULT_MASTER_ROSTER } from '../data/roster.js';
-import { calculateMatchAnalytics } from './basketballAnalytics.js';
+import { calculateMatchAnalytics, calculatePlusMinus } from './basketballAnalytics.js';
 
 export const BBA_TEAM_ID = '211634';
 
@@ -126,7 +127,6 @@ export function calculatePhysicalStamina(target = null) {
     };
   }
 
-  // If array of active matches (dynamically filtered)
   if (Array.isArray(target)) {
     if (target.length === 0) {
       return {
@@ -223,7 +223,6 @@ export function calculatePhysicalStamina(target = null) {
     };
   }
 
-  // Fallback to legacy fipTrends object
   const q = target.quarters;
   if (!q) {
     return {
@@ -297,7 +296,6 @@ export function formatPlayerFullName(firstName = '', lastName = '') {
   const lowerF = fName.toLowerCase();
   const lowerL = lName.toLowerCase();
 
-  // If firstName already includes or ends with lastName, avoid duplication
   if (lowerF.includes(lowerL) || lowerF.endsWith(lowerL)) {
     return fName;
   }
@@ -325,58 +323,227 @@ export function formatAverage(val) {
 }
 
 /**
- * Extracts per-player aggregates and efficiency from Supabase raw scouting logs
+ * Extracts per-player aggregates, efficiency, and court shoot zones from Supabase raw scouting logs.
+ * Also stores a per-match breakdown (byMatch) so overlapping FIP+Scouting games can be reconciled with 100% integer precision.
  */
 export function aggregateSupabasePlayerStats(scoutingLogs = []) {
   const playerStatsMap = {};
+  const safeLogs = Array.isArray(scoutingLogs) ? scoutingLogs.filter(Boolean) : [];
 
-  (scoutingLogs || []).forEach(row => {
-    const num = String(row.Number || '').trim();
-    const name = (row.Player || '').trim();
-    if (!num && !name) return;
+  const plusMinusMap = calculatePlusMinus(safeLogs);
+  const logsByMatch = {};
 
-    const key = num || name;
+  const matchIdByName = {};
+  const matchNameById = {};
+  safeLogs.forEach(row => {
+    const mid = row.match_id ? String(row.match_id).trim() : null;
+    const mname = (row.Match_Name || row.match_name || row.nome_partita || '').trim();
+    if (mid && mname) {
+      matchIdByName[mname] = mid;
+      matchNameById[mid] = mname;
+    }
+  });
+
+  const getCanonicalMatchId = (row) => {
+    const mid = row.match_id ? String(row.match_id).trim() : null;
+    const mname = (row.Match_Name || row.match_name || row.nome_partita || '').trim();
+    if (mid) return mid;
+    if (mname && matchIdByName[mname]) return matchIdByName[mname];
+    return mname || 'unknown_match';
+  };
+
+  safeLogs.forEach(row => {
+    const mId = getCanonicalMatchId(row);
+    if (!logsByMatch[mId]) logsByMatch[mId] = [];
+    logsByMatch[mId].push(row);
+  });
+
+  const plusMinusByMatch = {};
+  for (const [mId, mLogs] of Object.entries(logsByMatch)) {
+    plusMinusByMatch[mId] = calculatePlusMinus(mLogs);
+  }
+
+  const getOrCreatePlayerStat = (num, name) => {
+    const cleanNum = String(num || '').trim();
+    const cleanName = String(name || '').trim();
+    const key = cleanNum || cleanName;
     if (!playerStatsMap[key]) {
       playerStatsMap[key] = {
-        number: num,
-        name: name,
+        number: cleanNum,
+        name: cleanName,
         matches: new Set(),
+        byMatch: {},
         ast: 0,
         tov: 0,
         dreb: 0,
         oreb: 0,
         stl: 0,
         blk: 0,
+        fouls: 0,
+        foulsDrawn: 0,
         fg2m: 0, fg2a: 0,
         fg3m: 0, fg3a: 0,
-        ftm: 0, fta: 0
+        ftm: 0, fta: 0,
+        shotZones: {
+          paint: { key: 'paint', name: 'Paint / Sotto Canestro', type: '2PT', made: 0, att: 0 },
+          mid: { key: 'mid', name: 'Mid-Range / Media Distanza', type: '2PT', made: 0, att: 0 },
+          top3: { key: 'top3', name: 'Top 3 / Arco Frontale', type: '3PT', made: 0, att: 0 },
+          wing3: { key: 'wing3', name: 'Wing 3 / Ali da 3', type: '3PT', made: 0, att: 0 },
+          corner3: { key: 'corner3', name: 'Corner 3 / Angoli da 3', type: '3PT', made: 0, att: 0 },
+          other: { key: 'other', name: 'Altro / Perimetro', type: 'N/A', made: 0, att: 0 }
+        },
+        detailedZones: {}
+      };
+    } else if (cleanName && !playerStatsMap[key].name) {
+      playerStatsMap[key].name = cleanName;
+    }
+    return playerStatsMap[key];
+  };
+
+  const ensureMatchBucket = (pStat, mId) => {
+    if (!pStat.byMatch[mId]) {
+      pStat.byMatch[mId] = {
+        fg2m: 0, fg2a: 0,
+        fg3m: 0, fg3a: 0,
+        ftm: 0, fta: 0,
+        fouls: 0,
+        pts: 0
       };
     }
+    return pStat.byMatch[mId];
+  };
 
-    if (row.Match_Name) playerStatsMap[key].matches.add(row.Match_Name);
+  safeLogs.forEach(row => {
+    const num = String(row.Number || '').trim();
+    const name = (row.Player || '').trim();
+    if (!num && !name) return;
+    if (name === 'METADATA' || row.Action === 'MATCH_METADATA' || name === 'OPPONENT' || num === 'OPP') return;
+
+    const pStat = getOrCreatePlayerStat(num, name);
+    const matchIdentifier = getCanonicalMatchId(row);
+    if (matchIdentifier) {
+      pStat.matches.add(matchIdentifier);
+    }
+    const mBucket = ensureMatchBucket(pStat, matchIdentifier);
 
     const act = (row.Action || '').trim();
     const cat = (row.Category || '').trim();
+    const rawZone = String(row.ZoneName || row.Zone || row.zona || '').trim();
+    const rawZoneLower = rawZone.toLowerCase();
 
-    if (act.includes('Assist') || cat === 'Passing') playerStatsMap[key].ast++;
-    else if (act.includes('Turnover') || cat === 'Turnover') playerStatsMap[key].tov++;
-    else if (act.includes('Def Rebound')) playerStatsMap[key].dreb++;
-    else if (act.includes('Off Rebound')) playerStatsMap[key].oreb++;
-    else if (act.includes('Steal') || (cat === 'Defense' && act === 'Steal')) playerStatsMap[key].stl++;
-    else if (act.includes('Block') || (cat === 'Defense' && act === 'Block')) playerStatsMap[key].blk++;
-    else if (act === '2PT Made' || act === '2PT Fatto') { playerStatsMap[key].fg2m++; playerStatsMap[key].fg2a++; }
-    else if (act === '2PT Missed' || act === '2PT Sbagliato') { playerStatsMap[key].fg2a++; }
-    else if (act === '3PT Made' || act === '3PT Fatto') { playerStatsMap[key].fg3m++; playerStatsMap[key].fg3a++; }
-    else if (act === '3PT Missed' || act === '3PT Sbagliato') { playerStatsMap[key].fg3a++; }
-    else if (act === 'FT Made' || act === 'TL Fatto' || act === 'Tiro Libero Fatto') { playerStatsMap[key].ftm++; playerStatsMap[key].fta++; }
-    else if (act === 'FT Missed' || act === 'TL Sbagliato' || act === 'Tiro Libero Sbagliato') { playerStatsMap[key].fta++; }
+    if (act.includes('Assist') || cat === 'Passing') {
+      pStat.ast++;
+    } else if (act.includes('Turnover') || cat === 'Turnover') {
+      pStat.tov++;
+    } else if (act.includes('Def Rebound')) {
+      pStat.dreb++;
+    } else if (act.includes('Off Rebound')) {
+      pStat.oreb++;
+    } else if (act.includes('Steal') || (cat === 'Defense' && act === 'Steal')) {
+      pStat.stl++;
+    } else if (act.includes('Block') || (cat === 'Defense' && act === 'Block')) {
+      pStat.blk++;
+    } else if (act.includes('Personal Foul') || act === 'Foul' || act.includes('Foul Committed') || act.includes('Fallo Commesso') || act === 'Fallo' || (cat === 'Foul' && !act.includes('Drawn') && !act.includes('Subito'))) {
+      pStat.fouls++;
+      mBucket.fouls++;
+    } else if (act.includes('Foul Drawn') || act.includes('Subito Fallo') || act.includes('Fallo Subito')) {
+      pStat.foulsDrawn++;
+    } else if (act === '2PT Made' || act === '2PT Fatto') {
+      pStat.fg2m++;
+      pStat.fg2a++;
+      mBucket.fg2m++;
+      mBucket.fg2a++;
+      mBucket.pts += 2;
+      recordZoneShot(pStat, rawZone, rawZoneLower, true, '2PT');
+    } else if (act === '2PT Missed' || act === '2PT Sbagliato') {
+      pStat.fg2a++;
+      mBucket.fg2a++;
+      recordZoneShot(pStat, rawZone, rawZoneLower, false, '2PT');
+    } else if (act === '3PT Made' || act === '3PT Fatto') {
+      pStat.fg3m++;
+      pStat.fg3a++;
+      mBucket.fg3m++;
+      mBucket.fg3a++;
+      mBucket.pts += 3;
+      recordZoneShot(pStat, rawZone, rawZoneLower, true, '3PT');
+    } else if (act === '3PT Missed' || act === '3PT Sbagliato') {
+      pStat.fg3a++;
+      mBucket.fg3a++;
+      recordZoneShot(pStat, rawZone, rawZoneLower, false, '3PT');
+    } else if (act === 'FT Made' || act === 'TL Fatto' || act === 'Tiro Libero Fatto') {
+      pStat.ftm++;
+      pStat.fta++;
+      mBucket.ftm++;
+      mBucket.fta++;
+      mBucket.pts += 1;
+    } else if (act === 'FT Missed' || act === 'TL Sbagliato' || act === 'Tiro Libero Sbagliato') {
+      pStat.fta++;
+      mBucket.fta++;
+    }
   });
 
-  // Calculate per-game averages & efficiency percentages
+  safeLogs.forEach(row => {
+    const oc = row.on_court || row.onCourtPlayerIds || row.onCourtNums;
+    const matchId = getCanonicalMatchId(row);
+    if (matchId && Array.isArray(oc)) {
+      oc.forEach(num => {
+        const s = String(num).trim();
+        if (s && s !== 'OPP' && s !== '-') {
+          const pStat = getOrCreatePlayerStat(s, '');
+          pStat.matches.add(matchId);
+          ensureMatchBucket(pStat, matchId);
+        }
+      });
+    }
+  });
+
+  function recordZoneShot(pStat, zName, zLower, isMade, defType) {
+    if (!zName || zLower === 'man' || zLower === 'zone' || zLower === 'press') {
+      return;
+    }
+    let target = pStat.shotZones.other;
+    if (zLower.includes('paint') || zLower.includes('key') || zLower.includes('area') || zLower.includes('canestro')) {
+      target = pStat.shotZones.paint;
+    } else if (zLower.includes('mid') || zLower.includes('media')) {
+      target = pStat.shotZones.mid;
+    } else if (zLower.includes('top') || zLower.includes('arc') || zLower.includes('arco') || zLower.includes('frontale')) {
+      target = pStat.shotZones.top3;
+    } else if (zLower.includes('wing') || zLower.includes('ala')) {
+      target = pStat.shotZones.wing3;
+    } else if (zLower.includes('corner') || zLower.includes('angolo')) {
+      target = pStat.shotZones.corner3;
+    }
+
+    target.att++;
+    if (isMade) target.made++;
+
+    if (!pStat.detailedZones[zName]) {
+      pStat.detailedZones[zName] = { name: zName, type: defType, made: 0, att: 0 };
+    }
+    pStat.detailedZones[zName].att++;
+    if (isMade) pStat.detailedZones[zName].made++;
+  }
+
   const aggregatedMap = {};
   for (const [key, p] of Object.entries(playerStatsMap)) {
     const gp = p.matches.size || 1;
+    const totalPts = p.fg2m * 2 + p.fg3m * 3 + p.ftm;
     const totalReb = p.dreb + p.oreb;
+    const pmTotal = plusMinusMap[p.number] || 0;
+
+    for (const mId of p.matches) {
+      if (p.byMatch[mId]) {
+        p.byMatch[mId].plusMinus = plusMinusByMatch[mId]?.[p.number] || 0;
+      }
+    }
+
+    const pointsAVG = Number((totalPts / gp).toFixed(1));
+    const twoMadeAVG = Number((p.fg2m / gp).toFixed(1));
+    const twoAttAvg = Number((p.fg2a / gp).toFixed(1));
+    const threeMadeAVG = Number((p.fg3m / gp).toFixed(1));
+    const threeAttAvg = Number((p.fg3a / gp).toFixed(1));
+    const ftMadeAvg = Number((p.ftm / gp).toFixed(1));
+    const ftAttAvg = Number((p.fta / gp).toFixed(1));
     const astAvg = Number((p.ast / gp).toFixed(1));
     const rebAvg = Number((totalReb / gp).toFixed(1));
     const drebAvg = Number((p.dreb / gp).toFixed(1));
@@ -384,6 +551,8 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
     const tovAvg = Number((p.tov / gp).toFixed(1));
     const stlAvg = Number((p.stl / gp).toFixed(1));
     const blkAvg = Number((p.blk / gp).toFixed(1));
+    const foulsAVG = Number((p.fouls / gp).toFixed(1));
+    const plusMinusAVG = Number((pmTotal / gp).toFixed(1));
     const astTovRatio = p.tov > 0 ? Number((p.ast / p.tov).toFixed(2)) : (p.ast > 0 ? Number(p.ast.toFixed(2)) : 0.0);
 
     const fga = p.fg2a + p.fg3a;
@@ -393,10 +562,70 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
     const threePct = p.fg3a > 0 ? Math.round((p.fg3m / p.fg3a) * 100) : null;
     const ftPct = p.fta > 0 ? Math.round((p.ftm / p.fta) * 100) : null;
 
+    const shootZonesList = [
+      p.shotZones.paint,
+      p.shotZones.mid,
+      p.shotZones.top3,
+      p.shotZones.wing3,
+      p.shotZones.corner3
+    ].map(z => {
+      const pct = z.att > 0 ? Math.round((z.made / z.att) * 100) : null;
+      const share = fga > 0 ? Math.round((z.att / fga) * 100) : 0;
+      return {
+        ...z,
+        pct,
+        share,
+        volume: `${z.made}/${z.att}`
+      };
+    });
+
     const dataObj = {
       number: p.number,
       name: p.name,
-      gpSupabase: gp,
+      matches: Array.from(p.matches),
+      byMatch: p.byMatch,
+      gpSupabase: p.matches.size,
+      matchesCount: p.matches.size,
+      scoutingGames: p.matches.size,
+
+      totalPts,
+      ptsTotal: totalPts,
+      fg2m: p.fg2m,
+      fg2a: p.fg2a,
+      fg3m: p.fg3m,
+      fg3a: p.fg3a,
+      ftm: p.ftm,
+      fta: p.fta,
+      ftMade: p.ftm,
+      ftAtt: p.fta,
+      astTotal: p.ast,
+      ast: p.ast,
+      rebTotal: totalReb,
+      reb: totalReb,
+      drebTotal: p.dreb,
+      dreb: p.dreb,
+      orebTotal: p.oreb,
+      oreb: p.oreb,
+      tovTotal: p.tov,
+      tov: p.tov,
+      stlTotal: p.stl,
+      stl: p.stl,
+      blkTotal: p.blk,
+      blk: p.blk,
+      foulsTotal: p.fouls,
+      fouls: p.fouls,
+      foulsDrawnTotal: p.foulsDrawn,
+      foulsDrawn: p.foulsDrawn,
+      plusMinusTotal: pmTotal,
+
+      pointsAVG,
+      ppg: pointsAVG,
+      twoMadeAVG,
+      twoAttAvg,
+      threeMadeAVG,
+      threeAttAvg,
+      ftMadeAvg,
+      ftAttAvg,
       astAvg,
       rebAvg,
       drebAvg,
@@ -404,17 +633,18 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
       tovAvg,
       stlAvg,
       blkAvg,
+      foulsAVG,
+      plusMinusAVG,
       astTovRatio,
+
       twoPct,
       threePct,
       ftPct,
       efgPct,
-      fg2m: p.fg2m,
-      fg2a: p.fg2a,
-      fg3m: p.fg3m,
-      fg3a: p.fg3a,
-      ftm: p.ftm,
-      fta: p.fta
+
+      shootZones: shootZonesList,
+      shotZonesMap: p.shotZones,
+      detailedZones: p.detailedZones
     };
 
     aggregatedMap[key] = dataObj;
@@ -426,69 +656,80 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
 }
 
 /**
- * Merges BBA Roster from FIP with Supabase Advanced Playmaking & Hustle stats.
- * Applies the Truth Hierarchy (FIP for Volume, Supabase for Efficiency).
- * 
- * - PG (Presenze/Games): Counts games player was on roster (convocato), NOT just MIN > 0.
- * - START %: (Games Started / PG) * 100. Never divided by total team games.
- * - Global Filter: When filterType is 'OFFICIAL' or 'FRIENDLY', metrics reflect only matches of that type.
+ * Merges BBA Roster from FIP with Supabase Advanced Playmaking, Hustle & Shoot Zones.
+ * Strictly uses team-level `player.stats` (Divisione Regionale 2) and per-match FIP boxscores when available,
+ * never `uniquePlayer.seasonStats` (which mixes U19 / other competitions).
  */
 export function buildSuperchargedBbaRoster(
   fipRoster = [], 
   supabaseLogs = [], 
   startersData = null, 
   filterType = 'ALL',
-  matchMetadataMap = {}
+  matchMetadataMap = {},
+  activeMatchesList = []
 ) {
-// 1. Filter Supabase logs according to global matchType filter
-  let activeLogs = supabaseLogs || [];
+  let activeLogs = Array.isArray(supabaseLogs) ? supabaseLogs : [];
   if (normalizeFilterType(filterType) !== 'ALL') {
     activeLogs = activeLogs.filter(row => {
+      if (!row) return false;
+      const mId = row.match_id ? String(row.match_id).trim() : '';
       const mName = row.Match_Name || row.match_name || row.nome_partita || '';
       
-      // Cerchiamo i metadati della partita reale passati dal database
-      const meta = matchMetadataMap[mName] || 
-                   Object.values(matchMetadataMap).find(m => m.name === mName) || 
+      const unifiedMatch = Array.isArray(activeMatchesList) 
+        ? activeMatchesList.find(m => m && (String(m.id) === mId || m.name === mName || String(m.rawSupa?.id) === mId || m.rawSupa?.name === mName))
+        : null;
+      if (unifiedMatch && unifiedMatch.matchType) {
+        return matchesFilterType(unifiedMatch.matchType, filterType);
+      }
+
+      const meta = (matchMetadataMap && matchMetadataMap[mName]) || 
+                   (matchMetadataMap && typeof matchMetadataMap === 'object' && Object.values(matchMetadataMap).find(m => m && (m.name === mName || String(m.id) === mId))) || 
                    {};
-      
-      // Leggiamo il tipo di partita REALE dal DB. 
-      // Se non lo troviamo, il fallback logico per i dati di scouting interni è 'Friendly', 
-      // non 'Official' (visto che i dati FIP ufficiali entrano da un altro flusso).
       const mType = meta.matchType || meta.match_type || 'Friendly'; 
-      
       return matchesFilterType(mType, filterType);
     });
   }
 
   const supabaseMap = aggregateSupabasePlayerStats(activeLogs);
-  const baseList = (fipRoster && fipRoster.length > 0) ? fipRoster : DEFAULT_MASTER_ROSTER;
+  const baseList = (Array.isArray(fipRoster) && fipRoster.length > 0) ? fipRoster : DEFAULT_MASTER_ROSTER;
 
-  // Build indexed starters lookup maps
-  const startersPlayers = startersData?.players || (Array.isArray(startersData) ? startersData : []);
+  const startersPlayers = Array.isArray(startersData?.players) 
+    ? startersData.players 
+    : (Array.isArray(startersData) ? startersData : []);
   const startersByFid = new Map();
   const startersByName = new Map();
   const startersByNum = new Map();
 
   startersPlayers.forEach(s => {
+    if (!s) return;
     if (s.fid) startersByFid.set(String(s.fid), s);
     const fullName = `${s.name || ''} ${s.lastName || ''}`.trim().toLowerCase();
     if (fullName) startersByName.set(fullName, s);
     if (s.number) startersByNum.set(String(s.number), s);
   });
 
-  return baseList.map((player, idx) => {
+  const fipVerifiedMatches = Array.isArray(activeMatchesList)
+    ? activeMatchesList.filter(m => m && m.fipVerified && matchesFilterType(m.matchType || 'Official', filterType))
+    : [];
+
+  const missingScoutingMatches = fipVerifiedMatches.filter(m => !m.hasSupabaseScout);
+  const missingScoutingMatchNames = missingScoutingMatches.map(
+    m => m.name || (m.opponent ? `vs ${m.opponent}` : 'Partita FIP')
+  );
+
+  return baseList.filter(Boolean).map((player, idx) => {
+    if (!player) return null;
     const num = String(player.number || (idx + 1)).trim();
     const cleanName = formatPlayerFullName(player.name, player.lastName) || `Giocatore #${num}`;
 
-    // Lookup in Supabase map
     const supaData = supabaseMap[num] || 
                      supabaseMap[`num_${num}`] || 
                      supabaseMap[`name_${cleanName.toLowerCase()}`] || 
                      null;
 
+    // STRICT TEAM SCOPE: Only use player.stats (never uniquePlayer.seasonStats!)
     const fipStats = player.stats || {};
-    
-    // Strict lookup for starter entry: fid > full name > number (only if not belonging to another fid)
+
     let starterEntry = null;
     if (player.fid && startersByFid.has(String(player.fid))) {
       starterEntry = startersByFid.get(String(player.fid));
@@ -501,65 +742,222 @@ export function buildSuperchargedBbaRoster(
       }
     }
 
-    // Case A: Friendly filter (FIP has zero friendly games - Supabase priority)
-    if (matchesFilterType('FRIENDLY', filterType) && !matchesFilterType('OFFICIAL', filterType)) {
-      const gp = supaData?.gpSupabase || 0;
-      const ptsTotal = supaData ? (supaData.fg2m * 2 + supaData.fg3m * 3 + supaData.ftm) : 0;
-      const ptsAvg = gp > 0 ? Number((ptsTotal / gp).toFixed(1)) : 0.0;
+    const playerShotEvents = activeLogs.filter(e => {
+      if (!e) return false;
+      const eNum = String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '').trim();
+      const eName = String(e?.Player ?? e?.player ?? '').toLowerCase();
+      const isThisPlayer = (eNum && eNum === num) || (cleanName && eName.includes(cleanName.toLowerCase()));
+      if (!isThisPlayer) return false;
+      const act = String(e?.Action ?? e?.action ?? '');
+      return act.includes('2PT') || act.includes('3PT') || act.includes('Tiro') || act.includes('Shot');
+    });
 
-      return {
-        ...player,
-        fid: player.fid || `bba_p_${num}`,
-        number: num,
-        name: cleanName,
-        captain: Boolean(player.captain),
-        starting: false,
-        startPercentage: '—', // FIP-exclusive -> explicitly rendered as —
-        startsCount: 0,
-        games: gp,
-        timePlayedAVG: null, // FIP-exclusive -> explicitly rendered as —
-        pointsAVG: ptsAvg,
-        twoMadeAVG: gp > 0 && supaData ? Number((supaData.fg2m / gp).toFixed(1)) : 0,
-        threeMadeAVG: gp > 0 && supaData ? Number((supaData.fg3m / gp).toFixed(1)) : 0,
-        foulsAVG: 0,
-        plusMinusAVG: 0,
+    const isFriendlyOnly = matchesFilterType('FRIENDLY', filterType) && !matchesFilterType('OFFICIAL', filterType);
+    
+    // Raw FIP games strictly from team-level fipStats.games (capped by actual FIP matches if activeMatchesList is provided)
+    let rawFipPg = isFriendlyOnly ? 0 : Number(fipStats?.games ?? 0);
+    if (fipVerifiedMatches.length > 0 && rawFipPg > fipVerifiedMatches.length) {
+      rawFipPg = fipVerifiedMatches.length;
+    }
 
-        // Efficiency strictly from Supabase friendly logs
-        twoPct: supaData?.twoPct ?? null,
-        threePct: supaData?.threePct ?? null,
-        ftPct: supaData?.ftPct ?? null,
-        rebAvg: supaData ? supaData.rebAvg : null,
-        astAvg: supaData ? supaData.astAvg : null,
-        tovAvg: supaData ? supaData.tovAvg : null,
-        drebAvg: supaData ? supaData.drebAvg : null,
-        orebAvg: supaData ? supaData.orebAvg : null,
-        stlAvg: supaData ? supaData.stlAvg : null,
-        blkAvg: supaData ? supaData.blkAvg : null,
-        efgPct: supaData ? supaData.efgPct : null,
+    const supaPg = supaData?.gpSupabase || 0;
 
-        fipVerified: false,
-        hasSupabaseStats: Boolean(supaData && gp > 0),
-        stats: {
-          games: gp,
-          timePlayedAVG: 0,
-          pointsAVG: ptsAvg || 0
+    // 1. Team-Scope FIP Totals (uses exact integers if synced via updated build_league.js, otherwise Math.round(avg * rawFipPg))
+    const fipTotal2m = rawFipPg > 0 
+      ? (fipStats?.inArcThrowsMade != null ? Math.round(Number(fipStats.inArcThrowsMade)) : Math.round(Number(fipStats?.inArcThrowsAVG ?? 0) * rawFipPg))
+      : 0;
+    const fipTotal3m = rawFipPg > 0 
+      ? (fipStats?.outArcThrowsMade != null ? Math.round(Number(fipStats.outArcThrowsMade)) : Math.round(Number(fipStats?.outArcThrowsAVG ?? 0) * rawFipPg))
+      : 0;
+    const fipTotalPts = rawFipPg > 0 
+      ? (fipStats?.points != null ? Math.round(Number(fipStats.points)) : Math.round(Number(fipStats?.pointsPerGame ?? fipStats?.pointsAVG ?? 0) * rawFipPg))
+      : 0;
+    const fipTotalFtm = rawFipPg > 0
+      ? (fipStats?.freeThrowsMade != null ? Math.round(Number(fipStats.freeThrowsMade)) : Math.max(0, fipTotalPts - (fipTotal2m * 2 + fipTotal3m * 3)))
+      : 0;
+    const fipTotalFouls = rawFipPg > 0 
+      ? (fipStats?.fouls != null ? Math.round(Number(fipStats.fouls)) : Math.round(Number(fipStats?.foulsAVG ?? 0) * rawFipPg))
+      : 0;
+    const fipTotalPm = rawFipPg > 0 
+      ? (fipStats?.plusMinus != null ? Math.round(Number(fipStats.plusMinus)) : Math.round(Number(fipStats?.plusMinusAVG ?? 0) * rawFipPg))
+      : 0;
+
+    // 2. Check if FIP-only matches have direct per-game player boxscores (from updated build_league.js)
+    let hasDirectFipOnlyBoxscores = false;
+    let directFipOnlyGames = 0;
+    let directFipOnly2m = 0;
+    let directFipOnly3m = 0;
+    let directFipOnlyFtm = 0;
+    let directFipOnlyFouls = 0;
+    let directFipOnlyPm = 0;
+
+    if (!isFriendlyOnly && missingScoutingMatches.length > 0) {
+      const allHaveBoxscores = missingScoutingMatches.every(m => {
+        const list = m.fipRoster || m.rawFip?.players || m.players;
+        return Array.isArray(list) && list.length > 0;
+      });
+
+      if (allHaveBoxscores) {
+        hasDirectFipOnlyBoxscores = true;
+        missingScoutingMatches.forEach(m => {
+          const list = m.fipRoster || m.rawFip?.players || m.players || [];
+          const pEntry = list.find(p => {
+            const pFid = p?.fid ? String(p.fid) : '';
+            const pNum = String(p?.number ?? p?.Number ?? '').trim();
+            const pName = formatPlayerFullName(p?.name, p?.lastName).toLowerCase();
+            return (player.fid && pFid === String(player.fid)) || (pNum && pNum === num) || (cleanName && pName === cleanName.toLowerCase());
+          });
+          if (pEntry) {
+            directFipOnlyGames++;
+            const p2 = Math.round(Number(pEntry.fg2m ?? pEntry.inArcThrowsMade ?? 0));
+            const p3 = Math.round(Number(pEntry.fg3m ?? pEntry.outArcThrowsMade ?? 0));
+            const pts = Math.round(Number(pEntry.pts ?? pEntry.points ?? 0));
+            const ft = pEntry.ftm != null ? Math.round(Number(pEntry.ftm)) : Math.max(0, pts - (p2 * 2 + p3 * 3));
+            directFipOnly2m += p2;
+            directFipOnly3m += p3;
+            directFipOnlyFtm += ft;
+            directFipOnlyFouls += Math.round(Number(pEntry.fouls ?? 0));
+            directFipOnlyPm += Math.round(Number(pEntry.plusMinus ?? 0));
+          }
+        });
+      }
+    }
+
+    // 3. Calculate Overlap & Exclusive FIP Stats
+    let unifiedPg = 0;
+    let exclusiveFip2m = 0;
+    let exclusiveFip3m = 0;
+    let exclusiveFipFtm = 0;
+    let exclusiveFipFouls = 0;
+    let exclusiveFipPm = 0;
+
+    if (hasDirectFipOnlyBoxscores) {
+      unifiedPg = supaPg + directFipOnlyGames;
+      exclusiveFip2m = directFipOnly2m;
+      exclusiveFip3m = directFipOnly3m;
+      exclusiveFipFtm = directFipOnlyFtm;
+      exclusiveFipFouls = directFipOnlyFouls;
+      exclusiveFipPm = directFipOnlyPm;
+    } else {
+      let overlappingGames = 0;
+      let overlap2m = 0;
+      let overlap3m = 0;
+      let overlapFtm = 0;
+      let overlapFouls = 0;
+      let overlapPm = 0;
+
+      if (!isFriendlyOnly && supaData && supaData.matches) {
+        if (Array.isArray(activeMatchesList) && activeMatchesList.length > 0) {
+          supaData.matches.forEach(matchId => {
+            const m = activeMatchesList.find(x => 
+              x && (String(x.id) === String(matchId) || x.name === matchId || String(x.rawSupa?.id) === String(matchId) || x.rawSupa?.name === matchId)
+            );
+            if (m && (m.fipVerified || m.rawFip)) {
+              overlappingGames++;
+              const supaMatchBucket = supaData.byMatch?.[matchId];
+              if (supaMatchBucket) {
+                overlap2m += supaMatchBucket.fg2m;
+                overlap3m += supaMatchBucket.fg3m;
+                overlapFtm += supaMatchBucket.ftm;
+                overlapFouls += supaMatchBucket.fouls;
+                overlapPm += supaMatchBucket.plusMinus || 0;
+              }
+            }
+          });
+        } else if (rawFipPg > 0 && supaPg > 0) {
+          overlappingGames = Math.min(rawFipPg, supaPg);
+          overlap2m = supaData.fg2m || 0;
+          overlap3m = supaData.fg3m || 0;
+          overlapFtm = supaData.ftm || 0;
+          overlapFouls = supaData.foulsTotal || 0;
+          overlapPm = supaData.plusMinusTotal || 0;
         }
-      };
+      }
+
+      const exclusiveFipGames = Math.max(0, rawFipPg - overlappingGames);
+      const exclusiveSupaGames = Math.max(0, supaPg - overlappingGames);
+      unifiedPg = overlappingGames + exclusiveFipGames + exclusiveSupaGames;
+
+      exclusiveFip2m = exclusiveFipGames > 0 ? Math.max(0, fipTotal2m - overlap2m) : 0;
+      exclusiveFip3m = exclusiveFipGames > 0 ? Math.max(0, fipTotal3m - overlap3m) : 0;
+      exclusiveFipFtm = exclusiveFipGames > 0 ? Math.max(0, fipTotalFtm - overlapFtm) : 0;
+      exclusiveFipFouls = exclusiveFipGames > 0 ? Math.max(0, fipTotalFouls - overlapFouls) : 0;
+      exclusiveFipPm = exclusiveFipGames > 0 ? (fipTotalPm - overlapPm) : 0;
     }
 
-    // Case B: Default (ALL or OFFICIAL)
-    // PG (Presenze/Convocazioni): Count of official matches player appears in FIP roster
-    const rawPg = Number(fipStats.games ?? player.games ?? 0);
-    // IGNORIAMO il flag nativo player.starting della FIP (che genera 8 titolari finti).
-    // Ci fidiamo ESCLUSIVAMENTE del nostro incrocio col boxscore Q1 (starterEntry).
-    const startsCount = Number(starterEntry?.startsCount ?? (player.startPercentage !== '—' && player.startsCount ? player.startsCount : 0));    // Ensure PG is always at least equal to startsCount to prevent percentages > 100%
-    const pg = Math.max(rawPg, startsCount);
+    // 4. Unified Hybrid Integer Totals (Scouting + FIP Exclusive)
+    const hybridFg2m = Math.round((supaData?.fg2m || 0) + exclusiveFip2m);
+    const hybridFg3m = Math.round((supaData?.fg3m || 0) + exclusiveFip3m);
+    const hybridFtm = Math.round((supaData?.ftm || 0) + exclusiveFipFtm);
 
-    // START %: Strictly (Games Started / PG) * 100, capped at 100%
+    // Mathematical Invariant: Total Points = 2*2PM + 3*3PM + FTM
+    const finalPtsTotal = (hybridFg2m * 2) + (hybridFg3m * 3) + hybridFtm;
+    const finalPtsAvg = unifiedPg > 0 ? Number((finalPtsTotal / unifiedPg).toFixed(1)) : 0;
+
+    // 5. Shooting Volumes & Percentages (Scouting Priority)
+    const scoutedFg2m = supaData?.fg2m || 0;
+    const scoutedFg2a = supaData?.fg2a || 0;
+    const scoutedFg3m = supaData?.fg3m || 0;
+    const scoutedFg3a = supaData?.fg3a || 0;
+    const scoutedFtm = supaData?.ftm || 0;
+    const scoutedFta = supaData?.fta || 0;
+
+    const final2PmMadeAvg = unifiedPg > 0 ? Number((hybridFg2m / unifiedPg).toFixed(1)) : 0;
+    const final3PmMadeAvg = unifiedPg > 0 ? Number((hybridFg3m / unifiedPg).toFixed(1)) : 0;
+    const finalFtMadeAvg = unifiedPg > 0 ? Number((hybridFtm / unifiedPg).toFixed(1)) : 0;
+
+    const final2AttAvg = supaPg > 0 && scoutedFg2a > 0 ? Number((scoutedFg2a / supaPg).toFixed(1)) : null;
+    const final3AttAvg = supaPg > 0 && scoutedFg3a > 0 ? Number((scoutedFg3a / supaPg).toFixed(1)) : null;
+    const finalFtAttAvg = supaPg > 0 && scoutedFta > 0 ? Number((scoutedFta / supaPg).toFixed(1)) : null;
+
+    const final2Pct = supaData?.twoPct ?? null;
+    const final3Pct = supaData?.threePct ?? null;
+    const finalFtPct = supaData?.ftPct ?? (fipStats?.freeThrowsPercentage != null ? Math.round(Number(fipStats.freeThrowsPercentage)) : null);
+
+    // 6. Minutes & Starters (FIP Exclusive)
+    const finalTimePlayedAvg = fipStats?.timePlayedAVG != null ? Number(fipStats.timePlayedAVG) : (player.timePlayedAVG != null ? Number(player.timePlayedAVG) : null);
+    const startsCount = Number(starterEntry?.startsCount ?? (player.startPercentage !== '—' && player.startsCount ? player.startsCount : 0));
     let startPct = '0%';
-    if (pg > 0) {
-      startPct = `${Math.min(100, Math.round((startsCount / pg) * 100))}%`;
+    if (rawFipPg > 0 && startsCount > 0) {
+      startPct = `${Math.min(100, Math.round((startsCount / rawFipPg) * 100))}%`;
+    } else if (unifiedPg > 0 && startsCount > 0) {
+      startPct = `${Math.min(100, Math.round((startsCount / unifiedPg) * 100))}%`;
     }
+
+    const hasSupa = Boolean(supaData && supaData.gpSupabase > 0);
+    const hasFewerScoutingGames = Boolean(unifiedPg > supaPg);
+    const missingNamesStr = missingScoutingMatchNames.length > 0 
+      ? ` (Mancano dati scouting per: ${missingScoutingMatchNames.join(', ')})`
+      : '';
+    const scoutingTooltip = hasFewerScoutingGames 
+      ? `Calcolato su ${supaPg} partite con scouting disponibile su ${unifiedPg} totali${missingNamesStr}` 
+      : null;
+
+    // 7. Playmaking, Hustle & Defense (Scouting Exclusive)
+    const finalAstAvg = hasSupa ? supaData.astAvg : null;
+    const finalAstTotal = hasSupa ? supaData.astTotal : 0;
+    const finalRebAvg = hasSupa ? supaData.rebAvg : null;
+    const finalRebTotal = hasSupa ? supaData.rebTotal : 0;
+    const finalOrebAvg = hasSupa ? supaData.orebAvg : null;
+    const finalOrebTotal = hasSupa ? supaData.orebTotal : 0;
+    const finalDrebAvg = hasSupa ? supaData.drebAvg : null;
+    const finalDrebTotal = hasSupa ? supaData.drebTotal : 0;
+    const finalTovAvg = hasSupa ? supaData.tovAvg : null;
+    const finalTovTotal = hasSupa ? supaData.tovTotal : 0;
+    const finalStlAvg = hasSupa ? supaData.stlAvg : null;
+    const finalStlTotal = hasSupa ? supaData.stlTotal : 0;
+    const finalBlkAvg = hasSupa ? supaData.blkAvg : null;
+    const finalBlkTotal = hasSupa ? supaData.blkTotal : 0;
+
+    // 8. Fouls & Plus/Minus
+    const finalFoulsTotal = Math.round((supaData?.foulsTotal || 0) + exclusiveFipFouls);
+    const finalFoulsAvg = unifiedPg > 0 ? Number((finalFoulsTotal / unifiedPg).toFixed(1)) : 0;
+
+    const finalPlusMinusTotal = Math.round((supaData?.plusMinusTotal || 0) + exclusiveFipPm);
+    const finalPlusMinusAvg = unifiedPg > 0 ? Number((finalPlusMinusTotal / unifiedPg).toFixed(1)) : 0;
+
+    const finalAstTovRatio = hasSupa ? supaData.astTovRatio : null;
+    const finalEfgPct = hasSupa ? supaData.efgPct : null;
 
     return {
       ...player,
@@ -571,38 +969,113 @@ export function buildSuperchargedBbaRoster(
       startPercentage: startPct,
       startsCount,
 
-      // FIP Official Columns (Truth for Volume, Points & Minutes)
-      games: pg,
-      timePlayedAVG: fipStats.timePlayedAVG ?? player.timePlayedAVG ?? 0,
-      pointsAVG: fipStats.pointsAVG ?? player.pointsAVG ?? 0,
-      twoMadeAVG: fipStats.inArcThrowsAVG ?? fipStats.twoMadeAVG ?? player.twoMadeAVG ?? 0,
-      threeMadeAVG: fipStats.outArcThrowsAVG ?? fipStats.threeMadeAVG ?? player.threeMadeAVG ?? 0,
-      foulsAVG: fipStats.foulsAVG ?? player.foulsAVG ?? 0,
-      plusMinusAVG: fipStats.plusMinusAVG ?? player.plusMinusAVG ?? 0,
+      games: unifiedPg,
+      timePlayedAVG: finalTimePlayedAvg,
 
-      // Supabase Proprietary Columns (Truth for Efficiency, Playmaking & Hustle)
-      // STRICT RULE: Efficiency metrics come EXCLUSIVELY from Supabase.
-      // If Supabase scouting is absent, they are null ('—') - NEVER FIP 100%.
-      twoPct: supaData?.twoPct ?? null,
-      threePct: supaData?.threePct ?? null,
-      ftPct: supaData?.ftPct ?? null,
-      rebAvg: supaData ? supaData.rebAvg : null,
-      astAvg: supaData ? supaData.astAvg : null,
-      tovAvg: supaData ? supaData.tovAvg : null,
-      drebAvg: supaData ? supaData.drebAvg : null,
-      orebAvg: supaData ? supaData.orebAvg : null,
-      stlAvg: supaData ? supaData.stlAvg : null,
-      blkAvg: supaData ? supaData.blkAvg : null,
-      efgPct: supaData ? supaData.efgPct : null,
+      pointsAVG: finalPtsAvg,
+      pointsPerGame: finalPtsAvg,
+      totalPts: finalPtsTotal,
+      ptsTotal: finalPtsTotal,
+      pointsTotal: finalPtsTotal,
+      points: finalPtsTotal,
 
-      // Badging & Verification Status
+      // 2PT: Keep fg2m/fg2a strictly coherent with attempts in Roster Table (so makes never exceed attempts),
+      // while exposing hybridFg2m / hybrid2MadeAvg for total season scoring breakdown
+      twoMadeAVG: supaPg > 0 && scoutedFg2a > 0 ? Number((scoutedFg2m / supaPg).toFixed(1)) : final2PmMadeAvg,
+      twoAttAvg: final2AttAvg,
+      twoPct: final2Pct,
+      fg2m: scoutedFg2a > 0 ? scoutedFg2m : hybridFg2m,
+      fg2a: scoutedFg2a,
+      hybridFg2m,
+      hybrid2MadeAvg: final2PmMadeAvg,
+      scoutedFg2m,
+      scoutedFg2a,
+
+      // 3PT
+      threeMadeAVG: supaPg > 0 && scoutedFg3a > 0 ? Number((scoutedFg3m / supaPg).toFixed(1)) : final3PmMadeAvg,
+      threeAttAvg: final3AttAvg,
+      threePct: final3Pct,
+      fg3m: scoutedFg3a > 0 ? scoutedFg3m : hybridFg3m,
+      fg3a: scoutedFg3a,
+      hybridFg3m,
+      hybrid3MadeAvg: final3PmMadeAvg,
+      scoutedFg3m,
+      scoutedFg3a,
+
+      // Free Throws
+      ftMadeAvg: supaPg > 0 && scoutedFta > 0 ? Number((scoutedFtm / supaPg).toFixed(1)) : finalFtMadeAvg,
+      ftAttAvg: finalFtAttAvg,
+      ftPct: finalFtPct,
+      ftm: scoutedFta > 0 ? scoutedFtm : hybridFtm,
+      fta: scoutedFta,
+      ftMade: scoutedFta > 0 ? scoutedFtm : hybridFtm,
+      ftAtt: scoutedFta,
+      hybridFtm,
+      hybridFtMadeAvg: finalFtMadeAvg,
+      scoutedFtm,
+      scoutedFta,
+
+      // Playmaking, Hustle & Defense
+      astAvg: finalAstAvg,
+      astTotal: finalAstTotal,
+      ast: finalAstTotal,
+      rebAvg: finalRebAvg,
+      rebTotal: finalRebTotal,
+      reb: finalRebTotal,
+      orebAvg: finalOrebAvg,
+      orebTotal: finalOrebTotal,
+      oreb: finalOrebTotal,
+      drebAvg: finalDrebAvg,
+      drebTotal: finalDrebTotal,
+      dreb: finalDrebTotal,
+      stlAvg: finalStlAvg,
+      stlTotal: finalStlTotal,
+      stl: finalStlTotal,
+      blkAvg: finalBlkAvg,
+      blkTotal: finalBlkTotal,
+      blk: finalBlkTotal,
+      tovAvg: finalTovAvg,
+      tovTotal: finalTovTotal,
+      tov: finalTovTotal,
+      foulsAVG: finalFoulsAvg,
+      foulsTotal: finalFoulsTotal,
+      fouls: finalFoulsTotal,
+      plusMinusAVG: finalPlusMinusAvg,
+      plusMinusTotal: finalPlusMinusTotal,
+      astTovRatio: finalAstTovRatio,
+      efgPct: finalEfgPct,
+
+      shootZones: supaData?.shootZones || [],
+      shotZonesMap: supaData?.shotZonesMap || {},
+      detailedZones: supaData?.detailedZones || {},
+      shotEvents: playerShotEvents,
+
       fipVerified: true,
-      hasSupabaseStats: Boolean(supaData),
+      hasSupabaseStats: hasSupa,
+      gpSupabase: supaPg,
+      scoutingGamesCount: supaPg,
+      fipGamesCount: rawFipPg,
+      hasFewerScoutingGames,
+      missingScoutingMatchNames,
+      scoutingTooltip,
       stats: {
         ...fipStats,
-        games: pg,
-        assistsAVG: supaData ? supaData.astAvg : (fipStats.assistsAVG || 0),
-        reboundsAVG: supaData ? supaData.rebAvg : (fipStats.reboundsAVG || 0)
+        games: unifiedPg,
+        points: finalPtsTotal,
+        pointsAVG: finalPtsAvg,
+        pointsPerGame: finalPtsAvg,
+        inArcThrowsMade: hybridFg2m,
+        inArcThrowsAVG: final2PmMadeAvg,
+        outArcThrowsMade: hybridFg3m,
+        outArcThrowsAVG: final3PmMadeAvg,
+        freeThrowsMade: hybridFtm,
+        freeThrowsPercentage: finalFtPct,
+        fouls: finalFoulsTotal,
+        foulsAVG: finalFoulsAvg,
+        plusMinus: finalPlusMinusTotal,
+        plusMinusAVG: finalPlusMinusAvg,
+        assistsAVG: finalAstAvg || 0,
+        reboundsAVG: finalRebAvg || 0
       }
     };
   });
@@ -610,16 +1083,11 @@ export function buildSuperchargedBbaRoster(
 
 /**
  * Builds a unified list of matches combining FIP official matches and Supabase matches.
- * - FIP matches are inherently and immutably tagged as matchType: 'Official'.
- * - When merging FIP with Supabase, FIP 'Official' status, Date, and Final Score override Supabase metadata.
- * - If Supabase has events, they are attached for playmaking & hustle calculations.
- * - Non-FIP matches (e.g. Friendlies) are retained with their own metadata.
  */
 export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap = {}) {
   const unified = [];
   const matchedSupaNames = new Set();
 
-  // 1. Process FIP official matches (FIP is King and Official status is IMMUTABLE)
   (fipLog || []).forEach((fipMatch, idx) => {
     const fipDate = (fipMatch.date || '').slice(0, 10);
     const homeTeam = (fipMatch.homeTeam || '').trim();
@@ -628,7 +1096,6 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
     const oppName = isHome ? awayTeam : homeTeam;
     const oppLower = oppName.toLowerCase();
 
-    // Find corresponding match in Supabase
     const matchedSupa = (supabaseMatches || []).find(sm => {
       if (matchedSupaNames.has(sm.name)) return false;
       const sDate = (sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || sm.createdAt || '')).slice(0, 10);
@@ -653,7 +1120,6 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
 
     const supaMeta = (matchedSupa?.name && metaMap) ? metaMap[matchedSupa.name] : {};
     
-    // Check if Supabase has a score override (scouting_matches home_score/away_score or metaMap)
     const supaHomeScore = matchedSupa?.home_score !== undefined && matchedSupa?.home_score !== null ? Number(matchedSupa.home_score) : null;
     const supaAwayScore = matchedSupa?.away_score !== undefined && matchedSupa?.away_score !== null ? Number(matchedSupa.away_score) : null;
     const metaTeamScore = supaMeta?.overrideTeamScore !== undefined && supaMeta?.overrideTeamScore !== null ? Number(supaMeta.overrideTeamScore) : null;
@@ -672,19 +1138,15 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
     const fipScored = isHome ? Number(fipMatch.homeScore ?? 0) : Number(fipMatch.awayScore ?? 0);
     const fipConceded = isHome ? Number(fipMatch.awayScore ?? 0) : Number(fipMatch.homeScore ?? 0);
 
-    // SUPABASE OVERRIDES FIP FOR FINAL SCORE IF OVERRIDE EXISTS
     const finalScored = (hasSupaScoreOverride && supaTeamScore !== null) ? supaTeamScore : fipScored;
     const finalConceded = (hasSupaScoreOverride && supaOppScore !== null) ? supaOppScore : fipConceded;
     const diff = finalScored - finalConceded;
     const isWin = finalScored > finalConceded;
 
-    // Date override: Stored DB match_date takes absolute priority over FIP / fallbacks
     const manualDate = matchedSupa?.match_date ? String(matchedSupa.match_date).split('T')[0] : (matchedSupa?.matchDate || supaMeta?.matchDate);
     const finalDate = (manualDate && manualDate !== 'n.a.') ? manualDate : (fipDate || 'n.a.');
 
     const displayName = matchedSupa?.name || (isHome ? `BBA vs ${oppName}` : `${oppName} vs BBA`);
-
-    // Quarter Partials: Normalized with scored, conceded, diff (FIP remains source for partials)
     const normalizedPartials = normalizeFipPartials(fipMatch.partials || [], isHome);
 
     let analytics = matchedSupa?.analytics;
@@ -718,8 +1180,8 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
     unified.push({
       id: matchedSupa?.id || fipMatch.matchFid || `fip_${idx}`,
       name: displayName,
-      matchType: 'Official', // FIP = Official (IMMUTABLE)
-      matchDate: finalDate, // Supabase manual date overrides
+      matchType: 'Official',
+      matchDate: finalDate,
       createdAt: fipMatch.date || matchedSupa?.createdAt,
       events: matchedSupa?.events || [],
       analytics,
@@ -735,23 +1197,24 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
       gameLabel: fipMatch.round ? `G${fipMatch.round}` : `G${idx + 1}`,
       opponent: oppName,
       partials: normalizedPartials,
+      fipRoster: fipMatch.players || [],
       fipVerified: true,
-      hasSupabaseScout: Boolean(matchedSupa),
+      hasSupabaseScout: Boolean(matchedSupa && ((Array.isArray(matchedSupa.events) && matchedSupa.events.length > 0) || matchedSupa.hasSupabaseScout || (matchedSupa.id && !String(matchedSupa.id).startsWith('fip_')))),
       isScoreOverridden: hasSupaScoreOverride,
       rawFip: fipMatch,
       rawSupa: matchedSupa
     });
   });
 
-  // 2. Add remaining non-FIP Supabase matches (e.g. Friendlies / Scrimmages)
   (supabaseMatches || []).forEach((sm, smIdx) => {
     if (matchedSupaNames.has(sm.name)) return;
 
     const meta = metaMap[sm.name] || {};
-    const matchType = sm.match_type || sm.matchType || meta.matchType || 'Friendly';
+    const rawType = sm.match_type || sm.matchType || meta.matchType || 'Friendly';
+    const isOfficial = matchesFilterType(rawType, 'OFFICIAL');
+    const matchType = isOfficial ? 'Official' : rawType;
     const sDate = sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || meta.matchDate || sm.createdAt || '').slice(0, 10);
 
-    // Single source of truth for scores
     const pts = (sm.home_score !== undefined && sm.home_score !== null && Number(sm.home_score) > 0)
       ? Number(sm.home_score)
       : (sm.pts !== undefined && sm.pts !== null && Number(sm.pts) > 0
@@ -831,7 +1294,6 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
 export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType = 'ALL', metaMap = {}) {
   const mergedLogs = [];
 
-  // 1. Process FIP logs (FIP official matches)
   if (matchesFilterType('OFFICIAL', filterType)) {
     (fipLog || []).forEach((fipMatch, idx) => {
       const fipDate = (fipMatch.date || '').slice(0, 10);
@@ -841,7 +1303,6 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       const oppName = isHome ? awayTeam : homeTeam;
       const oppLower = oppName.toLowerCase();
 
-      // Search for match in Supabase by date or opponent name keyword
       const matchedSupa = (supabaseMatches || []).find(sm => {
         const sDate = (sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || sm.createdAt || '')).slice(0, 10);
         const sName = (sm.name || '').toLowerCase();
@@ -879,7 +1340,6 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       const fipPts = isHome ? Number(fipMatch.homeScore ?? 0) : Number(fipMatch.awayScore ?? 0);
       const fipOppPts = isHome ? Number(fipMatch.awayScore ?? 0) : Number(fipMatch.homeScore ?? 0);
 
-      // SUPABASE OVERRIDES FIP IF SCORE OVERRIDE EXISTS
       const finalPts = (hasSupaScoreOverride && supaTeamScore !== null) ? supaTeamScore : fipPts;
       const finalOppPts = (hasSupaScoreOverride && supaOppScore !== null) ? supaOppScore : fipOppPts;
       const diff = finalPts - finalOppPts;
@@ -912,8 +1372,8 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
         isWin: isWin,
         resultText: isWin ? 'V' : (finalPts === finalOppPts ? 'P' : 'S'),
         partials: normalizedPartials,
+        fipRoster: fipMatch.players || [],
 
-        // Supabase Hustle & Playmaking (Graceful fallback to null / '-')
         ast: supaAnalytics?.teamOverview?.ast ?? null,
         tov: supaAnalytics?.teamOverview?.tov ?? null,
         astTovRatio: supaAnalytics?.ballControlAnalysis?.astTovRatio ?? null,
@@ -923,7 +1383,7 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
         pir: supaAnalytics?.teamOverview?.pir ?? null,
 
         fipVerified: true,
-        hasSupabaseScout: Boolean(matchedSupa && Array.isArray(matchedSupa.events) && matchedSupa.events.length > 0),
+        hasSupabaseScout: Boolean(matchedSupa && ((Array.isArray(matchedSupa.events) && matchedSupa.events.length > 0) || matchedSupa.hasSupabaseScout)),
         isScoreOverridden: hasSupaScoreOverride,
         rawFip: fipMatch,
         rawSupa: matchedSupa
@@ -931,12 +1391,10 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
     });
   }
 
-  // 2. Add remaining matches from Supabase (Official not in FIP, or Friendlies)
   (supabaseMatches || []).forEach((sm, smIdx) => {
     const sType = sm.match_type || sm.matchType || 'Friendly';
     if (!matchesFilterType(sType, filterType)) return;
 
-    // Check if this Supabase match was already incorporated via FIP match in Part 1
     const alreadyIncorporatedInFip = mergedLogs.some(ml => 
       (sm.id && ml.id === sm.id) ||
       (sm.name && ml.rawSupa?.name === sm.name)
@@ -945,7 +1403,6 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
 
     const supaMeta = (sm.name && metaMap && metaMap[sm.name]) ? metaMap[sm.name] : {};
     
-    // Strict Single Source of Truth for final match scores:
     const supaHome = sm.home_score !== undefined && sm.home_score !== null && Number(sm.home_score) > 0 ? Number(sm.home_score) : null;
     const supaAway = sm.away_score !== undefined && sm.away_score !== null && Number(sm.away_score) > 0 ? Number(sm.away_score) : null;
     const metaHome = supaMeta.overrideTeamScore !== undefined && supaMeta.overrideTeamScore !== null ? Number(supaMeta.overrideTeamScore) : null;
@@ -958,18 +1415,19 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       a = calculateMatchAnalytics(sm.events, [], [], { teamScore: supaHome ?? metaHome ?? directPts, oppScore: supaAway ?? metaAway ?? directOppPts });
     }
 
-    // NEVER dynamically reduce events if match has official scores
     const pts = supaHome ?? metaHome ?? directPts ?? (a?.teamOverview?.pts || 0);
     const oppPts = supaAway ?? metaAway ?? directOppPts ?? (a?.teamOverview?.opponentScore || 0);
     const diff = pts - oppPts;
     const isWin = pts > oppPts;
 
-    // Strict date from scouting_matches: match_date takes absolute priority over createdAt
     const rawDate = sm.match_date ? String(sm.match_date).split('T')[0] : (sm.matchDate || supaMeta.matchDate || (sm.createdAt ? sm.createdAt.split('T')[0] : 'n.a.'));
     const sDate = rawDate && rawDate !== 'n.a.' ? String(rawDate).slice(0, 10) : 'n.a.';
     const sName = sm.name || sm.match_name || `Partita ${smIdx + 1}`;
     const oppName = sm.opponent || sm.opponentName || sm.opponent_name || sName.replace(/^BBA\s*(vs|contro|-)\s*/i, '').trim() || sName;
     const isHome = sm.is_home !== undefined ? Boolean(sm.is_home) : (sm.isHomeGame !== undefined ? Boolean(sm.isHomeGame) : true);
+
+    const isOfficial = matchesFilterType(sType, 'OFFICIAL');
+    const finalMatchType = isOfficial ? 'Official' : sType;
 
     mergedLogs.push({
       id: sm.id || `supa_${sName}_${smIdx}`,
@@ -977,12 +1435,12 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       date: sDate,
       match_date: sDate,
       matchDate: sDate,
-      round: sType === 'Official' ? `G${mergedLogs.length + 1}` : 'AMICH.',
-      gameLabel: sType === 'Official' ? `G${mergedLogs.length + 1}` : `A${smIdx + 1}`,
+      round: isOfficial ? `G${mergedLogs.length + 1}` : 'AMICH.',
+      gameLabel: isOfficial ? `G${mergedLogs.length + 1}` : `A${smIdx + 1}`,
       opponent: oppName,
       isHomeGame: isHome,
       location: isHome ? 'Casa' : 'Trasferta',
-      matchType: sType,
+      matchType: finalMatchType,
 
       home_score: pts,
       away_score: oppPts,
@@ -1002,13 +1460,12 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       pir: a?.teamOverview?.pir ?? null,
 
       fipVerified: false,
-      hasSupabaseScout: Boolean(sm && Array.isArray(sm.events) && sm.events.length > 0),
+      hasSupabaseScout: Boolean(sm && ((Array.isArray(sm.events) && sm.events.length > 0) || sm.hasSupabaseScout || true)),
       rawFip: null,
       rawSupa: sm,
       events: sm.events || []
     });
   });
 
-  // Sort chronologically (oldest to newest for charts, or newest to oldest for tables)
   return mergedLogs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 }

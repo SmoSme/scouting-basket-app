@@ -7,7 +7,7 @@ import {
   TrendingUp, Trophy, Target, Shield, Activity, RefreshCw, 
   Filter, Calendar, Hash, Eye, Download, AlertCircle, CheckCircle2, 
   Zap, BarChart3, ChevronRight, Layers, Flame, ShieldCheck, Clock,
-  Users, Search, ChevronUp, ChevronDown, Home, Navigation, Info
+  Users, Search, ChevronUp, ChevronDown, Home, Navigation, Info, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { aggregateSeasonStats } from '../utils/seasonAggregator';
@@ -390,13 +390,32 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     return buildHybridGameLog(fipTrends?.log || [], filteredMatches, matchTypeFilter, metaMap);
   }, [fipTrends, filteredMatches, matchTypeFilter, metaMap]);
 
+  // Missing scouting matches in the active game log for dynamic alert
+  const missingScoutMatches = useMemo(() => {
+    if (!Array.isArray(hybridLogs)) return [];
+    return hybridLogs.filter(m => m && !m.hasSupabaseScout);
+  }, [hybridLogs]);
+
+  const missingMatchNames = useMemo(() => {
+    if (!Array.isArray(missingScoutMatches) || missingScoutMatches.length === 0) return '';
+    return missingScoutMatches
+      .filter(Boolean)
+      .map(m => {
+        const opp = m?.opponent ? `${m.isHomeGame ? 'vs' : '@'} ${m.opponent}` : (m?.name || 'Partita');
+        const d = m?.date && m.date !== 'n.a.' ? ` (${m.date})` : '';
+        return `${opp}${d}`;
+      })
+      .filter(Boolean)
+      .join(', ');
+  }, [missingScoutMatches]);
+
   // Supercharged BBA Roster List (FIP Volume + Supabase Efficiency & Playmaking, dynamically filtered)
   const bbaRosterList = useMemo(() => {
     const bbaId = import.meta.env.VITE_BBA_TEAM_ID || BBA_TEAM_ID;
     const fipList = fipRosters?.[bbaId] || fipRosters?.['team_bba_academy'] || [];
     const bbaStarters = startersData?.[bbaId] || startersData?.['team_bba_academy'] || null;
-    return buildSuperchargedBbaRoster(fipList, rawSupabaseLogs, bbaStarters, matchTypeFilter, metaMap);
-  }, [fipRosters, rawSupabaseLogs, startersData, matchTypeFilter, metaMap]);
+    return buildSuperchargedBbaRoster(fipList, rawSupabaseLogs, bbaStarters, matchTypeFilter, metaMap, hybridLogs);
+  }, [fipRosters, rawSupabaseLogs, startersData, matchTypeFilter, metaMap, hybridLogs]);
 
   const handleSort = (key) => {
     setSortConfig(prev => {
@@ -408,29 +427,31 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
   };
 
   const filteredRoster = useMemo(() => {
-    let list = [...bbaRosterList];
+    let list = Array.isArray(bbaRosterList) ? bbaRosterList.filter(Boolean) : [];
     if (rosterSearch.trim()) {
       const q = rosterSearch.toLowerCase();
       list = list.filter(p => 
-        (p.name && p.name.toLowerCase().includes(q)) || 
-        String(p.number).includes(q) ||
-        (p.position && p.position.toLowerCase().includes(q))
+        (p?.name && p.name.toLowerCase().includes(q)) || 
+        (p?.number != null && String(p.number).includes(q)) ||
+        (p?.position && p.position.toLowerCase().includes(q))
       );
     }
     list.sort((a, b) => {
-      let valA = a[sortConfig.key];
-      let valB = b[sortConfig.key];
-      if (sortConfig.key === 'startPercentage') {
+      if (!a) return 1;
+      if (!b) return -1;
+      let valA = a[sortConfig?.key || 'number'];
+      let valB = b[sortConfig?.key || 'number'];
+      if (sortConfig?.key === 'startPercentage') {
         valA = parseInt(String(valA || '0').replace('%', ''), 10) || 0;
         valB = parseInt(String(valB || '0').replace('%', ''), 10) || 0;
-      } else if (sortConfig.key === 'number') {
+      } else if (sortConfig?.key === 'number') {
         valA = parseInt(String(valA || '0'), 10) || 0;
         valB = parseInt(String(valB || '0'), 10) || 0;
       } else {
-        valA = typeof valA === 'number' ? valA : (valA != null ? parseFloat(valA) : -9999);
-        valB = typeof valB === 'number' ? valB : (valB != null ? parseFloat(valB) : -9999);
+        valA = typeof valA === 'number' ? valA : (valA != null && !isNaN(valA) ? parseFloat(valA) : -9999);
+        valB = typeof valB === 'number' ? valB : (valB != null && !isNaN(valB) ? parseFloat(valB) : -9999);
       }
-      if (sortConfig.direction === 'asc') {
+      if (sortConfig?.direction === 'asc') {
         return valA > valB ? 1 : (valA < valB ? -1 : 0);
       }
       return valA < valB ? 1 : (valA > valB ? -1 : 0);
@@ -475,22 +496,26 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     setReviewLoading(true);
     try {
       const matchId = match.id || match.rawSupa?.id;
+      const isFipOnly = Boolean(match.isFipOnly || (!match.hasSupabaseScout && (match.fipVerified || match.rawFip)));
       let events = match.events;
 
-      if ((!events || events.length === 0) && matchId) {
+      if (!isFipOnly && (!events || events.length === 0) && matchId && !String(matchId).startsWith('fip_')) {
         events = await getMatchEvents(matchId);
+      } else if (isFipOnly) {
+        events = [];
       }
 
-      const sortedEvents = [...(events || [])].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
-      const resolvedDate = match.match_date || match.matchDate || metaMap[match.name]?.matchDate || (match.createdAt ? match.createdAt.split('T')[0] : 'n.a.');
-      const resolvedTeamScore = match.home_score ?? match.pts ?? match.displayedTeamPts ?? metaMap[match.name]?.overrideTeamScore ?? null;
-      const resolvedOppScore = match.away_score ?? match.oppPts ?? match.displayedOppPts ?? metaMap[match.name]?.overrideOppScore ?? null;
+      const sortedEvents = [...(events || [])].sort((a, b) => (Number(a?.id) || 0) - (Number(b?.id) || 0));
+      const resolvedDate = match.match_date || match.matchDate || (match.name && metaMap[match.name]?.matchDate) || (match.createdAt ? match.createdAt.split('T')[0] : 'n.a.');
+      const resolvedTeamScore = match.home_score ?? match.pts ?? match.displayedTeamPts ?? (match.name && metaMap[match.name]?.overrideTeamScore) ?? null;
+      const resolvedOppScore = match.away_score ?? match.oppPts ?? match.displayedOppPts ?? (match.name && metaMap[match.name]?.overrideOppScore) ?? null;
 
       setReviewMatch({
         ...match,
         id: matchId,
         name: match.name || match.opponent,
         events: sortedEvents,
+        isFipOnly,
         home_score: resolvedTeamScore,
         away_score: resolvedOppScore,
         pts: resolvedTeamScore,
@@ -1496,10 +1521,6 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     <th className="p-3 text-center">ESITO</th>
                     <th className="p-3 text-center">PUNTEGGIO</th>
                     <th className="p-3 text-center">QUARTI (PARTIALS)</th>
-                    <th className="p-3 text-center">+/-</th>
-                    <th className="p-3 text-center">eFG%</th>
-                    <th className="p-3 text-center">AST/TOV</th>
-                    <th className="p-3 text-center">DRB%</th>
                     <th className="p-3 text-center">VERIFICA</th>
                     <th className="p-3 text-right">AZIONE</th>
                   </tr>
@@ -1566,46 +1587,47 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="p-3 text-center font-mono font-black">
-                        <span className={item.diff > 0 ? 'text-emerald-700' : (item.diff < 0 ? 'text-rose-700' : 'text-[#022D32]')}>
-                          {item.diff > 0 ? `+${item.diff}` : item.diff}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
-                        {item.efgPct != null ? `${item.efgPct}%` : '—'}
-                      </td>
-                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
-                        {item.astTovRatio != null ? item.astTovRatio : '—'}
-                      </td>
-                      <td className="p-3 text-center font-mono font-bold text-[#022D32]">
-                        {item.drbPct != null ? `${item.drbPct}%` : '—'}
-                      </td>
                       <td className="p-3 text-center">
-                        {item.fipVerified ? (
+                        {item.hasSupabaseScout && item.fipVerified ? (
                           <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
                             <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
-                            FIP VERIFIED
+                            SCOUTING + FIP
+                          </span>
+                        ) : item.fipVerified ? (
+                          <span className="text-[10px] bg-sky-50 text-sky-800 border border-sky-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                            <ShieldCheck className="w-3 h-3 text-[#0284c7]" />
+                            FIP ONLY
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded">
-                            AMICHEVOLE
+                          <span className="text-[10px] bg-teal-50 text-teal-800 border border-teal-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                            <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
+                            SCOUTING ONLY
                           </span>
                         )}
                       </td>
                       <td className="p-3 text-right">
-                        {(item.rawSupa && Array.isArray(item.rawSupa.events) && item.rawSupa.events.length > 0) || (Array.isArray(item.events) && item.events.length > 0) || (item.rawSupa?.id || item.id) ? (
+                        {item.hasSupabaseScout ? (
                           <button
-                            onClick={() => handleOpenReview({ ...(item.rawSupa || {}), ...item, id: item.rawSupa?.id || item.id, events: item.rawSupa?.events || item.events })}
+                            onClick={() => {
+                              const bbaId = import.meta.env.VITE_BBA_TEAM_ID || BBA_TEAM_ID;
+                              const fipList = fipRosters?.[bbaId] || fipRosters?.['team_bba_academy'] || [];
+                              handleOpenReview({ 
+                                ...(item.rawSupa || {}), 
+                                ...item, 
+                                id: item.rawSupa?.id || item.id, 
+                                events: item.rawSupa?.events || item.events || [],
+                                isFipOnly: false,
+                                fipRoster: fipList
+                              });
+                            }}
                             className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs flex items-center gap-1.5 ml-auto active:scale-95 cursor-pointer"
-                            title="Apri analisi approfondita del match"
+                            title={language === 'it' ? 'Apri analisi approfondita del match' : 'Open deep match analytics'}
                           >
                             <Eye className="w-3.5 h-3.5" />
                             <span>ANALISI</span>
                           </button>
                         ) : (
-                          <span className="text-slate-400 text-xs italic font-medium pr-2">
-                            {item.fipVerified ? 'FIP ONLY' : 'NO SCOUT'}
-                          </span>
+                          <span className="text-xs font-mono text-slate-300 select-none px-3">—</span>
                         )}
                       </td>
                     </tr>
@@ -1658,6 +1680,18 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           </div>
         </div>
 
+        {/* Dynamic Missing-Data Alert (Requirement 4) */}
+        {missingScoutMatches.length > 0 && (
+          <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200/90 rounded-xl px-4 py-2.5 font-medium flex items-center gap-2 shadow-2xs">
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-none" />
+            <span>
+              {language === 'it' 
+                ? `Dati di scouting incompleti. Mancano i dati per: ${missingMatchNames}.` 
+                : `Incomplete scouting data. Missing scouting data for: ${missingMatchNames}.`}
+            </span>
+          </div>
+        )}
+
         {/* Supercharged BBA Roster Table */}
         <div className="bg-white rounded-2xl border border-[#DDF3E9] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
@@ -1691,7 +1725,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <th 
                     onClick={() => handleSort('games')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="FIP Official: Partite Giocate"
+                    title="Partite Giocate Dinamiche (PG)"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>PG</span>
@@ -1727,7 +1761,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <th 
                     onClick={() => handleSort('pointsAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="FIP Official: Punti Medi a Partita"
+                    title="Punti Medi a Partita"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>PUNTI/P</span>
@@ -1754,7 +1788,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     title="Efficienza: Percentuale da 2 Punti (2PT %)"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>2PT %</span>
+                      <span>2PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
                       {sortConfig.key === 'twoPct' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1778,7 +1812,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     title="Efficienza: Percentuale da 3 Punti (3PT %)"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>3PT %</span>
+                      <span>3PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
                       {sortConfig.key === 'threePct' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1787,7 +1821,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <th 
                     onClick={() => handleSort('ftAttAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Volume: Tiri Liberi Tentati per Partita (TL T/P)"
+                    title="Volume: Tiri Liberi Fatti / Tentati per Partita (TL T/P)"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>TL T/P</span>
@@ -1814,7 +1848,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     title="Supabase: Media Rimbalzi a Partita"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>REB/P</span>
+                      <span>REB/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
                       {sortConfig.key === 'rebAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1826,7 +1860,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     title="Supabase: Media Assist a Partita"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>AST/P</span>
+                      <span>AST/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
                       {sortConfig.key === 'astAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1838,8 +1872,44 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                     title="Supabase: Media Palle Perse a Partita"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>TOV/P</span>
+                      <span>TOV/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
                       {sortConfig.key === 'tovAvg' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('stlAvg')}
+                    className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
+                    title="Supabase: Media Palle Recuperate a Partita"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>STL/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      {sortConfig.key === 'stlAvg' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('blkAvg')}
+                    className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
+                    title="Supabase: Media Stoppate a Partita"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>BLK/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      {sortConfig.key === 'blkAvg' && (
+                        sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    onClick={() => handleSort('foulsAVG')}
+                    className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
+                    title="Media Falli Commessi a Partita"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>FALLI/P</span>
+                      {sortConfig.key === 'foulsAVG' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
                     </div>
@@ -1852,18 +1922,20 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
               <tbody className="divide-y divide-[#DDF3E9]">
                 {filteredRoster.length === 0 ? (
                   <tr>
-                    <td colSpan={16} className="p-8 text-center text-slate-400 font-medium italic">
+                    <td colSpan={19} className="p-8 text-center text-slate-400 font-medium italic">
                       {language === 'it' ? 'Nessun giocatore corrisponde alla ricerca.' : 'No players match your search query.'}
                     </td>
                   </tr>
                 ) : (
                   filteredRoster.map((player, pIdx) => {
-                    const startPctVal = parseInt(String(player.startPercentage || '0').replace('%', ''), 10) || 0;
-                    const tactical = getTacticalTags(player, player.games);
+                    if (!player) return null;
+                    const startPctVal = parseInt(String(player?.startPercentage || '0').replace('%', ''), 10) || 0;
+                    const tactical = getTacticalTags(player, player?.games || 0) || { tags: [], metrics: {} };
+                    const tacticalTags = Array.isArray(tactical?.tags) ? tactical.tags : [];
 
                     return (
                       <tr 
-                        key={player.fid || player.number}
+                        key={player.fid || player.number || `p_${pIdx}`}
                         onClick={() => setSelectedPlayer(player)}
                         className={`transition-colors cursor-pointer hover:bg-[#DDF3E9]/50 ${pIdx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/15'}`}
                       >
@@ -1896,10 +1968,10 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                           </div>
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
-                          {player.games}
+                          {player.games ?? 0}
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
-                          {player.timePlayedAVG != null ? formatMinutes(player.timePlayedAVG) : '—'}
+                          {player.timePlayedAVG != null && !isNaN(Number(player.timePlayedAVG)) && Number(player.timePlayedAVG) > 0 ? formatMinutes(player.timePlayedAVG) : '—'}
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold">
                           {player.startPercentage != null ? (
@@ -1917,34 +1989,60 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                           )}
                         </td>
                         <td className="p-3.5 text-center font-mono font-black text-[#022D32]">
-                          {typeof player.pointsAVG === 'number' ? player.pointsAVG.toFixed(1) : (player.pointsAVG || '0.0')}
+                          <span>{typeof player.pointsAVG === 'number' && !isNaN(player.pointsAVG) ? player.pointsAVG.toFixed(1) : (player.pointsAVG || '0.0')}</span>
                         </td>
-                        {/* 2PT F/P (Volume) - Comes from FIP twoMadeAVG or Supabase fg2m/gp */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium">
-                          {formatAverage(player.twoMadeAVG)}
+                        {/* 2PT F/P (Volume) */}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fg2a ? `${player.fg2m || 0}/${player.fg2a} da 2 totali` : undefined}>
+                          <div className="flex flex-col items-center">
+                            <span>
+                              {player.twoAttAvg != null && Number(player.twoAttAvg) > 0
+                                ? `${formatAverage(player.twoMadeAVG)} / ${formatAverage(player.twoAttAvg)}`
+                                : formatAverage(player.twoMadeAVG)}
+                            </span>
+                            {Number(player.fg2a) > 0 && (
+                              <span className="text-[10px] text-gray-400 font-normal">
+                                ({player.fg2m || 0}/{player.fg2a} tot)
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* 2PT % (Efficiency) - Comes strictly from Supabase twoPct */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {formatPercentage(player.twoPct)}
+                          <span>{formatPercentage(player.twoPct)}</span>
                         </td>
 
                         {/* 3PT F/P (Volume) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium">
-                          {formatAverage(player.threeMadeAVG)}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fg3a ? `${player.fg3m || 0}/${player.fg3a} da 3 totali` : undefined}>
+                          <div className="flex flex-col items-center">
+                            <span>
+                              {player.threeAttAvg != null && Number(player.threeAttAvg) > 0
+                                ? `${formatAverage(player.threeMadeAVG)} / ${formatAverage(player.threeAttAvg)}`
+                                : formatAverage(player.threeMadeAVG)}
+                            </span>
+                            {Number(player.fg3a) > 0 && (
+                              <span className="text-[10px] text-gray-400 font-normal">
+                                ({player.fg3m || 0}/{player.fg3a} tot)
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* 3PT % (Efficiency) */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {formatPercentage(player.threePct)}
+                          <span>{formatPercentage(player.threePct)}</span>
                         </td>
-                        {/* TL T/P (Volume Tentati) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.ftAtt ? `${player.ftAtt} TL tentati totali (${player.ftMade || 0} realizzati)` : undefined}>
+                        {/* TL T/P (Volume: Made / Attempted) */}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fta ? `${player.ftm || 0}/${player.fta} TL totali (${formatPercentage(player.ftPct)})` : undefined}>
                           <div className="flex flex-col items-center">
-                            <span>{formatAverage(player.ftAttAvg)}</span>
-                            {player.ftAtt > 0 && (
+                            <span>
+                              {player.ftAttAvg != null && Number(player.ftAttAvg) > 0
+                                ? `${formatAverage(player.ftMadeAvg)} / ${formatAverage(player.ftAttAvg)}`
+                                : (player.ftMadeAvg != null && Number(player.ftMadeAvg) > 0 ? formatAverage(player.ftMadeAvg) : '—')}
+                            </span>
+                            {Number(player.fta) > 0 && (
                               <span className="text-[10px] text-gray-400 font-normal">
-                                ({player.ftAtt} tot)
+                                ({player.ftm || 0}/{player.fta} tot)
                               </span>
                             )}
                           </div>
@@ -1952,33 +2050,42 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
                         {/* TL % (Realizzazione) */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {formatPercentage(player.ftPct)}
+                          <span>{formatPercentage(player.ftPct)}</span>
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
-                          {formatAverage(player.rebAvg)}
+                          <span>{formatAverage(player.rebAvg)}</span>
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
-                          {formatAverage(player.astAvg)}
+                          <span>{formatAverage(player.astAvg)}</span>
                         </td>
                         <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
-                          {formatAverage(player.tovAvg)}
+                          <span>{formatAverage(player.tovAvg)}</span>
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                          <span>{formatAverage(player.stlAvg)}</span>
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                          <span>{formatAverage(player.blkAvg)}</span>
+                        </td>
+                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                          <span>{formatAverage(player.foulsAVG)}</span>
                         </td>
                         <td className="p-3.5 text-left">
-                          {tactical.tags.length > 0 ? (
+                          {tacticalTags.length > 0 ? (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {tactical.tags.map(tag => (
+                              {tacticalTags.map(tag => (
                                 <span 
-                                  key={tag.id}
-                                  className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1 ${tag.badgeClass}`}
-                                  title={language === 'it' ? tag.labelIt : tag.label}
+                                  key={tag.id || tag.label}
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1 ${tag.badgeClass || ''}`}
+                                  title={language === 'it' ? (tag.labelIt || tag.label) : tag.label}
                                 >
                                   <TacticalTagIcon id={tag.id} className="w-3 h-3 flex-none" />
-                                  <span>{language === 'it' ? tag.labelIt : tag.label}</span>
+                                  <span>{language === 'it' ? (tag.labelIt || tag.label) : tag.label}</span>
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <span className="text-slate-400 font-mono">—</span>
+                            <span className="text-slate-400 text-xs italic font-medium">—</span>
                           )}
                         </td>
                       </tr>
@@ -2013,6 +2120,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           teamName="BBA Basket Baronissi"
           language={language}
           t={t}
+          events={rawSupabaseLogs}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import {
   Target, Users, Clock, Shield, Zap, Sparkles, Layers, Ghost, 
   Calendar, Hash, Search, Filter, TrendingUp, BarChart2,
   Check, ArrowRight, ArrowLeft, UserCheck, Flame, ChevronRight, ChevronLeft,
-  Info, AlertTriangle, BookOpen, HelpCircle, Tag, Edit3, Pencil, Loader2
+  Info, AlertTriangle, BookOpen, HelpCircle, Tag, Edit3, Pencil, Loader2, Play
 } from 'lucide-react';
 import CourtPitchMap from './CourtPitchMap';
 import MetricGuideModal from './MetricGuideModal';
@@ -26,10 +26,26 @@ export default function MatchReviewModal({
   onDownloadCSV, 
   onUpdateMatchDate, 
   onUpdateMatchType, 
-  onUpdateScoreOverride 
+  onUpdateScoreOverride,
+  onResumeScouting
 }) {
   const { t, language } = useLanguage();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
+
+  // Strict FIP ONLY detection (Requirement 1)
+  const isFipOnly = Boolean(
+    match?.isFipOnly || 
+    (!match?.hasSupabaseScout && (match?.fipVerified || match?.rawFip)) ||
+    (matchId && String(matchId).startsWith('fip_'))
+  );
+
+  const [activeTab, setActiveTab] = useState(() => isFipOnly ? 'boxscore' : 'overview'); // 'overview' | 'quarters' | 'players' | 'shotmap' | 'boxscore' | 'playbyplay'
+
+  useEffect(() => {
+    if (isFipOnly && activeTab !== 'boxscore') {
+      setActiveTab('boxscore');
+    }
+  }, [isFipOnly, activeTab]);
+
   const [selectedPlayerNum, setSelectedPlayerNum] = useState(null);
   const [shotMapPlayerFilter, setShotMapPlayerFilter] = useState(null);
   const [shotMapSelectedZone, setShotMapSelectedZone] = useState('PAINT');
@@ -43,9 +59,14 @@ export default function MatchReviewModal({
   const [loadingEvents, setLoadingEvents] = useState(false);
 
   useEffect(() => {
+    if (isFipOnly) {
+      setEvents([]);
+      return;
+    }
+
     let isMounted = true;
     async function loadEvents() {
-      if (!activeMatchId) {
+      if (!activeMatchId || String(activeMatchId).startsWith('fip_')) {
         if (Array.isArray(match?.events)) {
           setEvents(match.events);
         }
@@ -68,7 +89,7 @@ export default function MatchReviewModal({
     return () => {
       isMounted = false;
     };
-  }, [activeMatchId]);
+  }, [activeMatchId, isFipOnly]);
 
   // Manual Score Override State
   const [overrideScores, setOverrideScores] = useState(() => match?.name ? getScoreOverride(match.name) : null);
@@ -166,15 +187,35 @@ export default function MatchReviewModal({
           ? Number(overrideScores.overrideOppScore)
           : null)));
 
-  // Compute full analytics dataset strictly from relational events array
+  // Compute full analytics dataset strictly from relational events array (Skipped if isFipOnly)
   const analytics = useMemo(() => {
+    if (isFipOnly) {
+      return {
+        teamOverview: {
+          pts: officialTeamScore ?? 0,
+          opponentScore: officialOppScore ?? 0,
+          pointDifferential: (officialTeamScore ?? 0) - (officialOppScore ?? 0)
+        },
+        efficiencyPillars: {},
+        fourFactors: {},
+        quarters: [],
+        playerStats: [],
+        teamLeaders: {},
+        zoneSummary: {},
+        totalEvents: 0,
+        opponentShooting: {},
+        reboundingAnalysis: {},
+        situational: {},
+        defensiveSchemes: {}
+      };
+    }
     return calculateMatchAnalytics(
       events || [], 
       [], 
       [], 
       { teamScore: officialTeamScore, oppScore: officialOppScore }
     );
-  }, [events, officialTeamScore, officialOppScore]);
+  }, [isFipOnly, events, officialTeamScore, officialOppScore]);
 
   // Unified shot zone stats strictly filtered for 2PT/3PT attempts and reacting to player filter
   const filteredShotMapEvents = useMemo(() => {
@@ -298,10 +339,75 @@ export default function MatchReviewModal({
     }
   };
 
+  // Raw FIP Boxscore rows for FIP ONLY matches (Requirement 1 & 2)
+  const fipBoxScorePlayers = useMemo(() => {
+    if (!isFipOnly && playerStats.length > 0) return playerStats;
+
+    const rosterSource = match?.fipRoster || match?.rawFip?.players || match?.players || [];
+    if (!Array.isArray(rosterSource) || rosterSource.length === 0) return [];
+
+    return rosterSource
+      .filter(Boolean)
+      .filter(p => {
+        const g = Number(p?.stats?.games ?? p?.games ?? 0);
+        const pts = Number(p?.stats?.pointsAVG ?? p?.pointsAVG ?? 0);
+        return g > 0 || pts > 0;
+      })
+      .map(p => {
+        const s = p?.stats || {};
+        const num = String(p?.number || '').trim();
+        const cleanName = `${p?.name || ''} ${p?.lastName || ''}`.trim() || `Giocatore #${num}`;
+        const pts = Number(s?.pointsAVG ?? p?.pointsAVG ?? 0);
+        const fg2m = Number(s?.inArcThrowsAVG ?? p?.twoMadeAVG ?? 0);
+        const pct2p = s?.inArcThrowsPercentage != null ? Math.round(Number(s.inArcThrowsPercentage)) : 0;
+        const fg2a = (pct2p > 0) ? Math.round(fg2m / (pct2p / 100)) : Math.round(fg2m);
+        const fg3m = Number(s?.outArcThrowsAVG ?? p?.threeMadeAVG ?? 0);
+        const pct3p = s?.outArcThrowsPercentage != null ? Math.round(Number(s.outArcThrowsPercentage)) : 0;
+        const fg3a = (pct3p > 0) ? Math.round(fg3m / (pct3p / 100)) : Math.round(fg3m);
+        const pctFt = s?.freeThrowsPercentage != null ? Math.round(Number(s.freeThrowsPercentage)) : 0;
+        const ftm = Math.max(0, Math.round(pts - (fg2m * 2 + fg3m * 3)));
+        const fta = (pctFt > 0) ? Math.round(ftm / (pctFt / 100)) : ftm;
+        const pf = Number(s?.foulsAVG ?? p?.foulsAVG ?? 0);
+        const pm = Number(s?.plusMinusAVG ?? p?.plusMinusAVG ?? 0);
+        const reb = Number(s?.reboundsAVG ?? p?.rebAvg ?? 0);
+        const ast = Number(s?.assistsAVG ?? p?.astAvg ?? 0);
+        const pir = Math.round(pts - (fg2a - fg2m) - (fg3a - fg3m) - (fta - ftm) + reb + ast - pf);
+
+        return {
+          number: num,
+          name: cleanName,
+          pts,
+          fg2m,
+          fg2a,
+          pct2p,
+          fg3m,
+          fg3a,
+          pct3p,
+          ftm,
+          fta,
+          pctFt,
+          reb,
+          ast,
+          stl: 0,
+          tov: 0,
+          pf,
+          fd: 0,
+          blk: 0,
+          pir,
+          plusMinus: pm,
+          gameScore: Math.round(pts + 0.4 * fg2m - 0.7 * fg2a - 0.4 * (fta - ftm) + 0.7 * reb + 0.7 * ast - pf),
+          timePlayed: s?.timePlayedAVG || 0
+        };
+      });
+  }, [isFipOnly, playerStats, match]);
+
   // Sortable Box Score rows
   const sortedPlayers = useMemo(() => {
-    const list = [...playerStats];
+    const baseList = isFipOnly ? fipBoxScorePlayers : (playerStats.length > 0 ? playerStats : fipBoxScorePlayers);
+    const list = Array.isArray(baseList) ? [...baseList] : [];
     list.sort((a, b) => {
+      if (!a) return 1;
+      if (!b) return -1;
       let valA = a[boxScoreSortKey];
       let valB = b[boxScoreSortKey];
       if (typeof valA === 'string') {
@@ -312,7 +418,7 @@ export default function MatchReviewModal({
       return boxScoreSortAsc ? valA - valB : valB - valA;
     });
     return list;
-  }, [playerStats, boxScoreSortKey, boxScoreSortAsc]);
+  }, [playerStats, fipBoxScorePlayers, isFipOnly, boxScoreSortKey, boxScoreSortAsc]);
 
   const handleSortBoxScore = (key) => {
     if (boxScoreSortKey === key) {
@@ -473,6 +579,16 @@ export default function MatchReviewModal({
           </div>
 
           <div className="flex items-center gap-2">
+            {!isFipOnly && onResumeScouting && (
+              <button
+                onClick={() => onResumeScouting(match, events)}
+                className="flex items-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer border border-[#0CA17A]"
+                title={language === 'it' ? 'Riprendi Live Scouting' : 'Resume Live Scouting'}
+              >
+                <Play className="w-3.5 h-3.5 fill-white text-white" />
+                <span>{language === 'it' ? 'Riprendi Live' : 'Resume Live'}</span>
+              </button>
+            )}
             <button
               onClick={() => setActiveMetricGuideKey('pillars')}
               className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-black px-2.5 sm:px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95"
@@ -481,14 +597,16 @@ export default function MatchReviewModal({
               <BookOpen className="w-3.5 h-3.5 text-amber-400" />
               <span>{t('metric_guide')}</span>
             </button>
-            <button
-              onClick={() => onDownloadCSV && onDownloadCSV(activeMatchId || match?.name || 'Match', match?.name || 'Match', events || [])}
-              className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
-              title={t('export_csv')}
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>{t('export_csv')}</span>
-            </button>
+            {!isFipOnly && (
+              <button
+                onClick={() => onDownloadCSV && onDownloadCSV(activeMatchId || match?.name || 'Match', match?.name || 'Match', events || [])}
+                className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
+                title={t('export_csv')}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{t('export_csv')}</span>
+              </button>
+            )}
             <button
               onClick={onClose}
               className="p-1.5 bg-[#011C20] hover:bg-white/10 text-emerald-200 hover:text-white border border-[#0CA17A]/30 rounded-lg transition-all"
@@ -500,92 +618,101 @@ export default function MatchReviewModal({
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. NAVIGATION TABS (6 PROFESSIONAL SCOUTING TIERS)                       */}
+        {/* 2. NAVIGATION TABS (Strictly Box Score ONLY when FIP ONLY)                 */}
         {/* ========================================================================= */}
         <div className="flex border-b border-[#DDF3E9] bg-white px-2 sm:px-4 pt-2 gap-1 overflow-x-auto no-scrollbar flex-none">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'overview'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <BarChart2 className="w-3.5 h-3.5" />
-            {t('tab_overview')}
-          </button>
+          {isFipOnly ? (
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#0CA17A] text-white rounded-t-lg text-xs font-black shadow-xs">
+              <Trophy className="w-3.5 h-3.5" />
+              <span>{language === 'it' ? 'TABELLINO UFFICIALE FIP' : 'OFFICIAL FIP BOX SCORE'}</span>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'overview'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <BarChart2 className="w-3.5 h-3.5" />
+                {t('tab_overview')}
+              </button>
 
-          <button
-            onClick={() => setActiveTab('situational')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'situational'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            {t('tab_situational')}
-          </button>
+              <button
+                onClick={() => setActiveTab('situational')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'situational'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                {t('tab_situational')}
+              </button>
 
-          <button
-            onClick={() => setActiveTab('quarters')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'quarters'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            {t('tab_quarters')} ({quarters.length})
-          </button>
+              <button
+                onClick={() => setActiveTab('quarters')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'quarters'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                {t('tab_quarters')} ({quarters.length})
+              </button>
 
-          <button
-            onClick={() => setActiveTab('players')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'players'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            {t('tab_players')} ({playerStats.length})
-          </button>
+              <button
+                onClick={() => setActiveTab('players')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'players'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                {t('tab_players')} ({playerStats.length})
+              </button>
 
-          <button
-            onClick={() => setActiveTab('shotmap')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'shotmap'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <PieChart className="w-3.5 h-3.5" />
-            {t('tab_shotmap')}
-          </button>
+              <button
+                onClick={() => setActiveTab('shotmap')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'shotmap'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <PieChart className="w-3.5 h-3.5" />
+                {t('tab_shotmap')}
+              </button>
 
-          <button
-            onClick={() => setActiveTab('boxscore')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'boxscore'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <Trophy className="w-3.5 h-3.5" />
-            {t('tab_boxscore')}
-          </button>
+              <button
+                onClick={() => setActiveTab('boxscore')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'boxscore'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <Trophy className="w-3.5 h-3.5" />
+                {t('tab_boxscore')}
+              </button>
 
-          <button
-            onClick={() => setActiveTab('playbyplay')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
-              activeTab === 'playbyplay'
-                ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
-                : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
-            }`}
-          >
-            <List className="w-3.5 h-3.5" />
-            {t('tab_playbyplay')} ({totalEvents})
-          </button>
+              <button
+                onClick={() => setActiveTab('playbyplay')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-black transition-all border-b-2 flex-none ${
+                  activeTab === 'playbyplay'
+                    ? 'bg-[#0CA17A] text-white border-[#022D32] shadow-sm font-black'
+                    : 'text-[#022D32]/70 border-transparent hover:text-[#022D32] hover:bg-[#DDF3E9]/50 font-bold'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                {t('tab_playbyplay')} ({totalEvents})
+              </button>
+            </>
+          )}
         </div>
 
         {/* ========================================================================= */}
@@ -604,7 +731,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB 1: EXECUTIVE OVERVIEW & FOUR FACTORS                              */}
           {/* ===================================================================== */}
-          {activeTab === 'overview' && (
+          {!isFipOnly && activeTab === 'overview' && (
             <div className="space-y-4">
               {/* Contextual Scouting Intelligence Bar */}
               <div className="bg-[#DDF3E9] border border-[#C6E8DB] rounded-2xl p-3 px-4 flex items-center justify-between gap-3 text-xs flex-wrap shadow-xs text-[#022D32]">
@@ -1002,7 +1129,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB: SITUATIONAL SCOUTING, OPPONENT SHOT PROFILE & DEFENSIVE SCHEMES */}
           {/* ===================================================================== */}
-          {activeTab === 'situational' && (
+          {!isFipOnly && activeTab === 'situational' && (
             <div className="space-y-4">
               {/* Contextual Intelligence Banner */}
               <div className="bg-white/80 border border-[#DDF3E9] rounded-xl p-2.5 px-3.5 flex items-center justify-between gap-3 text-xs flex-wrap shadow-sm">
@@ -1414,7 +1541,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB 2: BY QUARTER (PERIOD ANALYTICS & MOMENTUM)                       */}
           {/* ===================================================================== */}
-          {activeTab === 'quarters' && (
+          {!isFipOnly && activeTab === 'quarters' && (
             <div className="space-y-4">
               {/* Detailed Quarter Breakdown Table */}
               <div className="glass-card p-4 border-[#DDF3E9] overflow-x-auto">
@@ -1563,7 +1690,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB 3: PLAYER CARDS & PROFILES                                        */}
           {/* ===================================================================== */}
-          {activeTab === 'players' && (
+          {!isFipOnly && activeTab === 'players' && (
             <div className="space-y-4">
               {/* Horizontal Player Carousel / Selector with Controls */}
               <div className="glass-card p-2.5 border-[#DDF3E9] space-y-1.5">
@@ -1942,7 +2069,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB 4: SHOT MAP & ZONE EFFICIENCY                                    */}
           {/* ===================================================================== */}
-          {activeTab === 'shotmap' && (
+          {!isFipOnly && activeTab === 'shotmap' && (
             <div className="space-y-4">
               {/* Filter Row: Team or Individual Player */}
               <div className="glass-card p-3 border-[#DDF3E9] flex flex-wrap items-center justify-between gap-3">
@@ -2092,12 +2219,23 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {activeTab === 'boxscore' && (
             <div className="space-y-4">
+              {isFipOnly && (
+                <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 font-medium flex items-center gap-2 shadow-2xs">
+                  <ShieldCheck className="w-4 h-4 text-[#0CA17A] flex-none" />
+                  <span>
+                    {language === 'it' 
+                      ? 'Partita ufficiale FIP: visualizzazione tabellino ufficiale estratto dai dati FIP.' 
+                      : 'Official FIP match: official box score view populated from FIP data.'}
+                  </span>
+                </div>
+              )}
+
               <div className="glass-card p-4 border-[#DDF3E9] overflow-x-auto">
                 <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3 mb-3">
                   <div className="flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      OFFICIAL FIBA BOX SCORE — SORTABLE METRICS
+                      {isFipOnly ? (language === 'it' ? 'TABELLINO UFFICIALE FIP' : 'OFFICIAL FIP BOX SCORE') : 'OFFICIAL FIBA BOX SCORE — SORTABLE METRICS'}
                     </h3>
                   </div>
                   <div className="flex items-center gap-3">
@@ -2109,14 +2247,16 @@ export default function MatchReviewModal({
                       <span>What is PIR?</span>
                       <Info className="w-2.5 h-2.5" />
                     </button>
-                    <button
-                      onClick={() => setActiveMetricGuideKey('gamescore')}
-                      className="text-[10px] font-bold text-purple-700 hover:underline flex items-center gap-1 transition-colors"
-                      title="GameScore Guide"
-                    >
-                      <span>What is GS?</span>
-                      <Info className="w-2.5 h-2.5" />
-                    </button>
+                    {!isFipOnly && (
+                      <button
+                        onClick={() => setActiveMetricGuideKey('gamescore')}
+                        className="text-[10px] font-bold text-purple-700 hover:underline flex items-center gap-1 transition-colors"
+                        title="GameScore Guide"
+                      >
+                        <span>What is GS?</span>
+                        <Info className="w-2.5 h-2.5" />
+                      </button>
+                    )}
                     <span className="text-[10px] font-bold text-[#022D32]/60 hidden sm:inline">• Click column header to sort</span>
                   </div>
                 </div>
@@ -2162,11 +2302,11 @@ export default function MatchReviewModal({
                         <td className="py-2.5 px-2 text-[#022D32] font-bold truncate max-w-[150px]">{r.name}</td>
                         <td className="py-2.5 px-2 text-[#022D32] font-black text-sm">{r.pts}</td>
                         <td className="py-2.5 px-2 text-[#022D32]">{r.fg2m}/{r.fg2a}</td>
-                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct2p.toFixed(0)}%</td>
+                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct2p != null ? `${Number(r.pct2p).toFixed(0)}%` : '—'}</td>
                         <td className="py-2.5 px-2 text-[#022D32]">{r.fg3m}/{r.fg3a}</td>
-                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct3p.toFixed(0)}%</td>
+                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct3p != null ? `${Number(r.pct3p).toFixed(0)}%` : '—'}</td>
                         <td className="py-2.5 px-2 text-[#022D32]">{r.ftm}/{r.fta}</td>
-                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pctFt.toFixed(0)}%</td>
+                        <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pctFt != null ? `${Number(r.pctFt).toFixed(0)}%` : '—'}</td>
                         <td className="py-2.5 px-2 text-[#022D32]">{r.reb}</td>
                         <td className="py-2.5 px-2 text-[#022D32]">{r.ast}</td>
                         <td className="py-2.5 px-2 text-[#022D32] font-bold">{r.stl}</td>
@@ -2190,27 +2330,27 @@ export default function MatchReviewModal({
                   <tfoot>
                     <tr className="bg-white border-t-2 border-[#DDF3E9] text-[#022D32] font-black">
                       <td colSpan={2} className="py-3 px-2 text-[#022D32] uppercase tracking-wider font-black">TEAM TOTALS</td>
-                      <td className="py-3 px-2 text-[#022D32] text-base font-black">{teamOverview.pts}</td>
-                      <td className="py-3 px-2">{teamOverview.fg2m}/{teamOverview.fg2a}</td>
-                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pct2p.toFixed(0)}%</td>
-                      <td className="py-3 px-2">{teamOverview.fg3m}/{teamOverview.fg3a}</td>
-                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pct3p.toFixed(0)}%</td>
-                      <td className="py-3 px-2">{teamOverview.ftm}/{teamOverview.fta}</td>
-                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pctFt.toFixed(0)}%</td>
-                      <td className="py-3 px-2">{teamOverview.reb}</td>
-                      <td className="py-3 px-2">{teamOverview.ast}</td>
-                      <td className="py-3 px-2 text-[#022D32] font-black">{teamOverview.stl}</td>
-                      <td className="py-3 px-2 text-rose-700 font-black">{teamOverview.tov}</td>
-                      <td className="py-3 px-2">{teamOverview.pf}</td>
-                      <td className="py-3 px-2">{teamOverview.fd}</td>
-                      <td className="py-3 px-2">{teamOverview.blk}</td>
-                      <td className="py-3 px-2 text-emerald-800 text-base font-black">{teamOverview.pir}</td>
+                      <td className="py-3 px-2 text-[#022D32] text-base font-black">{displayedTeamScore}</td>
+                      <td className="py-3 px-2">{teamOverview.fg2m != null ? `${teamOverview.fg2m}/${teamOverview.fg2a}` : '—'}</td>
+                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pct2p != null ? `${Number(teamOverview.pct2p).toFixed(0)}%` : '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.fg3m != null ? `${teamOverview.fg3m}/${teamOverview.fg3a}` : '—'}</td>
+                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pct3p != null ? `${Number(teamOverview.pct3p).toFixed(0)}%` : '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.ftm != null ? `${teamOverview.ftm}/${teamOverview.fta}` : '—'}</td>
+                      <td className="py-3 px-2 font-mono font-black">{teamOverview.pctFt != null ? `${Number(teamOverview.pctFt).toFixed(0)}%` : '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.reb ?? '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.ast ?? '—'}</td>
+                      <td className="py-3 px-2 text-[#022D32] font-black">{teamOverview.stl ?? '—'}</td>
+                      <td className="py-3 px-2 text-rose-700 font-black">{teamOverview.tov ?? '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.pf ?? '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.fd ?? '—'}</td>
+                      <td className="py-3 px-2">{teamOverview.blk ?? '—'}</td>
+                      <td className="py-3 px-2 text-emerald-800 text-base font-black">{teamOverview.pir ?? '—'}</td>
                       <td className={`py-3 px-2 font-mono font-black ${
-                        (teamOverview.pointDifferential || 0) > 0 ? 'text-emerald-700' :
-                        (teamOverview.pointDifferential || 0) < 0 ? 'text-rose-700' :
+                        (displayedPointDiff || 0) > 0 ? 'text-emerald-700' :
+                        (displayedPointDiff || 0) < 0 ? 'text-rose-700' :
                         'text-[#022D32]'
                       }`}>
-                        {(teamOverview.pointDifferential || 0) > 0 ? `+${teamOverview.pointDifferential}` : (teamOverview.pointDifferential || 0)}
+                        {(displayedPointDiff || 0) > 0 ? `+${displayedPointDiff}` : (displayedPointDiff || 0)}
                       </td>
                       <td className="py-3 px-2 text-[#022D32] font-black">-</td>
                     </tr>
@@ -2223,7 +2363,7 @@ export default function MatchReviewModal({
           {/* ===================================================================== */}
           {/* TAB 6: PLAY-BY-PLAY FEED & SEARCH                                     */}
           {/* ===================================================================== */}
-          {activeTab === 'playbyplay' && (
+          {!isFipOnly && activeTab === 'playbyplay' && (
             <div className="space-y-3">
               {/* Filter Controls Bar */}
               <div className="glass-card p-3 border-[#DDF3E9] space-y-2">

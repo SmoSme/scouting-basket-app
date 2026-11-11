@@ -229,7 +229,7 @@ export function ensureFivePlayers(lineup = [], fallbackPlayers = []) {
  * 4. Derived purely from the event stream (safe against missing substitutions and retroactive reviews).
  */
 export function calculatePlusMinus(events = [], startingOnCourtNums = [], customRoster = []) {
-  const safeEvents = Array.isArray(events) ? events : [];
+  const safeEvents = Array.isArray(events) ? events.filter(Boolean) : [];
 
   // All known players to initialize plus/minus to 0
   const allKnownPlayers = [
@@ -253,6 +253,7 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
 
   // Include any player appearing in event Number or on_court / onCourtPlayerIds / onCourtNums
   safeEvents.forEach(e => {
+    if (!e) return;
     const num = getNum(e);
     if (num && num !== '-' && num !== 'TEAM' && num !== 'SUB' && num !== 'OPP') {
       if (plusMinusMap[num] === undefined) plusMinusMap[num] = 0;
@@ -279,6 +280,7 @@ export function calculatePlusMinus(events = [], startingOnCourtNums = [], custom
   // If event is a BBA Score, add points to EVERY player number in that event's on_court array.
   // If event is an OPPONENT Score, subtract points from EVERY player number in that event's on_court array.
   safeEvents.forEach(ev => {
+    if (!ev) return;
     // 1. Extract on_court snapshot for this specific event
     const rawOc = ev.on_court || ev.onCourtPlayerIds || ev.onCourtNums;
     let onCourtList = [];

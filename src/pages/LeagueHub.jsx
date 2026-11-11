@@ -602,10 +602,12 @@ const formatMedPlusMinus = (stats) => {
   return <span className="text-[#022D32]/60">0.0</span>;
 };
 
-// Formats seconds into MM:SS string (e.g. 1415 -> "23:35")
+// Formats seconds into MM:SS string (e.g. 1415 -> "23:35"), or decimal minutes if <= 60 (e.g. 28 -> "28.0")
 export function formatMinutes(seconds) {
   if (seconds == null || isNaN(seconds) || Number(seconds) <= 0) return '00:00';
-  const totalSec = Math.round(Number(seconds));
+  const num = Number(seconds);
+  if (num <= 60) return num.toFixed(1);
+  const totalSec = Math.round(num);
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
@@ -3079,6 +3081,34 @@ export default function LeagueHub({ showToast }) {
                                   </div>
                                 </th>
 
+                                {/* STL/G (Supabase) */}
+                                <th 
+                                  onClick={() => handleSort('stlAvg')}
+                                  className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'stlAvg' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
+                                  title="Supabase: Media Palle Recuperate a Partita (STL/G)"
+                                >
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    <span>STL/G</span>
+                                    <span className={`inline-flex items-center ${sortConfig.key === 'stlAvg' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
+                                      {sortConfig.key === 'stlAvg' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                    </span>
+                                  </div>
+                                </th>
+
+                                {/* BLK/G (Supabase) */}
+                                <th 
+                                  onClick={() => handleSort('blkAvg')}
+                                  className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'blkAvg' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
+                                  title="Supabase: Media Stoppate a Partita (BLK/G)"
+                                >
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    <span>BLK/G</span>
+                                    <span className={`inline-flex items-center ${sortConfig.key === 'blkAvg' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
+                                      {sortConfig.key === 'blkAvg' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                    </span>
+                                  </div>
+                                </th>
+
                                 <th className="p-3.5 sm:p-4 text-left min-w-[130px]">{lang === 'it' ? 'TAG TATTICI' : 'TACTICAL TAGS'}</th>
                               </>
                             ) : (
@@ -3156,7 +3186,7 @@ export default function LeagueHub({ showToast }) {
                         <tbody className="divide-y divide-[#DDF3E9]/80">
                           {filteredRoster.length === 0 ? (
                             <tr>
-                              <td colSpan={isSelectedBBA ? 14 : 12} className="p-8 text-center text-[#022D32]/60">
+                              <td colSpan={isSelectedBBA ? 16 : 12} className="p-8 text-center text-[#022D32]/60">
                                 <User className="w-8 h-8 text-[#022D32]/30 mx-auto mb-2 opacity-50" />
                                 <p className="font-bold text-[#022D32]">{t.noPlayersTitle}</p>
                                 <p className="text-xs text-[#022D32]/60 mt-1">
@@ -3310,8 +3340,19 @@ export default function LeagueHub({ showToast }) {
                                   {isSelectedBBA ? (
                                     <>
                                       {/* 2PT F/P (Volume) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium">
-                                        {formatAverage(p.twoMadeAVG)}
+                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fg2a ? `${p.fg2m || 0}/${p.fg2a} da 2 totali` : undefined}>
+                                        <div className="flex flex-col items-center">
+                                          <span>
+                                            {p.twoAttAvg != null && p.twoAttAvg > 0
+                                              ? `${formatAverage(p.twoMadeAVG)} / ${formatAverage(p.twoAttAvg)}`
+                                              : formatAverage(p.twoMadeAVG)}
+                                          </span>
+                                          {p.fg2a > 0 && (
+                                            <span className="text-[10px] text-gray-400 font-normal">
+                                              ({p.fg2m || 0}/{p.fg2a} tot)
+                                            </span>
+                                          )}
+                                        </div>
                                       </td>
 
                                       {/* 2PT % (Efficiency) */}
@@ -3320,8 +3361,19 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* 3PT F/P (Volume) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium">
-                                        {formatAverage(p.threeMadeAVG)}
+                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fg3a ? `${p.fg3m || 0}/${p.fg3a} da 3 totali` : undefined}>
+                                        <div className="flex flex-col items-center">
+                                          <span>
+                                            {p.threeAttAvg != null && p.threeAttAvg > 0
+                                              ? `${formatAverage(p.threeMadeAVG)} / ${formatAverage(p.threeAttAvg)}`
+                                              : formatAverage(p.threeMadeAVG)}
+                                          </span>
+                                          {p.fg3a > 0 && (
+                                            <span className="text-[10px] text-gray-400 font-normal">
+                                              ({p.fg3m || 0}/{p.fg3a} tot)
+                                            </span>
+                                          )}
+                                        </div>
                                       </td>
 
                                       {/* 3PT % (Efficiency) */}
@@ -3329,13 +3381,17 @@ export default function LeagueHub({ showToast }) {
                                         {formatPercentage(p.threePct)}
                                       </td>
 
-                                      {/* TL T/P (Volume Tentati) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.ftAtt ? `${p.ftAtt} TL tentati totali (${p.ftMade || 0} realizzati)` : undefined}>
+                                      {/* TL T/P (Volume: Made / Attempted) */}
+                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fta ? `${p.ftm || 0}/${p.fta} TL totali (${formatPercentage(p.ftPct)})` : undefined}>
                                         <div className="flex flex-col items-center">
-                                          <span>{formatAverage(p.ftAttAvg)}</span>
-                                          {p.ftAtt > 0 && (
+                                          <span>
+                                            {p.ftAttAvg != null && p.ftAttAvg > 0
+                                              ? `${formatAverage(p.ftMadeAvg)} / ${formatAverage(p.ftAttAvg)}`
+                                              : (p.ftMadeAvg != null && p.ftMadeAvg > 0 ? formatAverage(p.ftMadeAvg) : '—')}
+                                          </span>
+                                          {p.fta > 0 && (
                                             <span className="text-[10px] text-gray-400 font-normal">
-                                              ({p.ftAtt} tot)
+                                              ({p.ftm || 0}/{p.fta} tot)
                                             </span>
                                           )}
                                         </div>
@@ -3391,6 +3447,28 @@ export default function LeagueHub({ showToast }) {
                                                 : 'text-slate-400'
                                         }`}>
                                           {p.astTovRatio != null ? p.astTovRatio.toFixed(2) : '—'}
+                                        </span>
+                                      </td>
+
+                                      {/* STL/G (Supabase) */}
+                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
+                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                          p.stlAvg != null && p.stlAvg >= 1.5 
+                                            ? 'bg-emerald-50 text-emerald-700' 
+                                            : 'text-[#022D32]'
+                                        }`}>
+                                          {p.stlAvg != null ? p.stlAvg.toFixed(1) : '—'}
+                                        </span>
+                                      </td>
+
+                                      {/* BLK/G (Supabase) */}
+                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
+                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                          p.blkAvg != null && p.blkAvg >= 1.0 
+                                            ? 'bg-emerald-50 text-emerald-700' 
+                                            : 'text-[#022D32]'
+                                        }`}>
+                                          {p.blkAvg != null ? p.blkAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 

@@ -1,47 +1,206 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   X, ArrowLeft, ShieldCheck, Activity, BarChart2, Shield, 
-  HelpCircle, Zap, Scale, ChevronDown, ChevronUp, Trophy 
+  Zap, Scale, Trophy, Target, TrendingUp, Award, Layers, Clock, Flame
 } from 'lucide-react';
-import { TacticalTagIcon, getTacticalTags, TACTICAL_TAGS_CONFIG, formatMinutes } from '../pages/LeagueHub';
+import { TacticalTagIcon, getTacticalTags, formatMinutes } from '../pages/LeagueHub';
+import CourtPitchMap from './CourtPitchMap';
+import { computeZoneStats } from '../utils/basketballAnalytics';
 
 export default function PlayerProfileModal({
   player,
   onClose,
   teamName = 'BBA Basket Baronissi',
   language = 'it',
-  t = {}
+  t = {},
+  events = []
 }) {
-  const [collapsedSeasons, setCollapsedSeasons] = useState({});
-  const [showLegendModal, setShowLegendModal] = useState(false);
+  const [selectedZoneKey, setSelectedZoneKey] = useState(null);
 
   if (!player) return null;
 
-  const toggleSeasonCollapse = (seasonKey) => {
-    setCollapsedSeasons(prev => ({
-      ...prev,
-      [seasonKey]: !prev[seasonKey]
-    }));
-  };
-
-  const useCareerProfile = (player.games || 0) < 3 && player.uniquePlayer?.stats && (player.uniquePlayer.stats.games || 0) >= 3;
-  const profileStats = useCareerProfile ? player.uniquePlayer.stats : player;
-  const profileGames = useCareerProfile ? player.uniquePlayer.stats.games : player.games;
+  // Strictly Season 2026/2027 Team Scope
+  const profileStats = player;
+  const profileGames = player.games || 0;
   const profileAnalysis = getTacticalTags(profileStats, profileGames);
   const profileTags = profileAnalysis.tags;
   const profileMetrics = profileAnalysis.metrics;
 
-  const ppgDisplay = typeof player.pointsAVG === 'number' 
-    ? player.pointsAVG.toFixed(1) 
-    : (typeof player.pointsPerGame === 'number' ? player.pointsPerGame.toFixed(1) : (player.pointsAVG || '0.0'));
+  // Filter player shot events across the season for the court heatmap
+  const playerShotEvents = useMemo(() => {
+    const pNum = String(player?.number || '').trim();
+    const pName = String(player?.name || '').toLowerCase();
+    const allEvents = (Array.isArray(events) && events.length > 0)
+      ? events
+      : (Array.isArray(player?.shotEvents) ? player.shotEvents : (Array.isArray(player?.events) ? player.events : []));
 
-  const foulsDisplay = typeof player.foulsAVG === 'number' 
+    return allEvents.filter(e => {
+      const eNum = String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '').trim();
+      const ePlayer = String(e?.Player ?? e?.player ?? '').toLowerCase();
+      const isThisPlayer = (pNum && eNum === pNum) || (pName && ePlayer.includes(pName));
+      if (!isThisPlayer) return false;
+      const act = String(e?.Action ?? e?.action ?? '');
+      return act.includes('2PT') || act.includes('3PT') || act.includes('Tiro') || act.includes('Shot');
+    });
+  }, [events, player]);
+
+  const activeZoneStats = useMemo(() => {
+    return computeZoneStats(playerShotEvents);
+  }, [playerShotEvents]);
+
+  // Exact Season 2026/2027 Point Distribution (Scouting + FIP Hybrid Totals across all profileGames)
+  const season2m = Math.round(
+    player.hybridFg2m != null 
+      ? player.hybridFg2m 
+      : (player.fg2m != null ? player.fg2m : (player.twoMadeAVG != null ? player.twoMadeAVG * profileGames : 0))
+  );
+  const season3m = Math.round(
+    player.hybridFg3m != null 
+      ? player.hybridFg3m 
+      : (player.fg3m != null ? player.fg3m : (player.threeMadeAVG != null ? player.threeMadeAVG * profileGames : 0))
+  );
+  const rawPtsTotal = Math.round(
+    player.totalPts != null 
+      ? player.totalPts 
+      : (player.ptsTotal != null ? player.ptsTotal : (typeof player.pointsAVG === 'number' ? player.pointsAVG * profileGames : 0))
+  );
+  const seasonFtm = Math.round(
+    player.hybridFtm != null 
+      ? player.hybridFtm 
+      : (player.ftm != null ? player.ftm : Math.max(0, rawPtsTotal - (season2m * 2 + season3m * 3)))
+  );
+
+  const seasonPts2 = season2m * 2;
+  const seasonPts3 = season3m * 3;
+  const seasonPtsFT = seasonFtm;
+  const totalSeasonCalcPts = (seasonPts2 + seasonPts3 + seasonPtsFT) > 0 
+    ? (seasonPts2 + seasonPts3 + seasonPtsFT) 
+    : (rawPtsTotal || 0);
+
+  const seasonPct2 = totalSeasonCalcPts > 0 ? (seasonPts2 / totalSeasonCalcPts) * 100 : 0;
+  const seasonPct3 = totalSeasonCalcPts > 0 ? (seasonPts3 / totalSeasonCalcPts) * 100 : 0;
+  const seasonPctFT = totalSeasonCalcPts > 0 ? (seasonPtsFT / totalSeasonCalcPts) * 100 : 0;
+
+  // Metric Displays: Dual Display (Media & Totali) for EVERY Roster Table metric
+  // 1. Points (100% coordinated between Top Card and Shot Profile Bar)
+  const ptsTotalDisplay = totalSeasonCalcPts;
+  const ppgDisplay = profileGames > 0 
+    ? (totalSeasonCalcPts / profileGames).toFixed(1) 
+    : '0.0';
+
+  // 2. Minutes (FIP exclusive)
+  const minAvgVal = (player.timePlayedAVG != null && !isNaN(Number(player.timePlayedAVG)) && Number(player.timePlayedAVG) > 0) ? Number(player.timePlayedAVG) : null;
+  const minAvgDisplay = minAvgVal != null ? formatMinutes(minAvgVal) : '—';
+  const fipG = player.fipGamesCount || profileGames || 0;
+  const minTotalDisplay = (minAvgVal != null && fipG > 0) ? `${Math.round((minAvgVal / 60) * fipG)}' TOT` : '—';
+
+  // Helper to format Shooting Totals without mixing 3-game makes with 2-game attempts
+  const formatShotTotal = (totalMade, scoutMade, scoutAtt) => {
+    if (scoutAtt > 0) {
+      if (player.hasFewerScoutingGames && scoutMade != null && totalMade !== scoutMade) {
+        return `${totalMade} TOT (${scoutMade}/${scoutAtt}*)`;
+      }
+      return `${scoutMade ?? totalMade}/${scoutAtt} TOT`;
+    }
+    return totalMade > 0 ? `${totalMade} TOT` : '0 TOT';
+  };
+
+  // 3. 2-Pointers
+  const twoAvgVal = player.hybrid2MadeAvg != null ? player.hybrid2MadeAvg : player.twoMadeAVG;
+  const twoAvgDisplay = (typeof twoAvgVal === 'number' && !isNaN(twoAvgVal)) 
+    ? twoAvgVal.toFixed(1) 
+    : (profileGames > 0 ? (season2m / profileGames).toFixed(1) : '0.0');
+  const twoPctDisplay = player.twoPct != null ? `${player.twoPct}%` : '—';
+  const twoTotalDisplay = formatShotTotal(season2m, player.scoutedFg2m, player.fg2a);
+
+  // 4. 3-Pointers
+  const threeAvgVal = player.hybrid3MadeAvg != null ? player.hybrid3MadeAvg : player.threeMadeAVG;
+  const threeAvgDisplay = (typeof threeAvgVal === 'number' && !isNaN(threeAvgVal)) 
+    ? threeAvgVal.toFixed(1) 
+    : (profileGames > 0 ? (season3m / profileGames).toFixed(1) : '0.0');
+  const threePctDisplay = player.threePct != null ? `${player.threePct}%` : '—';
+  const threeTotalDisplay = formatShotTotal(season3m, player.scoutedFg3m, player.fg3a);
+
+  // 5. Free Throws
+  const ftAvgVal = player.hybridFtMadeAvg != null ? player.hybridFtMadeAvg : player.ftMadeAvg;
+  const ftAvgDisplay = (typeof ftAvgVal === 'number' && !isNaN(ftAvgVal)) 
+    ? ftAvgVal.toFixed(1) 
+    : (profileGames > 0 ? (seasonFtm / profileGames).toFixed(1) : '0.0');
+  const ftPctDisplay = player.ftPct != null ? `${player.ftPct}%` : '—';
+  const ftTotalDisplay = formatShotTotal(seasonFtm, player.scoutedFtm, player.fta);
+  
+  // 6. Rebounds
+  const rebAvgDisplay = (typeof player.rebAvg === 'number' && !isNaN(player.rebAvg)) ? player.rebAvg.toFixed(1) : '—';
+  const rebTotalDisplay = player.rebTotal != null ? player.rebTotal : (player.reb != null ? player.reb : '—');
+
+  // 7. Assists
+  const astAvgDisplay = (typeof player.astAvg === 'number' && !isNaN(player.astAvg)) ? player.astAvg.toFixed(1) : '—';
+  const astTotalDisplay = player.astTotal != null ? player.astTotal : (player.ast != null ? player.ast : '—');
+
+  // 8. Turnovers
+  const tovAvgDisplay = (typeof player.tovAvg === 'number' && !isNaN(player.tovAvg)) ? player.tovAvg.toFixed(1) : '—';
+  const tovTotalDisplay = player.tovTotal != null ? player.tovTotal : (player.tov != null ? player.tov : '—');
+
+  // 9. Steals
+  const stlAvgDisplay = (typeof player.stlAvg === 'number' && !isNaN(player.stlAvg)) ? player.stlAvg.toFixed(1) : '—';
+  const stlTotalDisplay = player.stlTotal != null ? player.stlTotal : (player.stl != null ? player.stl : '—');
+
+  // 10. Blocks
+  const blkAvgDisplay = (typeof player.blkAvg === 'number' && !isNaN(player.blkAvg)) ? player.blkAvg.toFixed(1) : '—';
+  const blkTotalDisplay = player.blkTotal != null ? player.blkTotal : (player.blk != null ? player.blk : '—');
+
+  // 11. Fouls
+  const foulsDisplay = (typeof player.foulsAVG === 'number' && !isNaN(player.foulsAVG))
     ? player.foulsAVG.toFixed(1) 
     : (player.foulsAVG || '0.0');
+  const foulsTotalDisplay = player.foulsTotal != null 
+    ? player.foulsTotal 
+    : (player.fouls != null ? player.fouls : (typeof player.stats?.fouls === 'number' ? player.stats.fouls : '—'));
 
-  const pmDisplay = typeof player.plusMinusAVG === 'number'
+  // 12. Plus/Minus
+  const pmDisplay = (typeof player.plusMinusAVG === 'number' && !isNaN(player.plusMinusAVG))
     ? (player.plusMinusAVG > 0 ? `+${player.plusMinusAVG.toFixed(1)}` : player.plusMinusAVG.toFixed(1))
     : (player.plusMinusAVG || '0.0');
+  const pmTotalDisplay = player.plusMinusTotal != null 
+    ? (player.plusMinusTotal > 0 ? `+${player.plusMinusTotal}` : String(player.plusMinusTotal)) 
+    : (player.plusMinus != null ? String(player.plusMinus) : '—');
+
+  // Shoot Zones Data Preparation from activeZoneStats or player
+  const sz = player.shootZones || {};
+  const defaultZones = [
+    { key: 'PAINT', id: 'paint', name: language === 'it' ? 'Paint / Sotto Canestro' : 'Paint / Key', type: '2PT', made: sz.paint?.made ?? player.scoutedFg2m ?? 0, att: sz.paint?.att ?? player.fg2a ?? 0, pct: sz.paint?.pct ?? player.twoPct, share: sz.paint?.share || 0 },
+    { key: 'MID-RANGE', id: 'mid', name: language === 'it' ? 'Mid-Range / Media Distanza' : 'Mid-Range', type: '2PT', made: sz.mid?.made ?? 0, att: sz.mid?.att ?? 0, pct: sz.mid?.pct ?? null, share: sz.mid?.share || 0 },
+    { key: 'TOP 3PT', id: 'top3', name: language === 'it' ? 'Top 3 / Arco Frontale' : 'Top 3 Arc', type: '3PT', made: sz.top3?.made ?? 0, att: sz.top3?.att ?? 0, pct: sz.top3?.pct ?? null, share: sz.top3?.share || 0 },
+    { key: 'WING 3PT', id: 'wing3', name: language === 'it' ? 'Wing 3 / Ali da 3' : 'Wing 3', type: '3PT', made: sz.wing3?.made ?? player.scoutedFg3m ?? 0, att: sz.wing3?.att ?? player.fg3a ?? 0, pct: sz.wing3?.pct ?? player.threePct, share: sz.wing3?.share || 0 },
+    { key: 'CORNER 3PT', id: 'corner3', name: language === 'it' ? 'Corner 3 / Angoli da 3' : 'Corner 3', type: '3PT', made: sz.corner3?.made ?? 0, att: sz.corner3?.att ?? 0, pct: sz.corner3?.pct ?? null, share: sz.corner3?.share || 0 }
+  ];
+
+  const shootZonesList = useMemo(() => {
+    if (activeZoneStats && activeZoneStats.byName && Object.keys(activeZoneStats.byName).length > 0) {
+      const p = activeZoneStats.byName.PAINT || {};
+      const mr = activeZoneStats.byName['MID-RANGE'] || {};
+      const t3 = activeZoneStats.byName['TOP 3PT'] || {};
+      const w3 = activeZoneStats.byName['WING 3PT'] || {};
+      const c3 = activeZoneStats.byName['CORNER 3PT'] || {};
+
+      const totalAtt = (p.attempts || 0) + (mr.attempts || 0) + (t3.attempts || 0) + (w3.attempts || 0) + (c3.attempts || 0);
+
+      if (totalAtt > 0) {
+        return [
+          { key: 'PAINT', name: language === 'it' ? 'Paint / Sotto Canestro' : 'Paint / Key', type: '2PT', made: p.made || 0, att: p.attempts || 0, pct: p.pct, share: totalAtt > 0 ? Math.round((p.attempts / totalAtt) * 100) : 0 },
+          { key: 'MID-RANGE', name: language === 'it' ? 'Mid-Range / Media Distanza' : 'Mid-Range', type: '2PT', made: mr.made || 0, att: mr.attempts || 0, pct: mr.pct, share: totalAtt > 0 ? Math.round((mr.attempts / totalAtt) * 100) : 0 },
+          { key: 'TOP 3PT', name: language === 'it' ? 'Top 3 / Arco Frontale' : 'Top 3 Arc', type: '3PT', made: t3.made || 0, att: t3.attempts || 0, pct: t3.pct, share: totalAtt > 0 ? Math.round((t3.attempts / totalAtt) * 100) : 0 },
+          { key: 'WING 3PT', name: language === 'it' ? 'Wing 3 / Ali da 3' : 'Wing 3', type: '3PT', made: w3.made || 0, att: w3.attempts || 0, pct: w3.pct, share: totalAtt > 0 ? Math.round((w3.attempts / totalAtt) * 100) : 0 },
+          { key: 'CORNER 3PT', name: language === 'it' ? 'Corner 3 / Angoli da 3' : 'Corner 3', type: '3PT', made: c3.made || 0, att: c3.attempts || 0, pct: c3.pct, share: totalAtt > 0 ? Math.round((c3.attempts / totalAtt) * 100) : 0 }
+        ];
+      }
+    }
+    return (Array.isArray(player.shootZones) && player.shootZones.length > 0) ? player.shootZones : defaultZones;
+  }, [activeZoneStats, player, language]);
+
+  const totalZoneAtt = shootZonesList.reduce((acc, z) => acc + (z.att || 0), 0);
+  const totalZoneMade = shootZonesList.reduce((acc, z) => acc + (z.made || 0), 0);
+  const overallZonePct = totalZoneAtt > 0 ? Math.round((totalZoneMade / totalZoneAtt) * 100) : null;
 
   return (
     <div className="fixed inset-0 z-50 w-full h-full min-h-screen bg-[#F8F9FA] text-[#022D32] overflow-y-auto animate-fade-in flex flex-col">
@@ -115,6 +274,12 @@ export default function PlayerProfileModal({
                     {t.fipVerifiedPill || 'FIP VERIFIED'}
                   </span>
                 )}
+                {player.hasSupabaseStats && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/30">
+                    <Activity className="w-3.5 h-3.5 text-[#0CA17A]" />
+                    SCOUTING SYNCED
+                  </span>
+                )}
               </div>
               <p className="text-sm text-slate-500 font-semibold flex items-center gap-2 mt-1">
                 {player.position && player.position.trim().toLowerCase() !== 'player' && (
@@ -153,104 +318,354 @@ export default function PlayerProfileModal({
           </div>
         </div>
 
-        {/* Core Stats Grid (Current Season) - 5 SaaS Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] block">{ppgDisplay}</span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">{t.modalPpg || (language === 'it' ? 'PUNTI/P' : 'POINTS/G')}</span>
-          </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#0CA17A] block">
-              {player.threePct != null ? `${player.threePct}%` : '—'}
+        {/* Section Header: Dual Display (Media & Totali) */}
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-[#0CA17A]" />
+            <span className="text-xs font-black uppercase text-[#022D32] tracking-wider">
+              {language === 'it' ? 'STATISTICHE STAGIONE: MEDIE & TOTALI' : 'SEASON PERFORMANCE: AVERAGES & TOTALS'}
             </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">{t.modalThree || '3PT%'}</span>
           </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
-            <span className={`font-mono text-3xl sm:text-4xl font-extrabold block ${Number(foulsDisplay) > 3.0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
-              {foulsDisplay}
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">{t.modalFouls || (language === 'it' ? 'FALLI/P' : 'FOULS/G')}</span>
-          </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center">
-            <span className={`font-mono text-3xl sm:text-4xl font-extrabold block ${player.plusMinusAVG > 0 ? 'text-[#0CA17A]' : player.plusMinusAVG < 0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
-              {pmDisplay}
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">{t.modalPlusMinus || '+/-'}</span>
-          </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center col-span-2 sm:col-span-1">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] block">{player.games}</span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">{t.modalGames || (language === 'it' ? 'PARTITE GIOCATE' : 'GAMES PLAYED')}</span>
-          </div>
+          <span className="text-xs font-mono text-slate-500 font-bold">
+            {player.games} {language === 'it' ? 'Partite Giocate' : 'Games Played'} • {player.startPercentage || '0%'} {language === 'it' ? 'Quintetto' : 'Starters'}
+          </span>
         </div>
 
-        {/* Supabase Proprietary Hustle & Playmaking Grid */}
-        {player.hasSupabaseStats && (
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#0CA17A]" />
-                  {language === 'it' ? 'PLAYMAKING & HUSTLE PROPRIETARI (SUPABASE)' : 'PROPRIETARY PLAYMAKING & HUSTLE (SUPABASE)'}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  INTERNAL TRACKING
-                </span>
-              </div>
-              <span className="text-xs font-mono text-slate-400">
-                {player.gpSupabase || player.games} {language === 'it' ? 'partite tracciate' : 'matches tracked'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div className="bg-slate-50 rounded-xl p-3.5 text-center border border-slate-100">
-                <span className="font-mono text-2xl font-black text-[#022D32] block">
-                  {player.astAvg != null ? player.astAvg.toFixed(1) : '—'}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mt-1">
-                  {t.colAst || 'AST/G'}
-                </span>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3.5 text-center border border-slate-100">
-                <span className="font-mono text-2xl font-black text-[#022D32] block">
-                  {player.rebAvg != null ? player.rebAvg.toFixed(1) : '—'}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mt-1">
-                  {t.colReb || 'REB/G'}
-                </span>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3.5 text-center border border-slate-100">
-                <span className="font-mono text-2xl font-black text-[#022D32] block">
-                  {player.tovAvg != null ? player.tovAvg.toFixed(1) : '—'}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mt-1">
-                  {t.colTov || 'TOV/G'}
-                </span>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3.5 text-center border border-slate-100">
-                <span className={`font-mono text-2xl font-black block ${
-                  player.astTovRatio >= 1.5 
-                    ? 'text-emerald-700' 
-                    : player.astTovRatio >= 1.0 
-                      ? 'text-[#022D32]' 
-                      : 'text-amber-700'
-                }`}>
-                  {player.astTovRatio != null ? player.astTovRatio.toFixed(2) : '—'}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mt-1">
-                  {t.colRatio || 'AST/TOV'}
-                </span>
-              </div>
-              <div className="bg-slate-50 rounded-xl p-3.5 text-center border border-slate-100 col-span-2 sm:col-span-1">
-                <span className="font-mono text-2xl font-black text-[#0CA17A] block">
-                  {player.efgPct != null ? `${player.efgPct}%` : '—'}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mt-1">
-                  eFG%
-                </span>
-              </div>
-            </div>
+        {/* Missing Scouting Alert Banner */}
+        {player.hasFewerScoutingGames && (
+          <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200/90 rounded-xl px-4 py-2.5 font-medium flex items-center gap-2 shadow-2xs">
+            <span className="font-mono font-black text-amber-600 text-sm">*</span>
+            <span>
+              {language === 'it' 
+                ? `Le statistiche di playmaking, rimbalzi, palle perse e le percentuali di tiro sono calcolate su ${player.gpSupabase} partite con scouting disponibile su ${player.games} presenze totali${Array.isArray(player.missingScoutingMatchNames) && player.missingScoutingMatchNames.length > 0 ? ` (Manca lo scouting per: ${player.missingScoutingMatchNames.join(', ')})` : ''}.`
+                : `Playmaking, rebounding, turnover, and shooting percentages are calculated on ${player.gpSupabase} matches with scouting available out of ${player.games} total appearances.`}
+            </span>
           </div>
         )}
+
+        {/* Core Stats Grid (Media & Totali) - 12 Complete Metric Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
+          {/* 1. PUNTI */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
+                {language === 'it' ? 'PUNTI' : 'POINTS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {ppgDisplay}
+              </span>
+              <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                /G
+              </span>
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {ptsTotalDisplay !== '—' ? `${ptsTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 2. MINUTI (FIP Official) */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-sky-600" />
+                {language === 'it' ? 'MINUTI' : 'MINUTES'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {minAvgDisplay}
+              </span>
+              {minAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {minTotalDisplay}
+              </span>
+            </div>
+          </div>
+
+          {/* 3. TIRI DA 2 */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#0CA17A]" />
+                {language === 'it' ? 'TIRI DA 2' : '2-POINTERS'}
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {twoPctDisplay}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {twoAvgDisplay}
+              </span>
+              {twoAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {twoTotalDisplay}
+              </span>
+            </div>
+          </div>
+
+          {/* 4. TIRI DA 3 */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-500" />
+                {language === 'it' ? 'TIRI DA 3' : '3-POINTERS'}
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                {threePctDisplay}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {threeAvgDisplay}
+              </span>
+              {threeAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {threeTotalDisplay}
+              </span>
+            </div>
+          </div>
+
+          {/* 5. TIRI LIBERI */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5 text-purple-600" />
+                {language === 'it' ? 'TIRI LIBERI' : 'FREE THROWS'}
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                {ftPctDisplay}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {ftAvgDisplay}
+              </span>
+              {ftAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {ftTotalDisplay}
+              </span>
+            </div>
+          </div>
+
+          {/* 6. RIMBALZI */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <BarChart2 className="w-3.5 h-3.5 text-[#0CA17A]" />
+                {language === 'it' ? 'RIMBALZI' : 'REBOUNDS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {rebAvgDisplay}
+              </span>
+              {rebAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {player.orebTotal != null ? `O:${player.orebTotal} D:${player.drebTotal}` : (language === 'it' ? 'Totale' : 'Total')}
+              </span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {rebTotalDisplay !== '—' ? `${rebTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 7. ASSIST */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-[#0CA17A]" />
+                {language === 'it' ? 'ASSIST' : 'ASSISTS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {astAvgDisplay}
+              </span>
+              {astAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {astTotalDisplay !== '—' ? `${astTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 8. PALLE PERSE */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Scale className="w-3.5 h-3.5 text-rose-500" />
+                {language === 'it' ? 'PALLE PERSE' : 'TURNOVERS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-rose-600 tracking-tight">
+                {tovAvgDisplay}
+              </span>
+              {tovAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-200">
+                {tovTotalDisplay !== '—' ? `${tovTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 9. RECUPERI */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                {language === 'it' ? 'RECUPERI' : 'STEALS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {stlAvgDisplay}
+              </span>
+              {stlAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {stlTotalDisplay !== '—' ? `${stlTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 10. STOPPATE */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-sky-600" />
+                {language === 'it' ? 'STOPPATE' : 'BLOCKS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] tracking-tight">
+                {blkAvgDisplay}
+              </span>
+              {blkAvgDisplay !== '—' && (
+                <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                  /G
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {blkTotalDisplay !== '—' ? `${blkTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 11. FALLI COMMESSI */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-slate-400" />
+                {language === 'it' ? 'FALLI' : 'FOULS'}
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className={`font-mono text-3xl sm:text-4xl font-extrabold tracking-tight ${Number(foulsDisplay) > 3.0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
+                {foulsDisplay}
+              </span>
+              <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                /G
+              </span>
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className="font-black text-[#022D32] bg-[#DDF3E9] px-2.5 py-0.5 rounded-md border border-[#0CA17A]/20">
+                {foulsTotalDisplay !== '—' ? `${foulsTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 12. PLUS / MINUS */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:border-[#0CA17A]/30 transition-all">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-[#0CA17A]" />
+                +/-
+              </span>
+            </div>
+            <div className="my-1.5">
+              <span className={`font-mono text-3xl sm:text-4xl font-extrabold tracking-tight ${
+                player.plusMinusAVG > 0 ? 'text-[#0CA17A]' : player.plusMinusAVG < 0 ? 'text-rose-600' : 'text-[#022D32]'
+              }`}>
+                {pmDisplay}
+              </span>
+              <span className="text-xs font-bold text-slate-400 font-mono ml-1">
+                /G
+              </span>
+            </div>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{language === 'it' ? 'Totale' : 'Total'}</span>
+              <span className={`font-black font-mono text-xs px-2.5 py-0.5 rounded-md border ${
+                Number(pmTotalDisplay) > 0 ? 'text-emerald-800 bg-emerald-50 border-emerald-200' : Number(pmTotalDisplay) < 0 ? 'text-rose-800 bg-rose-50 border-rose-200' : 'text-[#022D32] bg-[#DDF3E9] border-[#0CA17A]/20'
+              }`}>
+                {pmTotalDisplay !== '—' ? `${pmTotalDisplay} TOT` : '—'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* 100% Width Horizontal Stacked Bar Chart for Point Distribution */}
         <div className="bg-white p-4 sm:p-6 rounded-2xl border border-[#DDF3E9] space-y-4 shadow-xs">
@@ -264,47 +679,45 @@ export default function PlayerProfileModal({
                 {t.shotDistSubtitle || (language === 'it' ? 'Ripartizione percentuale dei punti segnati tra 2PT, 3PT e Tiri Liberi' : 'Percentage breakdown of total points between 2PT, 3PT and Free Throws')}
                 {' • '}
                 <span className="text-[#0CA17A] font-bold">
-                  {useCareerProfile 
-                    ? (language === 'it' ? `Carriera (${profileGames} PG)` : `Career (${profileGames} GP)`)
-                    : (language === 'it' ? `Stagione 2025/2026 (${profileGames} PG)` : `Season 2025/2026 (${profileGames} GP)`)}
+                  {language === 'it' ? `Stagione 2026/2027 (${profileGames} PG)` : `Season 2026/2027 (${profileGames} GP)`}
                 </span>
               </p>
             </div>
             <div className="text-right">
               <span className="text-xs text-[#022D32]/70 font-mono font-bold block">
-                TOTALE: <strong className="text-[#022D32] font-black text-sm">{profileMetrics.totalPts} PTS</strong> ({profileMetrics.ptsPerGame.toFixed(1)} PPG)
+                TOTALE: <strong className="text-[#022D32] font-black text-sm">{totalSeasonCalcPts} PTS</strong> ({ppgDisplay} PPG)
               </span>
             </div>
           </div>
 
-          {profileMetrics.totalPts > 0 ? (
+          {totalSeasonCalcPts > 0 ? (
             <div className="space-y-3">
               <div className="w-full h-7 bg-[#F8F9FA] rounded-xl p-1 border border-[#DDF3E9] shadow-inner flex overflow-hidden gap-1">
-                {profileMetrics.pct2 > 0 && (
+                {seasonPct2 > 0 && (
                   <div 
-                    style={{ width: `${profileMetrics.pct2}%` }}
+                    style={{ width: `${seasonPct2}%` }}
                     className="h-full bg-sky-500 hover:bg-sky-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                    title={`Punti da 2 (2PT): ${profileMetrics.pct2.toFixed(1)}% (${profileMetrics.twoMade * 2} PTS)`}
+                    title={`Punti da 2 (2PT): ${seasonPct2.toFixed(1)}% (${seasonPts2} PTS)`}
                   >
-                    {profileMetrics.pct2 >= 10 && `${Math.round(profileMetrics.pct2)}%`}
+                    {seasonPct2 >= 10 && `${Math.round(seasonPct2)}%`}
                   </div>
                 )}
-                {profileMetrics.pct3 > 0 && (
+                {seasonPct3 > 0 && (
                   <div 
-                    style={{ width: `${profileMetrics.pct3}%` }}
+                    style={{ width: `${seasonPct3}%` }}
                     className="h-full bg-[#0CA17A] hover:bg-[#0CA17A]/90 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                    title={`Punti da 3 (3PT): ${profileMetrics.pct3.toFixed(1)}% (${profileMetrics.threeMade * 3} PTS)`}
+                    title={`Punti da 3 (3PT): ${seasonPct3.toFixed(1)}% (${seasonPts3} PTS)`}
                   >
-                    {profileMetrics.pct3 >= 10 && `${Math.round(profileMetrics.pct3)}%`}
+                    {seasonPct3 >= 10 && `${Math.round(seasonPct3)}%`}
                   </div>
                 )}
-                {profileMetrics.pctFT > 0 && (
+                {seasonPctFT > 0 && (
                   <div 
-                    style={{ width: `${profileMetrics.pctFT}%` }}
+                    style={{ width: `${seasonPctFT}%` }}
                     className="h-full bg-amber-500 hover:bg-amber-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                    title={`Tiri Liberi (FT): ${profileMetrics.pctFT.toFixed(1)}% (${profileMetrics.ftMade} PTS)`}
+                    title={`Tiri Liberi (FT): ${seasonPctFT.toFixed(1)}% (${seasonPtsFT} PTS)`}
                   >
-                    {profileMetrics.pctFT >= 10 && `${Math.round(profileMetrics.pctFT)}%`}
+                    {seasonPctFT >= 10 && `${Math.round(seasonPctFT)}%`}
                   </div>
                 )}
               </div>
@@ -319,12 +732,12 @@ export default function PlayerProfileModal({
                         {t.ptsFrom2 || 'Punti da 2 (2PT)'}
                       </span>
                       <span className="text-[11px] text-[#022D32]/70 font-mono">
-                        {profileMetrics.twoMade * 2} PTS • {profileMetrics.twoPerGame.toFixed(1)} 2PM/G
+                        {seasonPts2} PTS • {twoAvgDisplay} 2PM/G
                       </span>
                     </div>
                   </div>
                   <span className="font-mono text-xl font-black text-sky-700">
-                    {profileMetrics.pct2.toFixed(1)}%
+                    {player.twoPct != null ? `${player.twoPct}%` : `${Number(seasonPct2 || 0).toFixed(1)}%`}
                   </span>
                 </div>
 
@@ -336,12 +749,12 @@ export default function PlayerProfileModal({
                         {t.ptsFrom3 || 'Punti da 3 (3PT)'}
                       </span>
                       <span className="text-[11px] text-[#022D32]/70 font-mono">
-                        {profileMetrics.threeMade * 3} PTS • {profileMetrics.threePerGame.toFixed(1)} 3PM/G
+                        {seasonPts3} PTS • {threeAvgDisplay} 3PM/G
                       </span>
                     </div>
                   </div>
                   <span className="font-mono text-xl font-black text-[#0CA17A]">
-                    {profileMetrics.pct3.toFixed(1)}%
+                    {player.threePct != null ? `${player.threePct}%` : `${Number(seasonPct3 || 0).toFixed(1)}%`}
                   </span>
                 </div>
 
@@ -353,12 +766,12 @@ export default function PlayerProfileModal({
                         {t.ptsFromFt || 'Tiri Liberi (TL)'}
                       </span>
                       <span className="text-[11px] text-[#022D32]/70 font-mono">
-                        {profileMetrics.ftMade} PTS • {profileMetrics.ftAttPerGame.toFixed(1)} FTA/G ({profileMetrics.ftPct != null ? Math.round(profileMetrics.ftPct) + '%' : '—'})
+                        {seasonPtsFT} PTS • {ftAvgDisplay} FTM/G
                       </span>
                     </div>
                   </div>
                   <span className="font-mono text-xl font-black text-amber-700">
-                    {profileMetrics.pctFT.toFixed(1)}%
+                    {player.ftPct != null ? `${player.ftPct}%` : `${Number(seasonPctFT || 0).toFixed(1)}%`}
                   </span>
                 </div>
               </div>
@@ -370,101 +783,110 @@ export default function PlayerProfileModal({
           )}
         </div>
 
-        {/* Tactical Badges with Coach Strategy Cards */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#DDF3E9] space-y-3 shadow-xs">
+        {/* Mappa di Tiro / Shoot Zones Section with Visual Half-Court */}
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#0CA17A]" />
-              {t.tacticalBadgesTitle || (language === 'it' ? 'PROFILO TATTICO & ALERT COACH' : 'TACTICAL PROFILE & COACH ALERTS')}
-            </span>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowLegendModal(true)}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0CA17A] hover:text-[#0CA17A]/80 hover:underline cursor-pointer"
-              >
-                <HelpCircle className="w-3 h-3 text-[#0CA17A]" />
-                <span>{t.legendBtn || (language === 'it' ? 'Legenda Tag' : 'Tag Legend')}</span>
-              </button>
-              <span className="text-[11px] font-bold text-[#022D32]/70">
-                • {profileTags.length} {profileTags.length === 1 ? (language === 'it' ? 'Tag Attivo' : 'Active Tag') : (language === 'it' ? 'Tag Attivi' : 'Active Tags')}
+              <Target className="w-5 h-5 text-[#0CA17A]" />
+              <span className="text-xs font-black uppercase text-[#022D32] tracking-wider">
+                {language === 'it' ? 'MAPPA DI TIRO & VOLUMI' : 'SHOT ZONES EFFICIENCY & VOLUME'}
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/30">
+                SUPABASE TRACKING
               </span>
             </div>
+            <span className="text-xs font-mono font-bold text-slate-500">
+              {totalZoneAtt > 0 
+                ? `${totalZoneMade}/${totalZoneAtt} FG (${overallZonePct}%)`
+                : (language === 'it' ? 'Nessun tiro con coordinate' : 'No coordinate shots')}
+            </span>
           </div>
 
-          {profileTags.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {profileTags.map(tag => (
-                <div 
-                  key={tag.id}
-                  className={`p-3.5 sm:p-4 rounded-xl border ${tag.badgeClass} shadow-xs`}
-                >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2.5">
-                      <TacticalTagIcon id={tag.id} className="w-6 h-6 flex-none text-[#022D32]" />
-                      <div>
-                        <span className="font-black text-sm uppercase tracking-wide text-[#022D32] block">
-                          {language === 'it' ? tag.labelIt : tag.label}
-                        </span>
-                        <span className="text-[10px] text-[#022D32]/70 font-mono">
-                          {language === 'it' ? tag.criteriaDesc : tag.criteriaDescEn}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold bg-white border border-[#DDF3E9] px-2 py-0.5 rounded text-[#022D32]">
-                      {tag.criteria}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-[#F8F9FA] p-4 rounded-xl border border-slate-100 text-xs text-[#022D32]/70 flex items-center gap-3">
-              <Scale className="w-5 h-5 flex-none text-slate-400" />
-              <div>
-                <strong className="block text-[#022D32] font-bold mb-0.5">{language === 'it' ? 'Profilo Bilanciato / Nessun Alert Estremo' : 'Balanced Profile / No Extreme Alerts'}</strong>
-                <span>{t.noActiveTags || (language === 'it' ? 'Nessun tag tattico specifico attivato per i criteri di volume e precisione.' : 'No specific tactical tags triggered under current volume thresholds.')}</span>
+          <div className="glass-card p-3 sm:p-4 border-[#DDF3E9] bg-[#F8F9FA] rounded-2xl">
+            <div className="flex items-center justify-between mb-3 border-b border-[#DDF3E9] pb-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-[#0CA17A]" />
+                <span className="text-xs font-black text-[#022D32] uppercase tracking-wider">
+                  {language === 'it' ? 'MAPPA TERMICA DEL TIRO (CAMPO)' : 'HALF-COURT SHOT HEATMAP'}
+                </span>
               </div>
+              <span className="text-[10px] font-bold text-slate-400">
+                {playerShotEvents.length} {language === 'it' ? 'Tiri Tracciati' : 'Tracked Shots'}
+              </span>
             </div>
-          )}
-        </div>
+            <CourtPitchMap
+              selectedPlayer={{ number: player.number, name: player.name }}
+              selectedZoneKey={selectedZoneKey}
+              onSelectZone={(k) => setSelectedZoneKey(k)}
+              events={playerShotEvents}
+              zoneStats={activeZoneStats}
+            />
+          </div>
 
-        {/* Shooting Accuracy Splits */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#DDF3E9] space-y-3 shadow-xs">
-          <span className="text-xs font-black uppercase text-[#022D32] tracking-wider flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[#0CA17A]" />
-            {t.modalSplitsTitle || (language === 'it' ? 'PERCENTUALI DI TIRO' : 'SHOOTING ACCURACY SPLITS')} (2025/2026)
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-            <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
-              <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modal3pt || '3PT'}</span>
-              <span className="font-mono text-xl font-black text-[#0CA17A] my-1 block">
-                {player.threePct != null ? `${player.threePct}%` : '—'}
-              </span>
-              <span className="text-[11px] text-[#022D32]/70 block font-mono">
-                {typeof player.threeMadeAVG === 'number' ? player.threeMadeAVG.toFixed(1) : (player.threeMadeAVG || '0.0')} {t.modalMadePerGame || 'made/G'}
-              </span>
-            </div>
-            <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
-              <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modal2pt || '2PT'}</span>
-              <span className="font-mono text-xl font-black text-sky-700 my-1 block">
-                {player.twoPct != null ? `${player.twoPct}%` : '—'}
-              </span>
-              <span className="text-[11px] text-[#022D32]/70 block font-mono">
-                {typeof player.twoMadeAVG === 'number' ? player.twoMadeAVG.toFixed(1) : (player.twoMadeAVG || '0.0')} {t.modalMadePerGame || 'made/G'}
-              </span>
-            </div>
-            <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
-              <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modalFt || 'FT%'}</span>
-              <span className="font-mono text-xl font-black text-[#022D32] my-1 block">
-                {player.ftPct != null ? `${player.ftPct}%` : '—'}
-              </span>
-              <span className="text-[11px] text-[#022D32]/70 block font-mono">{language === 'it' ? 'Tiri Liberi' : 'Free Throws'}</span>
-            </div>
+          <div className="overflow-x-auto rounded-xl border border-[#DDF3E9] mt-4">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider border-b border-[#DDF3E9]">
+                  <th className="p-2.5 sm:p-3">{language === 'it' ? 'ZONA DI TIRO' : 'COURT ZONE'}</th>
+                  <th className="p-2.5 sm:p-3 text-center">{language === 'it' ? 'TIPO' : 'TYPE'}</th>
+                  <th className="p-2.5 sm:p-3 text-center">{language === 'it' ? 'REALIZZATI / TENTATI' : 'MADE / ATT'}</th>
+                  <th className="p-2.5 sm:p-3 text-center">{language === 'it' ? 'PERCENTUALE (%)' : 'ACCURACY (%)'}</th>
+                  <th className="p-2.5 sm:p-3 text-center">{language === 'it' ? 'VOLUME SU TOTALI' : 'SHOT SHARE'}</th>
+                  <th className="p-2.5 sm:p-3 text-center">{language === 'it' ? 'VALUTAZIONE' : 'RATING'}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#DDF3E9]">
+                {shootZonesList.map((z, idx) => {
+                  const hasAtt = z.att > 0;
+                  const isSelected = selectedZoneKey === z.key;
+                  const rating = !hasAtt ? 'NO ATTEMPTS' : z.pct >= 50 ? 'HOT' : z.pct >= 33 ? 'SOLID' : 'COLD';
+                  const ratingBadge = !hasAtt
+                    ? 'bg-slate-100 text-slate-500 border-slate-200'
+                    : z.pct >= 50
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : z.pct >= 33
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200';
+
+                  return (
+                    <tr 
+                      key={idx} 
+                      onClick={() => setSelectedZoneKey(prev => prev === z.key ? null : z.key)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected 
+                          ? 'bg-[#DDF3E9]/60 font-bold' 
+                          : (idx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/15')
+                      } hover:bg-[#DDF3E9]/40`}
+                    >
+                      <td className="p-2.5 sm:p-3 font-bold text-[#022D32]">{z.name}</td>
+                      <td className="p-2.5 sm:p-3 text-center font-mono font-bold">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                          z.type === '3PT' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-sky-50 text-sky-700 border-sky-200'
+                        }`}>
+                          {z.type}
+                        </span>
+                      </td>
+                      <td className="p-2.5 sm:p-3 text-center font-mono font-bold text-[#022D32]">{z.made} / {z.att}</td>
+                      <td className="p-2.5 sm:p-3 text-center font-mono font-black text-[#022D32]">
+                        {hasAtt ? `${z.pct}%` : '—'}
+                      </td>
+                      <td className="p-2.5 sm:p-3 text-center font-mono text-slate-500">
+                        {z.share || 0}%
+                      </td>
+                      <td className="p-2.5 sm:p-3 text-center font-mono font-bold">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${ratingBadge}`}>
+                          {rating}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* CARRIERA / HISTORY Data Table (if available) */}
+        {/* CARRIERA / HISTORY Data Table (Pure FIP History) */}
         {(() => {
           const up = player.uniquePlayer || {};
           let rawList = [];
@@ -554,67 +976,6 @@ export default function PlayerProfileModal({
           );
         })()}
       </main>
-
-      {/* Tag Legend Modal */}
-      {showLegendModal && (
-        <div className="fixed inset-0 z-[100] bg-[#022D32]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-[#0CA17A]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider">
-                    {t.legendTitle || (language === 'it' ? 'LEGENDA TAG TATTICI' : 'TACTICAL TAGS LEGEND')}
-                  </h3>
-                  <p className="text-[11px] text-[#022D32]/70">
-                    {t.legendSubtitle || (language === 'it' ? 'Criteri di classificazione e volumi minimi' : 'Classification rules and minimum volume thresholds')}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowLegendModal(false)}
-                className="text-[#022D32]/60 hover:text-[#022D32] p-1 rounded-md"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {TACTICAL_TAGS_CONFIG.map(tag => (
-                <div key={tag.id} className="p-3 bg-[#F8F9FA] rounded-xl border border-[#DDF3E9] flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <TacticalTagIcon id={tag.id} className="w-5 h-5 flex-none text-[#022D32]" />
-                    <div>
-                      <span className="font-bold text-xs uppercase text-[#022D32] block">
-                        {language === 'it' ? tag.labelIt : tag.label}
-                      </span>
-                      <span className="text-[11px] text-[#022D32]/70 font-mono">
-                        {language === 'it' ? tag.criteriaDesc : tag.criteriaDescEn}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono font-bold bg-white border border-[#DDF3E9] px-2.5 py-1 rounded-lg text-[#022D32]">
-                    {tag.criteria}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-end pt-3 border-t border-[#DDF3E9]">
-              <button
-                type="button"
-                onClick={() => setShowLegendModal(false)}
-                className="px-4 py-2 rounded-xl bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                {language === 'it' ? 'Chiudi Legenda' : 'Close Legend'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
