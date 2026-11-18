@@ -6,8 +6,8 @@ import { calculatePlusMinus, computeZoneStats } from '../utils/basketballAnalyti
 export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   if (!events || events.length === 0) {
     return (
-      <div className="bg-white p-8 text-center border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
-        <p className="text-[#022D32]/70 font-bold text-sm">
+      <div className="bg-white p-8 text-center border border-slate-200/80 rounded-2xl shadow-xs text-slate-900">
+        <p className="text-slate-500 font-medium text-sm">
           No play events logged in the match yet. Use the Live Tracking Dashboard to record match plays.
         </p>
       </div>
@@ -103,20 +103,20 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
   return (
     <div className="grid grid-cols-12 gap-4">
       {/* Box Score Table */}
-      <div className="col-span-12 lg:col-span-8 bg-white p-4 sm:p-5 overflow-x-auto border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
-        <div className="flex items-center gap-2 border-b border-[#DDF3E9] pb-3 mb-3">
+      <div className="col-span-12 lg:col-span-8 bg-white p-4 sm:p-5 overflow-x-auto border border-slate-200/80 rounded-2xl shadow-xs text-slate-900">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
           <Trophy className="w-4 h-4 text-[#0CA17A]" />
-          <h2 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
             OFFICIAL FIBA BOX SCORE
           </h2>
         </div>
         
-        <table className="w-full text-left text-xs font-semibold">
+        <table className="w-full text-left text-xs font-medium">
           <thead>
-            <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider">
+            <tr className="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
               <th className="py-2.5 px-2">N°</th>
               <th className="py-2.5 px-2">PLAYER</th>
-              <th className="py-2.5 px-2 text-[#022D32] font-black">PTS</th>
+              <th className="py-2.5 px-2 text-slate-900 font-bold">PTS</th>
               <th className="py-2.5 px-2">2PM/A</th>
               <th className="py-2.5 px-2">2P%</th>
               <th className="py-2.5 px-2">3PM/A</th>
@@ -125,35 +125,35 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
               <th className="py-2.5 px-2">FT%</th>
               <th className="py-2.5 px-2">REB</th>
               <th className="py-2.5 px-2">AST</th>
-              <th className="py-2.5 px-2 text-[#022D32] font-black">STL</th>
-              <th className="py-2.5 px-2 text-rose-700 font-black">TOV</th>
+              <th className="py-2.5 px-2 text-slate-900 font-bold">STL</th>
+              <th className="py-2.5 px-2 text-rose-700 font-bold">TOV</th>
               <th className="py-2.5 px-2">PF</th>
-              <th className="py-2.5 px-2 text-emerald-800 font-black">PIR</th>
-              <th className="py-2.5 px-2 text-[#022D32] font-black">+/-</th>
+              <th className="py-2.5 px-2 text-emerald-800 font-bold">PIR</th>
+              <th className="py-2.5 px-2 text-slate-900 font-bold">+/-</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {rows.map(r => (
-              <tr key={r.number} className="border-b border-[#DDF3E9] hover:bg-[#DDF3E9]/30 transition-colors">
-                <td className="py-2.5 px-2 font-black text-[#022D32] font-mono">#{r.number}</td>
-                <td className="py-2.5 px-2 text-[#022D32] font-bold">{r.name} ({r.pos})</td>
-                <td className="py-2.5 px-2 text-[#022D32] font-black text-sm">{r.pts}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.fg2}</td>
-                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct2p}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.fg3}</td>
-                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pct3p}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.ft}</td>
-                <td className="py-2.5 px-2 text-[#022D32]/80 font-mono font-bold">{r.pctFt}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.reb}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.ast}</td>
-                <td className="py-2.5 px-2 text-[#022D32] font-bold">{r.stl}</td>
-                <td className="py-2.5 px-2 text-rose-700 font-black">{r.tov}</td>
-                <td className="py-2.5 px-2 text-[#022D32]">{r.pf}</td>
-                <td className="py-2.5 px-2 text-emerald-800 font-black">{r.pir}</td>
-                <td className={`py-2.5 px-2 font-mono font-black ${
+              <tr key={r.number} className="hover:bg-slate-50/80 transition-colors">
+                <td className="py-2.5 px-2 font-semibold text-slate-400 tabular-nums">#{r.number}</td>
+                <td className="py-2.5 px-2 text-slate-900 font-semibold">{r.name} ({r.pos})</td>
+                <td className="py-2.5 px-2 text-slate-900 font-bold text-sm tabular-nums">{r.pts}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.fg2}</td>
+                <td className="py-2.5 px-2 text-slate-600 tabular-nums font-semibold">{r.pct2p}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.fg3}</td>
+                <td className="py-2.5 px-2 text-slate-600 tabular-nums font-semibold">{r.pct3p}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.ft}</td>
+                <td className="py-2.5 px-2 text-slate-600 tabular-nums font-semibold">{r.pctFt}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.reb}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.ast}</td>
+                <td className="py-2.5 px-2 text-slate-700 font-semibold tabular-nums">{r.stl}</td>
+                <td className="py-2.5 px-2 text-rose-700 font-semibold tabular-nums">{r.tov}</td>
+                <td className="py-2.5 px-2 text-slate-700 tabular-nums">{r.pf}</td>
+                <td className="py-2.5 px-2 text-emerald-800 font-bold tabular-nums">{r.pir}</td>
+                <td className={`py-2.5 px-2 tabular-nums font-bold ${
                   (r.plusMinus || 0) > 0 ? 'text-emerald-700' :
                   (r.plusMinus || 0) < 0 ? 'text-rose-700' :
-                  'text-[#022D32]'
+                  'text-slate-700'
                 }`}>
                   {(r.plusMinus || 0) > 0 ? `+${r.plusMinus}` : (r.plusMinus || 0)}
                 </td>
@@ -166,55 +166,55 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
       {/* Right Column: Team Tactical Metrics & Shot Zone Efficiency */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         {/* Team Tactical Metrics Card */}
-        <div className="bg-white p-4 border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
-          <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3 mb-3">
+        <div className="bg-white p-4 border border-slate-200/80 rounded-2xl shadow-xs text-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#0CA17A]" />
-              <h2 className="text-xs font-bold text-[#022D32] uppercase tracking-wider">
+              <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 TEAM TACTICAL METRICS
               </h2>
             </div>
-            <span className="text-[10px] bg-[#DDF3E9] border border-[#0CA17A]/30 text-[#022D32] px-2.5 py-0.5 rounded-md font-black">
+            <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full font-semibold tabular-nums">
               TOTAL: {totalTactics}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-2.5 flex items-center justify-between">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-purple-700" />
-                <span className="text-xs font-bold text-[#022D32]">STAGGER</span>
+                <span className="text-xs font-semibold text-slate-800">STAGGER</span>
               </div>
-              <span className="text-base font-black text-purple-800 font-mono">{staggerEvents.length}</span>
+              <span className="text-base font-bold text-purple-800 tabular-nums">{staggerEvents.length}</span>
             </div>
 
-            <div className="bg-[#F8F9FA] border border-[#DDF3E9] rounded-xl p-2.5 flex items-center justify-between">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Ghost className="w-4 h-4 text-teal-700" />
-                <span className="text-xs font-bold text-[#022D32]">GHOST</span>
+                <span className="text-xs font-semibold text-slate-800">GHOST</span>
               </div>
-              <span className="text-base font-black text-teal-800 font-mono">{ghostEvents.length}</span>
+              <span className="text-base font-bold text-teal-800 tabular-nums">{ghostEvents.length}</span>
             </div>
           </div>
 
           {/* Quarter Breakdown */}
           {tacticsByQuarter.length > 0 && (
-            <table className="w-full text-left text-xs font-semibold">
+            <table className="w-full text-left text-xs font-medium">
               <thead>
-                <tr className="border-b border-[#DDF3E9] text-[#022D32]/70 text-[11px] font-black">
+                <tr className="border-b border-slate-200 text-slate-500 text-[11px] font-semibold bg-slate-50">
                   <th className="py-1.5 px-2">PERIOD</th>
-                  <th className="py-1.5 px-2 text-purple-800 font-black">STAGGER</th>
-                  <th className="py-1.5 px-2 text-teal-800 font-black">GHOST</th>
-                  <th className="py-1.5 px-2 text-right text-[#022D32] font-black">TOTAL</th>
+                  <th className="py-1.5 px-2 text-purple-800 font-semibold">STAGGER</th>
+                  <th className="py-1.5 px-2 text-teal-800 font-semibold">GHOST</th>
+                  <th className="py-1.5 px-2 text-right text-slate-900 font-semibold">TOTAL</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {tacticsByQuarter.map(t => (
-                  <tr key={t.quarter} className="border-b border-[#DDF3E9]/40 hover:bg-[#DDF3E9]/30">
-                    <td className="py-1.5 px-2 text-[#022D32] font-mono font-black">{t.quarter}</td>
-                    <td className="py-1.5 px-2 text-purple-800 font-mono font-black">{t.stagger}</td>
-                    <td className="py-1.5 px-2 text-teal-800 font-mono font-black">{t.ghost}</td>
-                    <td className="py-1.5 px-2 text-right text-[#022D32] font-black font-mono">{t.total}</td>
+                  <tr key={t.quarter} className="hover:bg-slate-50/80">
+                    <td className="py-1.5 px-2 text-slate-800 font-semibold tabular-nums">{t.quarter}</td>
+                    <td className="py-1.5 px-2 text-purple-800 font-semibold tabular-nums">{t.stagger}</td>
+                    <td className="py-1.5 px-2 text-teal-800 font-semibold tabular-nums">{t.ghost}</td>
+                    <td className="py-1.5 px-2 text-right text-slate-900 font-bold tabular-nums">{t.total}</td>
                   </tr>
                 ))}
               </tbody>
@@ -223,28 +223,28 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
         </div>
 
         {/* Shot Zone Efficiency Table */}
-        <div className="bg-white p-4 border border-[#DDF3E9] rounded-2xl shadow-xs text-[#022D32]">
-          <div className="flex items-center gap-2 border-b border-[#DDF3E9] pb-3 mb-3">
+        <div className="bg-white p-4 border border-slate-200/80 rounded-2xl shadow-xs text-slate-900">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
             <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
-            <h2 className="text-xs font-bold text-[#022D32] uppercase tracking-wider">
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               SHOT ZONE EFFICIENCY CHART
             </h2>
           </div>
           
-          <table className="w-full text-left text-xs font-semibold">
+          <table className="w-full text-left text-xs font-medium">
             <thead>
-              <tr className="border-b border-[#DDF3E9] text-[#022D32]/70 font-black">
+              <tr className="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50">
                 <th className="py-2.5 px-2">COURT ZONE</th>
                 <th className="py-2.5 px-2">MADE / ATT</th>
-                <th className="py-2.5 px-2 text-[#022D32] font-black">FG %</th>
+                <th className="py-2.5 px-2 text-slate-900 font-bold">FG %</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {zoneSummary.map(z => (
-                <tr key={z.name} className="border-b border-[#DDF3E9]/50 hover:bg-[#DDF3E9]/30">
-                  <td className="py-2.5 px-2 text-[#022D32] font-bold">{z.name} ({z.type})</td>
-                  <td className="py-2.5 px-2 text-[#022D32] font-medium">{z.made}/{z.attempts}</td>
-                  <td className="py-2.5 px-2 text-emerald-700 font-black font-mono">{z.pct}</td>
+                <tr key={z.name} className="hover:bg-slate-50/80">
+                  <td className="py-2.5 px-2 text-slate-900 font-medium">{z.name} ({z.type})</td>
+                  <td className="py-2.5 px-2 text-slate-700 tabular-nums">{z.made}/{z.attempts}</td>
+                  <td className="py-2.5 px-2 text-emerald-700 font-bold tabular-nums">{z.pct}</td>
                 </tr>
               ))}
             </tbody>

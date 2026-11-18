@@ -367,11 +367,11 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     return list.map((m, idx) => {
       const scored = Number(m.pts) || 0;
       const conceded = Number(m.oppPts) || 0;
-      const opp = m.opponent || (m.isHomeGame ? 'Avversario' : 'Avversario');
+      const opp = m.opponent || 'Avversario';
       const locPrefix = (m.isHomeGame ?? (m.location === 'Casa')) ? 'vs' : '@';
       const d = new Date(m.matchDate || m.createdAt);
       const dateStr = !isNaN(d) ? `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}` : '';
-      const roundLabel = m.round ? (String(m.round).startsWith('G') ? m.round : `G${m.round}`) : `#${idx + 1}`;
+      const roundLabel = `G${idx + 1}`; // Chiave sempre univoca per l'asse X di Recharts
 
       return {
         round: roundLabel,
@@ -543,12 +543,12 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     if (!dataPoint) return null;
 
     return (
-      <div className="bg-white/95 border border-[#DDF3E9] rounded-xl p-3 shadow-xl backdrop-blur-md text-xs space-y-1.5 z-50 text-[#022D32]">
-        <div className="flex items-center justify-between gap-3 border-b border-[#DDF3E9] pb-1.5">
-          <div className="font-black text-[#022D32]">
+      <div className="bg-white/95 border border-slate-200/80 rounded-xl p-3 shadow-lg backdrop-blur-md text-xs space-y-1.5 z-50 text-slate-800">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-1.5">
+          <div className="font-bold text-slate-900">
             {dataPoint.chartLabel || dataPoint.matchName}
           </div>
-          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded tabular-nums ${
             dataPoint.isWin 
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
               : 'bg-rose-50 text-rose-800 border border-rose-300'
@@ -556,18 +556,18 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             {dataPoint.resultText} ({dataPoint.pts} - {dataPoint.oppPts})
           </span>
         </div>
-        <div className="text-[11px] text-[#022D32]/70 flex items-center justify-between">
+        <div className="text-[11px] text-slate-500 flex items-center justify-between">
           <span>Data:</span>
-          <span className="font-semibold text-[#022D32]">{dataPoint.date}</span>
+          <span className="font-semibold text-slate-700">{dataPoint.date}</span>
         </div>
         <div className="space-y-1 pt-1">
           {payload.map((entry, idx) => (
             <div key={idx} className="flex items-center justify-between gap-4">
-              <span className="flex items-center gap-1.5 text-[#022D32]/80 font-medium">
+              <span className="flex items-center gap-1.5 text-slate-600 font-medium">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: entry.color }} />
                 {entry.name}:
               </span>
-              <span className="font-mono font-black text-[#022D32]">
+              <span className="tabular-nums font-bold text-slate-900">
                 {entry.value}{entry.name.includes('%') || entry.name.includes('eFG') || entry.name.includes('DRB') ? '%' : ''}
               </span>
             </div>
@@ -584,26 +584,26 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
     if (!data) return null;
     const isWin = data.isWin;
     return (
-      <div className="bg-white p-3.5 rounded-2xl border border-[#DDF3E9] shadow-md text-xs space-y-2 font-sans min-w-[200px]">
-        <div className="font-black text-[#022D32] border-b border-[#DDF3E9] pb-1.5 flex items-center justify-between gap-2">
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-md text-xs space-y-2 font-sans min-w-[200px]">
+        <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center justify-between gap-2">
           <span>{data.fullTitle}</span>
-          <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full ${
+          <span className={`text-[10px] tabular-nums font-bold px-2 py-0.5 rounded-full ${
             isWin ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-rose-50 text-rose-700 border border-rose-300'
           }`}>
             {isWin ? 'V' : 'P'}
           </span>
         </div>
-        <div className="flex justify-between items-center text-[#0CA17A] font-bold">
+        <div className="flex justify-between items-center text-[#0CA17A] font-semibold">
           <span>{language === 'it' ? 'Punti Segnati:' : 'Points Scored:'}</span>
-          <span className="font-mono font-black text-sm">{data.scored}</span>
+          <span className="tabular-nums font-bold text-sm">{data.scored}</span>
         </div>
-        <div className="flex justify-between items-center text-rose-600 font-bold">
+        <div className="flex justify-between items-center text-rose-600 font-semibold">
           <span>{language === 'it' ? 'Punti Subiti:' : 'Points Conceded:'}</span>
-          <span className="font-mono font-black text-sm">{data.conceded}</span>
+          <span className="tabular-nums font-bold text-sm">{data.conceded}</span>
         </div>
-        <div className="flex justify-between items-center text-[#022D32] pt-1.5 border-t border-[#DDF3E9] font-bold text-[11px]">
+        <div className="flex justify-between items-center text-slate-800 pt-1.5 border-t border-slate-100 font-semibold text-[11px]">
           <span className="text-slate-500 uppercase tracking-wider">{language === 'it' ? 'Differenziale:' : 'Differential:'}</span>
-          <span className={`font-mono font-black ${data.diff > 0 ? 'text-[#0CA17A]' : data.diff < 0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
+          <span className={`tabular-nums font-bold ${data.diff > 0 ? 'text-[#0CA17A]' : data.diff < 0 ? 'text-rose-600' : 'text-slate-800'}`}>
             {data.diff > 0 ? `+${data.diff}` : data.diff}
           </span>
         </div>
@@ -612,24 +612,24 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
   };
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-5 bg-[#F8F9FA] text-[#022D32]">
+    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-5 bg-[#F4F6F8] text-slate-900">
       {/* ========================================================================= */}
       {/* 1. HEADER BAR                                                             */}
       {/* ========================================================================= */}
-      <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] flex flex-wrap items-center justify-between gap-3 shadow-xs">
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none shadow-inner">
+          <div className="w-10 h-10 rounded-xl bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center flex-none shadow-xs">
             <TrendingUp className="w-5 h-5 text-[#0CA17A]" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span className="w-1.5 h-4.5 bg-[#0CA17A] rounded-full inline-block" />
               <span>{t('trends_title')}</span>
-              <span className="text-[10px] bg-[#DDF3E9] text-[#0CA17A] font-bold px-2 py-0.5 rounded border border-[#0CA17A]/30">
+              <span className="text-[10px] bg-[#0CA17A]/10 text-[#0CA17A] font-bold px-2 py-0.5 rounded border border-[#0CA17A]/20">
                 MULTI-MATCH
               </span>
             </h1>
-            <p className="text-xs text-[#022D32]/70 font-semibold mt-0.5">
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
               {t('trends_subtitle')}
             </p>
           </div>
@@ -638,7 +638,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
         <button
           onClick={() => { fetchMatches(); fetchFipData(); }}
           disabled={loading}
-          className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#0CA17A] text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-xs disabled:opacity-50 cursor-pointer"
         >
           <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${loading ? 'animate-spin' : ''}`} />
           <span>{language === 'it' ? 'AGGIORNA' : 'REFRESH'}</span>
@@ -648,32 +648,32 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       {/* ========================================================================= */}
       {/* SUB-NAVIGATION PILLS: TRENDS vs ROSTER                                   */}
       {/* ========================================================================= */}
-      <div className="flex items-center gap-2 border-b border-[#DDF3E9] pb-2 flex-wrap">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2 flex-wrap">
         <button
           type="button"
           onClick={() => setActiveSection('trends')}
-          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all inline-flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all inline-flex items-center gap-2 cursor-pointer ${
             activeSection === 'trends'
-              ? 'bg-[#022D32] text-[#A7F3D0] shadow-sm'
-              : 'bg-white text-[#022D32]/70 hover:text-[#022D32] hover:bg-[#DDF3E9] border border-[#DDF3E9]'
+              ? 'bg-[#022D32] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200'
           }`}
         >
           <TrendingUp className="w-4 h-4 text-[#0CA17A]" />
-          <span>{language === 'it' ? 'TREND & ANALISI SQUADRA' : 'TEAM TRENDS & ANALYTICS'}</span>
+          <span>{language === 'it' ? 'Trend & Analisi Squadra' : 'Team Trends & Analytics'}</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveSection('roster')}
-          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all inline-flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all inline-flex items-center gap-2 cursor-pointer ${
             activeSection === 'roster'
-              ? 'bg-[#022D32] text-[#A7F3D0] shadow-sm'
-              : 'bg-white text-[#022D32]/70 hover:text-[#022D32] hover:bg-[#DDF3E9] border border-[#DDF3E9]'
+              ? 'bg-[#022D32] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200'
           }`}
         >
           <Users className="w-4 h-4 text-[#0CA17A]" />
-          <span>{language === 'it' ? 'ROSTER & STATISTICHE BBA' : 'BBA ROSTER & STATS'}</span>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            activeSection === 'roster' ? 'bg-[#0CA17A] text-white' : 'bg-[#DDF3E9] text-[#022D32]'
+          <span>{language === 'it' ? 'Roster & Statistiche BBA' : 'BBA Roster & Stats'}</span>
+          <span className={`text-[10px] font-semibold tabular-nums px-2 py-0.5 rounded-full ${
+            activeSection === 'roster' ? 'bg-[#0CA17A] text-white' : 'bg-slate-100 text-slate-700'
           }`}>
             {filteredRoster.length}
           </span>
@@ -683,12 +683,12 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       {/* ========================================================================= */}
       {/* 2. GLOBAL FILTER BAR (ALWAYS VISIBLE & APPLIED ACROSS TABS)                */}
       {/* ========================================================================= */}
-      <div className="bg-white p-3.5 rounded-2xl border border-[#DDF3E9] shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
         {/* Match Type Pills */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] font-black text-[#022D32] uppercase tracking-wider mr-1 flex items-center gap-1">
+          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mr-1 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5 text-[#0CA17A]" />
-            {language === 'it' ? 'TIPO:' : 'TYPE:'}
+            {language === 'it' ? 'Tipo:' : 'Type:'}
           </span>
           {[
             { id: 'ALL', label: language === 'it' ? 'Tutte le Partite' : 'All Matches', count: typeCounts?.ALL || 0 },
@@ -700,15 +700,15 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
               <button
                 key={tab.id}
                 onClick={() => setMatchTypeFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   isActive
-                    ? 'bg-[#0CA17A] text-white shadow-sm scale-100'
-                    : 'bg-[#F8F9FA] text-[#022D32]/70 hover:text-[#022D32] hover:bg-[#DDF3E9] border border-[#DDF3E9]'
+                    ? 'bg-[#0CA17A] text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200'
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  isActive ? 'bg-[#022D32] text-[#A7F3D0]' : 'bg-[#DDF3E9] text-[#022D32]'
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold tabular-nums ${
+                  isActive ? 'bg-[#022D32] text-emerald-200' : 'bg-slate-100 text-slate-700'
                 }`}>
                   {tab.count}
                 </span>
@@ -718,8 +718,8 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
         </div>
 
         {/* Chronological Split / Range */}
-        <div className="flex items-center gap-1 bg-[#F8F9FA] p-1 rounded-xl border border-[#DDF3E9]">
-          <span className="text-[10px] font-bold text-[#022D32]/60 px-2 uppercase">SPLIT:</span>
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <span className="text-[10px] font-semibold text-slate-500 px-2 uppercase">Split:</span>
           {[
             { id: 'ALL', label: language === 'it' ? 'Tutte' : 'All' },
             { id: 'LAST_5', label: language === 'it' ? 'Ultime 5' : 'Last 5' },
@@ -730,10 +730,10 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
               <button
                 key={s.id}
                 onClick={() => setSplitFilter(s.id)}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#0CA17A] text-white font-black shadow-xs'
-                    : 'text-[#022D32]/70 hover:text-[#022D32]'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {s.label}
@@ -744,16 +744,16 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       </div>
 
       {loading ? (
-        <div className="bg-white p-16 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+        <div className="bg-white p-16 text-center border border-slate-200/80 rounded-2xl shadow-xs space-y-3">
           <RefreshCw className="w-8 h-8 text-[#0CA17A] animate-spin mx-auto" />
-          <p className="text-[#022D32] font-black text-sm">{language === 'it' ? 'Aggregazione andamento storico partite...' : 'Aggregating season analytics...'}</p>
+          <p className="text-slate-800 font-bold text-sm">{language === 'it' ? 'Aggregazione andamento storico partite...' : 'Aggregating season analytics...'}</p>
         </div>
       ) : activeSection === 'trends' ? (
         gamesPlayed === 0 ? (
-          <div className="bg-white p-12 text-center border border-[#DDF3E9] rounded-2xl shadow-xs space-y-3">
+          <div className="bg-white p-12 text-center border border-slate-200/80 rounded-2xl shadow-xs space-y-3">
             <AlertCircle className="w-10 h-10 text-[#0CA17A]/70 mx-auto" />
-            <h3 className="text-[#022D32] font-black text-base uppercase">{language === 'it' ? 'Nessuna Partita Trovata' : 'No Matches Found'}</h3>
-            <p className="text-[#022D32]/70 font-semibold text-xs max-w-md mx-auto">
+            <h3 className="text-slate-900 font-bold text-base">{language === 'it' ? 'Nessuna Partita Trovata' : 'No Matches Found'}</h3>
+            <p className="text-slate-500 font-medium text-xs max-w-md mx-auto">
               {language === 'it' ? `Nessuna partita corrisponde al filtro selezionato (${matchTypeFilter}).` : `No matches match the selected filter (${matchTypeFilter}).`}
             </p>
           </div>
@@ -764,13 +764,13 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             {/* ========================================================================= */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* CARD 1: RECORD & NET MARGIN */}
-              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
+              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
                     <Trophy className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {t('rec_margin_title')}
                   </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-semibold tabular-nums px-2 py-0.5 rounded border ${
                     record.winRate >= 60 
                       ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]'
                       : record.winRate >= 40 
@@ -781,32 +781,32 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </span>
                 </div>
                 <div className="my-1">
-                  <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight flex items-baseline gap-2">
+                  <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight flex items-baseline gap-2">
                     <span>{record.wins}W - {record.losses}L</span>
                     {record.ties > 0 && <span className="text-sm text-white/50">({record.ties}T)</span>}
                   </div>
                 </div>
-                <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between flex-wrap gap-1">
+                <div className="text-[11px] font-medium text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between flex-wrap gap-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span>PPG: <strong className="text-white">{scoring.avgPts}</strong> vs <strong className="text-white/70">{scoring.avgOppPts}</strong></span>
-                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${volatilityBadge.badgeClass}`}>
+                    <span>PPG: <strong className="text-white tabular-nums">{scoring.avgPts}</strong> vs <strong className="text-white/70 tabular-nums">{scoring.avgOppPts}</strong></span>
+                    <span className={`text-[9px] font-semibold tabular-nums px-1.5 py-0.5 rounded border ${volatilityBadge.badgeClass}`}>
                       σ {sigma} • {volatilityBadge.label}
                     </span>
                   </div>
-                  <span className={`font-mono font-black ${scoring.avgDiff > 0 ? 'text-[#A7F3D0]' : (scoring.avgDiff < 0 ? 'text-rose-300' : 'text-white')}`}>
+                  <span className={`tabular-nums font-bold ${scoring.avgDiff > 0 ? 'text-[#A7F3D0]' : (scoring.avgDiff < 0 ? 'text-rose-300' : 'text-white')}`}>
                     {scoring.avgDiff > 0 ? `+${scoring.avgDiff}` : scoring.avgDiff} Net
                   </span>
                 </div>
               </div>
 
               {/* CARD 2: SHOOTING EFFICIENCY */}
-              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
+              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {t('shooting_eff_title')}
                   </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-semibold tabular-nums px-2 py-0.5 rounded border ${
                     shooting.efgPct >= 50 
                       ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
                       : 'bg-amber-500/30 text-amber-300 border-amber-400'
@@ -815,25 +815,25 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </span>
                 </div>
                 <div className="my-1">
-                  <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
-                    {shooting.totalFga > 0 ? `${shooting.efgPct}%` : '—'} <span className="text-xs font-bold text-[#A7F3D0]">eFG</span>
+                  <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
+                    {shooting.totalFga > 0 ? `${shooting.efgPct}%` : '—'} <span className="text-xs font-semibold text-[#A7F3D0]">eFG</span>
                   </div>
                 </div>
-                <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
-                  <span>2P: <strong className="text-white">{shooting.total2pa > 0 ? `${shooting.fg2Pct}%` : '—'}</strong></span>
-                  <span>3P: <strong className="text-white">{shooting.total3pa > 0 ? `${shooting.fg3Pct}%` : '—'}</strong></span>
-                  <span>{language === 'it' ? 'TL' : 'FT'}: <strong className="text-white">{shooting.totalFta > 0 ? `${shooting.ftPct}%` : '—'}</strong></span>
+                <div className="text-[11px] font-medium text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                  <span>2P: <strong className="text-white tabular-nums">{shooting.total2pa > 0 ? `${shooting.fg2Pct}%` : '—'}</strong></span>
+                  <span>3P: <strong className="text-white tabular-nums">{shooting.total3pa > 0 ? `${shooting.fg3Pct}%` : '—'}</strong></span>
+                  <span>{language === 'it' ? 'TL' : 'FT'}: <strong className="text-white tabular-nums">{shooting.totalFta > 0 ? `${shooting.ftPct}%` : '—'}</strong></span>
                 </div>
               </div>
 
               {/* CARD 3: DEFENSIVE REBOUNDING */}
-              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
+              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {t('glass_title')}
                   </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-semibold tabular-nums px-2 py-0.5 rounded border ${
                     rebounding.drbPct >= 70 
                       ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
                       : 'bg-amber-500/30 text-amber-300 border-amber-400'
@@ -842,25 +842,25 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </span>
                 </div>
                 <div className="my-1">
-                  <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                  <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
                     {rebounding.drbPct !== null ? `${rebounding.drbPct}%` : '—'}
                   </div>
                 </div>
-                <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
-                  <span>DREB: <strong className="text-white">{rebounding.avgDreb > 0 ? `${rebounding.avgDreb}/g` : '—'}</strong></span>
-                  <span>OREB: <strong className="text-white">{rebounding.avgOreb > 0 ? `${rebounding.avgOreb}/g` : '—'}</strong></span>
-                  <span>{language === 'it' ? 'Quota' : 'Share'}: <strong className="text-white">{rebounding.orebShare > 0 ? `${rebounding.orebShare}%` : '—'}</strong></span>
+                <div className="text-[11px] font-medium text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                  <span>DREB: <strong className="text-white tabular-nums">{rebounding.avgDreb > 0 ? `${rebounding.avgDreb}/g` : '—'}</strong></span>
+                  <span>OREB: <strong className="text-white tabular-nums">{rebounding.avgOreb > 0 ? `${rebounding.avgOreb}/g` : '—'}</strong></span>
+                  <span>{language === 'it' ? 'Quota' : 'Share'}: <strong className="text-white tabular-nums">{rebounding.orebShare > 0 ? `${rebounding.orebShare}%` : '—'}</strong></span>
                 </div>
               </div>
 
               {/* CARD 4: BALL SECURITY & RATIO */}
-              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-md flex flex-col justify-between">
+              <div className="bg-[#022D32] p-4 sm:p-5 rounded-2xl text-white shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {t('ball_care_title')}
                   </span>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-semibold tabular-nums px-2 py-0.5 rounded border ${
                     ballControl.astTovRatio >= 1.3 
                       ? 'bg-[#0CA17A]/30 text-[#A7F3D0] border-[#0CA17A]' 
                       : ballControl.astTovRatio >= 1.0 
@@ -871,14 +871,14 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </span>
                 </div>
                 <div className="my-1">
-                  <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
-                    {ballControl.totalAst > 0 || ballControl.totalTov > 0 ? ballControl.astTovRatio : '—'} <span className="text-xs font-bold text-[#A7F3D0]">AST/TOV</span>
+                  <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
+                    {ballControl.totalAst > 0 || ballControl.totalTov > 0 ? ballControl.astTovRatio : '—'} <span className="text-xs font-semibold text-[#A7F3D0]">AST/TOV</span>
                   </div>
                 </div>
-                <div className="text-[11px] font-semibold text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
-                  <span>APG: <strong className="text-white">{ballControl.avgAst > 0 ? ballControl.avgAst : '—'}</strong></span>
-                  <span>TOPG: <strong className="text-white">{ballControl.avgTov > 0 ? ballControl.avgTov : '—'}</strong></span>
-                  <span>SPG: <strong className="text-white">{ballControl.avgStl > 0 ? ballControl.avgStl : '—'}</strong></span>
+                <div className="text-[11px] font-medium text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between">
+                  <span>APG: <strong className="text-white tabular-nums">{ballControl.avgAst > 0 ? ballControl.avgAst : '—'}</strong></span>
+                  <span>TOPG: <strong className="text-white tabular-nums">{ballControl.avgTov > 0 ? ballControl.avgTov : '—'}</strong></span>
+                  <span>SPG: <strong className="text-white tabular-nums">{ballControl.avgStl > 0 ? ballControl.avgStl : '—'}</strong></span>
                 </div>
               </div>
             </div>
@@ -888,9 +888,9 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             {/* ========================================================================= */}
             <div className="space-y-3">
               <div>
-                <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 flex items-center gap-2">
                   <Home className="w-4 h-4 text-[#0CA17A]" />
-                  <span>{language === 'it' ? 'RENDIMENTO CASA / TRASFERTA' : 'HOME / AWAY PERFORMANCE'}</span>
+                  <span>{language === 'it' ? 'Rendimento Casa / Trasferta' : 'Home / Away Performance'}</span>
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
                   {language === 'it' 
@@ -901,51 +901,51 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Casa */}
-                <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] space-y-4">
+                <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Home className="w-5 h-5 text-[#0CA17A]" />
-                      <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
-                        {language === 'it' ? 'CASA' : 'HOME'}
+                      <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
+                        {language === 'it' ? 'Casa' : 'Home'}
                       </span>
                     </div>
-                    <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    <span className="text-xs tabular-nums font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                       {homeAwaySplits.home.games} {homeAwaySplits.home.games === 1 ? (language === 'it' ? 'partita' : 'game') : (language === 'it' ? 'partite' : 'games')}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-slate-900 block">
                         {homeAwaySplits.home.wins}W - {homeAwaySplits.home.losses}L
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        RECORD
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Record
                       </span>
                     </div>
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-[#0CA17A] block">
                         {homeAwaySplits.home.games > 0 ? (homeAwaySplits.home.pointsScored / homeAwaySplits.home.games).toFixed(1) : '—'}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        SEGNATI/G
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Segnati/G
                       </span>
                     </div>
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-rose-600 block">
                         {homeAwaySplits.home.games > 0 ? (homeAwaySplits.home.pointsConceded / homeAwaySplits.home.games).toFixed(1) : '—'}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        SUBITI/G
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Subiti/G
                       </span>
                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       {language === 'it' ? 'Differenziale Medio' : 'Average Margin'}
                     </span>
-                    <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                    <span className={`text-xs tabular-nums font-bold px-2.5 py-0.5 rounded-full ${
                       homeAwaySplits.homeDiff > 0 
                         ? 'bg-emerald-50 text-emerald-700' 
                         : homeAwaySplits.homeDiff < 0 
@@ -958,51 +958,51 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                 </div>
 
                 {/* Trasferta */}
-                <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] space-y-4">
+                <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Navigation className="w-5 h-5 text-[#0CA17A]" />
-                      <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#022D32]">
-                        {language === 'it' ? 'TRASFERTA' : 'AWAY'}
+                      <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
+                        {language === 'it' ? 'Trasferta' : 'Away'}
                       </span>
                     </div>
-                    <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    <span className="text-xs tabular-nums font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                       {homeAwaySplits.away.games} {homeAwaySplits.away.games === 1 ? (language === 'it' ? 'partita' : 'game') : (language === 'it' ? 'partite' : 'games')}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-slate-900 block">
                         {homeAwaySplits.away.wins}W - {homeAwaySplits.away.losses}L
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        RECORD
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Record
                       </span>
                     </div>
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#0CA17A] block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-[#0CA17A] block">
                         {homeAwaySplits.away.games > 0 ? (homeAwaySplits.away.pointsScored / homeAwaySplits.away.games).toFixed(1) : '—'}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        SEGNATI/G
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Segnati/G
                       </span>
                     </div>
                     <div>
-                      <span className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 block">
+                      <span className="text-2xl sm:text-3xl font-bold tabular-nums text-rose-600 block">
                         {homeAwaySplits.away.games > 0 ? (homeAwaySplits.away.pointsConceded / homeAwaySplits.away.games).toFixed(1) : '—'}
                       </span>
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                        SUBITI/G
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
+                        Subiti/G
                       </span>
                     </div>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       {language === 'it' ? 'Differenziale Medio' : 'Average Margin'}
                     </span>
-                    <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full ${
+                    <span className={`text-xs tabular-nums font-bold px-2.5 py-0.5 rounded-full ${
                       homeAwaySplits.awayDiff > 0 
                         ? 'bg-emerald-50 text-emerald-700' 
                         : homeAwaySplits.awayDiff < 0 
@@ -1022,19 +1022,19 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             <div className="space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center">
                     <Flame className="w-4 h-4 text-[#0CA17A]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900 tracking-wider uppercase flex items-center gap-2">
                       <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                      <span>{language === 'it' ? 'TENUTA FISICA & INTELLIGENCE' : 'PHYSICAL STAMINA & INTELLIGENCE'}</span>
-                      <span className="text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300 inline-flex items-center gap-1">
+                      <span>{language === 'it' ? 'Tenuta Fisica & Intelligence' : 'Physical Stamina & Intelligence'}</span>
+                      <span className="text-[10px] bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded border border-emerald-300 inline-flex items-center gap-1">
                         <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
                         FIP VERIFIED
                       </span>
                     </h3>
-                    <p className="text-[11px] text-[#022D32]/70">
+                    <p className="text-[11px] text-slate-500">
                       {language === 'it' 
                         ? 'Progressione 1° vs 2° Tempo e volatilità realizzativa σ' 
                         : '1st vs 2nd half progression and scoring volatility σ'}
@@ -1045,13 +1045,13 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* CARD A: 1° TEMPO vs 2° TEMPO (TENUTA FISICA) */}
-                <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] flex flex-col justify-between space-y-4">
+                <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-[#0CA17A]" />
-                      {language === 'it' ? '1° TEMPO vs 2° TEMPO' : '1ST HALF vs 2ND HALF'}
+                      {language === 'it' ? '1° Tempo vs 2° Tempo' : '1st Half vs 2nd Half'}
                     </span>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                    <span className={`text-[10px] font-bold tabular-nums px-2 py-0.5 rounded border ${
                       stamina.netSwing >= 0
                         ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                         : 'bg-rose-50 text-rose-800 border-rose-300'
@@ -1061,61 +1061,61 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 text-center">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                        {language === 'it' ? '1° TEMPO (Q1+Q2)' : '1ST HALF (Q1+Q2)'}
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">
+                        {language === 'it' ? '1° Tempo (Q1+Q2)' : '1st Half (Q1+Q2)'}
                       </span>
-                      <div className="font-mono text-xl sm:text-2xl font-black text-[#022D32] mt-0.5">
+                      <div className="tabular-nums text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
                         {stamina.h1ScoredAvg} <span className="text-xs text-slate-400 font-semibold">vs</span> {stamina.h1ConcededAvg}
                       </div>
-                      <span className={`text-xs font-mono font-black block mt-0.5 ${stamina.h1Diff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span className={`text-xs tabular-nums font-bold block mt-0.5 ${stamina.h1Diff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                         {stamina.h1Diff >= 0 ? `+${stamina.h1Diff}` : stamina.h1Diff} Diff
                       </span>
                     </div>
 
-                    <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 text-center">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                        {language === 'it' ? '2° TEMPO (Q3+Q4)' : '2ND HALF (Q3+Q4)'}
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase block">
+                        {language === 'it' ? '2° Tempo (Q3+Q4)' : '2nd Half (Q3+Q4)'}
                       </span>
-                      <div className="font-mono text-xl sm:text-2xl font-black text-[#022D32] mt-0.5">
+                      <div className="tabular-nums text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
                         {stamina.h2ScoredAvg} <span className="text-xs text-slate-400 font-semibold">vs</span> {stamina.h2ConcededAvg}
                       </div>
-                      <span className={`text-xs font-mono font-black block mt-0.5 ${stamina.h2Diff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span className={`text-xs tabular-nums font-bold block mt-0.5 ${stamina.h2Diff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                         {stamina.h2Diff >= 0 ? `+${stamina.h2Diff}` : stamina.h2Diff} Diff
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs font-bold text-[#022D32] flex items-center gap-2">
+                  <div className="p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs font-semibold text-slate-800 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#0CA17A] flex-none" />
                     <span>{language === 'it' ? stamina.staminaSummaryIt : stamina.staminaSummaryEn}</span>
                   </div>
                 </div>
 
                 {/* CARD B: VOLATILITÀ & INDICE DI PREVEDIBILITÀ (σ) */}
-                <div className="bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] flex flex-col justify-between space-y-4">
+                <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold flex items-center gap-1.5">
                       <Activity className="w-4 h-4 text-[#0CA17A]" />
-                      {language === 'it' ? 'VOLATILITÀ PUNTI (σ)' : 'VOLATILITY INDEX (σ)'}
+                      {language === 'it' ? 'Volatilità Punti (σ)' : 'Volatility Index (σ)'}
                     </span>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${volatilityBadge.badgeClass}`}>
+                    <span className={`text-[10px] font-bold tabular-nums px-2 py-0.5 rounded border ${volatilityBadge.badgeClass}`}>
                       {volatilityBadge.label}
                     </span>
                   </div>
 
                   <div>
-                    <div className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32]">
-                      ±{sigma} <span className="text-xs font-bold text-slate-500">PUNTI / GARA</span>
+                    <div className="tabular-nums text-3xl sm:text-4xl font-bold text-slate-900">
+                      ±{sigma} <span className="text-xs font-semibold text-slate-500">PUNTI / GARA</span>
                     </div>
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mt-1">
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-medium block mt-1">
                       {language === 'it' ? 'Deviazione standard produzione offensiva' : 'Standard deviation of points scored'}
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-[#022D32]/80">
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                     <span>{language === 'it' ? 'Valutazione tattica:' : 'Tactical note:'}</span>
-                    <span className="font-bold text-[#022D32]">{volatilityBadge.description}</span>
+                    <span className="font-semibold text-slate-900">{volatilityBadge.description}</span>
                   </div>
                 </div>
               </div>
@@ -1126,9 +1126,9 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             {/* ========================================================================= */}
             <div className="space-y-3">
               <div>
-                <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#022D32] flex items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-[#0CA17A]" />
-                  <span>{language === 'it' ? 'VISUAL ANALYTICS & TRAIETTORIE' : 'VISUAL ANALYTICS & TRAJECTORIES'}</span>
+                  <span>{language === 'it' ? 'Visual Analytics & Traiettorie' : 'Visual Analytics & Trajectories'}</span>
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
                   {language === 'it' 
@@ -1139,18 +1139,18 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* 4A. Game Trend LineChart (7 cols) */}
-                <div className="lg:col-span-7 bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] flex flex-col justify-between space-y-4">
+                <div className="lg:col-span-7 bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col justify-between space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <h4 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider">
-                        {language === 'it' ? 'TRAIETTORIA & TREND DI RENDIMENTO' : 'TRAJECTORY & PERFORMANCE TREND'}
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
+                        {language === 'it' ? 'Traiettoria & Trend di Rendimento' : 'Trajectory & Performance Trend'}
                       </h4>
                       <p className="text-xs text-slate-500 font-medium mt-0.5">
                         {language === 'it' ? 'Evoluzione cronologica dei punti segnati vs punti subiti' : 'Chronological evolution of points scored vs conceded'}
                       </p>
                     </div>
                     {trendsLineData.length > 0 && (
-                      <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                      <span className="text-xs tabular-nums font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                         {trendsLineData.length} {trendsLineData.length === 1 ? (language === 'it' ? 'partita' : 'game') : (language === 'it' ? 'partite' : 'games')}
                       </span>
                     )}
@@ -1174,7 +1174,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                           <Tooltip content={<CustomTrendTooltip />} />
                           <Legend 
                             iconType="circle" 
-                            wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: 'bold', color: '#022D32' }} 
+                            wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: 'bold', color: '#0F172A' }} 
                           />
                           <Line 
                             type="monotone" 
@@ -1206,11 +1206,11 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                 </div>
 
                 {/* 4B. Differenziali per Quarto (5 cols) */}
-                <div className="lg:col-span-5 bg-white rounded-2xl p-5 shadow-xs border border-[#DDF3E9] flex flex-col justify-between space-y-3">
+                <div className="lg:col-span-5 bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col justify-between space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold flex items-center gap-1.5">
                       <BarChart3 className="w-4 h-4 text-[#0CA17A]" />
-                      {language === 'it' ? 'DIFFERENZIALE PER QUARTO (+/-)' : 'QUARTER DIFFERENTIAL (+/-)'}
+                      {language === 'it' ? 'Differenziale per Quarto (+/-)' : 'Quarter Differential (+/-)'}
                     </span>
                     <div className="flex items-center gap-2 text-[10px] font-bold">
                       <span className="flex items-center gap-1 text-emerald-700">
@@ -1225,9 +1225,9 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   <div className="h-64 sm:h-72 w-full pt-1">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={quarterBarData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.7} />
-                        <XAxis dataKey="quarter" stroke="#022D32" tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }} />
-                        <YAxis stroke="#022D32" tick={{ fill: '#022D32', fontSize: 11 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" opacity={0.7} />
+                        <XAxis dataKey="quarter" stroke="#64748B" tick={{ fill: '#64748B', fontSize: 11, fontWeight: 'bold' }} />
+                        <YAxis stroke="#64748B" tick={{ fill: '#64748B', fontSize: 11 }} />
                         <Tooltip 
                           formatter={(val, name, item) => [
                             `${val > 0 ? `+${val}` : val} net (Segnati: ${item.payload.scored}, Subiti: ${item.payload.conceded})`,
@@ -1250,33 +1250,33 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           {/* ========================================================================= */}
           {/* 4. VISUALIZATION 1: EFFICIENCY TREND (LINE CHART)                         */}
           {/* ========================================================================= */}
-          <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center">
                   <Flame className="w-4 h-4 text-[#0CA17A]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                     <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                    <span>EFFICIENZA OFFENSIVA & FLUSSO PUNTI</span>
+                    <span>Efficienza Offensiva & Flusso Punti</span>
                   </h3>
-                  <p className="text-[11px] text-[#022D32]/70">
+                  <p className="text-[11px] text-slate-500">
                     Punti segnati (asse sinistro) vs. Percentuale effettiva eFG% (asse destro)
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1.5 text-[#022D32] font-bold">
-                  <span className="w-3 h-0.5 bg-[#022D32] inline-block" />
+                <div className="flex items-center gap-1.5 text-slate-800 font-semibold">
+                  <span className="w-3 h-0.5 bg-slate-800 inline-block" />
                   <span>Punti Segnati</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[#0CA17A] font-bold">
+                <div className="flex items-center gap-1.5 text-[#0CA17A] font-semibold">
                   <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" />
                   <span>eFG%</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-amber-600 font-bold hidden sm:flex">
+                <div className="flex items-center gap-1.5 text-amber-600 font-semibold hidden sm:flex">
                   <span className="w-3 h-0.5 border-b border-dashed border-amber-500 inline-block" />
                   <span>50% Target Benchmark</span>
                 </div>
@@ -1286,16 +1286,16 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             <div className="h-72 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={timeline} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" opacity={0.8} />
                   <XAxis 
                     dataKey="gameLabel" 
-                    stroke="#022D32" 
-                    tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
+                    stroke="#64748B" 
+                    tick={{ fill: '#64748B', fontSize: 11, fontWeight: 'bold' }}
                   />
                   <YAxis 
                     yAxisId="left"
-                    stroke="#022D32"
-                    tick={{ fill: '#022D32', fontSize: 11 }}
+                    stroke="#64748B"
+                    tick={{ fill: '#64748B', fontSize: 11 }}
                     domain={['auto', 'auto']}
                   />
                   <YAxis 
@@ -1345,31 +1345,31 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           {/* ========================================================================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* CHART 2: BALL SECURITY (AST vs TOV) */}
-            <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center">
                     <Activity className="w-4 h-4 text-[#0CA17A]" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                       <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                      <span>CONTROLLO PALLA: ASSIST VS. PERSE</span>
+                      <span>Controllo Palla: Assist vs. Perse</span>
                     </h3>
-                    <p className="text-[11px] text-[#022D32]/70">
+                    <p className="text-[11px] text-slate-500">
                       Assist (AST), Palle Perse (TOV) e rapporto AST/TOV
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-1 text-[#022D32] font-bold">
-                    <span className="w-2.5 h-2.5 rounded bg-[#022D32] inline-block" /> AST
+                  <span className="flex items-center gap-1 text-slate-800 font-semibold">
+                    <span className="w-2.5 h-2.5 rounded bg-slate-800 inline-block" /> AST
                   </span>
-                  <span className="flex items-center gap-1 text-rose-600 font-bold">
+                  <span className="flex items-center gap-1 text-rose-600 font-semibold">
                     <span className="w-2.5 h-2.5 rounded bg-rose-600 inline-block" /> TOV
                   </span>
-                  <span className="flex items-center gap-1 text-[#0CA17A] font-bold">
+                  <span className="flex items-center gap-1 text-[#0CA17A] font-semibold">
                     <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" /> Ratio
                   </span>
                 </div>
@@ -1378,16 +1378,16 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
               <div className="h-64 w-full pt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" opacity={0.8} />
                     <XAxis 
                       dataKey="gameLabel" 
-                      stroke="#022D32" 
-                      tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
+                      stroke="#64748B" 
+                      tick={{ fill: '#64748B', fontSize: 11, fontWeight: 'bold' }}
                     />
                     <YAxis 
                       yAxisId="left"
-                      stroke="#022D32"
-                      tick={{ fill: '#022D32', fontSize: 11 }}
+                      stroke="#64748B"
+                      tick={{ fill: '#64748B', fontSize: 11 }}
                     />
                     <YAxis 
                       yAxisId="right"
@@ -1414,28 +1414,28 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
             </div>
 
             {/* CHART 3: REBOUNDING BATTLE (DRB% AREA) */}
-            <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center">
                     <Shield className="w-4 h-4 text-[#0CA17A]" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                       <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                      <span>DOMINIO A RIMBALZO (DRB%)</span>
+                      <span>Dominio a Rimbalzo (DRB%)</span>
                     </h3>
-                    <p className="text-[11px] text-[#022D32]/70">
+                    <p className="text-[11px] text-slate-500">
                       Percentuale rimbalzi difensivi vs. target benchmark 70%
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-1 text-[#0CA17A] font-bold">
+                  <span className="flex items-center gap-1 text-[#0CA17A] font-semibold">
                     <span className="w-2.5 h-2.5 rounded bg-[#0CA17A] inline-block" /> DRB%
                   </span>
-                  <span className="flex items-center gap-1 text-amber-600 font-bold">
+                  <span className="flex items-center gap-1 text-amber-600 font-semibold">
                     <span className="w-3 h-0.5 border-b border-dashed border-amber-500 inline-block" /> 70% Target
                   </span>
                 </div>
@@ -1450,11 +1450,11 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                         <stop offset="95%" stopColor="#0CA17A" stopOpacity={0.0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" opacity={0.8} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" opacity={0.8} />
                     <XAxis 
                       dataKey="gameLabel" 
-                      stroke="#022D32" 
-                      tick={{ fill: '#022D32', fontSize: 11, fontWeight: 'bold' }}
+                      stroke="#64748B" 
+                      tick={{ fill: '#64748B', fontSize: 11, fontWeight: 'bold' }}
                     />
                     <YAxis 
                       stroke="#0CA17A"
@@ -1488,124 +1488,189 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           </div>
 
           {/* ========================================================================= */}
-          {/* 6. INDIVIDUAL MATCH LOG & DETAILS TABLE (HYBRID FIP + SUPABASE)           */}
+          {/* 6. INDIVIDUAL MATCH LOG & BOXSCORE STRIP CARDS (HYBRID FIP + SUPABASE)   */}
           {/* ========================================================================= */}
-          <div className="bg-white p-5 rounded-2xl border border-[#DDF3E9] shadow-xs space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-[#0CA17A]" />
-                <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#0CA17A]/10 border border-[#0CA17A]/20 flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-[#0CA17A]" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                  <span>{language === 'it' ? `DETTAGLIO CRONOLOGICO PARTITE (${hybridLogs.length} GARE)` : `CHRONOLOGICAL GAME LOG (${hybridLogs.length} MATCHES)`}</span>
+                  <span>{language === 'it' ? `Dettaglio Cronologico Partite (${hybridLogs.length} Gare)` : `Chronological Game Log (${hybridLogs.length} Matches)`}</span>
                 </h3>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1">
+                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
                   FIP KING (PUNTEGGI & REGOLE)
                 </span>
-                <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded">
+                <span className="text-[10px] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded">
                   SUPABASE (PLAYMAKING & HUSTLE)
                 </span>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-[#DDF3E9]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider border-b border-[#DDF3E9]">
-                    <th className="p-3">GARA</th>
-                    <th className="p-3">DATA</th>
-                    <th className="p-3">TIPO</th>
-                    <th className="p-3">AVVERSARIO</th>
-                    <th className="p-3 text-center">ESITO</th>
-                    <th className="p-3 text-center">PUNTEGGIO</th>
-                    <th className="p-3 text-center">QUARTI (PARTIALS)</th>
-                    <th className="p-3 text-center">VERIFICA</th>
-                    <th className="p-3 text-right">AZIONE</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#DDF3E9]">
-                  {hybridLogs.map((item, idx) => (
-                    <tr key={item.id} className={`transition-colors hover:bg-[#DDF3E9]/50 ${idx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/15'}`}>
-                      <td className="p-3 font-black text-[#022D32] font-mono">
-                        {item.gameLabel}
-                      </td>
-                      <td className="p-3 text-[#022D32]/80 font-medium">
-                        {item.date}
-                      </td>
-                      <td className="p-3">
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${
+            <div className="space-y-3">
+              {hybridLogs.map((item, idx) => {
+                const homeTeamName = item.isHomeGame ? 'BBA Basket Baronissi' : item.opponent;
+                const awayTeamName = item.isHomeGame ? item.opponent : 'BBA Basket Baronissi';
+                const homeScore = item.isHomeGame ? item.pts : item.oppPts;
+                const awayScore = item.isHomeGame ? item.oppPts : item.pts;
+                const isHomeWinner = homeScore > awayScore;
+                const isAwayWinner = awayScore > homeScore;
+
+                const quarterList = (item.partials && item.partials.length > 0)
+                  ? item.partials.map(p => {
+                      const qLabel = p.quarter || `Q${p.period}`;
+                      const hQScore = p.homeScore !== undefined 
+                        ? p.homeScore 
+                        : (item.isHomeGame ? (p.scored ?? 0) : (p.conceded ?? 0));
+                      const aQScore = p.awayScore !== undefined 
+                        ? p.awayScore 
+                        : (item.isHomeGame ? (p.conceded ?? 0) : (p.scored ?? 0));
+                      return { label: qLabel, home: hQScore, away: aQScore };
+                    })
+                  : null;
+
+                return (
+                  <div
+                    key={item.id || idx}
+                    className="bg-white rounded-xl border border-slate-200/80 p-3.5 sm:p-4 shadow-xs hover:border-[#0CA17A]/40 transition-all space-y-3"
+                  >
+                    {/* Top Micro-Bar */}
+                    <div className="flex items-center justify-between flex-wrap gap-2 text-xs border-b border-slate-100 pb-2.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold tabular-nums text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200 text-[11px]">
+                          {item.gameLabel}
+                        </span>
+                        <span className="text-slate-500 font-medium text-[11px] flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          {item.date}
+                        </span>
+                        <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md border ${
                           item.matchType === 'Official'
-                            ? 'bg-[#DDF3E9] text-[#022D32] border-[#0CA17A]/40'
-                            : item.matchType === 'Friendly'
-                              ? 'bg-sky-50 text-sky-800 border-sky-300'
-                              : 'bg-purple-50 text-purple-800 border-purple-300'
+                            ? 'bg-slate-50 text-slate-700 border-slate-200'
+                            : 'bg-sky-50 text-sky-800 border-sky-200'
                         }`}>
-                          {item.matchType}
+                          {item.matchType === 'Official' ? (language === 'it' ? 'Ufficiale' : 'Official') : (language === 'it' ? 'Amichevole' : 'Friendly')}
                         </span>
-                      </td>
-                      <td className="p-3 font-black text-[#022D32]">
-                        <div className="flex items-center gap-1.5">
-                          <span>{item.opponent}</span>
-                          <span className="text-[9px] text-slate-400 font-bold">({item.location})</span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className={`font-mono font-black px-2 py-0.5 rounded text-[11px] ${
-                          item.isWin 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
-                            : 'bg-rose-50 text-rose-800 border border-rose-300'
-                        }`}>
-                          {item.resultText}
+                        <span className="text-[10px] font-semibold uppercase text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          {item.isHomeGame ? <Home className="w-3 h-3 text-slate-400" /> : <Navigation className="w-3 h-3 text-slate-400" />}
+                          {item.isHomeGame ? (language === 'it' ? 'Casa' : 'Home') : (language === 'it' ? 'Trasferta' : 'Away')}
                         </span>
-                      </td>
-                      <td className="p-3 text-center font-mono font-black text-[#022D32]">
-                        <span>{item.pts} - {item.oppPts}</span>
-                      </td>
-                      <td className="p-3 text-center font-mono text-[11px] text-slate-600">
-                        {item.partials && item.partials.length > 0 ? (
-                          <div className="flex items-center justify-center gap-1 flex-wrap">
-                            {item.partials.map(p => {
-                              const sScored = p.scored !== undefined ? p.scored : (item.isHomeGame ? p.homeScore : p.awayScore);
-                              const sConc = p.conceded !== undefined ? p.conceded : (item.isHomeGame ? p.awayScore : p.homeScore);
-                              const isPositive = sScored >= sConc;
-                              return (
-                                <span 
-                                  key={p.period || p.quarter}
-                                  className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                                    isPositive ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-700'
-                                  }`}
-                                  title={`${p.quarter || `Q${p.period}`}: ${sScored}-${sConc}`}
-                                >
-                                  {p.quarter || `Q${p.period}`}:{sScored}-{sConc}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                      <td className="p-3 text-center">
+                      </div>
+
+                      <div className="flex items-center gap-2">
                         {item.hasSupabaseScout && item.fipVerified ? (
-                          <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                          <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
                             SCOUTING + FIP
                           </span>
                         ) : item.fipVerified ? (
-                          <span className="text-[10px] bg-sky-50 text-sky-800 border border-sky-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                          <span className="text-[10px] bg-sky-50 text-sky-800 border border-sky-200 font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3 text-[#0284c7]" />
                             FIP ONLY
                           </span>
                         ) : (
-                          <span className="text-[10px] bg-teal-50 text-teal-800 border border-teal-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                          <span className="text-[10px] bg-teal-50 text-teal-800 border border-teal-200 font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
                             SCOUTING ONLY
                           </span>
                         )}
-                      </td>
-                      <td className="p-3 text-right">
+
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border tabular-nums ${
+                          item.isWin 
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                            : 'bg-rose-50 text-rose-800 border-rose-300'
+                        }`}>
+                          {item.resultText}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 2-Row Scoreboard Grid */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <div className="flex-1 min-w-0">
+                        {/* Scoreboard table */}
+                        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-1.5">
+                          {/* Row 1: Home Team */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`text-xs sm:text-sm font-semibold truncate ${isHomeWinner ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
+                              {homeTeamName}
+                            </span>
+                            {item.isHomeGame && (
+                              <span className="text-[9px] font-bold uppercase bg-[#0CA17A]/10 text-[#0CA17A] px-1.5 py-0.2 rounded border border-[#0CA17A]/20 flex-none">
+                                BBA
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Quarter Columns (Home) */}
+                          <div className="flex items-center gap-2 sm:gap-3 text-xs tabular-nums text-slate-500">
+                            {quarterList ? (
+                              quarterList.map((q, qIdx) => (
+                                <div key={qIdx} className="w-7 text-center">
+                                  <span className={isHomeWinner && q.home > q.away ? 'font-semibold text-slate-700' : ''}>
+                                    {q.home}
+                                  </span>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </div>
+
+                          {/* Final Score (Home) */}
+                          <div className="w-12 text-right">
+                            <span className={`text-base font-bold tabular-nums ${
+                              isHomeWinner ? 'text-[#022D32]' : 'text-slate-400'
+                            }`}>
+                              {homeScore}
+                            </span>
+                          </div>
+
+                          {/* Row 2: Away Team */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`text-xs sm:text-sm font-semibold truncate ${isAwayWinner ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
+                              {awayTeamName}
+                            </span>
+                            {!item.isHomeGame && (
+                              <span className="text-[9px] font-bold uppercase bg-[#0CA17A]/10 text-[#0CA17A] px-1.5 py-0.2 rounded border border-[#0CA17A]/20 flex-none">
+                                BBA
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Quarter Columns (Away) */}
+                          <div className="flex items-center gap-2 sm:gap-3 text-xs tabular-nums text-slate-500">
+                            {quarterList ? (
+                              quarterList.map((q, qIdx) => (
+                                <div key={qIdx} className="w-7 text-center">
+                                  <span className={isAwayWinner && q.away > q.home ? 'font-semibold text-slate-700' : ''}>
+                                    {q.away}
+                                  </span>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </div>
+
+                          {/* Final Score (Away) */}
+                          <div className="w-12 text-right">
+                            <span className={`text-base font-bold tabular-nums ${
+                              isAwayWinner ? 'text-[#022D32]' : 'text-slate-400'
+                            }`}>
+                              {awayScore}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="flex items-center justify-end sm:border-l sm:border-slate-100 sm:pl-4 flex-none pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                         {item.hasSupabaseScout ? (
                           <button
                             onClick={() => {
@@ -1620,20 +1685,20 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                                 fipRoster: fipList
                               });
                             }}
-                            className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs flex items-center gap-1.5 ml-auto active:scale-95 cursor-pointer"
+                            className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
                             title={language === 'it' ? 'Apri analisi approfondita del match' : 'Open deep match analytics'}
                           >
                             <Eye className="w-3.5 h-3.5" />
                             <span>ANALISI</span>
                           </button>
                         ) : (
-                          <span className="text-xs font-mono text-slate-300 select-none px-3">—</span>
+                          <span className="text-xs font-semibold text-slate-300 select-none px-3">—</span>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>
@@ -1643,23 +1708,23 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
       /* ========================================================================= */
       <div className="space-y-4">
         {/* Controls & Search Header */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#DDF3E9] shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#DDF3E9] border border-[#0CA17A]/30 flex items-center justify-center flex-none shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-none">
               <Users className="w-5 h-5 text-[#0CA17A]" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2 flex-wrap">
-                <span>{language === 'it' ? 'ROSTER & STATISTICHE BBA' : 'BBA ROSTER & ADVANCED STATS'}</span>
-                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded inline-flex items-center gap-1">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                <span>{language === 'it' ? 'Roster & Statistiche BBA' : 'BBA Roster & Advanced Stats'}</span>
+                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
                   FIP VERIFIED
                 </span>
-                <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded">
+                <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full">
                   SUPABASE EFFICIENCY
                 </span>
               </h2>
-              <p className="text-xs text-[#022D32]/70 font-semibold mt-0.5">
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
                 {language === 'it' 
                   ? 'Clicca su un giocatore per aprire la scheda profilo e lo storico carriera completo'
                   : 'Click any player to inspect shot profile, shooting splits and career history'}
@@ -1669,13 +1734,13 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
           {/* Search Box */}
           <div className="relative min-w-[240px]">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#022D32]/50" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={rosterSearch}
               onChange={(e) => setRosterSearch(e.target.value)}
               placeholder={language === 'it' ? 'Cerca giocatore o numero...' : 'Search player or #...'}
-              className="w-full bg-[#F8F9FA] border border-[#DDF3E9] text-[#022D32] text-xs font-bold pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:border-[#0CA17A] placeholder-[#022D32]/40 shadow-xs"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:border-[#0CA17A] placeholder-slate-400 shadow-2xs"
             />
           </div>
         </div>
@@ -1693,11 +1758,11 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
         )}
 
         {/* Supercharged BBA Roster Table */}
-        <div className="bg-white rounded-2xl border border-[#DDF3E9] shadow-xs overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#DDF3E9] text-[#022D32] font-black uppercase text-[10px] tracking-wider border-b border-[#DDF3E9]">
+                <tr className="bg-slate-50/90 text-slate-500 font-semibold uppercase text-[11px] tracking-wider border-b border-slate-200 select-none">
                   <th 
                     onClick={() => handleSort('number')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
@@ -1919,7 +1984,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#DDF3E9]">
+              <tbody className="divide-y divide-slate-100">
                 {filteredRoster.length === 0 ? (
                   <tr>
                     <td colSpan={19} className="p-8 text-center text-slate-400 font-medium italic">
@@ -1937,50 +2002,40 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                       <tr 
                         key={player.fid || player.number || `p_${pIdx}`}
                         onClick={() => setSelectedPlayer(player)}
-                        className={`transition-colors cursor-pointer hover:bg-[#DDF3E9]/50 ${pIdx % 2 === 0 ? 'bg-white' : 'bg-[#DDF3E9]/15'}`}
+                        className={`transition-colors cursor-pointer hover:bg-slate-50/80 ${pIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
                       >
-                        <td className="p-3.5 text-center font-mono font-black text-[#022D32] text-sm">
+                        <td className="py-3 px-3.5 text-center font-semibold text-slate-400 tabular-nums text-sm">
                           #{player.number}
                         </td>
-                        <td className="p-3.5 font-black text-[#022D32]">
+                        <td className="py-3 px-3.5 min-w-[220px]">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-sm font-black">{player.name}</span>
+                              <span className="text-sm font-semibold text-slate-900">{player.name}</span>
                               {player.captain && (
-                                <span className="text-[10px] font-black uppercase bg-slate-100 text-[#022D32] border border-slate-200 px-1.5 py-0.2 rounded">
+                                <span className="text-[10px] font-semibold uppercase bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.2 rounded">
                                   CAP
-                                </span>
-                              )}
-                              {player.fipVerified ? (
-                                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-1.5 py-0.2 rounded inline-flex items-center gap-1">
-                                  <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
-                                  FIP VERIFIED
-                                </span>
-                              ) : (
-                                <span className="text-[10px] bg-sky-50 text-sky-800 border border-sky-300 font-bold px-1.5 py-0.2 rounded inline-flex items-center gap-1">
-                                  AMICHEVOLE
                                 </span>
                               )}
                             </div>
                             {player.position && player.position.trim().toLowerCase() !== 'player' && (
-                              <span className="text-[11px] text-slate-500 font-semibold">{player.position}</span>
+                              <span className="text-[11px] text-slate-500 font-medium">{player.position}</span>
                             )}
                           </div>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           {player.games ?? 0}
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           {player.timePlayedAVG != null && !isNaN(Number(player.timePlayedAVG)) && Number(player.timePlayedAVG) > 0 ? formatMinutes(player.timePlayedAVG) : '—'}
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
                           {player.startPercentage != null ? (
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                            <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                               startPctVal >= 80 
-                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                 : startPctVal >= 40 
-                                  ? 'bg-sky-50 text-sky-800 border border-sky-300'
-                                  : 'bg-slate-100 text-slate-600'
+                                  ? 'bg-slate-100 text-slate-700'
+                                  : 'text-slate-400'
                             }`}>
                               {player.startPercentage}
                             </span>
@@ -1988,52 +2043,40 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                             <span className="text-slate-400 font-medium">N/A</span>
                           )}
                         </td>
-                        <td className="p-3.5 text-center font-mono font-black text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-bold text-slate-900 text-sm">
                           <span>{typeof player.pointsAVG === 'number' && !isNaN(player.pointsAVG) ? player.pointsAVG.toFixed(1) : (player.pointsAVG || '0.0')}</span>
                         </td>
-                        {/* 2PT F/P (Volume) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fg2a ? `${player.fg2m || 0}/${player.fg2a} da 2 totali` : undefined}>
+                        {/* 2PT F/P (Solo realizzati: media + totale) */}
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg2a ? `${player.fg2m || 0}/${player.fg2a} da 2 totali` : undefined}>
                           <div className="flex flex-col items-center">
-                            <span>
-                              {player.twoAttAvg != null && Number(player.twoAttAvg) > 0
-                                ? `${formatAverage(player.twoMadeAVG)} / ${formatAverage(player.twoAttAvg)}`
-                                : formatAverage(player.twoMadeAVG)}
+                            <span>{formatAverage(player.twoMadeAVG)}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              ({player.fg2m || 0} tot)
                             </span>
-                            {Number(player.fg2a) > 0 && (
-                              <span className="text-[10px] text-gray-400 font-normal">
-                                ({player.fg2m || 0}/{player.fg2a} tot)
-                              </span>
-                            )}
                           </div>
                         </td>
 
-                        {/* 2PT % (Efficiency) - Comes strictly from Supabase twoPct */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        {/* 2PT % (Efficiency - Solo Scouting) */}
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                           <span>{formatPercentage(player.twoPct)}</span>
                         </td>
 
-                        {/* 3PT F/P (Volume) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fg3a ? `${player.fg3m || 0}/${player.fg3a} da 3 totali` : undefined}>
+                        {/* 3PT F/P (Solo realizzati: media + totale) */}
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg3a ? `${player.fg3m || 0}/${player.fg3a} da 3 totali` : undefined}>
                           <div className="flex flex-col items-center">
-                            <span>
-                              {player.threeAttAvg != null && Number(player.threeAttAvg) > 0
-                                ? `${formatAverage(player.threeMadeAVG)} / ${formatAverage(player.threeAttAvg)}`
-                                : formatAverage(player.threeMadeAVG)}
+                            <span>{formatAverage(player.threeMadeAVG)}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              ({player.fg3m || 0} tot)
                             </span>
-                            {Number(player.fg3a) > 0 && (
-                              <span className="text-[10px] text-gray-400 font-normal">
-                                ({player.fg3m || 0}/{player.fg3a} tot)
-                              </span>
-                            )}
                           </div>
                         </td>
 
                         {/* 3PT % (Efficiency) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                           <span>{formatPercentage(player.threePct)}</span>
                         </td>
                         {/* TL T/P (Volume: Made / Attempted) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={player.fta ? `${player.ftm || 0}/${player.fta} TL totali (${formatPercentage(player.ftPct)})` : undefined}>
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fta ? `${player.ftm || 0}/${player.fta} TL totali (${formatPercentage(player.ftPct)})` : undefined}>
                           <div className="flex flex-col items-center">
                             <span>
                               {player.ftAttAvg != null && Number(player.ftAttAvg) > 0
@@ -2041,7 +2084,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                                 : (player.ftMadeAvg != null && Number(player.ftMadeAvg) > 0 ? formatAverage(player.ftMadeAvg) : '—')}
                             </span>
                             {Number(player.fta) > 0 && (
-                              <span className="text-[10px] text-gray-400 font-normal">
+                              <span className="text-[10px] text-slate-400 font-normal">
                                 ({player.ftm || 0}/{player.fta} tot)
                               </span>
                             )}
@@ -2049,28 +2092,28 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
                         </td>
 
                         {/* TL % (Realizzazione) */}
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                           <span>{formatPercentage(player.ftPct)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.rebAvg)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.astAvg)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.tovAvg)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.stlAvg)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.blkAvg)}</span>
                         </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-[#022D32]">
+                        <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                           <span>{formatAverage(player.foulsAVG)}</span>
                         </td>
-                        <td className="p-3.5 text-left">
+                        <td className="py-3 px-3.5 text-left">
                           {tacticalTags.length > 0 ? (
                             <div className="flex items-center gap-1.5 flex-wrap">
                               {tacticalTags.map(tag => (

@@ -762,7 +762,7 @@ export function buildSuperchargedBbaRoster(
 
     const supaPg = supaData?.gpSupabase || 0;
 
-    // 1. Team-Scope FIP Totals (uses exact integers if synced via updated build_league.js, otherwise Math.round(avg * rawFipPg))
+    // 1. Team-Scope FIP Totals (inclusi Tiri Liberi Tentati fipTotalFta)
     const fipTotal2m = rawFipPg > 0 
       ? (fipStats?.inArcThrowsMade != null ? Math.round(Number(fipStats.inArcThrowsMade)) : Math.round(Number(fipStats?.inArcThrowsAVG ?? 0) * rawFipPg))
       : 0;
@@ -775,6 +775,13 @@ export function buildSuperchargedBbaRoster(
     const fipTotalFtm = rawFipPg > 0
       ? (fipStats?.freeThrowsMade != null ? Math.round(Number(fipStats.freeThrowsMade)) : Math.max(0, fipTotalPts - (fipTotal2m * 2 + fipTotal3m * 3)))
       : 0;
+    const fipTotalFta = rawFipPg > 0
+      ? (fipStats?.freeThrowsMade != null && fipStats?.freeThrowsFailed != null
+          ? Math.round(Number(fipStats.freeThrowsMade) + Number(fipStats.freeThrowsFailed))
+          : (fipTotalFtm > 0 && Number(fipStats?.freeThrowsPercentage) > 0
+              ? Math.round(fipTotalFtm / (Number(fipStats.freeThrowsPercentage) / 100))
+              : fipTotalFtm))
+      : 0;
     const fipTotalFouls = rawFipPg > 0 
       ? (fipStats?.fouls != null ? Math.round(Number(fipStats.fouls)) : Math.round(Number(fipStats?.foulsAVG ?? 0) * rawFipPg))
       : 0;
@@ -782,12 +789,13 @@ export function buildSuperchargedBbaRoster(
       ? (fipStats?.plusMinus != null ? Math.round(Number(fipStats.plusMinus)) : Math.round(Number(fipStats?.plusMinusAVG ?? 0) * rawFipPg))
       : 0;
 
-    // 2. Check if FIP-only matches have direct per-game player boxscores (from updated build_league.js)
+    // 2. Direct per-game FIP-only boxscores (se disponibili da build_league.js)
     let hasDirectFipOnlyBoxscores = false;
     let directFipOnlyGames = 0;
     let directFipOnly2m = 0;
     let directFipOnly3m = 0;
     let directFipOnlyFtm = 0;
+    let directFipOnlyFta = 0;
     let directFipOnlyFouls = 0;
     let directFipOnlyPm = 0;
 
@@ -812,10 +820,14 @@ export function buildSuperchargedBbaRoster(
             const p2 = Math.round(Number(pEntry.fg2m ?? pEntry.inArcThrowsMade ?? 0));
             const p3 = Math.round(Number(pEntry.fg3m ?? pEntry.outArcThrowsMade ?? 0));
             const pts = Math.round(Number(pEntry.pts ?? pEntry.points ?? 0));
-            const ft = pEntry.ftm != null ? Math.round(Number(pEntry.ftm)) : Math.max(0, pts - (p2 * 2 + p3 * 3));
+            const ftm = pEntry.ftm != null ? Math.round(Number(pEntry.ftm)) : Math.max(0, pts - (p2 * 2 + p3 * 3));
+            const fta = pEntry.fta != null 
+              ? Math.round(Number(pEntry.fta)) 
+              : (pEntry.ftFailed != null ? ftm + Math.round(Number(pEntry.ftFailed)) : ftm);
             directFipOnly2m += p2;
             directFipOnly3m += p3;
-            directFipOnlyFtm += ft;
+            directFipOnlyFtm += ftm;
+            directFipOnlyFta += Math.max(ftm, fta);
             directFipOnlyFouls += Math.round(Number(pEntry.fouls ?? 0));
             directFipOnlyPm += Math.round(Number(pEntry.plusMinus ?? 0));
           }
@@ -828,6 +840,7 @@ export function buildSuperchargedBbaRoster(
     let exclusiveFip2m = 0;
     let exclusiveFip3m = 0;
     let exclusiveFipFtm = 0;
+    let exclusiveFipFta = 0;
     let exclusiveFipFouls = 0;
     let exclusiveFipPm = 0;
 
@@ -836,6 +849,7 @@ export function buildSuperchargedBbaRoster(
       exclusiveFip2m = directFipOnly2m;
       exclusiveFip3m = directFipOnly3m;
       exclusiveFipFtm = directFipOnlyFtm;
+      exclusiveFipFta = directFipOnlyFta;
       exclusiveFipFouls = directFipOnlyFouls;
       exclusiveFipPm = directFipOnlyPm;
     } else {
@@ -843,6 +857,7 @@ export function buildSuperchargedBbaRoster(
       let overlap2m = 0;
       let overlap3m = 0;
       let overlapFtm = 0;
+      let overlapFta = 0;
       let overlapFouls = 0;
       let overlapPm = 0;
 
@@ -859,6 +874,7 @@ export function buildSuperchargedBbaRoster(
                 overlap2m += supaMatchBucket.fg2m;
                 overlap3m += supaMatchBucket.fg3m;
                 overlapFtm += supaMatchBucket.ftm;
+                overlapFta += supaMatchBucket.fta;
                 overlapFouls += supaMatchBucket.fouls;
                 overlapPm += supaMatchBucket.plusMinus || 0;
               }
@@ -869,6 +885,7 @@ export function buildSuperchargedBbaRoster(
           overlap2m = supaData.fg2m || 0;
           overlap3m = supaData.fg3m || 0;
           overlapFtm = supaData.ftm || 0;
+          overlapFta = supaData.fta || 0;
           overlapFouls = supaData.foulsTotal || 0;
           overlapPm = supaData.plusMinusTotal || 0;
         }
@@ -881,6 +898,7 @@ export function buildSuperchargedBbaRoster(
       exclusiveFip2m = exclusiveFipGames > 0 ? Math.max(0, fipTotal2m - overlap2m) : 0;
       exclusiveFip3m = exclusiveFipGames > 0 ? Math.max(0, fipTotal3m - overlap3m) : 0;
       exclusiveFipFtm = exclusiveFipGames > 0 ? Math.max(0, fipTotalFtm - overlapFtm) : 0;
+      exclusiveFipFta = exclusiveFipGames > 0 ? Math.max(exclusiveFipFtm, fipTotalFta - overlapFta) : 0;
       exclusiveFipFouls = exclusiveFipGames > 0 ? Math.max(0, fipTotalFouls - overlapFouls) : 0;
       exclusiveFipPm = exclusiveFipGames > 0 ? (fipTotalPm - overlapPm) : 0;
     }
@@ -889,30 +907,31 @@ export function buildSuperchargedBbaRoster(
     const hybridFg2m = Math.round((supaData?.fg2m || 0) + exclusiveFip2m);
     const hybridFg3m = Math.round((supaData?.fg3m || 0) + exclusiveFip3m);
     const hybridFtm = Math.round((supaData?.ftm || 0) + exclusiveFipFtm);
+    const hybridFta = Math.round((supaData?.fta || 0) + exclusiveFipFta);
 
-    // Mathematical Invariant: Total Points = 2*2PM + 3*3PM + FTM
     const finalPtsTotal = (hybridFg2m * 2) + (hybridFg3m * 3) + hybridFtm;
     const finalPtsAvg = unifiedPg > 0 ? Number((finalPtsTotal / unifiedPg).toFixed(1)) : 0;
 
-    // 5. Shooting Volumes & Percentages (Scouting Priority)
+    // 5. Shooting Volumes & Percentages
     const scoutedFg2m = supaData?.fg2m || 0;
     const scoutedFg2a = supaData?.fg2a || 0;
     const scoutedFg3m = supaData?.fg3m || 0;
     const scoutedFg3a = supaData?.fg3a || 0;
-    const scoutedFtm = supaData?.ftm || 0;
-    const scoutedFta = supaData?.fta || 0;
 
+    // 2PT e 3PT: Medie e Totali dei canestri realizzati su TUTTE le partite (unifiedPg)
     const final2PmMadeAvg = unifiedPg > 0 ? Number((hybridFg2m / unifiedPg).toFixed(1)) : 0;
     const final3PmMadeAvg = unifiedPg > 0 ? Number((hybridFg3m / unifiedPg).toFixed(1)) : 0;
+
+    // Tiri Liberi: Sia realizzati che tentati su TUTTE le partite (unifiedPg)
     const finalFtMadeAvg = unifiedPg > 0 ? Number((hybridFtm / unifiedPg).toFixed(1)) : 0;
+    const finalFtAttAvg = unifiedPg > 0 && hybridFta > 0 ? Number((hybridFta / unifiedPg).toFixed(1)) : null;
 
-    const final2AttAvg = supaPg > 0 && scoutedFg2a > 0 ? Number((scoutedFg2a / supaPg).toFixed(1)) : null;
-    const final3AttAvg = supaPg > 0 && scoutedFg3a > 0 ? Number((scoutedFg3a / supaPg).toFixed(1)) : null;
-    const finalFtAttAvg = supaPg > 0 && scoutedFta > 0 ? Number((scoutedFta / supaPg).toFixed(1)) : null;
-
+    // Percentuali: 2PT% e 3PT% solo da Scouting; FT% calcolata su tutte le gare (hybridFtm / hybridFta)
     const final2Pct = supaData?.twoPct ?? null;
     const final3Pct = supaData?.threePct ?? null;
-    const finalFtPct = supaData?.ftPct ?? (fipStats?.freeThrowsPercentage != null ? Math.round(Number(fipStats.freeThrowsPercentage)) : null);
+    const finalFtPct = hybridFta > 0
+      ? Math.round((hybridFtm / hybridFta) * 100)
+      : (supaData?.ftPct ?? (fipStats?.freeThrowsPercentage != null ? Math.round(Number(fipStats.freeThrowsPercentage)) : null));
 
     // 6. Minutes & Starters (FIP Exclusive)
     const finalTimePlayedAvg = fipStats?.timePlayedAVG != null ? Number(fipStats.timePlayedAVG) : (player.timePlayedAVG != null ? Number(player.timePlayedAVG) : null);
@@ -979,41 +998,41 @@ export function buildSuperchargedBbaRoster(
       pointsTotal: finalPtsTotal,
       points: finalPtsTotal,
 
-      // 2PT: Keep fg2m/fg2a strictly coherent with attempts in Roster Table (so makes never exceed attempts),
-      // while exposing hybridFg2m / hybrid2MadeAvg for total season scoring breakdown
-      twoMadeAVG: supaPg > 0 && scoutedFg2a > 0 ? Number((scoutedFg2m / supaPg).toFixed(1)) : final2PmMadeAvg,
-      twoAttAvg: final2AttAvg,
+      // 2PT: Solo realizzati su tutte le gare (niente tentati parziali in tabella)
+      twoMadeAVG: final2PmMadeAvg,
+      twoAttAvg: null,
       twoPct: final2Pct,
-      fg2m: scoutedFg2a > 0 ? scoutedFg2m : hybridFg2m,
+      fg2m: hybridFg2m,
       fg2a: scoutedFg2a,
       hybridFg2m,
       hybrid2MadeAvg: final2PmMadeAvg,
       scoutedFg2m,
       scoutedFg2a,
 
-      // 3PT
-      threeMadeAVG: supaPg > 0 && scoutedFg3a > 0 ? Number((scoutedFg3m / supaPg).toFixed(1)) : final3PmMadeAvg,
-      threeAttAvg: final3AttAvg,
+      // 3PT: Solo realizzati su tutte le gare
+      threeMadeAVG: final3PmMadeAvg,
+      threeAttAvg: null,
       threePct: final3Pct,
-      fg3m: scoutedFg3a > 0 ? scoutedFg3m : hybridFg3m,
+      fg3m: hybridFg3m,
       fg3a: scoutedFg3a,
       hybridFg3m,
       hybrid3MadeAvg: final3PmMadeAvg,
       scoutedFg3m,
       scoutedFg3a,
 
-      // Free Throws
-      ftMadeAvg: supaPg > 0 && scoutedFta > 0 ? Number((scoutedFtm / supaPg).toFixed(1)) : finalFtMadeAvg,
+      // Free Throws: Realizzati E Tentati completi su tutte le gare
+      ftMadeAvg: finalFtMadeAvg,
       ftAttAvg: finalFtAttAvg,
       ftPct: finalFtPct,
-      ftm: scoutedFta > 0 ? scoutedFtm : hybridFtm,
-      fta: scoutedFta,
-      ftMade: scoutedFta > 0 ? scoutedFtm : hybridFtm,
-      ftAtt: scoutedFta,
+      ftm: hybridFtm,
+      fta: hybridFta,
+      ftMade: hybridFtm,
+      ftAtt: hybridFta,
       hybridFtm,
+      hybridFta,
       hybridFtMadeAvg: finalFtMadeAvg,
-      scoutedFtm,
-      scoutedFta,
+      scoutedFtm: supaData?.ftm || 0,
+      scoutedFta: supaData?.fta || 0,
 
       // Playmaking, Hustle & Defense
       astAvg: finalAstAvg,
@@ -1252,7 +1271,7 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
         }
       };
     }
-
+    const isHome = sm.is_home !== undefined ? Boolean(sm.is_home) : (sm.isHomeGame !== undefined ? Boolean(sm.isHomeGame) : true);
     unified.push({
       id: sm.id || `supa_${sm.name || smIdx}`,
       name: sm.name,
@@ -1271,12 +1290,24 @@ export function buildUnifiedMatchList(fipLog = [], supabaseMatches = [], metaMap
       diff,
       isWin,
       resultText: isWin ? 'V' : (finalPts === finalOppPts ? 'P' : 'S'),
-      isHomeGame: sm.is_home !== undefined ? Boolean(sm.is_home) : true,
-      location: (sm.is_home !== undefined ? Boolean(sm.is_home) : true) ? 'Casa' : 'Trasferta',
+      isHomeGame: isHome,
+      location: isHome ? 'Casa' : 'Trasferta',
       round: matchType === 'Official' ? `G${unified.length + 1}` : 'AMICH.',
       gameLabel: matchType === 'Official' ? `G${unified.length + 1}` : `A${smIdx + 1}`,
       opponent: sm.opponentName || sm.opponent || sm.name.replace(/^BBA\s*(vs|contro|-)\s*/i, '').trim() || sm.name,
-      partials: sm.partials || [],
+      partials: (Array.isArray(sm.partials) && sm.partials.length > 0)
+        ? sm.partials
+        : (Array.isArray(a?.quarters) && a.quarters.some(q => (q.pts || 0) > 0 || (q.oppPts || 0) > 0)
+            ? a.quarters.map((q, qIdx) => ({
+                period: qIdx + 1,
+                quarter: q.quarter || `Q${qIdx + 1}`,
+                scored: Number(q.pts ?? 0),
+                conceded: Number(q.oppPts ?? 0),
+                diff: Number(q.pts ?? 0) - Number(q.oppPts ?? 0),
+                homeScore: isHome ? Number(q.pts ?? 0) : Number(q.oppPts ?? 0),
+                awayScore: isHome ? Number(q.oppPts ?? 0) : Number(q.pts ?? 0)
+              }))
+            : []),
       fipVerified: false,
       hasSupabaseScout: true,
       rawFip: null,
@@ -1449,7 +1480,19 @@ export function buildHybridGameLog(fipLog = [], supabaseMatches = [], filterType
       diff,
       isWin,
       resultText: isWin ? 'V' : (pts === oppPts ? 'P' : 'S'),
-      partials: sm.partials || [],
+      partials: (Array.isArray(sm.partials) && sm.partials.length > 0)
+        ? sm.partials
+        : (Array.isArray(a?.quarters) && a.quarters.some(q => (q.pts || 0) > 0 || (q.oppPts || 0) > 0)
+            ? a.quarters.map((q, qIdx) => ({
+                period: qIdx + 1,
+                quarter: q.quarter || `Q${qIdx + 1}`,
+                scored: Number(q.pts ?? 0),
+                conceded: Number(q.oppPts ?? 0),
+                diff: Number(q.pts ?? 0) - Number(q.oppPts ?? 0),
+                homeScore: isHome ? Number(q.pts ?? 0) : Number(q.oppPts ?? 0),
+                awayScore: isHome ? Number(q.oppPts ?? 0) : Number(q.pts ?? 0)
+              }))
+            : []),
 
       ast: a?.teamOverview?.ast ?? null,
       tov: a?.teamOverview?.tov ?? null,

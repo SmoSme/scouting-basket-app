@@ -3225,35 +3225,29 @@ export default function LeagueHub({ showToast }) {
                                 <tr
                                   key={p.fid}
                                   onClick={() => setSelectedPlayer(p)}
-                                  className={`${pIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} hover:bg-[#0CA17A]/5 cursor-pointer transition-colors border-b border-slate-100/60`}
+                                  className={`${pIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} hover:bg-slate-50/80 cursor-pointer transition-colors border-b border-slate-100/80`}
                                 >
-                                  <td className="p-3.5 sm:p-4 text-center font-mono font-black text-[#022D32] text-sm sm:text-base">
+                                  <td className="py-3 px-3.5 text-center font-semibold text-slate-400 tabular-nums text-sm">
                                     #{p.number}
                                   </td>
-                                  <td className="p-3.5 sm:p-4 min-w-[240px]">
-                                    <div className="flex flex-col gap-1.5">
+                                  <td className="py-3 px-3.5 min-w-[240px]">
+                                    <div className="flex flex-col gap-1">
                                       <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-black text-[#022D32] text-sm sm:text-base">{p.name}</span>
+                                        <span className="font-semibold text-slate-900 text-sm">{p.name}</span>
                                         {p.captain && (
-                                          <span className="text-[10px] sm:text-xs font-black uppercase bg-slate-100 text-[#022D32] border border-slate-200 px-2 py-0.5 rounded">
+                                          <span className="text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.2 rounded">
                                             CAP
-                                          </span>
-                                        )}
-                                        {isSelectedBBA && (
-                                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200" title={lang === 'it' ? 'Verificato su tabellino ufficiale FIP' : 'Verified on official FIP boxscore'}>
-                                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                            {t.fipVerifiedPill || 'FIP VERIFIED'}
                                           </span>
                                         )}
                                       </div>
                                       {p.position && p.position.trim() && p.position.trim().toLowerCase() !== 'player' && (
-                                        <span className="text-xs text-slate-500 font-semibold">{p.position}</span>
+                                        <span className="text-xs text-slate-500 font-medium">{p.position}</span>
                                       )}
 
                                       {/* Compact Multi-Level Tactical Tags Breakdown */}
-                                      <div className="flex items-center gap-2 mt-0.5 text-xs font-mono select-none flex-wrap">
-                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
-                                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-tight">Team:</span>
+                                      <div className="flex items-center gap-2 mt-0.5 text-xs select-none flex-wrap">
+                                        <span className="inline-flex items-center gap-1.5 text-slate-700">
+                                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Team:</span>
                                           {teamTags.length > 0 ? (
                                             <span className="inline-flex items-center gap-1.5">
                                               {teamTags.map(t => (
@@ -3262,7 +3256,7 @@ export default function LeagueHub({ showToast }) {
                                                   title={`Team: ${lang === 'it' ? t.labelIt : t.label}`}
                                                   className="cursor-help hover:scale-125 transition-transform inline-flex items-center"
                                                 >
-                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-[#022D32]" />
+                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-slate-700" />
                                                 </span>
                                               ))}
                                             </span>
@@ -3273,8 +3267,8 @@ export default function LeagueHub({ showToast }) {
 
                                         <span className="text-slate-200 text-xs">|</span>
 
-                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
-                                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-tight">Season:</span>
+                                        <span className="inline-flex items-center gap-1.5 text-slate-700">
+                                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Season:</span>
                                           {seasonTags.length > 0 ? (
                                             <span className="inline-flex items-center gap-1.5">
                                               {seasonTags.map(t => (
@@ -3283,7 +3277,7 @@ export default function LeagueHub({ showToast }) {
                                                   title={`Season: ${lang === 'it' ? t.labelIt : t.label}`}
                                                   className="cursor-help hover:scale-125 transition-transform inline-flex items-center"
                                                 >
-                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-[#022D32]" />
+                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-slate-700" />
                                                 </span>
                                               ))}
                                             </span>
@@ -3294,8 +3288,8 @@ export default function LeagueHub({ showToast }) {
 
                                         <span className="text-slate-200 text-xs">|</span>
 
-                                        <span className="inline-flex items-center gap-1.5 text-[#022D32]">
-                                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-tight">Career:</span>
+                                        <span className="inline-flex items-center gap-1.5 text-slate-700">
+                                          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">Career:</span>
                                           {careerTags.length > 0 ? (
                                             <span className="inline-flex items-center gap-1.5">
                                               {careerTags.map(t => (
@@ -3304,7 +3298,7 @@ export default function LeagueHub({ showToast }) {
                                                   title={`Career: ${lang === 'it' ? t.labelIt : t.label}`}
                                                   className="cursor-help hover:scale-125 transition-transform inline-flex items-center"
                                                 >
-                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-[#022D32]" />
+                                                  <TacticalTagIcon id={t.id} className="w-3.5 h-3.5 text-slate-700" />
                                                 </span>
                                               ))}
                                             </span>
@@ -3315,32 +3309,32 @@ export default function LeagueHub({ showToast }) {
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                  <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                                     {p.games}
                                   </td>
-                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-[#022D32] text-sm sm:text-base">
+                                  <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-slate-700 text-sm">
                                     {formatMinutes(p.timePlayedAVG || p.stats?.timePlayedAVG)}
                                   </td>
                                   {/* QUINTETTO % CELL */}
-                                  <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                    <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                  <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                    <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                       startPctNum >= 80 
-                                        ? 'bg-emerald-50 text-emerald-700' 
+                                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
                                         : startPctNum >= 50
-                                          ? 'bg-slate-100 text-[#022D32]'
+                                          ? 'bg-slate-100 text-slate-700'
                                           : 'text-slate-400'
                                     }`}>
                                       {p.startPercentage || '0%'}
                                     </span>
                                   </td>
-                                  <td className="p-3.5 sm:p-4 text-center font-mono font-black text-[#022D32] text-sm sm:text-base">
+                                  <td className="py-3 px-3.5 text-center tabular-nums font-bold text-slate-900 text-sm">
                                     {p.pointsAVG != null ? p.pointsAVG.toFixed(1) : '0.0'}
                                   </td>
 
                                   {isSelectedBBA ? (
                                     <>
                                       {/* 2PT F/P (Volume) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fg2a ? `${p.fg2m || 0}/${p.fg2a} da 2 totali` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg2a ? `${p.fg2m || 0}/${p.fg2a} da 2 totali` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.twoAttAvg != null && p.twoAttAvg > 0
@@ -3348,7 +3342,7 @@ export default function LeagueHub({ showToast }) {
                                               : formatAverage(p.twoMadeAVG)}
                                           </span>
                                           {p.fg2a > 0 && (
-                                            <span className="text-[10px] text-gray-400 font-normal">
+                                            <span className="text-[10px] text-slate-400 font-normal">
                                               ({p.fg2m || 0}/{p.fg2a} tot)
                                             </span>
                                           )}
@@ -3356,12 +3350,12 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* 2PT % (Efficiency) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                                         {formatPercentage(p.twoPct)}
                                       </td>
 
                                       {/* 3PT F/P (Volume) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fg3a ? `${p.fg3m || 0}/${p.fg3a} da 3 totali` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg3a ? `${p.fg3m || 0}/${p.fg3a} da 3 totali` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.threeAttAvg != null && p.threeAttAvg > 0
@@ -3369,7 +3363,7 @@ export default function LeagueHub({ showToast }) {
                                               : formatAverage(p.threeMadeAVG)}
                                           </span>
                                           {p.fg3a > 0 && (
-                                            <span className="text-[10px] text-gray-400 font-normal">
+                                            <span className="text-[10px] text-slate-400 font-normal">
                                               ({p.fg3m || 0}/{p.fg3a} tot)
                                             </span>
                                           )}
@@ -3377,12 +3371,12 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* 3PT % (Efficiency) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                                         {formatPercentage(p.threePct)}
                                       </td>
 
                                       {/* TL T/P (Volume: Made / Attempted) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium" title={p.fta ? `${p.ftm || 0}/${p.fta} TL totali (${formatPercentage(p.ftPct)})` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fta ? `${p.ftm || 0}/${p.fta} TL totali (${formatPercentage(p.ftPct)})` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.ftAttAvg != null && p.ftAttAvg > 0
@@ -3390,7 +3384,7 @@ export default function LeagueHub({ showToast }) {
                                               : (p.ftMadeAvg != null && p.ftMadeAvg > 0 ? formatAverage(p.ftMadeAvg) : '—')}
                                           </span>
                                           {p.fta > 0 && (
-                                            <span className="text-[10px] text-gray-400 font-normal">
+                                            <span className="text-[10px] text-slate-400 font-normal">
                                               ({p.ftm || 0}/{p.fta} tot)
                                             </span>
                                           )}
@@ -3398,52 +3392,52 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* TL % (Realizzazione) */}
-                                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-600 text-center tabular-nums font-semibold">
                                         {formatPercentage(p.ftPct)}
                                       </td>
 
                                       {/* AST/G (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.astAvg != null && p.astAvg >= 2.5 
-                                            ? 'bg-emerald-50 text-emerald-700' 
-                                            : 'text-[#022D32]'
+                                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                            : 'text-slate-700'
                                         }`}>
                                           {p.astAvg != null ? p.astAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 
                                       {/* REB/G (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.rebAvg != null && p.rebAvg >= 5.0 
-                                            ? 'bg-emerald-50 text-emerald-700' 
-                                            : 'text-[#022D32]'
+                                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                            : 'text-slate-700'
                                         }`}>
                                           {p.rebAvg != null ? p.rebAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 
                                       {/* TOV/G (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.tovAvg != null && p.tovAvg >= 3.0 
-                                            ? 'bg-rose-50 text-rose-700' 
-                                            : 'text-[#022D32]'
+                                            ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                                            : 'text-slate-700'
                                         }`}>
                                           {p.tovAvg != null ? p.tovAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 
                                       {/* AST/TOV (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.astTovRatio != null && p.astTovRatio >= 1.5 
-                                            ? 'bg-emerald-50 text-emerald-700' 
+                                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
                                             : p.astTovRatio != null && p.astTovRatio >= 1.0
-                                              ? 'bg-slate-100 text-[#022D32]'
+                                              ? 'bg-slate-100 text-slate-700'
                                               : p.astTovRatio != null && p.astTovRatio > 0
-                                                ? 'bg-amber-50 text-amber-700'
+                                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
                                                 : 'text-slate-400'
                                         }`}>
                                           {p.astTovRatio != null ? p.astTovRatio.toFixed(2) : '—'}
@@ -3451,35 +3445,35 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* STL/G (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.stlAvg != null && p.stlAvg >= 1.5 
-                                            ? 'bg-emerald-50 text-emerald-700' 
-                                            : 'text-[#022D32]'
+                                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                            : 'text-slate-700'
                                         }`}>
                                           {p.stlAvg != null ? p.stlAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 
                                       {/* BLK/G (Supabase) */}
-                                      <td className="p-3.5 sm:p-4 text-center font-mono font-bold text-xs sm:text-sm">
-                                        <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold ${
+                                      <td className="py-3 px-3.5 text-center tabular-nums font-semibold text-xs sm:text-sm">
+                                        <span className={`px-2 py-0.5 rounded-full tabular-nums text-xs font-semibold ${
                                           p.blkAvg != null && p.blkAvg >= 1.0 
-                                            ? 'bg-emerald-50 text-emerald-700' 
-                                            : 'text-[#022D32]'
+                                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                            : 'text-slate-700'
                                         }`}>
                                           {p.blkAvg != null ? p.blkAvg.toFixed(1) : '—'}
                                         </span>
                                       </td>
 
                                       {/* TAG TATTICI */}
-                                      <td className="p-3.5 sm:p-4">
+                                      <td className="py-3 px-3.5">
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                           {teamTags.length > 0 ? (
                                             teamTags.slice(0, 2).map(tag => (
                                               <span 
                                                 key={tag.id}
-                                                className={`text-xs font-bold px-2 py-1 rounded-lg border ${tag.badgeClass} flex items-center gap-1.5 shadow-xs`}
+                                                className={`text-xs font-semibold px-2 py-0.5 rounded-lg border ${tag.badgeClass} flex items-center gap-1.5 shadow-2xs`}
                                                 title={lang === 'it' ? tag.labelIt : tag.label}
                                               >
                                                 <TacticalTagIcon id={tag.id} className="w-3.5 h-3.5" />
@@ -3487,7 +3481,7 @@ export default function LeagueHub({ showToast }) {
                                               </span>
                                             ))
                                           ) : (
-                                            <span className="text-xs text-slate-300 font-mono">—</span>
+                                            <span className="text-xs text-slate-300 font-medium">—</span>
                                           )}
                                         </div>
                                       </td>

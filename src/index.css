@@ -10,13 +10,13 @@
   --team-accent-gold: #F59E0B;
   --team-tertiary: #DDF3E9;
   
-  /* SaaS / Broadcast Surfaces & Borders */
-  --surface-main: #F8F9FA;
+  /* SaaS / Neutral Surfaces & Borders */
+  --surface-main: #F4F6F8;
   --surface-card: #FFFFFF;
   --surface-btn: #FFFFFF;
-  --border-card: #DDF3E9;
-  --border-btn: #C6E8DB;
-  --surface-btn-hover: #DDF3E9;
+  --border-card: #E2E8F0;
+  --border-btn: #E2E8F0;
+  --surface-btn-hover: #F1F5F9;
 }
 
 @layer base {
@@ -32,9 +32,9 @@ html, body, #root {
   height: 100dvh;
   width: 100vw;
   overflow: hidden !important;
-  background-color: var(--surface-main);
-  color: var(--team-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #F4F6F8;
+  color: #0F172A;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -46,22 +46,22 @@ html, body, #root {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #F8F9FA;
+  background: #F4F6F8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C6E8DB;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #0CA17A;
+  background: #94A3B8;
 }
 
 /* Professional Analytics Cards */
 .glass-card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(2, 45, 50, 0.06);
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
 }
 
 /* Action Control Panels */
