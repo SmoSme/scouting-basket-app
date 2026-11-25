@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { IS_PUBLIC_MODE } from '../config/appMode.js';
 
 /**
  * Service for centralizing Match Management & Metadata (scouting_matches & scouting_log)
@@ -130,7 +131,7 @@ export const fetchMatchEvents = getMatchEvents;
  * Upon success, broadcasts cache invalidation so BBA Hub updates immediately.
  */
 export async function updateScoutingMatchInSupabase(idOrName, updates = {}) {
-  if (!idOrName) return null;
+  if (IS_PUBLIC_MODE || !idOrName) return null;
 
   const payload = {};
   if (updates.match_date !== undefined || updates.matchDate !== undefined) {
@@ -227,7 +228,7 @@ export function extractMatchMetadataMap(scoutingLogs = []) {
  * Helper to update legacy CONFIG row in scouting_log
  */
 async function saveLegacyMatchMetadata(matchName, partialMetadata = {}) {
-  if (!matchName) return null;
+  if (IS_PUBLIC_MODE || !matchName) return null;
 
   try {
     let existingRows = null;
@@ -307,7 +308,7 @@ async function saveLegacyMatchMetadata(matchName, partialMetadata = {}) {
  * Ensures the normalized table always reflects the true score.
  */
 export async function syncMatchScores(matchIdOrName, homeScore = 0, awayScore = 0) {
-  if (!matchIdOrName) return null;
+  if (IS_PUBLIC_MODE || !matchIdOrName) return null;
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(matchIdOrName));
   const payload = {
@@ -366,6 +367,10 @@ export async function findOrCreateScoutingMatch({
       return existing;
     }
 
+    if (IS_PUBLIC_MODE) {
+      return null;
+    }
+
     // 2. Insert new match record ONLY upon INITIAL creation
     const normalizedDate = formatDateForInput(matchDate) || new Date().toISOString().split('T')[0];
     const normalizedType = matchType === 'Friendly' ? 'Friendly' : 'Official';
@@ -415,7 +420,7 @@ export async function findOrCreateScoutingMatch({
  * Updates the normalized scouting_matches table AND legacy fallback, then invalidates cache.
  */
 export async function saveMatchMetadataToSupabase(matchName, partialMetadata = {}) {
-  if (!matchName) return null;
+  if (IS_PUBLIC_MODE || !matchName) return null;
 
   try {
     // 1. Try to update or upsert in the normalized scouting_matches table

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Activity } from 'lucide-react';
 import Navbar from './components/Navbar';
 import LiveGame from './pages/LiveGame';
@@ -7,7 +7,7 @@ import Archive from './pages/Archive';
 import SeasonTrends from './pages/SeasonTrends';
 import OpponentScout from './pages/OpponentScout';
 import LeagueHub from './pages/LeagueHub';
-import AuthModal from './components/AuthModal';
+import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from './config/appMode';
 import { DEFAULT_MASTER_ROSTER } from './data/roster';
 import { supabase } from './services/supabase';
 import {
@@ -37,27 +37,8 @@ import {
 } from './services/offlineSync';
 
 export default function App() {
-  const [authRole, setAuthRole] = useState(() => {
-    return localStorage.getItem('bba_auth_role') || 'admin';
-  });
-  const [showAuthModal, setShowAuthModal] = useState(() => {
-    return !localStorage.getItem('bba_auth_role');
-  });
-
-  const handleLoginRole = (role) => {
-    setAuthRole(role);
-    localStorage.setItem('bba_auth_role', role);
-    setShowAuthModal(false);
-    showToast(role === 'admin' ? 'Logged in as Coach (Full Access)' : 'Guest Mode (Read-Only)');
-  };
-
-  const handleLogout = () => {
-    setAuthRole('guest');
-    localStorage.setItem('bba_auth_role', 'guest');
-    showToast('Switched to Guest / Player view');
-  };
-
   const [gameSession, setGameSession] = useState(() => {
+    if (IS_PUBLIC_MODE) return '';
     return localStorage.getItem('current_game_session') || '';
   });
   
@@ -102,11 +83,13 @@ export default function App() {
   });
 
   const updateMasterRoster = (newMaster) => {
+    if (IS_PUBLIC_MODE) return;
     setMasterRoster(newMaster);
     localStorage.setItem('master_roster', JSON.stringify(newMaster));
   };
 
   const updateActiveRoster = (newActive) => {
+    if (IS_PUBLIC_MODE) return;
     setActiveRoster(newActive);
     localStorage.setItem('current_match_roster', JSON.stringify(newActive));
     
@@ -135,11 +118,13 @@ export default function App() {
   });
 
   const updateOnCourtPlayerNums = (newNums) => {
+    if (IS_PUBLIC_MODE) return;
     setOnCourtPlayerNums(newNums);
     localStorage.setItem('current_on_court_nums', JSON.stringify(newNums));
   };
 
   const [currentMatchId, setCurrentMatchId] = useState(() => {
+    if (IS_PUBLIC_MODE) return null;
     return localStorage.getItem('current_match_id') || null;
   });
 
@@ -153,6 +138,7 @@ export default function App() {
 
   // Sync / resolve active match_id whenever gameSession changes
   useEffect(() => {
+    if (IS_PUBLIC_MODE) return;
     let isCancelled = false;
     async function resolveActiveSession() {
       if (!gameSession) {
@@ -192,6 +178,7 @@ export default function App() {
     isHome,
     squad
   }) => {
+    if (IS_PUBLIC_MODE) return null;
     setGameSession(matchName);
     localStorage.setItem('current_game_session', matchName);
     const finalDate = newDate || new Date().toISOString().split('T')[0];
@@ -221,6 +208,7 @@ export default function App() {
   };
 
   const handleUpdateMatchDate = async (newDate) => {
+    if (IS_PUBLIC_MODE) return;
     setMatchDate(newDate);
     const activeId = currentMatchId || localStorage.getItem('current_match_id');
     if (activeId) {
@@ -240,6 +228,7 @@ export default function App() {
   };
 
   const handleUpdateMatchType = async (newType) => {
+    if (IS_PUBLIC_MODE) return;
     setMatchType(newType);
     const activeId = currentMatchId || localStorage.getItem('current_match_id');
     if (activeId) {
@@ -259,6 +248,7 @@ export default function App() {
   };
 
   const handleSaveScoreOverride = async (newTeamScore, newOppScore, targetMatch = gameSession) => {
+    if (IS_PUBLIC_MODE) return;
     if (targetMatch === gameSession) {
       setOverrideTeamScore(newTeamScore);
       setOverrideOppScore(newOppScore);
@@ -276,6 +266,7 @@ export default function App() {
   };
 
   const handleClearScoreOverride = async (targetMatch = gameSession) => {
+    if (IS_PUBLIC_MODE) return;
     if (targetMatch === gameSession) {
       setOverrideTeamScore(null);
       setOverrideOppScore(null);
@@ -293,6 +284,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (IS_PUBLIC_MODE) return;
     async function loadSessionMeta() {
       if (!gameSession) return;
       try {
@@ -392,6 +384,7 @@ export default function App() {
   };
 
   const persistMatchState = (updatedEvents) => {
+    if (IS_PUBLIC_MODE) return;
     const safeEvents = Array.isArray(updatedEvents) ? updatedEvents : [];
     setEvents(safeEvents);
 
@@ -414,6 +407,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (IS_PUBLIC_MODE) return;
     // 1. Unregister legacy service workers if present in tablet browser cache
     unregisterLegacyServiceWorkers();
 
@@ -598,6 +592,7 @@ export default function App() {
   }, [events, gameSession]);
 
   const dispatchAction = async (actionName, categoryName, zoneName, targetPlayer = null, customOnCourt = null, situational = {}) => {
+    if (IS_PUBLIC_MODE) return;
     const isTeamEvent = actionName === 'Stagger' || actionName === 'Ghost' || categoryName === 'Technique';
     const isOpponent = categoryName === 'Opponent' || actionName.startsWith('Opponent') || actionName.startsWith('OPP_');
     const isSub = categoryName === 'Substitution' || actionName.startsWith('SUB:');
@@ -779,6 +774,7 @@ export default function App() {
   };
 
   const dispatchMultipleActions = async (actionsList = [], customOnCourt = null, situational = {}) => {
+    if (IS_PUBLIC_MODE) return;
     if (!Array.isArray(actionsList) || actionsList.length === 0) return;
     if (!gameSession) {
       setShowSessionModal(true);
@@ -955,6 +951,7 @@ export default function App() {
   };
 
   const dispatchOpponentScore = (points, customOnCourt = null) => {
+    if (IS_PUBLIC_MODE) return;
     const bbaPts = calculateTeamScore(events);
     const oppPts = calculateOpponentScore(events);
     const newOppPts = Math.max(0, oppPts + points);
@@ -974,6 +971,7 @@ export default function App() {
   };
 
   const dispatchOpponentShot = (shotType, isMade, defenseType = 'MAN', extraReboundAction = null, customOnCourt = null) => {
+    if (IS_PUBLIC_MODE) return;
     let actionName = '';
     if (isMade) {
       if (shotType === 'FT' || shotType === '1PT') actionName = 'OPP_FT_MADE';
@@ -1014,6 +1012,7 @@ export default function App() {
   };
 
   const handleSwapSubstitution = (subOutNum, subInNum) => {
+    if (IS_PUBLIC_MODE) return;
     const outStr = String(subOutNum);
     const inStr = String(subInNum);
 
@@ -1037,6 +1036,7 @@ export default function App() {
   };
 
   const handleUndo = async () => {
+    if (IS_PUBLIC_MODE) return;
     if (events.length === 0) {
       showToast('No action to undo');
       return;
@@ -1094,6 +1094,7 @@ export default function App() {
   };
 
   const handleResetGame = () => {
+    if (IS_PUBLIC_MODE) return;
     const sessionName = gameSession || 'Current Match';
     if (window.confirm(`Terminare la sessione di scouting dal vivo per "${sessionName}"? Lo schermo tornerà allo stato iniziale. I dati rimarranno archiviati al sicuro in Supabase.`)) {
       setGameSession('');
@@ -1107,7 +1108,7 @@ export default function App() {
   };
 
   const handleResumeMatchSession = async (targetMatch, matchEvents = null) => {
-    if (!targetMatch) return;
+    if (IS_PUBLIC_MODE || !targetMatch) return;
     const matchName = targetMatch.name || targetMatch.match_name || targetMatch.Nome_Partita;
     const matchId = targetMatch.id || targetMatch.match_id;
     if (!matchName) return;
@@ -1235,6 +1236,7 @@ export default function App() {
   };
 
   const handleDeleteEvent = async (eventId, eventIndex, targetEventObj = null) => {
+    if (IS_PUBLIC_MODE) return;
     // 1. Identify the event being deleted
     const targetEv = targetEventObj || events[eventIndex] || events.find(e => eventId && e.id === eventId);
     const resolvedId = eventId || targetEv?.id;
@@ -1284,6 +1286,7 @@ export default function App() {
   };
 
   const handleEditEvent = async (eventId, eventIndex, updatedFields) => {
+    if (IS_PUBLIC_MODE) return;
     // 1. Local state update immutably
     const updatedEvents = events.map((ev, idx) => {
       const isTarget = eventId && ev.id ? ev.id === eventId : idx === eventIndex;
@@ -1344,6 +1347,7 @@ export default function App() {
   };
 
   const handleManualSync = async () => {
+    if (IS_PUBLIC_MODE) return;
     const res = await syncOfflineQueue();
     setOfflineQueueCount(getOfflineQueue().length);
     
@@ -1383,11 +1387,8 @@ export default function App() {
           offlineQueueCount={offlineQueueCount}
           onManualSync={handleManualSync}
           gameSession={gameSession}
-          onEditGameSession={() => setShowSessionModal(true)}
-          onToggleRosterModal={() => setShowRosterModal(!showRosterModal)}
-          authRole={authRole}
-          onOpenAuth={() => setShowAuthModal(true)}
-          onLogout={handleLogout}
+          onEditGameSession={() => { if (IS_ADMIN_MODE) setShowSessionModal(true); }}
+          onToggleRosterModal={() => { if (IS_ADMIN_MODE) setShowRosterModal(!showRosterModal); }}
         />
 
         {/* Routes */}
@@ -1395,50 +1396,53 @@ export default function App() {
           <Route
             path="/"
             element={
-              <LiveGame
-                gameSession={gameSession}
-                setGameSession={setGameSession}
-                matchId={currentMatchId}
-                setMatchId={setCurrentMatchId}
-                onStartNewMatchSession={handleStartNewMatchSession}
-                events={events}
-                setEvents={setEvents}
-                masterRoster={masterRoster}
-                setMasterRoster={updateMasterRoster}
-                roster={activeRoster}
-                setRoster={updateActiveRoster}
-                onCourtPlayerNums={onCourtPlayerNums}
-                setOnCourtPlayerNums={updateOnCourtPlayerNums}
-                handleSwapSubstitution={handleSwapSubstitution}
-                selectedPlayer={selectedPlayer}
-                setSelectedPlayer={setSelectedPlayer}
-                selectedZoneKey={selectedZoneKey}
-                setSelectedZoneKey={setSelectedZoneKey}
-                currentQuarter={currentQuarter}
-                setCurrentQuarter={setCurrentQuarter}
-                showRosterModal={showRosterModal}
-                setShowRosterModal={setShowRosterModal}
-                showSessionModal={showSessionModal}
-                setShowSessionModal={setShowSessionModal}
-                dispatchAction={dispatchAction}
-                dispatchMultipleActions={dispatchMultipleActions}
-                dispatchOpponentScore={dispatchOpponentScore}
-                dispatchOpponentShot={dispatchOpponentShot}
-                plusMinusMap={plusMinusMap}
-                handleUndo={handleUndo}
-                handleResetGame={handleResetGame}
-                onDeleteEvent={handleDeleteEvent}
-                onEditEvent={handleEditEvent}
-                authRole={authRole}
-                matchDate={matchDate}
-                onUpdateMatchDate={handleUpdateMatchDate}
-                matchType={matchType}
-                onUpdateMatchType={handleUpdateMatchType}
-                overrideTeamScore={overrideTeamScore}
-                overrideOppScore={overrideOppScore}
-                onSaveScoreOverride={handleSaveScoreOverride}
-                onClearScoreOverride={handleClearScoreOverride}
-              />
+              IS_PUBLIC_MODE ? (
+                <Navigate to="/trends" replace />
+              ) : (
+                <LiveGame
+                  gameSession={gameSession}
+                  setGameSession={setGameSession}
+                  matchId={currentMatchId}
+                  setMatchId={setCurrentMatchId}
+                  onStartNewMatchSession={handleStartNewMatchSession}
+                  events={events}
+                  setEvents={setEvents}
+                  masterRoster={masterRoster}
+                  setMasterRoster={updateMasterRoster}
+                  roster={activeRoster}
+                  setRoster={updateActiveRoster}
+                  onCourtPlayerNums={onCourtPlayerNums}
+                  setOnCourtPlayerNums={updateOnCourtPlayerNums}
+                  handleSwapSubstitution={handleSwapSubstitution}
+                  selectedPlayer={selectedPlayer}
+                  setSelectedPlayer={setSelectedPlayer}
+                  selectedZoneKey={selectedZoneKey}
+                  setSelectedZoneKey={setSelectedZoneKey}
+                  currentQuarter={currentQuarter}
+                  setCurrentQuarter={setCurrentQuarter}
+                  showRosterModal={showRosterModal}
+                  setShowRosterModal={setShowRosterModal}
+                  showSessionModal={showSessionModal}
+                  setShowSessionModal={setShowSessionModal}
+                  dispatchAction={dispatchAction}
+                  dispatchMultipleActions={dispatchMultipleActions}
+                  dispatchOpponentScore={dispatchOpponentScore}
+                  dispatchOpponentShot={dispatchOpponentShot}
+                  plusMinusMap={plusMinusMap}
+                  handleUndo={handleUndo}
+                  handleResetGame={handleResetGame}
+                  onDeleteEvent={handleDeleteEvent}
+                  onEditEvent={handleEditEvent}
+                  matchDate={matchDate}
+                  onUpdateMatchDate={handleUpdateMatchDate}
+                  matchType={matchType}
+                  onUpdateMatchType={handleUpdateMatchType}
+                  overrideTeamScore={overrideTeamScore}
+                  overrideOppScore={overrideOppScore}
+                  onSaveScoreOverride={handleSaveScoreOverride}
+                  onClearScoreOverride={handleClearScoreOverride}
+                />
+              )
             }
           />
           <Route
@@ -1446,18 +1450,17 @@ export default function App() {
             element={
               <Archive 
                 showToast={showToast} 
-                authRole={authRole} 
-                onResumeMatch={handleResumeMatchSession} 
+                onResumeMatch={IS_ADMIN_MODE ? handleResumeMatchSession : undefined} 
               />
             }
           />
           <Route
             path="/trends"
-            element={<SeasonTrends showToast={showToast} authRole={authRole} />}
+            element={<SeasonTrends showToast={showToast} />}
           />
           <Route
             path="/bba-analytics"
-            element={<SeasonTrends showToast={showToast} authRole={authRole} />}
+            element={<SeasonTrends showToast={showToast} />}
           />
           <Route
             path="/league-hub"
@@ -1467,15 +1470,11 @@ export default function App() {
             path="/opponent-scout"
             element={<LeagueHub showToast={showToast} />}
           />
+          <Route
+            path="*"
+            element={<Navigate to={IS_PUBLIC_MODE ? '/trends' : '/'} replace />}
+          />
         </Routes>
-
-        {/* Role Selection / Passcode Auth Modal */}
-        <AuthModal
-          isOpen={showAuthModal}
-          currentRole={authRole}
-          onLogin={handleLoginRole}
-          onClose={() => setShowAuthModal(false)}
-        />
       </div>
     </BrowserRouter>
   );

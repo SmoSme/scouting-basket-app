@@ -35,8 +35,9 @@ import { TacticalTagIcon, getTacticalTags, formatMinutes } from './LeagueHub';
 import PlayerProfileModal from '../components/PlayerProfileModal';
 import MatchReviewModal from '../components/MatchReviewModal';
 import { useLanguage } from '../context/LanguageContext';
+import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from '../config/appMode';
 
-export default function SeasonTrends({ showToast, authRole = 'admin' }) {
+export default function SeasonTrends({ showToast }) {
   const { language, t } = useLanguage();
   const [activeSection, setActiveSection] = useState('trends'); // 'trends' | 'roster'
   const [matches, setMatches] = useState([]);
@@ -461,7 +462,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
   // Match Date mutation (Strictly Centralized in Supabase)
   const handleUpdateMatchDate = async (matchName, newDate, shouldSave = true) => {
-    if (!newDate) return;
+    if (IS_PUBLIC_MODE || !newDate) return;
     setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchDate: newDate } : m));
     if (reviewMatch && reviewMatch.name === matchName) {
       setReviewMatch(prev => ({ ...prev, matchDate: newDate }));
@@ -480,6 +481,7 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
 
   // Match Type mutation (Strictly Centralized in Supabase)
   const handleUpdateMatchType = async (matchName, newType) => {
+    if (IS_PUBLIC_MODE) return;
     setMatches(prev => prev.map(m => m.name === matchName ? { ...m, matchType: newType } : m));
     if (reviewMatch && reviewMatch.name === matchName) {
       setReviewMatch(prev => ({ ...prev, matchType: newType }));
@@ -2148,10 +2150,10 @@ export default function SeasonTrends({ showToast, authRole = 'admin' }) {
           match={reviewMatch}
           matchId={reviewMatch.id}
           onClose={() => setReviewMatch(null)}
-          onDownloadCSV={() => {}}
-          onUpdateMatchDate={handleUpdateMatchDate}
-          onUpdateMatchType={handleUpdateMatchType}
-          onUpdateScoreOverride={() => fetchMatches()}
+          onDownloadCSV={IS_ADMIN_MODE ? () => {} : undefined}
+          onUpdateMatchDate={IS_ADMIN_MODE ? handleUpdateMatchDate : undefined}
+          onUpdateMatchType={IS_ADMIN_MODE ? handleUpdateMatchType : undefined}
+          onUpdateScoreOverride={IS_ADMIN_MODE ? () => fetchMatches() : undefined}
         />
       )}
 

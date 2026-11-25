@@ -18,6 +18,7 @@ import {
   getMatchEvents
 } from '../services/matchMetadataService';
 import { useLanguage } from '../context/LanguageContext';
+import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from '../config/appMode';
 
 export default function MatchReviewModal({ 
   match, 
@@ -118,7 +119,7 @@ export default function MatchReviewModal({
   }, [match?.name, match?.match_date, match?.matchDate, match?.createdAt]);
 
   const handleDateChange = async (newDate) => {
-    if (!newDate) return;
+    if (IS_PUBLIC_MODE || !newDate) return;
     setMatchDateValue(newDate);
     setDateSaving(true);
     setDateSaved(false);
@@ -146,6 +147,7 @@ export default function MatchReviewModal({
   });
 
   const handleMatchTypeChange = async (newType) => {
+    if (IS_PUBLIC_MODE) return;
     setMatchTypeValue(newType);
     const matchIdentifier = activeMatchId || match?.name;
     if (matchIdentifier) {
@@ -517,18 +519,20 @@ export default function MatchReviewModal({
                       {displayedPointDiff > 0 ? `+${displayedPointDiff}` : displayedPointDiff}
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setShowScoreOverrideModal(true)}
-                    className={`ml-1 p-0.5 rounded transition-all ${
-                      isScoreOverridden
-                        ? 'text-amber-300 bg-amber-500/30'
-                        : 'text-white/60 hover:text-amber-300'
-                    }`}
-                    title={isScoreOverridden ? `Official Table Override (${displayedTeamScore}-${displayedOppScore}). PBP: (${pbpTeamScore}-${pbpOppScore}). Click to edit.` : "Override Official Score (Sync with Table)"}
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
+                  {IS_ADMIN_MODE && (
+                    <button
+                      type="button"
+                      onClick={() => setShowScoreOverrideModal(true)}
+                      className={`ml-1 p-0.5 rounded transition-all ${
+                        isScoreOverridden
+                          ? 'text-amber-300 bg-amber-500/30'
+                          : 'text-white/60 hover:text-amber-300'
+                      }`}
+                      title={isScoreOverridden ? `Official Table Override (${displayedTeamScore}-${displayedOppScore}). PBP: (${pbpTeamScore}-${pbpOppScore}). Click to edit.` : "Override Official Score (Sync with Table)"}
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="text-xs text-white/70 font-semibold flex items-center gap-2 sm:gap-3 mt-0.5 flex-wrap">
@@ -537,39 +541,53 @@ export default function MatchReviewModal({
                   {totalEvents} {t('logged_plays')}
                 </span>
                 <span>•</span>
-                <div 
-                  onClick={() => dateInputRef.current?.showPicker ? dateInputRef.current.showPicker() : dateInputRef.current?.focus()}
-                  className="flex items-center gap-1.5 bg-[#011C20] hover:bg-[#022D32] px-2.5 py-1 rounded-lg border border-[#0CA17A]/40 transition-colors cursor-pointer group shadow-xs"
-                  title={language === 'it' ? 'Clicca per modificare la data della partita (Supabase)' : 'Click to edit match date (Supabase)'}
-                >
-                  <Calendar className="w-3.5 h-3.5 text-[#0CA17A] group-hover:text-[#A7F3D0] transition-colors shrink-0" />
-                  <input
-                    ref={dateInputRef}
-                    type="date"
-                    value={matchDateValue}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer [color-scheme:dark]"
-                  />
-                  {dateSaving ? (
-                    <Loader2 className="w-3 h-3 text-[#0CA17A] animate-spin shrink-0" />
-                  ) : dateSaved ? (
-                    <Check className="w-3 h-3 text-[#0CA17A] shrink-0" />
-                  ) : (
-                    <Pencil className="w-2.5 h-2.5 text-white/50 group-hover:text-white transition-colors shrink-0" />
-                  )}
-                </div>
-                <span>•</span>
-                <span className="flex items-center gap-1.5 bg-[#011C20] px-2 py-0.5 rounded border border-[#0CA17A]/30" title="Click to retroactively edit match type">
-                  <Tag className="w-3.5 h-3.5 text-[#A7F3D0]" />
-                  <select
-                    value={matchTypeValue}
-                    onChange={(e) => handleMatchTypeChange(e.target.value)}
-                    className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+                {IS_ADMIN_MODE ? (
+                  <div 
+                    onClick={() => dateInputRef.current?.showPicker ? dateInputRef.current.showPicker() : dateInputRef.current?.focus()}
+                    className="flex items-center gap-1.5 bg-[#011C20] hover:bg-[#022D32] px-2.5 py-1 rounded-lg border border-[#0CA17A]/40 transition-colors cursor-pointer group shadow-xs"
+                    title={language === 'it' ? 'Clicca per modificare la data della partita (Supabase)' : 'Click to edit match date (Supabase)'}
                   >
-                    <option value="Official" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Ufficiale' : 'Official'}</option>
-                    <option value="Friendly" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Amichevole' : 'Friendly'}</option>
-                  </select>
-                </span>
+                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A] group-hover:text-[#A7F3D0] transition-colors shrink-0" />
+                    <input
+                      ref={dateInputRef}
+                      type="date"
+                      value={matchDateValue}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer [color-scheme:dark]"
+                    />
+                    {dateSaving ? (
+                      <Loader2 className="w-3 h-3 text-[#0CA17A] animate-spin shrink-0" />
+                    ) : dateSaved ? (
+                      <Check className="w-3 h-3 text-[#0CA17A] shrink-0" />
+                    ) : (
+                      <Pencil className="w-2.5 h-2.5 text-white/50 group-hover:text-white transition-colors shrink-0" />
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 bg-[#011C20] px-2.5 py-1 rounded-lg border border-[#0CA17A]/30">
+                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A] shrink-0" />
+                    <span className="text-white font-bold text-xs tabular-nums">{matchDateValue || 'n.a.'}</span>
+                  </div>
+                )}
+                <span>•</span>
+                {IS_ADMIN_MODE ? (
+                  <span className="flex items-center gap-1.5 bg-[#011C20] px-2 py-0.5 rounded border border-[#0CA17A]/30" title="Click to retroactively edit match type">
+                    <Tag className="w-3.5 h-3.5 text-[#A7F3D0]" />
+                    <select
+                      value={matchTypeValue}
+                      onChange={(e) => handleMatchTypeChange(e.target.value)}
+                      className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+                    >
+                      <option value="Official" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Ufficiale' : 'Official'}</option>
+                      <option value="Friendly" className="bg-white text-[#022D32] font-bold">{language === 'it' ? 'Amichevole' : 'Friendly'}</option>
+                    </select>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 bg-[#011C20] px-2 py-0.5 rounded border border-[#0CA17A]/30 text-white font-bold text-xs">
+                    <Tag className="w-3.5 h-3.5 text-[#A7F3D0]" />
+                    <span>{matchTypeValue === 'Official' ? (language === 'it' ? 'Ufficiale' : 'Official') : (language === 'it' ? 'Amichevole' : 'Friendly')}</span>
+                  </span>
+                )}
                 <span>•</span>
                 <span className="text-[#A7F3D0] font-black">
                   {(quarters || []).map(q => `${q.quarter}: ${q.pts}`).join(' | ')}
@@ -579,7 +597,7 @@ export default function MatchReviewModal({
           </div>
 
           <div className="flex items-center gap-2">
-            {!isFipOnly && onResumeScouting && (
+            {IS_ADMIN_MODE && !isFipOnly && onResumeScouting && (
               <button
                 onClick={() => onResumeScouting(match, events)}
                 className="flex items-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer border border-[#0CA17A]"
@@ -597,9 +615,9 @@ export default function MatchReviewModal({
               <BookOpen className="w-3.5 h-3.5 text-amber-400" />
               <span>{t('metric_guide')}</span>
             </button>
-            {!isFipOnly && (
+            {IS_ADMIN_MODE && !isFipOnly && onDownloadCSV && (
               <button
-                onClick={() => onDownloadCSV && onDownloadCSV(activeMatchId || match?.name || 'Match', match?.name || 'Match', events || [])}
+                onClick={() => onDownloadCSV(activeMatchId || match?.name || 'Match', match?.name || 'Match', events || [])}
                 className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
                 title={t('export_csv')}
               >
@@ -2514,28 +2532,32 @@ export default function MatchReviewModal({
         </div>
       </div>
 
-      {/* Score Override Modal */}
-      <ScoreOverrideModal
-        isOpen={showScoreOverrideModal}
-        onClose={() => setShowScoreOverrideModal(false)}
-        matchName={match?.name}
-        pbpTeamScore={pbpTeamScore}
-        pbpOppScore={pbpOppScore}
-        currentOverrideTeamScore={overrideScores?.overrideTeamScore ?? null}
-        currentOverrideOppScore={overrideScores?.overrideOppScore ?? null}
-        onSaveOverride={(t, o) => {
-          const matchIdentifier = activeMatchId || match?.name;
-          saveScoreOverride(match?.name, t, o);
-          setOverrideScores({ overrideTeamScore: t, overrideOppScore: o });
-          if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, t, o);
-        }}
-        onClearOverride={() => {
-          const matchIdentifier = activeMatchId || match?.name;
-          clearScoreOverride(match?.name);
-          setOverrideScores(null);
-          if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, null, null);
-        }}
-      />
+      {/* Score Override Modal (Admin only) */}
+      {IS_ADMIN_MODE && (
+        <ScoreOverrideModal
+          isOpen={showScoreOverrideModal}
+          onClose={() => setShowScoreOverrideModal(false)}
+          matchName={match?.name}
+          pbpTeamScore={pbpTeamScore}
+          pbpOppScore={pbpOppScore}
+          currentOverrideTeamScore={overrideScores?.overrideTeamScore ?? null}
+          currentOverrideOppScore={overrideScores?.overrideOppScore ?? null}
+          onSaveOverride={(t, o) => {
+            if (IS_PUBLIC_MODE) return;
+            const matchIdentifier = activeMatchId || match?.name;
+            saveScoreOverride(match?.name, t, o);
+            setOverrideScores({ overrideTeamScore: t, overrideOppScore: o });
+            if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, t, o);
+          }}
+          onClearOverride={() => {
+            if (IS_PUBLIC_MODE) return;
+            const matchIdentifier = activeMatchId || match?.name;
+            clearScoreOverride(match?.name);
+            setOverrideScores(null);
+            if (onUpdateScoreOverride) onUpdateScoreOverride(matchIdentifier, null, null);
+          }}
+        />
+      )}
 
       {/* Metric Decision Guide Modal */}
       {activeMetricGuideKey && (

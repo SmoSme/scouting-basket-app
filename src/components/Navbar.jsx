@@ -2,10 +2,11 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Archive as ArchiveIcon, TrendingUp, Trophy,
-  WifiOff, Edit3, Settings, Shield, Lock, LogOut, Languages, Upload, Play 
+  WifiOff, Edit3, Settings, Shield, Languages, Upload, Play 
 } from 'lucide-react';
 import bbaLogo from '../assets/bba-logo.png';
 import { useLanguage } from '../context/LanguageContext';
+import { IS_ADMIN_MODE } from '../config/appMode';
 
 export default function Navbar({
   isOnline,
@@ -13,12 +14,9 @@ export default function Navbar({
   onManualSync,
   gameSession,
   onEditGameSession,
-  onToggleRosterModal,
-  authRole = 'admin',
-  onOpenAuth,
-  onLogout
+  onToggleRosterModal
 }) {
-  const isAdmin = authRole === 'admin';
+  const isAdmin = IS_ADMIN_MODE;
   const { language, setLanguage, t } = useLanguage();
 
   return (
@@ -44,7 +42,7 @@ export default function Navbar({
             </div>
             <div className="flex items-center gap-2 mt-1.5">
               <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#A7F3D0]">
-                {gameSession ? `${t('app_subtitle_game')}${gameSession}` : t('app_subtitle')}
+                {isAdmin && gameSession ? `${t('app_subtitle_game')}${gameSession}` : t('app_subtitle')}
               </span>
               <span className="text-white/50 text-xs hidden sm:inline">•</span>
               {isOnline ? (
@@ -65,19 +63,21 @@ export default function Navbar({
         {/* GLOBAL NAVIGATION TABS                                                    */}
         {/* ========================================================================= */}
         <nav className="flex items-center gap-1 bg-[#011C20] p-1 rounded-xl border border-[#0CA17A]/30 shadow-inner order-3 lg:order-2">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                isActive
-                  ? 'bg-[#0CA17A] text-white font-black shadow-md'
-                  : 'text-emerald-100/70 hover:text-white hover:bg-white/10'
-              }`
-            }
-          >
-            <LayoutDashboard className="w-3.5 h-3.5 flex-none" />
-            <span>{t('nav_live')}</span>
-          </NavLink>
+          {isAdmin && (
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  isActive
+                    ? 'bg-[#0CA17A] text-white font-black shadow-md'
+                    : 'text-emerald-100/70 hover:text-white hover:bg-white/10'
+                }`
+              }
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 flex-none" />
+              <span>{t('nav_live')}</span>
+            </NavLink>
+          )}
           <NavLink
             to="/archive"
             className={({ isActive }) =>
@@ -150,7 +150,7 @@ export default function Navbar({
             </button>
           </div>
 
-          {offlineQueueCount > 0 && (
+          {isAdmin && offlineQueueCount > 0 && (
             <button
               onClick={onManualSync}
               className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-1 rounded-lg hover:bg-amber-300 transition-colors flex items-center gap-1.5 shadow-sm"
@@ -161,8 +161,8 @@ export default function Navbar({
             </button>
           )}
 
-          {/* Match Name Display / New Match Shortcut */}
-          {isAdmin ? (
+          {/* Match Name Display / New Match Shortcut (Admin only) */}
+          {isAdmin && (
             gameSession ? (
               <button
                 onClick={onEditGameSession}
@@ -183,14 +183,9 @@ export default function Navbar({
                 <span className="text-[11px] font-black uppercase tracking-wider">{language === 'it' ? 'Nuova Partita' : 'New Match'}</span>
               </button>
             )
-          ) : (
-            <div className="flex items-center gap-1 bg-[#011C20] border border-[#0CA17A]/30 px-2.5 py-1.5 rounded-lg text-xs">
-              <span className="text-[10px] text-[#A7F3D0] uppercase font-bold hidden sm:inline">{t('match')}</span>
-              <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-bold">{gameSession || (language === 'it' ? 'Nessuna' : 'None')}</span>
-            </div>
           )}
 
-          {/* Coach-only Roster Settings */}
+          {/* Admin-only Roster Settings */}
           {isAdmin && (
             <button
               onClick={onToggleRosterModal}
@@ -202,30 +197,14 @@ export default function Navbar({
             </button>
           )}
 
-          {/* Role Status Badge & Switcher */}
-          {isAdmin ? (
-            <div className="flex items-center gap-1 bg-[#011C20] border border-[#0CA17A]/50 rounded-lg p-0.5 pl-2">
+          {/* Admin Mode Status Indicator */}
+          {isAdmin && (
+            <div className="flex items-center gap-1 bg-[#011C20] border border-[#0CA17A]/50 rounded-lg px-2.5 py-1.5">
               <span className="text-[10px] font-black text-[#0CA17A] flex items-center gap-1 uppercase tracking-wider">
                 <Shield className="w-3 h-3 text-[#0CA17A]" />
                 <span className="hidden sm:inline">{t('coach')}</span>
               </span>
-              <button
-                onClick={onLogout}
-                className="p-1 hover:bg-white/10 text-emerald-200 hover:text-white rounded transition-colors ml-1"
-                title="Switch role / Logout"
-              >
-                <LogOut className="w-3 h-3" />
-              </button>
             </div>
-          ) : (
-            <button
-              onClick={onOpenAuth}
-              className="flex items-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black text-xs px-3 py-1.5 rounded-lg transition-all shadow-md active:scale-95"
-              title="Login as Coach to record matches"
-            >
-              <Lock className="w-3 h-3" />
-              <span>{t('coach_login')}</span>
-            </button>
           )}
         </div>
       </div>

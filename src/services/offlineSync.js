@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
 import { generateUUID } from '../utils/uuid.js';
+import { IS_PUBLIC_MODE } from '../config/appMode.js';
 
 const OFFLINE_QUEUE_KEY = 'scouting_offline_queue';
 let isSyncInProgress = false;
@@ -15,6 +16,7 @@ export function getOfflineQueue() {
 }
 
 export function saveToOfflineQueue(eventData) {
+  if (IS_PUBLIC_MODE) return;
   try {
     const rawQueue = getOfflineQueue();
     // Enforce client-side idempotency: every event MUST have a fixed UUIDv4
@@ -131,6 +133,9 @@ export function cleanStaleOfflineQueue(currentMatchName) {
 }
 
 export async function syncOfflineQueue(onSyncSuccess) {
+  if (IS_PUBLIC_MODE) {
+    return { syncedCount: 0, blocked: true };
+  }
   if (isSyncInProgress) {
     console.log('[OfflineSync] Sync already in flight, skipping concurrent trigger.');
     return { syncedCount: 0, inFlight: true };
@@ -275,6 +280,10 @@ export async function syncOfflineQueue(onSyncSuccess) {
 }
 
 export function setupOnlineSyncListener(onSyncSuccess) {
+  if (IS_PUBLIC_MODE) {
+    return () => {};
+  }
+
   const handleOnline = () => {
     console.log('Internet connection restored! Triggering Supabase queue sync...');
     syncOfflineQueue(onSyncSuccess);

@@ -17,6 +17,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../services/supabase';
 import { generateUUID } from '../utils/uuid';
 import { saveToOfflineQueue, removeFromOfflineQueue } from '../services/offlineSync';
+import { IS_ADMIN_MODE } from '../config/appMode';
 
 export default function LiveGame({
   gameSession,
@@ -49,7 +50,6 @@ export default function LiveGame({
   handleResetGame,
   onDeleteEvent,
   onEditEvent,
-  authRole = 'admin',
   matchDate: matchDateProp,
   onUpdateMatchDate,
   matchType: matchTypeProp,
@@ -62,7 +62,7 @@ export default function LiveGame({
   onSaveScoreOverride,
   onClearScoreOverride
 }) {
-  const isAdmin = authRole === 'admin';
+  const isAdmin = IS_ADMIN_MODE;
   const { language, t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('LIVE'); // 'LIVE' | 'BOXSCORE'

@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../services/supabase';
+import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from '../config/appMode';
 import { 
   buildSuperchargedBbaRoster, 
   BBA_TEAM_ID, 
@@ -1571,6 +1572,7 @@ export default function LeagueHub({ showToast }) {
   // Fetch /data/league_standings.json & /data/league_rosters.json directly
   // -------------------------------------------------------------------------
   const fetchFipData = async (isManual = false) => {
+    if (isManual && IS_PUBLIC_MODE) return;
     setIsSyncing(true);
     setFetchError(null);
     try {
@@ -1720,6 +1722,7 @@ export default function LeagueHub({ showToast }) {
   };
 
   const handleResetToDefault = () => {
+    if (IS_PUBLIC_MODE) return;
     setStandings(DEFAULT_STANDINGS);
     setRosters(DEFAULT_ROSTERS);
     setFetchError(null);
@@ -2185,35 +2188,39 @@ export default function LeagueHub({ showToast }) {
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => fetchFipData(true)}
-            disabled={isSyncing}
-            className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
-            title="Fetch latest league data from /api/sync-fip"
-          >
-            <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
-          </button>
+          {IS_ADMIN_MODE && (
+            <>
+              <button
+                type="button"
+                onClick={() => fetchFipData(true)}
+                disabled={isSyncing}
+                className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
+                title="Fetch latest league data from /api/sync-fip"
+              >
+                <RefreshCw className={`w-4 h-4 text-[#0CA17A] ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={handleResetToDefault}
-            className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
-            title="Load default championship league dataset"
-          >
-            <RefreshCw className="w-4 h-4 text-[#0CA17A]" />
-            <span>{t.btnDefault}</span>
-          </button>
+              <button
+                type="button"
+                onClick={handleResetToDefault}
+                className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+                title="Load default championship league dataset"
+              >
+                <RefreshCw className="w-4 h-4 text-[#0CA17A]" />
+                <span>{t.btnDefault}</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => setShowImporter(true)}
-            className="flex items-center gap-2 bg-[#022D32] hover:bg-[#022D32]/90 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs active:scale-95 cursor-pointer"
-          >
-            <Upload className="w-4 h-4" />
-            <span>{t.btnImport}</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => setShowImporter(true)}
+                className="flex items-center gap-2 bg-[#022D32] hover:bg-[#022D32]/90 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all shadow-xs active:scale-95 cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{t.btnImport}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -2252,54 +2259,58 @@ export default function LeagueHub({ showToast }) {
             </p>
           </div>
 
-          {/* Terminal Command Box */}
-          <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] text-left font-mono text-xs text-[#022D32] flex items-center justify-between gap-3 shadow-inner">
-            <div className="flex items-center gap-2 overflow-x-auto">
-              <Terminal className="w-4 h-4 text-[#0CA17A] flex-none" />
-              <span className="text-[#022D32]">{t.emptyCmd}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigator?.clipboard?.writeText) {
-                  navigator.clipboard.writeText(t.emptyCmd);
-                }
-                if (showToast) showToast(`Copied: ${t.emptyCmd}`);
-              }}
-              className="text-[#022D32]/70 hover:text-[#022D32] px-2.5 py-1 rounded bg-white hover:bg-[#DDF3E9] border border-[#DDF3E9] transition-colors flex-none text-[11px] font-sans font-bold active:scale-95 shadow-xs"
-              title="Copy command to clipboard"
-            >
-              Copy
-            </button>
-          </div>
+          {IS_ADMIN_MODE && (
+            <>
+              {/* Terminal Command Box */}
+              <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] text-left font-mono text-xs text-[#022D32] flex items-center justify-between gap-3 shadow-inner">
+                <div className="flex items-center gap-2 overflow-x-auto">
+                  <Terminal className="w-4 h-4 text-[#0CA17A] flex-none" />
+                  <span className="text-[#022D32]">{t.emptyCmd}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator?.clipboard?.writeText) {
+                      navigator.clipboard.writeText(t.emptyCmd);
+                    }
+                    if (showToast) showToast(`Copied: ${t.emptyCmd}`);
+                  }}
+                  className="text-[#022D32]/70 hover:text-[#022D32] px-2.5 py-1 rounded bg-white hover:bg-[#DDF3E9] border border-[#DDF3E9] transition-colors flex-none text-[11px] font-sans font-bold active:scale-95 shadow-xs"
+                  title="Copy command to clipboard"
+                >
+                  Copy
+                </button>
+              </div>
 
-          {fetchError && (
-            <p className="text-xs text-[#022D32]/70 font-semibold bg-rose-50 border border-rose-200 p-2.5 rounded-xl">
-              Status: <span className="text-rose-600 font-bold">{fetchError}</span>
-            </p>
+              {fetchError && (
+                <p className="text-xs text-[#022D32]/70 font-semibold bg-rose-50 border border-rose-200 p-2.5 rounded-xl">
+                  Status: <span className="text-rose-600 font-bold">{fetchError}</span>
+                </p>
+              )}
+
+              {/* Quick Action Buttons */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => fetchFipData(true)}
+                  disabled={isSyncing}
+                  className="flex items-center gap-2 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetToDefault}
+                  className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#0CA17A]" />
+                  <span>{t.btnDefault}</span>
+                </button>
+              </div>
+            </>
           )}
-
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => fetchFipData(true)}
-              disabled={isSyncing}
-              className="flex items-center gap-2 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? t.btnSyncing : t.btnSync}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleResetToDefault}
-              className="flex items-center gap-2 bg-white border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-xs active:scale-95"
-            >
-              <FileText className="w-3.5 h-3.5 text-[#0CA17A]" />
-              <span>{t.btnDefault}</span>
-            </button>
-          </div>
         </div>
       ) : (
         <>
@@ -5434,9 +5445,9 @@ export default function LeagueHub({ showToast }) {
       )}
 
       {/* ========================================================================= */}
-      {/* 4. JSON IMPORTER MODAL                                                    */}
+      {/* 4. JSON IMPORTER MODAL (Admin only)                                       */}
       {/* ========================================================================= */}
-      {showImporter && (
+      {IS_ADMIN_MODE && showImporter && (
         <div className="fixed inset-0 z-50 bg-[#022D32]/60 backdrop-blur-sm flex items-center justify-center p-3 animate-fade-in">
           <div className="bg-white border border-[#DDF3E9] rounded-2xl shadow-2xl max-w-xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#DDF3E9] pb-3">

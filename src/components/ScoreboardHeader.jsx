@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Clock, RotateCcw, UserCheck, ShieldAlert, Plus, Minus, Calendar, Edit3 } from 'lucide-react';
 import { calculateTeamScore, calculateOpponentScore } from '../utils/basketballAnalytics';
 import ScoreOverrideModal from './ScoreOverrideModal';
+import { IS_ADMIN_MODE } from '../config/appMode';
 
 export default function ScoreboardHeader({
   selectedPlayer,
@@ -12,7 +13,7 @@ export default function ScoreboardHeader({
   onRecordOpponentScore,
   onOpponentShot,
   plusMinusMap = {},
-  isAdmin = true,
+  isAdmin: isAdminProp = true,
   matchDate,
   onUpdateMatchDate,
   matchName = '',
@@ -21,6 +22,7 @@ export default function ScoreboardHeader({
   onSaveScoreOverride,
   onClearScoreOverride
 }) {
+  const isAdmin = isAdminProp && IS_ADMIN_MODE;
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const getAz = (e) => String(e?.Action || e?.action || e?.Azione || e?.azione || '');
   const getNum = (e) => String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '');

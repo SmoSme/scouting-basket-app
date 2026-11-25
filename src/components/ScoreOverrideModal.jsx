@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit3, Check, RotateCcw, X, AlertCircle, Shield } from 'lucide-react';
+import { IS_PUBLIC_MODE } from '../config/appMode';
 
 export default function ScoreOverrideModal({
   isOpen,
@@ -32,7 +33,7 @@ export default function ScoreOverrideModal({
     }
   }, [isOpen, currentOverrideTeamScore, currentOverrideOppScore, pbpTeamScore, pbpOppScore]);
 
-  if (!isOpen) return null;
+  if (IS_PUBLIC_MODE || !isOpen) return null;
 
   const handleSave = (e) => {
     e.preventDefault();

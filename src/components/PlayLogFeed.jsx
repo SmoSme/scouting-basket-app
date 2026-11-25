@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { History, Edit3, Trash2, Check, X, Zap, Shield } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster';
+import { IS_ADMIN_MODE } from '../config/appMode';
 
 const ACTION_OPTIONS = [
   '2PT Made', '2PT Missed',
@@ -15,7 +16,8 @@ const ACTION_OPTIONS = [
 
 const QUARTER_OPTIONS = ['Q1', 'Q2', 'Q3', 'Q4', 'OT1', 'OT2'];
 
-export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEditEvent, isAdmin = true }) {
+export default function PlayLogFeed({ events, roster = [], onDeleteEvent, onEditEvent, isAdmin: isAdminProp = true }) {
+  const isAdmin = isAdminProp && IS_ADMIN_MODE;
   const [editingKey, setEditingKey] = useState(null);
 
   // Edit form state

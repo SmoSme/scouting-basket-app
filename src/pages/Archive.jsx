@@ -15,8 +15,9 @@ import {
 } from '../services/matchMetadataService';
 import { getOfflineQueue, clearOfflineQueue } from '../services/offlineSync';
 import { useLanguage } from '../context/LanguageContext';
+import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from '../config/appMode';
 
-export default function Archive({ showToast, authRole = 'admin', onResumeMatch }) {
+export default function Archive({ showToast, onResumeMatch }) {
   const navigate = useNavigate();
   const { language, t } = useLanguage();
   const [matches, setMatches] = useState([]);
@@ -28,6 +29,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
   const [reviewLoading, setReviewLoading] = useState(false);
 
   const handleResumeMatch = (targetMatch, matchEvents) => {
+    if (IS_PUBLIC_MODE) return;
     if (onResumeMatch) {
       onResumeMatch(targetMatch, matchEvents);
     }
@@ -148,7 +150,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
   };
 
   const handleUpdateMatchDate = async (matchIdentifier, newDate, shouldSave = true) => {
-    if (!newDate) return;
+    if (IS_PUBLIC_MODE || !newDate) return;
     try {
       if (shouldSave) {
         await updateScoutingMatchInSupabase(matchIdentifier, { match_date: newDate });
@@ -165,6 +167,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
   };
 
   const handleUpdateMatchType = async (matchIdentifier, newType) => {
+    if (IS_PUBLIC_MODE) return;
     try {
       await updateScoutingMatchInSupabase(matchIdentifier, { match_type: newType });
       setMatches(prev => prev.map(m => (m.id === matchIdentifier || m.name === matchIdentifier) ? { ...m, matchType: newType, match_type: newType } : m));
@@ -178,6 +181,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
   };
 
   const handleUpdateScoreOverride = async (matchIdentifier, tScore, oScore) => {
+    if (IS_PUBLIC_MODE) return;
     try {
       await updateScoutingMatchInSupabase(matchIdentifier, {
         home_score: tScore,
@@ -235,6 +239,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
 
   // Action: Download CSV for specific match using match_id
   const handleDownloadCSV = async (matchId, matchName, matchEvents) => {
+    if (IS_PUBLIC_MODE) return;
     try {
       setActionLoading(matchId || matchName);
       
@@ -291,6 +296,7 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
 
   // Action: Delete Specific Game from Supabase using relational match_id with CASCADE
   const handleDeleteGame = async (matchId, matchName) => {
+    if (IS_PUBLIC_MODE) return;
     if (!window.confirm(`Are you sure you want to PERMANENTLY delete match "${matchName}" and all associated play logs from Supabase?`)) {
       return;
     }
@@ -436,25 +442,32 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
                     <Hash className="w-3.5 h-3.5 text-[#0CA17A]" />
                     {m.eventCount} {language === 'it' ? 'Azioni Registrate' : 'Tracked Events'}
                   </span>
-                  <div 
-                    className="flex items-center gap-1.5 bg-[#DDF3E9]/50 hover:bg-[#DDF3E9] px-2 py-0.5 rounded-md border border-[#0CA17A]/20 transition-colors group cursor-pointer"
-                    title={language === 'it' ? 'Modifica data partita (Supabase)' : 'Edit match date (Supabase)'}
-                  >
-                    <Calendar className="w-3.5 h-3.5 text-[#0CA17A] shrink-0" />
-                    <input
-                      type="date"
-                      value={formatDateForInput(m.matchDate) || formatDateForInput(m.createdAt) || ''}
-                      onChange={(e) => handleUpdateMatchDate(m.id || m.name, e.target.value, true)}
-                      className="bg-transparent text-[#022D32] font-bold text-xs focus:outline-none cursor-pointer [color-scheme:light]"
-                    />
-                    <Pencil className="w-2.5 h-2.5 text-[#022D32]/40 group-hover:text-[#022D32] transition-colors shrink-0" />
-                  </div>
+                  {IS_ADMIN_MODE ? (
+                    <div 
+                      className="flex items-center gap-1.5 bg-[#DDF3E9]/50 hover:bg-[#DDF3E9] px-2 py-0.5 rounded-md border border-[#0CA17A]/20 transition-colors group cursor-pointer"
+                      title={language === 'it' ? 'Modifica data partita (Supabase)' : 'Edit match date (Supabase)'}
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-[#0CA17A] shrink-0" />
+                      <input
+                        type="date"
+                        value={formatDateForInput(m.matchDate) || formatDateForInput(m.createdAt) || ''}
+                        onChange={(e) => handleUpdateMatchDate(m.id || m.name, e.target.value, true)}
+                        className="bg-transparent text-[#022D32] font-bold text-xs focus:outline-none cursor-pointer [color-scheme:light]"
+                      />
+                      <Pencil className="w-2.5 h-2.5 text-[#022D32]/40 group-hover:text-[#022D32] transition-colors shrink-0" />
+                    </div>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-[#022D32]/70 font-semibold tabular-nums">
+                      <Calendar className="w-3.5 h-3.5 text-[#0CA17A] shrink-0" />
+                      <span>{formatDateForInput(m.matchDate) || formatDateForInput(m.createdAt) || 'n.a.'}</span>
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 pt-3 border-t border-[#DDF3E9]">
-                {authRole === 'admin' && (
+                {IS_ADMIN_MODE && (
                   <button
                     onClick={() => handleResumeMatch(m, m.events)}
                     disabled={actionLoading === m.id || actionLoading === m.name}
@@ -473,16 +486,18 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
                   <Eye className="w-4 h-4" />
                   {t('full_review')}
                 </button>
-                <button
-                  onClick={() => handleDownloadCSV(m.id, m.name, m.events)}
-                  disabled={actionLoading === m.id || actionLoading === m.name}
-                  className="flex items-center justify-center gap-1.5 bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
-                  title="Scarica CSV"
-                >
-                  <Download className="w-4 h-4" />
-                  CSV
-                </button>
-                {authRole === 'admin' && (
+                {IS_ADMIN_MODE && (
+                  <button
+                    onClick={() => handleDownloadCSV(m.id, m.name, m.events)}
+                    disabled={actionLoading === m.id || actionLoading === m.name}
+                    className="flex items-center justify-center gap-1.5 bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
+                    title="Scarica CSV"
+                  >
+                    <Download className="w-4 h-4" />
+                    CSV
+                  </button>
+                )}
+                {IS_ADMIN_MODE && (
                   <button
                     onClick={() => handleDeleteGame(m.id, m.name)}
                     disabled={actionLoading === m.id || actionLoading === m.name}
@@ -504,11 +519,11 @@ export default function Archive({ showToast, authRole = 'admin', onResumeMatch }
           match={reviewMatch}
           matchId={reviewMatch.id}
           onClose={() => setReviewMatch(null)}
-          onDownloadCSV={(matchIdOrName, name, evts) => handleDownloadCSV(reviewMatch.id || matchIdOrName, name || reviewMatch.name, evts)}
-          onUpdateMatchDate={handleUpdateMatchDate}
-          onUpdateMatchType={handleUpdateMatchType}
-          onUpdateScoreOverride={handleUpdateScoreOverride}
-          onResumeScouting={handleResumeMatch}
+          onDownloadCSV={IS_ADMIN_MODE ? (matchIdOrName, name, evts) => handleDownloadCSV(reviewMatch.id || matchIdOrName, name || reviewMatch.name, evts) : undefined}
+          onUpdateMatchDate={IS_ADMIN_MODE ? handleUpdateMatchDate : undefined}
+          onUpdateMatchType={IS_ADMIN_MODE ? handleUpdateMatchType : undefined}
+          onUpdateScoreOverride={IS_ADMIN_MODE ? handleUpdateScoreOverride : undefined}
+          onResumeScouting={IS_ADMIN_MODE ? handleResumeMatch : undefined}
         />
       )}
     </div>

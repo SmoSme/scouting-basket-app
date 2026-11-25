@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Users, CheckCircle2, RefreshCw, X, GripVertical, ArrowLeftRight, UserCheck, UserPlus } from 'lucide-react';
+import { IS_ADMIN_MODE } from '../config/appMode';
 
 export default function PlayerSelector({
   roster,
@@ -9,9 +10,10 @@ export default function PlayerSelector({
   onSwapSubstitution,
   events,
   plusMinusMap = {},
-  isAdmin = true,
+  isAdmin: isAdminProp = true,
   onOpenRosterModal
 }) {
+  const isAdmin = isAdminProp && IS_ADMIN_MODE;
   const [subBenchPlayer, setSubBenchPlayer] = useState(null); // Bench player selected for tap substitution
   const [activeSubCourtPlayer, setActiveSubCourtPlayer] = useState(null); // On-Court player selecting bench sub menu
   const [draggedPlayer, setDraggedPlayer] = useState(null); // { number, source: 'court' | 'bench' }
