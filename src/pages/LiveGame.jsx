@@ -369,7 +369,9 @@ export default function LiveGame({
     const todayDate = matchDate || new Date().toISOString().split('T')[0];
     const currentType = matchType || 'Official';
     const isHome = ourLocation === 'Home';
-    const opponentName = isHome ? (awayTeam.trim() || 'Avversario') : (homeTeam.trim() || 'Avversario');
+    const opponentName = isHome
+      ? (awayTeam.trim() || (language === 'it' ? 'Avversario' : 'Opponent'))
+      : (homeTeam.trim() || (language === 'it' ? 'Avversario' : 'Opponent'));
 
     if (onStartNewMatchSession) {
       await onStartNewMatchSession({
@@ -688,7 +690,7 @@ export default function LiveGame({
                     }`}
                   >
                     <Home className="w-4 h-4 flex-none" />
-                    <span>{t('home', 'Home')} ({ourLocation === 'Home' ? 'BBA Casa' : 'Casa'})</span>
+                    <span>{t('home', 'Home')} ({ourLocation === 'Home' ? (language === 'it' ? 'BBA Casa' : 'BBA Home') : (language === 'it' ? 'Casa' : 'Home')})</span>
                   </button>
                   <button
                     type="button"
@@ -700,7 +702,7 @@ export default function LiveGame({
                     }`}
                   >
                     <Navigation className="w-4 h-4 flex-none" />
-                    <span>{t('away', 'Away')} ({ourLocation === 'Away' ? 'BBA Trasferta' : 'Trasferta'})</span>
+                    <span>{t('away', 'Away')} ({ourLocation === 'Away' ? (language === 'it' ? 'BBA Trasferta' : 'BBA Away') : (language === 'it' ? 'Trasferta' : 'Away')})</span>
                   </button>
                 </div>
               </div>

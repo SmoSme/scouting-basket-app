@@ -756,14 +756,21 @@ export default function MatchReviewModal({
                 <div className="flex items-center gap-2 text-[#022D32]">
                   <Info className="w-4 h-4 text-[#0CA17A] flex-none" />
                   <span>
-                    <strong className="text-[#022D32] font-black">Match Overview:</strong> Direct, measurable performance metrics across shooting, rebounding, playmaking, and defense. Click on any metric card or <span className="text-[#022D32] font-black">ⓘ</span> to view definitions and benchmarks.
+                    <strong className="text-[#022D32] font-black">
+                      {language === 'it' ? 'Panoramica Partita:' : 'Match Overview:'}
+                    </strong>{' '}
+                    {language === 'it'
+                      ? 'Metriche dirette e misurabili su tiro, rimbalzi, regia e difesa. Clicca su qualsiasi card o su '
+                      : 'Direct, measurable performance metrics across shooting, rebounding, playmaking, and defense. Click on any metric card or '}
+                    <span className="text-[#022D32] font-black">ⓘ</span>
+                    {language === 'it' ? ' per definizioni e valori di riferimento.' : ' to view definitions and benchmarks.'}
                   </span>
                 </div>
                 <button
                   onClick={() => setActiveMetricGuideKey('pillars')}
                   className="text-[11px] font-black text-[#022D32] hover:text-[#0CA17A] flex items-center gap-1 underline flex-none"
                 >
-                  <span>Open Metric Guide</span>
+                  <span>{language === 'it' ? 'Apri Guida Metriche' : 'Open Metric Guide'}</span>
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
@@ -774,11 +781,11 @@ export default function MatchReviewModal({
                 <div
                   onClick={() => setActiveMetricGuideKey('fg')}
                   className="bg-[#022D32] p-4 rounded-2xl text-white shadow-md hover:ring-2 hover:ring-[#0CA17A] cursor-pointer group transition-all flex flex-col justify-between active:scale-98"
-                  title="Click to view Field Goals (FG%) guide and shot breakdown"
+                  title={language === 'it' ? 'Clicca per la guida Tiri dal Campo (FG%)' : 'Click to view Field Goals (FG%) guide and shot breakdown'}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-[#A7F3D0] uppercase tracking-wider">
-                      FIELD GOALS (FG%)
+                      {language === 'it' ? 'TIRI DAL CAMPO (FG%)' : 'FIELD GOALS (FG%)'}
                     </span>
                     <Info className="w-3.5 h-3.5 text-[#A7F3D0]/70 group-hover:text-emerald-300 transition-colors flex-none" />
                   </div>
@@ -797,11 +804,11 @@ export default function MatchReviewModal({
                 <div
                   onClick={() => setActiveMetricGuideKey('shotProfile')}
                   className="bg-[#022D32] p-4 rounded-2xl text-white shadow-md hover:ring-2 hover:ring-[#0CA17A] cursor-pointer group transition-all flex flex-col justify-between active:scale-98"
-                  title="Click to view Free Throw and Shot Profile guide"
+                  title={language === 'it' ? 'Clicca per la guida Tiri Liberi e Profilo Tiri' : 'Click to view Free Throw and Shot Profile guide'}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-[#A7F3D0] uppercase tracking-wider">
-                      FREE THROWS (FT%)
+                      {language === 'it' ? 'TIRI LIBERI (TL%)' : 'FREE THROWS (FT%)'}
                     </span>
                     <Info className="w-3.5 h-3.5 text-[#A7F3D0]/70 group-hover:text-sky-300 transition-colors flex-none" />
                   </div>
@@ -809,10 +816,10 @@ export default function MatchReviewModal({
                     <span className="font-mono text-2xl sm:text-3xl font-black text-white">
                       {teamOverview.pctFt.toFixed(1)}%
                     </span>
-                    <span className="text-[10px] font-bold text-[#A7F3D0]">FT%</span>
+                    <span className="text-[10px] font-bold text-[#A7F3D0]">{language === 'it' ? 'TL%' : 'FT%'}</span>
                   </div>
                   <span className="text-[10px] text-white/90 font-semibold truncate">
-                    {teamOverview.ftm}/{teamOverview.fta} FT Made • {teamOverview.fd || 0} Fouls Drawn
+                    {teamOverview.ftm}/{teamOverview.fta} {language === 'it' ? 'TL Realizzati' : 'FT Made'} • {teamOverview.fd || 0} {language === 'it' ? 'Falli Subiti' : 'Fouls Drawn'}
                   </span>
                 </div>
 
@@ -820,11 +827,11 @@ export default function MatchReviewModal({
                 <div
                   onClick={() => setActiveMetricGuideKey('oreb')}
                   className="bg-[#022D32] p-4 rounded-2xl text-white shadow-md hover:ring-2 hover:ring-[#0CA17A] cursor-pointer group transition-all flex flex-col justify-between active:scale-98"
-                  title="Click to view Rebounding & Extra Possessions guide"
+                  title={language === 'it' ? 'Clicca per la guida Rimbalzi ed Extra Possessi' : 'Click to view Rebounding & Extra Possessions guide'}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-[#A7F3D0] uppercase tracking-wider">
-                      TOTAL REBOUNDS
+                      {language === 'it' ? 'RIMBALZI TOTALI' : 'TOTAL REBOUNDS'}
                     </span>
                     <Info className="w-3.5 h-3.5 text-[#A7F3D0]/70 group-hover:text-amber-300 transition-colors flex-none" />
                   </div>
@@ -835,7 +842,7 @@ export default function MatchReviewModal({
                     <span className="text-[10px] font-bold text-[#A7F3D0]">REB</span>
                   </div>
                   <span className="text-[10px] text-white/90 font-semibold truncate">
-                    {teamOverview.dreb} Defensive • {teamOverview.oreb} Offensive
+                    {teamOverview.dreb} {language === 'it' ? 'Difensivi' : 'Defensive'} • {teamOverview.oreb} {language === 'it' ? 'Offensivi' : 'Offensive'}
                   </span>
                 </div>
 
@@ -843,11 +850,11 @@ export default function MatchReviewModal({
                 <div
                   onClick={() => setActiveMetricGuideKey('pir')}
                   className="bg-[#022D32] p-4 rounded-2xl text-white shadow-md hover:ring-2 hover:ring-[#0CA17A] cursor-pointer group transition-all flex flex-col justify-between active:scale-98"
-                  title="Click to view FIBA Performance Index Rating (PIR) guide"
+                  title={language === 'it' ? 'Clicca per la guida Valutazione FIBA (PIR)' : 'Click to view FIBA Performance Index Rating (PIR) guide'}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-[#A7F3D0] uppercase tracking-wider">
-                      TEAM FIBA PIR
+                      {language === 'it' ? 'VALUTAZIONE FIBA PIR' : 'TEAM FIBA PIR'}
                     </span>
                     <Info className="w-3.5 h-3.5 text-[#A7F3D0]/70 group-hover:text-purple-300 transition-colors flex-none" />
                   </div>
@@ -869,11 +876,11 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('pillars')}
                     className="flex items-center gap-2 cursor-pointer group"
-                    title="Click to view Game Control & Efficiency Pillars guide"
+                    title={language === 'it' ? 'Clicca per la guida Controllo Partita & Pilastri' : 'Click to view Game Control & Efficiency Pillars guide'}
                   >
                     <Shield className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider group-hover:text-[#0CA17A] transition-colors flex items-center gap-1.5">
-                      GAME CONTROL & EFFICIENCY PILLARS
+                      {language === 'it' ? 'CONTROLLO PARTITA & PILASTRI DI EFFICIENZA' : 'GAME CONTROL & EFFICIENCY PILLARS'}
                       <Info className="w-3 h-3 text-[#022D32]/50 group-hover:text-[#0CA17A]" />
                     </h3>
                   </div>
@@ -881,7 +888,7 @@ export default function MatchReviewModal({
                     onClick={() => setActiveMetricGuideKey('pillars')}
                     className="text-[10px] font-bold text-[#022D32]/70 hover:text-[#0CA17A] transition-colors underline"
                   >
-                    Pillars Guide
+                    {language === 'it' ? 'Guida Pilastri' : 'Pillars Guide'}
                   </button>
                 </div>
 
@@ -890,19 +897,19 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('efg')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-xs"
-                    title="Pillar 1: Shooting Efficiency (eFG%). Click for guide."
+                    title={language === 'it' ? 'Pilastro 1: Efficienza al Tiro (eFG%). Clicca per la guida.' : 'Pillar 1: Shooting Efficiency (eFG%). Click for guide.'}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1">
                         <span className="group-hover:text-emerald-700 transition-colors flex items-center gap-1">
-                          1. SHOOTING EFFICIENCY <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
+                          {language === 'it' ? '1. EFFICIENZA AL TIRO' : '1. SHOOTING EFFICIENCY'} <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
                           pillars.shooting?.rating === 'Elite' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
                           pillars.shooting?.rating === 'Solid' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
                           'bg-rose-100 text-rose-800 border border-rose-300'
                         }`}>
-                          {pillars.shooting?.rating || 'Solid'}
+                          {pillars.shooting?.rating || (language === 'it' ? 'Solida' : 'Solid')}
                         </span>
                       </div>
                       <div className="font-mono text-2xl font-black text-[#022D32] my-1">
@@ -918,23 +925,23 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('shotProfile')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-sky-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-xs"
-                    title="Pillar 2: Paint vs Perimeter Shot Profile & FT Conversion. Click for guide."
+                    title={language === 'it' ? 'Pilastro 2: Profilo Tiri Area vs Perimetro & Tiri Liberi.' : 'Pillar 2: Paint vs Perimeter Shot Profile & FT Conversion. Click for guide.'}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1">
                         <span className="group-hover:text-sky-700 transition-colors flex items-center gap-1">
-                          2. SHOT PROFILE BALANCE <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
+                          {language === 'it' ? '2. PROFILO TIRI' : '2. SHOT PROFILE BALANCE'} <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded font-black bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40">
-                          {pillars.shotProfile?.rating || 'Balanced'}
+                          {pillars.shotProfile?.rating || (language === 'it' ? 'Equilibrato' : 'Balanced')}
                         </span>
                       </div>
                       <div className="font-mono text-xl sm:text-2xl font-black text-[#022D32] my-1">
-                        {pillars.shotProfile?.value || `Paint ${teamOverview.pctPaint}% | 3PT ${teamOverview.pctThree}%`}
+                        {pillars.shotProfile?.value || `${language === 'it' ? 'Area' : 'Paint'} ${teamOverview.pctPaint}% | 3PT ${teamOverview.pctThree}%`}
                       </div>
                     </div>
                     <div className="text-[10px] text-[#022D32]/75 border-t border-[#DDF3E9]/80 pt-1.5 mt-2 font-medium">
-                      {pillars.shotProfile?.subtext || `Mid: ${teamOverview.pctMid}% (${teamOverview.teamMidShots || 0} FGA) • FT: ${teamOverview.ftm}/${teamOverview.fta} (${teamOverview.pctFt.toFixed(0)}%)`}
+                      {pillars.shotProfile?.subtext || `${language === 'it' ? 'Media' : 'Mid'}: ${teamOverview.pctMid}% (${teamOverview.teamMidShots || 0} FGA) • ${language === 'it' ? 'TL' : 'FT'}: ${teamOverview.ftm}/${teamOverview.fta} (${teamOverview.pctFt.toFixed(0)}%)`}
                     </div>
                   </div>
 
@@ -942,12 +949,12 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('oreb')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-amber-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-xs"
-                    title="Pillar 3: Rebounding & Extra Possessions. Click for guide."
+                    title={language === 'it' ? 'Pilastro 3: Rimbalzi ed Extra Possessi.' : 'Pillar 3: Rebounding & Extra Possessions. Click for guide.'}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1">
                         <span className="group-hover:text-amber-700 transition-colors flex items-center gap-1">
-                          3. REBOUNDING & EXTRA POSSESSIONS <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
+                          {language === 'it' ? '3. RIMBALZI & EXTRA POSS.' : '3. REBOUNDING & EXTRA POSSESSIONS'} <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
                           (pillars.rebounding?.rating === 'Strong Glass' || pillars.rebounding?.rating === 'Elite Glass' || teamOverview.oreb >= 10 || teamOverview.orebShare >= 28) ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
@@ -973,8 +980,8 @@ export default function MatchReviewModal({
                     </div>
                     <div className="text-[10px] text-[#022D32]/75 border-t border-[#DDF3E9]/80 pt-1.5 mt-2 font-medium">
                       {teamOverview.drbPct != null
-                        ? `${teamOverview.reb} Total REB • DRB%: ${teamOverview.drbPct.toFixed(1)}% (${teamOverview.dreb} D-REB vs ${teamOverview.oppOffReb || 0} Opp O-REB)`
-                        : (pillars.rebounding?.subtext || `${teamOverview.reb} Total REB • ${Math.round(teamOverview.orebShare)}% Offensive Rebound Share`)}
+                        ? `${teamOverview.reb} ${language === 'it' ? 'REB Tot.' : 'Total REB'} • DRB%: ${teamOverview.drbPct.toFixed(1)}% (${teamOverview.dreb} D-REB vs ${teamOverview.oppOffReb || 0} ${language === 'it' ? 'RO Avv' : 'Opp O-REB'})`
+                        : (pillars.rebounding?.subtext || `${teamOverview.reb} ${language === 'it' ? 'REB Tot.' : 'Total REB'} • ${Math.round(teamOverview.orebShare)}% ${language === 'it' ? 'Quota Rimbalzi Offensivi' : 'Offensive Rebound Share'}`)}
                     </div>
                   </div>
 
@@ -982,12 +989,12 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('ballControl')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-cyan-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-xs"
-                    title="Pillar 4: Ball Movement & Security. Click for guide."
+                    title={language === 'it' ? 'Pilastro 4: Circolazione & Sicurezza Palla.' : 'Pillar 4: Ball Movement & Security. Click for guide.'}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1">
                         <span className="group-hover:text-[#0CA17A] transition-colors flex items-center gap-1">
-                          4. BALL MOVEMENT & SECURITY <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
+                          {language === 'it' ? '4. CIRCOLAZIONE & CURA PALLA' : '4. BALL MOVEMENT & SECURITY'} <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
                           (pillars.ballControl?.rating === 'Great Flow' || teamOverview.astTovRatio >= 1.3) ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
@@ -1002,7 +1009,7 @@ export default function MatchReviewModal({
                       </div>
                     </div>
                     <div className="text-[10px] text-[#022D32]/75 border-t border-[#DDF3E9]/80 pt-1.5 mt-2 font-medium">
-                      {pillars.ballControl?.subtext || `Assisted FGs: ${teamOverview.assistedFgmPct || (teamOverview.fgm > 0 ? Math.round((teamOverview.ast / teamOverview.fgm) * 100) : 0)}% (${teamOverview.ast} of ${teamOverview.fgm} FGM) • ${teamOverview.stl} Steals (STL)`}
+                      {pillars.ballControl?.subtext || `${language === 'it' ? 'Assistiti' : 'Assisted FGs'}: ${teamOverview.assistedFgmPct || (teamOverview.fgm > 0 ? Math.round((teamOverview.ast / teamOverview.fgm) * 100) : 0)}% (${teamOverview.ast} ${language === 'it' ? 'su' : 'of'} ${teamOverview.fgm} FGM) • ${teamOverview.stl} ${language === 'it' ? 'Recuperi (STL)' : 'Steals (STL)'}`}
                     </div>
                   </div>
                 </div>
@@ -1016,7 +1023,7 @@ export default function MatchReviewModal({
                       #{teamLeaders.scoring.number}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[10px] font-black text-amber-800 uppercase tracking-wider">TOP SCORER</div>
+                      <div className="text-[10px] font-black text-amber-800 uppercase tracking-wider">{language === 'it' ? 'MIGLIOR REALIZZATORE' : 'TOP SCORER'}</div>
                       <div className="text-xs font-black text-[#022D32] truncate">{teamLeaders.scoring.name}</div>
                       <div className="text-[11px] font-mono text-[#022D32] font-semibold">{teamLeaders.scoring.pts} PTS ({teamLeaders.scoring.fgm}/{teamLeaders.scoring.fga} FG)</div>
                     </div>
@@ -1029,7 +1036,7 @@ export default function MatchReviewModal({
                       #{teamLeaders.efficiency.number}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">MATCH MVP (EFFICIENCY)</div>
+                      <div className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">{language === 'it' ? 'MVP PARTITA (EFFICIENZA)' : 'MATCH MVP (EFFICIENCY)'}</div>
                       <div className="text-xs font-black text-[#022D32] truncate">{teamLeaders.efficiency.name}</div>
                       <div className="text-[11px] font-mono text-[#022D32] font-semibold">{teamLeaders.efficiency.pir} PIR (GameScore: {teamLeaders.efficiency.gameScore})</div>
                     </div>
@@ -1042,7 +1049,7 @@ export default function MatchReviewModal({
                       #{teamLeaders.rebounding.number}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[10px] font-black text-[#065F46] uppercase tracking-wider">REBOUND DOMINATOR</div>
+                      <div className="text-[10px] font-black text-[#065F46] uppercase tracking-wider">{language === 'it' ? 'DOMINATORE A RIMBALZO' : 'REBOUND DOMINATOR'}</div>
                       <div className="text-xs font-black text-[#022D32] truncate">{teamLeaders.rebounding.name}</div>
                       <div className="text-[11px] font-mono text-[#022D32] font-semibold">{teamLeaders.rebounding.reb} REB ({teamLeaders.rebounding.oreb} OFF + {teamLeaders.rebounding.dreb} DEF)</div>
                     </div>
@@ -1055,7 +1062,7 @@ export default function MatchReviewModal({
                       #{teamLeaders.playmaking.number}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[10px] font-black text-[#022D32] uppercase tracking-wider">FLOOR GENERAL</div>
+                      <div className="text-[10px] font-black text-[#022D32] uppercase tracking-wider">{language === 'it' ? 'REGISTA (ASSIST)' : 'FLOOR GENERAL'}</div>
                       <div className="text-xs font-black text-[#022D32] truncate">{teamLeaders.playmaking.name}</div>
                       <div className="text-[11px] font-mono text-[#022D32] font-semibold">{teamLeaders.playmaking.ast} AST ({teamLeaders.playmaking.tov} TOV)</div>
                     </div>
@@ -1069,7 +1076,7 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      TACTICAL SCREENING TECHNIQUES DEPLOYED ({teamOverview.totalTactics})
+                      {language === 'it' ? `BLOCCHI TATTICI ESEGUITI (${teamOverview.totalTactics})` : `TACTICAL SCREENING TECHNIQUES DEPLOYED (${teamOverview.totalTactics})`}
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold text-[#022D32]/70">
@@ -1083,7 +1090,9 @@ export default function MatchReviewModal({
                       <Layers className="w-5 h-5 text-purple-700" />
                       <div>
                         <div className="text-xs font-bold text-[#022D32]">STAGGER SCREENS</div>
-                        <div className="text-[10px] text-[#022D32]/65">Double sequential off-ball shooter screens</div>
+                        <div className="text-[10px] text-[#022D32]/65">
+                          {language === 'it' ? 'Doppio blocco consecutivo lontano dalla palla' : 'Double sequential off-ball shooter screens'}
+                        </div>
                       </div>
                     </div>
                     <span className="font-mono text-2xl font-black text-purple-800">{teamOverview.staggerCount}</span>
@@ -1094,7 +1103,9 @@ export default function MatchReviewModal({
                       <Ghost className="w-5 h-5 text-teal-700" />
                       <div>
                         <div className="text-xs font-bold text-[#022D32]">GHOST SCREENS</div>
-                        <div className="text-[10px] text-[#022D32]/65">Fake ball screen popping into open perimeter space</div>
+                        <div className="text-[10px] text-[#022D32]/65">
+                          {language === 'it' ? 'Finto blocco con apertura immediata sul perimetro' : 'Fake ball screen popping into open perimeter space'}
+                        </div>
                       </div>
                     </div>
                     <span className="font-mono text-2xl font-black text-teal-800">{teamOverview.ghostCount}</span>
@@ -1106,7 +1117,7 @@ export default function MatchReviewModal({
                   {quarters.map(q => (
                     <div key={q.quarter} className="bg-white/80 p-2 rounded-lg border border-[#DDF3E9] text-center">
                       <div className="text-[10px] font-mono font-bold text-[#022D32]/65">{q.quarter}</div>
-                      <div className="text-xs font-black text-[#022D32] mt-0.5">{q.totalTactics} Tactics</div>
+                      <div className="text-xs font-black text-[#022D32] mt-0.5">{q.totalTactics} {language === 'it' ? 'Tattiche' : 'Tactics'}</div>
                       <div className="text-[9px] text-[#022D32]/60 font-mono mt-0.5">
                         <span className="text-purple-700 font-bold">{q.stagger} S</span> • <span className="text-teal-700 font-bold">{q.ghost} G</span>
                       </div>
@@ -1119,9 +1130,9 @@ export default function MatchReviewModal({
               <div className="glass-card p-3 sm:p-4 border-[#DDF3E9]">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                    SCORING CONTRIBUTION BY QUARTER
+                    {language === 'it' ? 'DISTRIBUZIONE PUNTI PER QUARTO' : 'SCORING CONTRIBUTION BY QUARTER'}
                   </span>
-                  <span className="text-xs font-mono font-black text-[#022D32]">{teamOverview.pts} TOTAL PTS</span>
+                  <span className="text-xs font-mono font-black text-[#022D32]">{teamOverview.pts} {language === 'it' ? 'PTS TOTALI' : 'TOTAL PTS'}</span>
                 </div>
                 <div className="h-6 w-full bg-white rounded-lg overflow-hidden flex p-0.5 gap-0.5 border border-[#DDF3E9]">
                   {quarters.map((q, idx) => {
@@ -1154,14 +1165,19 @@ export default function MatchReviewModal({
                 <div className="flex items-center gap-2 text-[#022D32]/80">
                   <Zap className="w-4 h-4 text-[#0CA17A] flex-none" />
                   <span>
-                    <strong className="text-[#022D32] font-black">Situational Scouting & Opponent Breakdown:</strong> Evaluation of Fastbreak vs Half-court offense, complete opponent shooting profile, defensive rebounding cleanup (DRB%), and defensive scheme efficiency (Man, Zone, Press).
+                    <strong className="text-[#022D32] font-black">
+                      {language === 'it' ? 'Scouting Situazionale & Analisi Avversario:' : 'Situational Scouting & Opponent Breakdown:'}
+                    </strong>{' '}
+                    {language === 'it'
+                      ? 'Valutazione attacco in transizione vs metà campo schierata, profilo completo al tiro degli avversari, rimbalzi difensivi (DRB%) ed efficienza contro le difese (Uomo, Zona, Press).'
+                      : 'Evaluation of Fastbreak vs Half-court offense, complete opponent shooting profile, defensive rebounding cleanup (DRB%), and defensive scheme efficiency (Man, Zone, Press).'}
                   </span>
                 </div>
                 <button
                   onClick={() => setActiveMetricGuideKey('transitionPpp')}
                   className="text-[11px] font-bold text-[#0CA17A] hover:text-[#022D32] flex items-center gap-1 underline flex-none"
                 >
-                  <span>Situational Guide</span>
+                  <span>{language === 'it' ? 'Guida Situazionale' : 'Situational Guide'}</span>
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
@@ -1172,11 +1188,11 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      PACE & PACE-ADJUSTED EFFICIENCY: TRANSITION VS HALF-COURT
+                      {language === 'it' ? 'RITMO & EFFICIENZA: TRANSIZIONE VS METÀ CAMPO' : 'PACE & PACE-ADJUSTED EFFICIENCY: TRANSITION VS HALF-COURT'}
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold text-[#022D32]/65">
-                    Tagged via TRANSITION toggle
+                    {language === 'it' ? 'Contrassegnati tramite toggle TRANSITION' : 'Tagged via TRANSITION toggle'}
                   </span>
                 </div>
 
@@ -1185,13 +1201,13 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('transitionPpp')}
                     className="bg-white p-3.5 rounded-xl border border-amber-500/40 hover:border-amber-500 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
-                    title="Click to view Transition PPP guide"
+                    title={language === 'it' ? 'Clicca per la guida PPP Transizione' : 'Click to view Transition PPP guide'}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1.5">
                         <span className="group-hover:text-[#022D32] transition-colors flex items-center gap-1.5 font-black text-[#022D32]">
                           <Zap className="w-3.5 h-3.5 text-[#0CA17A]" />
-                          FASTBREAK / TRANSITION
+                          {language === 'it' ? 'CONTROPIEDE / TRANSIZIONE' : 'FASTBREAK / TRANSITION'}
                           <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
@@ -1199,7 +1215,11 @@ export default function MatchReviewModal({
                           (situational?.transition?.ppp >= 0.95) ? 'bg-amber-100 text-amber-800 border border-amber-300' :
                           'bg-[#F8F9FA] text-[#022D32]/80 border border-[#DDF3E9]'
                         }`}>
-                          {situational?.transition?.ppp >= 1.15 ? 'Elite Fastbreak' : situational?.transition?.ppp >= 0.95 ? 'Solid Pace' : (situational?.transition?.poss > 0 ? 'Low Yield' : 'No Data')}
+                          {situational?.transition?.ppp >= 1.15
+                            ? (language === 'it' ? 'Contropiede Letale' : 'Elite Fastbreak')
+                            : situational?.transition?.ppp >= 0.95
+                              ? (language === 'it' ? 'Ritmo Solido' : 'Solid Pace')
+                              : (situational?.transition?.poss > 0 ? (language === 'it' ? 'Bassa Resa' : 'Low Yield') : (language === 'it' ? 'Nessun Dato' : 'No Data'))}
                         </span>
                       </div>
 
@@ -1213,14 +1233,14 @@ export default function MatchReviewModal({
                           {situational?.transition?.pts || 0} PTS
                         </span>
                         <span className="text-[10px] text-[#022D32]/65 font-medium">
-                          ({situational?.transition?.poss || 0} Possessions)
+                          ({situational?.transition?.poss || 0} {language === 'it' ? 'Possessi' : 'Possessions'})
                         </span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2 border-t border-[#DDF3E9] text-center">
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">FG CONVERSION</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'TIRI DAL CAMPO' : 'FG CONVERSION'}</div>
                         <div className="font-mono text-xs font-black text-[#022D32] mt-0.5">
                           {situational?.transition?.fgm || 0}/{situational?.transition?.fga || 0}
                         </div>
@@ -1229,18 +1249,18 @@ export default function MatchReviewModal({
                         </div>
                       </div>
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">TURNOVERS</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'PALLE PERSE' : 'TURNOVERS'}</div>
                         <div className="font-mono text-xs font-black text-rose-700 mt-0.5">
                           {situational?.transition?.tov || 0} TOV
                         </div>
-                        <div className="text-[9px] text-[#022D32]/60">Fastbreak errors</div>
+                        <div className="text-[9px] text-[#022D32]/60">{language === 'it' ? 'Errori contropiede' : 'Fastbreak errors'}</div>
                       </div>
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">FREE THROWS</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'TIRI LIBERI' : 'FREE THROWS'}</div>
                         <div className="font-mono text-xs font-black text-[#022D32] mt-0.5">
-                          {situational?.transition?.ftm || 0}/{situational?.transition?.fta || 0} FT
+                          {situational?.transition?.ftm || 0}/{situational?.transition?.fta || 0} {language === 'it' ? 'TL' : 'FT'}
                         </div>
-                        <div className="text-[9px] text-[#022D32]/60">Contact drawn</div>
+                        <div className="text-[9px] text-[#022D32]/60">{language === 'it' ? 'Falli subiti' : 'Contact drawn'}</div>
                       </div>
                     </div>
                   </div>
@@ -1253,14 +1273,18 @@ export default function MatchReviewModal({
                       <div className="flex items-center justify-between text-xs font-bold text-[#022D32]/80 mb-1.5">
                         <span className="flex items-center gap-1.5 font-black text-[#022D32]">
                           <Target className="w-3.5 h-3.5 text-[#0CA17A]" />
-                          HALF-COURT SET OFFENSE
+                          {language === 'it' ? 'ATTACCO A METÀ CAMPO' : 'HALF-COURT SET OFFENSE'}
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-black ${
                           (situational?.halfCourt?.ppp >= 0.95) ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
                           (situational?.halfCourt?.ppp >= 0.80) ? 'bg-amber-100 text-amber-800 border border-amber-300' :
                           'bg-[#F8F9FA] text-[#022D32]/80 border border-[#DDF3E9]'
                         }`}>
-                          {situational?.halfCourt?.ppp >= 0.95 ? 'Efficient Sets' : situational?.halfCourt?.ppp >= 0.80 ? 'Standard Sets' : (situational?.halfCourt?.poss > 0 ? 'Stagnant' : 'No Data')}
+                          {situational?.halfCourt?.ppp >= 0.95
+                            ? (language === 'it' ? 'Giochi Efficaci' : 'Efficient Sets')
+                            : situational?.halfCourt?.ppp >= 0.80
+                              ? (language === 'it' ? 'Giochi Standard' : 'Standard Sets')
+                              : (situational?.halfCourt?.poss > 0 ? (language === 'it' ? 'Statico' : 'Stagnant') : (language === 'it' ? 'Nessun Dato' : 'No Data'))}
                         </span>
                       </div>
 
@@ -1274,14 +1298,14 @@ export default function MatchReviewModal({
                           {situational?.halfCourt?.pts || 0} PTS
                         </span>
                         <span className="text-[10px] text-[#022D32]/65 font-medium">
-                          ({situational?.halfCourt?.poss || 0} Possessions)
+                          ({situational?.halfCourt?.poss || 0} {language === 'it' ? 'Possessi' : 'Possessions'})
                         </span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2 border-t border-[#DDF3E9] text-center">
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">FG CONVERSION</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'TIRI DAL CAMPO' : 'FG CONVERSION'}</div>
                         <div className="font-mono text-xs font-black text-[#022D32] mt-0.5">
                           {situational?.halfCourt?.fgm || 0}/{situational?.halfCourt?.fga || 0}
                         </div>
@@ -1290,18 +1314,18 @@ export default function MatchReviewModal({
                         </div>
                       </div>
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">TURNOVERS</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'PALLE PERSE' : 'TURNOVERS'}</div>
                         <div className="font-mono text-xs font-black text-rose-700 mt-0.5">
                           {situational?.halfCourt?.tov || 0} TOV
                         </div>
-                        <div className="text-[9px] text-[#022D32]/60">Set-play giveaways</div>
+                        <div className="text-[9px] text-[#022D32]/60">{language === 'it' ? 'Perse a difesa schierata' : 'Set-play giveaways'}</div>
                       </div>
                       <div className="bg-white/80 p-1.5 rounded-lg border border-[#DDF3E9]">
-                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">FREE THROWS</div>
+                        <div className="text-[9px] font-bold text-[#022D32]/65 uppercase">{language === 'it' ? 'TIRI LIBERI' : 'FREE THROWS'}</div>
                         <div className="font-mono text-xs font-black text-[#022D32] mt-0.5">
-                          {situational?.halfCourt?.ftm || 0}/{situational?.halfCourt?.fta || 0} FT
+                          {situational?.halfCourt?.ftm || 0}/{situational?.halfCourt?.fta || 0} {language === 'it' ? 'TL' : 'FT'}
                         </div>
-                        <div className="text-[9px] text-[#022D32]/60">Half-court fouls</div>
+                        <div className="text-[9px] text-[#022D32]/60">{language === 'it' ? 'Falli a metà campo' : 'Half-court fouls'}</div>
                       </div>
                     </div>
                   </div>
@@ -1314,11 +1338,11 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-rose-700" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      OPPONENT COMPLETE SHOOTING & REBOUND PROFILE
+                      {language === 'it' ? 'PROFILO COMPLETO TIRO & RIMBALZI AVVERSARI' : 'OPPONENT COMPLETE SHOOTING & REBOUND PROFILE'}
                     </h3>
                   </div>
                   <span className="text-[10px] font-black text-rose-700">
-                    {teamOverview.opponentScore || 0} Total Opponent Points
+                    {teamOverview.opponentScore || 0} {language === 'it' ? 'Punti Totali Subiti' : 'Total Opponent Points'}
                   </span>
                 </div>
 
@@ -1327,11 +1351,11 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('oppEfg')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-rose-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
-                    title="Click to view Opponent eFG% guide"
+                    title={language === 'it' ? 'Clicca per la guida eFG% Avversari' : 'Click to view Opponent eFG% guide'}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-[#022D32]/65 group-hover:text-rose-700 uppercase tracking-wider">
-                        OPP eFG%
+                        {language === 'it' ? 'eFG% AVVERSARI' : 'OPP eFG%'}
                       </span>
                       <Info className="w-3 h-3 text-[#022D32]/50 group-hover:text-rose-600" />
                     </div>
@@ -1349,9 +1373,9 @@ export default function MatchReviewModal({
                       (opponentShooting?.oppFga > 0) ? 'bg-rose-100 text-rose-800 border-rose-300' :
                       'bg-white text-[#022D32]/65 border-[#DDF3E9]'
                     }`}>
-                      {opponentShooting?.oppEfgPct < 46 && opponentShooting?.oppFga > 0 ? 'Lockdown' :
-                       opponentShooting?.oppEfgPct <= 52 && opponentShooting?.oppFga > 0 ? 'Average' :
-                       opponentShooting?.oppFga > 0 ? 'Vulnerable' : 'No FGA'}
+                      {opponentShooting?.oppEfgPct < 46 && opponentShooting?.oppFga > 0 ? (language === 'it' ? 'Ermetica' : 'Lockdown') :
+                       opponentShooting?.oppEfgPct <= 52 && opponentShooting?.oppFga > 0 ? (language === 'it' ? 'Nella Media' : 'Average') :
+                       opponentShooting?.oppFga > 0 ? (language === 'it' ? 'Permissiva' : 'Vulnerable') : (language === 'it' ? 'Nessun Tiro' : 'No FGA')}
                     </div>
                   </div>
 
@@ -1359,11 +1383,11 @@ export default function MatchReviewModal({
                   <div
                     onClick={() => setActiveMetricGuideKey('drb')}
                     className="bg-white p-3 rounded-xl border border-[#DDF3E9] hover:border-emerald-500/60 cursor-pointer group transition-all flex flex-col justify-between shadow-sm"
-                    title="Click to view DRB% guide"
+                    title={language === 'it' ? 'Clicca per la guida DRB%' : 'Click to view DRB% guide'}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-[#022D32]/65 group-hover:text-emerald-700 uppercase tracking-wider">
-                        DRB% (CLEANUP)
+                        {language === 'it' ? 'DRB% (DIFENSIVI)' : 'DRB% (CLEANUP)'}
                       </span>
                       <Info className="w-3 h-3 text-[#022D32]/50 group-hover:text-emerald-600" />
                     </div>
@@ -1372,7 +1396,7 @@ export default function MatchReviewModal({
                         {reboundingAnalysis?.drbPct != null ? `${reboundingAnalysis.drbPct.toFixed(1)}%` : 'N/A'}
                       </div>
                       <div className="text-[10px] text-[#022D32]/60 font-semibold truncate">
-                        {reboundingAnalysis?.bbaDefReb || teamOverview.dreb} D-REB vs {reboundingAnalysis?.oppOffReb || 0} Opp O-REB
+                        {reboundingAnalysis?.bbaDefReb || teamOverview.dreb} D-REB vs {reboundingAnalysis?.oppOffReb || 0} {language === 'it' ? 'RO Avv' : 'Opp O-REB'}
                       </div>
                     </div>
                     <div className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded text-center border ${
@@ -1381,63 +1405,63 @@ export default function MatchReviewModal({
                       (reboundingAnalysis?.drbPct != null) ? 'bg-rose-100 text-rose-800 border-rose-300' :
                       'bg-white text-[#022D32]/65 border-[#DDF3E9]'
                     }`}>
-                      {reboundingAnalysis?.drbPct >= 72 ? 'Elite Glass' :
-                       reboundingAnalysis?.drbPct >= 65 ? 'Solid Glass' :
-                       reboundingAnalysis?.drbPct != null ? 'Vulnerable' : 'Track Misses'}
+                      {reboundingAnalysis?.drbPct >= 72 ? (language === 'it' ? 'Dominio' : 'Elite Glass') :
+                       reboundingAnalysis?.drbPct >= 65 ? (language === 'it' ? 'Solida' : 'Solid Glass') :
+                       reboundingAnalysis?.drbPct != null ? (language === 'it' ? 'Vulnerabile' : 'Vulnerable') : (language === 'it' ? 'Segna Errori' : 'Track Misses')}
                     </div>
                   </div>
 
                   {/* Opponent 2PT Shooting */}
                   <div className="bg-white p-3 rounded-xl border border-[#DDF3E9] flex flex-col justify-between shadow-sm">
                     <span className="text-[10px] font-bold text-[#022D32]/65 uppercase tracking-wider">
-                      OPP 2PT FG
+                      {language === 'it' ? 'TIRI DA 2 AVV.' : 'OPP 2PT FG'}
                     </span>
                     <div className="my-1">
                       <div className="font-mono text-2xl font-black text-[#022D32]">
                         {opponentShooting?.oppPct2p || 0}%
                       </div>
                       <div className="text-[10px] text-[#022D32]/50">
-                        {opponentShooting?.opp2pm || 0}/{opponentShooting?.opp2pa || 0} Made
+                        {opponentShooting?.opp2pm || 0}/{opponentShooting?.opp2pa || 0} {language === 'it' ? 'Real.' : 'Made'}
                       </div>
                     </div>
                     <div className="text-[9px] text-[#022D32]/65 border-t border-[#DDF3E9] pt-1">
-                      Interior scoring
+                      {language === 'it' ? 'Conclusioni da 2' : 'Interior scoring'}
                     </div>
                   </div>
 
                   {/* Opponent 3PT Shooting */}
                   <div className="bg-white p-3 rounded-xl border border-[#DDF3E9] flex flex-col justify-between shadow-sm">
                     <span className="text-[10px] font-bold text-[#022D32]/65 uppercase tracking-wider">
-                      OPP 3PT FG
+                      {language === 'it' ? 'TIRI DA 3 AVV.' : 'OPP 3PT FG'}
                     </span>
                     <div className="my-1">
                       <div className="font-mono text-2xl font-black text-[#022D32]">
                         {opponentShooting?.oppPct3p || 0}%
                       </div>
                       <div className="text-[10px] text-[#022D32]/50">
-                        {opponentShooting?.opp3pm || 0}/{opponentShooting?.opp3pa || 0} Made
+                        {opponentShooting?.opp3pm || 0}/{opponentShooting?.opp3pa || 0} {language === 'it' ? 'Real.' : 'Made'}
                       </div>
                     </div>
                     <div className="text-[9px] text-[#022D32]/65 border-t border-[#DDF3E9] pt-1">
-                      Perimeter conversion
+                      {language === 'it' ? 'Tiro perimetrale' : 'Perimeter conversion'}
                     </div>
                   </div>
 
                   {/* Opponent Free Throws */}
                   <div className="bg-white p-3 rounded-xl border border-[#DDF3E9] flex flex-col justify-between shadow-sm">
                     <span className="text-[10px] font-bold text-[#022D32]/65 uppercase tracking-wider">
-                      OPP FREE THROWS
+                      {language === 'it' ? 'TIRI LIBERI AVV.' : 'OPP FREE THROWS'}
                     </span>
                     <div className="my-1">
                       <div className="font-mono text-2xl font-black text-[#022D32]">
                         {opponentShooting?.oppPctFt || 0}%
                       </div>
                       <div className="text-[10px] text-[#022D32]/50">
-                        {opponentShooting?.oppFtm || 0}/{opponentShooting?.oppFta || 0} FT
+                        {opponentShooting?.oppFtm || 0}/{opponentShooting?.oppFta || 0} {language === 'it' ? 'TL' : 'FT'}
                       </div>
                     </div>
                     <div className="text-[9px] text-[#022D32]/65 border-t border-[#DDF3E9] pt-1">
-                      Foul conversion
+                      {language === 'it' ? 'Conversione ai liberi' : 'Foul conversion'}
                     </div>
                   </div>
                 </div>
@@ -1567,30 +1591,32 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      QUARTER-BY-QUARTER PERFORMANCE MATRIX
+                      {language === 'it' ? 'MATRICE RENDIMENTO PER QUARTO' : 'QUARTER-BY-QUARTER PERFORMANCE MATRIX'}
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold text-[#022D32]/65">Progression across 4 Periods + OT</span>
+                  <span className="text-[10px] font-bold text-[#022D32]/65">
+                    {language === 'it' ? 'Progressione nei 4 periodi + OT' : 'Progression across 4 Periods + OT'}
+                  </span>
                 </div>
 
                 <table className="w-full text-left text-xs font-semibold">
                   <thead>
                     <tr className="border-b border-[#DDF3E9]/80 text-[#022D32]/70 font-black">
-                      <th className="py-2.5 px-2">PERIOD</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? 'PERIODO' : 'PERIOD'}</th>
                       <th className="py-2.5 px-2 text-[#022D32] font-black">PTS</th>
-                      <th className="py-2.5 px-2">2PM/A</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? '2P R/T' : '2PM/A'}</th>
                       <th className="py-2.5 px-2">2P%</th>
-                      <th className="py-2.5 px-2">3PM/A</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? '3P R/T' : '3PM/A'}</th>
                       <th className="py-2.5 px-2">3P%</th>
-                      <th className="py-2.5 px-2">FTM/A</th>
-                      <th className="py-2.5 px-2">FT%</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? 'TL R/T' : 'FTM/A'}</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? 'TL%' : 'FT%'}</th>
                       <th className="py-2.5 px-2 text-[#022D32]">eFG%</th>
                       <th className="py-2.5 px-2">REB (O/D)</th>
                       <th className="py-2.5 px-2">AST</th>
                       <th className="py-2.5 px-2 text-rose-700 font-bold">TOV</th>
                       <th className="py-2.5 px-2 text-[#022D32]">STL</th>
-                      <th className="py-2.5 px-2">PF</th>
-                      <th className="py-2.5 px-2 text-purple-800 font-bold">TACTICS</th>
+                      <th className="py-2.5 px-2">{language === 'it' ? 'FF' : 'PF'}</th>
+                      <th className="py-2.5 px-2 text-purple-800 font-bold">{language === 'it' ? 'TATTICHE' : 'TACTICS'}</th>
                       <th className="py-2.5 px-2 text-emerald-800 font-black">PIR</th>
                     </tr>
                   </thead>
@@ -1621,7 +1647,7 @@ export default function MatchReviewModal({
                   {/* Totals Row */}
                   <tfoot>
                     <tr className="bg-white/80 border-t-2 border-[#DDF3E9] text-[#022D32] font-black">
-                      <td className="py-3 px-2 text-[#022D32] uppercase">MATCH TOTAL</td>
+                      <td className="py-3 px-2 text-[#022D32] uppercase">{language === 'it' ? 'TOTALE PARTITA' : 'MATCH TOTAL'}</td>
                       <td className="py-3 px-2 text-[#022D32] text-lg font-black">{teamOverview.pts}</td>
                       <td className="py-3 px-2 font-black">{teamOverview.fg2m}/{teamOverview.fg2a}</td>
                       <td className="py-3 px-2 font-mono font-black">{teamOverview.pct2p.toFixed(0)}%</td>
@@ -1648,7 +1674,7 @@ export default function MatchReviewModal({
                 <div className="glass-card p-4 border-[#DDF3E9]">
                   <h4 className="text-xs font-black text-[#022D32] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <TrendingUp className="w-3.5 h-3.5 text-[#0CA17A]" />
-                    SCORING OUTPUT & SHOOTING ACCURACY PER QUARTER
+                    {language === 'it' ? 'PRODUZIONE PUNTI & PRECISIONE PER QUARTO' : 'SCORING OUTPUT & SHOOTING ACCURACY PER QUARTER'}
                   </h4>
                   <div className="space-y-3">
                     {quarters.map(q => {
@@ -1678,7 +1704,7 @@ export default function MatchReviewModal({
                 <div className="glass-card p-4 border-[#DDF3E9]">
                   <h4 className="text-xs font-black text-[#022D32] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5 text-[#0CA17A]" />
-                    BALL CONTROL: ASSISTS VS TURNOVERS BY PERIOD
+                    {language === 'it' ? 'CONTROLLO PALLA: ASSIST VS PALLE PERSE PER PERIODO' : 'BALL CONTROL: ASSISTS VS TURNOVERS BY PERIOD'}
                   </h4>
                   <div className="space-y-3">
                     {quarters.map(q => (
@@ -1694,7 +1720,7 @@ export default function MatchReviewModal({
                             <span className="font-mono text-sm font-black">{q.tov}</span>
                           </div>
                           <div className="text-[11px] font-mono text-[#022D32]/70 font-bold">
-                            Ratio: {q.tov > 0 ? (q.ast / q.tov).toFixed(2) : q.ast}
+                            {language === 'it' ? 'Rapporto' : 'Ratio'}: {q.tov > 0 ? (q.ast / q.tov).toFixed(2) : q.ast}
                           </div>
                         </div>
                       </div>
@@ -1716,9 +1742,9 @@ export default function MatchReviewModal({
                 <div className="flex items-center justify-between px-1 text-[11px] font-bold text-[#022D32]/65">
                   <div className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-sky-400" />
-                    <span className="uppercase tracking-wider">SELECT PLAYER CARD</span>
+                    <span className="uppercase tracking-wider">{language === 'it' ? 'SELEZIONA SCHEDA GIOCATORE' : 'SELECT PLAYER CARD'}</span>
                     <span className="hidden sm:inline text-[#022D32]/50 font-normal">
-                      (Press <kbd className="px-1.5 py-0.5 rounded bg-white border border-[#DDF3E9] text-sky-300 font-mono text-[10px]">←</kbd> <kbd className="px-1.5 py-0.5 rounded bg-white border border-[#DDF3E9] text-sky-300 font-mono text-[10px]">→</kbd> or click arrows)
+                      ({language === 'it' ? 'Premi' : 'Press'} <kbd className="px-1.5 py-0.5 rounded bg-white border border-[#DDF3E9] text-sky-300 font-mono text-[10px]">←</kbd> <kbd className="px-1.5 py-0.5 rounded bg-white border border-[#DDF3E9] text-sky-300 font-mono text-[10px]">→</kbd> {language === 'it' ? 'o clicca le frecce' : 'or click arrows'})
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1805,15 +1831,15 @@ export default function MatchReviewModal({
                             {activePlayer.name}
                           </h3>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#011C20] text-[#A7F3D0] border border-[#0CA17A]/40 uppercase">
-                            {activePlayer.pos || 'Active Roster'}
+                            {activePlayer.pos || (language === 'it' ? 'Roster Attivo' : 'Active Roster')}
                           </span>
                         </div>
                         <p className="text-xs text-[#A7F3D0] font-semibold mt-0.5">
-                          {activePlayer.eventsCount} logged match interactions • GameScore (GS):{' '}
+                          {activePlayer.eventsCount} {language === 'it' ? 'azioni registrate' : 'logged match interactions'} • GameScore (GS):{' '}
                           <button
                             onClick={() => setActiveMetricGuideKey('gamescore')}
                             className="text-white font-bold hover:text-emerald-300 underline inline-flex items-center gap-0.5 transition-colors"
-                            title="Click to view GameScore guide"
+                            title={language === 'it' ? 'Clicca per la guida GameScore' : 'Click to view GameScore guide'}
                           >
                             <span>{activePlayer.gameScore}</span>
                             <Info className="w-2.5 h-2.5 text-[#0CA17A]" />
@@ -1827,10 +1853,10 @@ export default function MatchReviewModal({
                       <button
                         onClick={handlePrevPlayer}
                         className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all flex items-center gap-1 text-xs font-bold border border-white/20 active:scale-95"
-                        title="Previous Player (Left Arrow [←])"
+                        title={language === 'it' ? 'Giocatore Precedente ([←])' : 'Previous Player (Left Arrow [←])'}
                       >
                         <ChevronLeft className="w-4 h-4 text-[#A7F3D0]" />
-                        <span className="hidden sm:inline">PREV</span>
+                        <span className="hidden sm:inline">{language === 'it' ? 'PREC' : 'PREV'}</span>
                       </button>
                       <span className="text-xs font-mono font-bold text-white px-1.5">
                         {activePlayerIndex + 1} / {playerStats.length}
@@ -1838,9 +1864,9 @@ export default function MatchReviewModal({
                       <button
                         onClick={handleNextPlayer}
                         className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all flex items-center gap-1 text-xs font-bold border border-white/20 active:scale-95"
-                        title="Next Player (Right Arrow [→])"
+                        title={language === 'it' ? 'Giocatore Successivo ([→])' : 'Next Player (Right Arrow [→])'}
                       >
-                        <span className="hidden sm:inline">NEXT</span>
+                        <span className="hidden sm:inline">{language === 'it' ? 'SUCC' : 'NEXT'}</span>
                         <ChevronRight className="w-4 h-4 text-[#A7F3D0]" />
                       </button>
                     </div>
@@ -1848,15 +1874,15 @@ export default function MatchReviewModal({
                     {/* Big Key Metric Badges */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <div className="bg-white px-3 py-1.5 rounded-xl border border-[#DDF3E9] text-center shadow-xs">
-                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">POINTS</span>
+                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">{language === 'it' ? 'PUNTI' : 'POINTS'}</span>
                         <span className="font-mono text-2xl font-black text-[#022D32] leading-none">{activePlayer.pts}</span>
                       </div>
                       <div className="bg-white px-3 py-1.5 rounded-xl border border-[#DDF3E9] text-center shadow-xs">
-                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">REBOUNDS</span>
+                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">{language === 'it' ? 'RIMBALZI' : 'REBOUNDS'}</span>
                         <span className="font-mono text-2xl font-black text-[#022D32] leading-none">{activePlayer.reb}</span>
                       </div>
                       <div className="bg-white px-3 py-1.5 rounded-xl border border-[#DDF3E9] text-center shadow-xs">
-                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">ASSISTS</span>
+                        <span className="text-[9px] font-black text-[#022D32]/70 uppercase tracking-widest block">{language === 'it' ? 'ASSIST' : 'ASSISTS'}</span>
                         <span className="font-mono text-2xl font-black text-[#022D32] leading-none">{activePlayer.ast}</span>
                       </div>
                       <div className="bg-white px-3 py-1.5 rounded-xl border border-[#DDF3E9] text-center shadow-xs">
@@ -1872,7 +1898,7 @@ export default function MatchReviewModal({
                       <div 
                         onClick={() => setActiveMetricGuideKey('pir')}
                         className="bg-white px-3.5 py-1.5 rounded-xl border-2 border-emerald-500 hover:border-emerald-600 text-center shadow-md cursor-pointer group transition-all"
-                        title="Click to view FIBA PIR guide"
+                        title={language === 'it' ? 'Clicca per la guida FIBA PIR' : 'Click to view FIBA PIR guide'}
                       >
                         <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest flex items-center justify-center gap-1">
                           FIBA PIR <Info className="w-2.5 h-2.5 text-[#022D32]/50 group-hover:text-emerald-700" />
@@ -1891,7 +1917,7 @@ export default function MatchReviewModal({
                           <div className="flex items-center gap-1.5">
                             <Target className="w-3.5 h-3.5 text-sky-400" />
                             <span className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                              PLAYER SHOT MAP (#{activePlayer.number} {activePlayer.name})
+                              {language === 'it' ? `MAPPA TIRI (#${activePlayer.number} ${activePlayer.name})` : `PLAYER SHOT MAP (#${activePlayer.number} ${activePlayer.name})`}
                             </span>
                           </div>
                           <span className="text-[10px] font-mono font-bold text-[#022D32]/65">
@@ -1909,23 +1935,23 @@ export default function MatchReviewModal({
                         {/* Shot Distribution Bars */}
                         <div className="mt-3 pt-2 border-t border-[#DDF3E9] space-y-1.5">
                           <div className="text-[10px] font-bold text-[#022D32]/65 uppercase tracking-wider">
-                            SHOT SELECTION BREAKDOWN:
+                            {language === 'it' ? 'DISTRIBUZIONE SELEZIONE TIRI:' : 'SHOT SELECTION BREAKDOWN:'}
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-center text-xs">
                             <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                              <span className="text-[9px] text-[#022D32]/65 font-bold block">PAINT 2PT</span>
+                              <span className="text-[9px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'AREA 2PT' : 'PAINT 2PT'}</span>
                               <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.shotDist.paintMade}/{activePlayer.shotDist.paintAttempts}</span>
-                              <span className="text-[10px] text-emerald-700 block font-mono font-bold">({activePlayer.shotDist.pctPaint}% volume)</span>
+                              <span className="text-[10px] text-emerald-700 block font-mono font-bold">({activePlayer.shotDist.pctPaint}% {language === 'it' ? 'vol.' : 'volume'})</span>
                             </div>
                             <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                              <span className="text-[9px] text-[#022D32]/70 font-bold block">MID-RANGE 2PT</span>
+                              <span className="text-[9px] text-[#022D32]/70 font-bold block">{language === 'it' ? 'MEDIA DIST. 2PT' : 'MID-RANGE 2PT'}</span>
                               <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.shotDist.midMade}/{activePlayer.shotDist.midAttempts}</span>
-                              <span className="text-[10px] text-amber-800 block font-mono font-bold">({activePlayer.shotDist.pctMid}% volume)</span>
+                              <span className="text-[10px] text-amber-800 block font-mono font-bold">({activePlayer.shotDist.pctMid}% {language === 'it' ? 'vol.' : 'volume'})</span>
                             </div>
                             <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                              <span className="text-[9px] text-[#022D32]/70 font-bold block">3-POINTERS</span>
+                              <span className="text-[9px] text-[#022D32]/70 font-bold block">{language === 'it' ? 'DA 3 PUNTI' : '3-POINTERS'}</span>
                               <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.shotDist.threeMade}/{activePlayer.shotDist.threeAttempts}</span>
-                              <span className="text-[10px] text-[#022D32] block font-mono font-bold">({activePlayer.shotDist.pctThree}% volume)</span>
+                              <span className="text-[10px] text-[#022D32] block font-mono font-bold">({activePlayer.shotDist.pctThree}% {language === 'it' ? 'vol.' : 'volume'})</span>
                             </div>
                           </div>
                         </div>
@@ -1938,28 +1964,28 @@ export default function MatchReviewModal({
                       <div className="glass-card p-3.5 border-[#DDF3E9]">
                         <h4 className="text-xs font-black text-[#022D32] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-[#0CA17A]" />
-                          ADVANCED EFFICIENCY & SHOOTING METRICS
+                          {language === 'it' ? 'METRICHE AVANZATE DI TIRO & EFFICIENZA' : 'ADVANCED EFFICIENCY & SHOOTING METRICS'}
                         </h4>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                           <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">2PT FIELD GOALS</span>
+                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">{language === 'it' ? 'TIRI DA 2 PUNTI' : '2PT FIELD GOALS'}</span>
                             <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.fg2m}/{activePlayer.fg2a}</span>
                             <span className="text-[10px] text-[#022D32]/65 font-mono block">{activePlayer.pct2p.toFixed(0)}%</span>
                           </div>
                           <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">3PT FIELD GOALS</span>
+                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">{language === 'it' ? 'TIRI DA 3 PUNTI' : '3PT FIELD GOALS'}</span>
                             <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.fg3m}/{activePlayer.fg3a}</span>
                             <span className="text-[10px] text-[#022D32]/65 font-mono block">{activePlayer.pct3p.toFixed(0)}%</span>
                           </div>
                           <div className="bg-white p-2 rounded-lg border border-[#DDF3E9]">
-                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">FREE THROWS</span>
+                            <span className="text-[9px] text-[#022D32]/65 font-bold block uppercase">{language === 'it' ? 'TIRI LIBERI' : 'FREE THROWS'}</span>
                             <span className="font-mono text-sm font-black text-[#022D32]">{activePlayer.ftm}/{activePlayer.fta}</span>
                             <span className="text-[10px] text-[#022D32]/65 font-mono block">{activePlayer.pctFt.toFixed(0)}%</span>
                           </div>
                           <div 
                             onClick={() => setActiveMetricGuideKey('ts')}
                             className="bg-white p-2 rounded-lg border border-[#DDF3E9] hover:border-emerald-500/60 cursor-pointer group transition-all"
-                            title="Click to view TS% and eFG% guide"
+                            title={language === 'it' ? 'Clicca per la guida TS% ed eFG%' : 'Click to view TS% and eFG% guide'}
                           >
                             <span className="text-[9px] text-[#022D32]/70 group-hover:text-emerald-700 font-black flex items-center justify-center gap-1 uppercase transition-colors">
                               TRUE SHOOTING <Info className="w-2.5 h-2.5 text-[#022D32]/50" />
@@ -1972,27 +1998,27 @@ export default function MatchReviewModal({
                         {/* Secondary stats row */}
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mt-2 text-center">
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">OFF REB</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'RIMB. OFF' : 'OFF REB'}</span>
                             <span className="font-mono text-xs font-black text-[#022D32]">{activePlayer.oreb}</span>
                           </div>
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">DEF REB</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'RIMB. DIF' : 'DEF REB'}</span>
                             <span className="font-mono text-xs font-black text-[#022D32]">{activePlayer.dreb}</span>
                           </div>
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">STEALS</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'RECUPERI' : 'STEALS'}</span>
                             <span className="font-mono text-xs font-black text-[#022D32]">{activePlayer.stl}</span>
                           </div>
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">TURNOVERS</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'PERSE' : 'TURNOVERS'}</span>
                             <span className="font-mono text-xs font-black text-rose-700">{activePlayer.tov}</span>
                           </div>
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">BLOCKS</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'STOPPATE' : 'BLOCKS'}</span>
                             <span className="font-mono text-xs font-black text-purple-800">{activePlayer.blk}</span>
                           </div>
                           <div className="bg-white/70 p-1.5 rounded border border-[#DDF3E9]">
-                            <span className="text-[8px] text-[#022D32]/65 font-bold block">FOULS (PF/FD)</span>
+                            <span className="text-[8px] text-[#022D32]/65 font-bold block">{language === 'it' ? 'FALLI (FF/FS)' : 'FOULS (PF/FD)'}</span>
                             <span className="font-mono text-xs font-black text-[#022D32]">{activePlayer.pf}/{activePlayer.fd}</span>
                           </div>
                         </div>
@@ -2002,19 +2028,19 @@ export default function MatchReviewModal({
                       <div className="glass-card p-3 border-[#DDF3E9] overflow-x-auto">
                         <h4 className="text-xs font-black text-[#022D32] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5 text-[#0CA17A]" />
-                          QUARTER-BY-QUARTER STAT PRODUCTION
+                          {language === 'it' ? 'PRODUZIONE STATISTICA PER QUARTO' : 'QUARTER-BY-QUARTER STAT PRODUCTION'}
                         </h4>
                         <table className="w-full text-left text-xs font-semibold">
                           <thead>
                             <tr className="border-b border-[#DDF3E9] text-[#022D32]/80 text-[10px] font-black uppercase">
-                              <th className="py-1 px-1.5">PERIOD</th>
+                              <th className="py-1 px-1.5">{language === 'it' ? 'PERIODO' : 'PERIOD'}</th>
                               <th className="py-1 px-1.5 text-[#022D32]">PTS</th>
-                              <th className="py-1 px-1.5">FGM/A</th>
+                              <th className="py-1 px-1.5">{language === 'it' ? 'FG R/T' : 'FGM/A'}</th>
                               <th className="py-1 px-1.5">FG%</th>
                               <th className="py-1 px-1.5">REB</th>
                               <th className="py-1 px-1.5">AST</th>
                               <th className="py-1 px-1.5 text-rose-700">TOV</th>
-                              <th className="py-1 px-1.5">PF</th>
+                              <th className="py-1 px-1.5">{language === 'it' ? 'FF' : 'PF'}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2044,7 +2070,11 @@ export default function MatchReviewModal({
                     <h4 className="text-xs font-black text-[#022D32] uppercase tracking-wider mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <List className="w-3.5 h-3.5 text-[#0CA17A]" />
-                        <span>MATCH ACTION LOG FOR #{activePlayer.number} {activePlayer.name} ({activePlayer.events.length} PLAYS)</span>
+                        <span>
+                          {language === 'it'
+                            ? `CRONOLOGIA AZIONI PER #${activePlayer.number} ${activePlayer.name} (${activePlayer.events.length} GIOCATE)`
+                            : `MATCH ACTION LOG FOR #${activePlayer.number} ${activePlayer.name} (${activePlayer.events.length} PLAYS)`}
+                        </span>
                       </div>
                     </h4>
                     <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
@@ -2078,7 +2108,7 @@ export default function MatchReviewModal({
                 </div>
               ) : (
                 <div className="glass-card p-8 text-center text-[#022D32]/65 font-bold">
-                  No individual player logs found for this match session.
+                  {language === 'it' ? 'Nessuna statistica individuale trovata per questa partita.' : 'No individual player logs found for this match session.'}
                 </div>
               )}
             </div>
@@ -2094,7 +2124,7 @@ export default function MatchReviewModal({
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-sky-400" />
                   <span className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                    FILTER SHOT HEATMAP & STATS:
+                    {language === 'it' ? 'FILTRA MAPPA TIRI & STATISTICHE:' : 'FILTER SHOT HEATMAP & STATS:'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2106,12 +2136,12 @@ export default function MatchReviewModal({
                         setShotMapPlayerFilter(null);
                       } else {
                         const found = playerStats.find(p => String(p.number) === val);
-                        setShotMapPlayerFilter(found || { number: val, name: `Player #${val}` });
+                        setShotMapPlayerFilter(found || { number: val, name: `${language === 'it' ? 'Giocatore' : 'Player'} #${val}` });
                       }
                     }}
                     className="bg-white border border-[#DDF3E9] text-[#022D32] text-xs rounded-lg px-3 py-1.5 font-bold focus:outline-none focus:border-sky-400"
                   >
-                    <option value="">WHOLE TEAM (ALL PLAYERS)</option>
+                    <option value="">{language === 'it' ? 'TUTTA LA SQUADRA (TUTTI)' : 'WHOLE TEAM (ALL PLAYERS)'}</option>
                     {playerStats.map(p => (
                       <option key={p.number} value={p.number}>
                         #{p.number} - {p.name} ({p.fgm}/{p.fga} FG)
@@ -2138,15 +2168,15 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-sky-400" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      9-ZONE SHOT EFFICIENCY & VOLUME RANKING
+                      {language === 'it' ? 'EFFICIENZA & VOLUME TIRO SULLE 9 ZONE' : '9-ZONE SHOT EFFICIENCY & VOLUME RANKING'}
                     </h3>
                   </div>
                   <button
                     onClick={() => setActiveMetricGuideKey('pps')}
                     className="text-[10px] font-bold text-[#022D32]/65 hover:text-amber-400 underline flex items-center gap-1 transition-colors"
-                    title="Click to view Points Per Shot (PPS) guide"
+                    title={language === 'it' ? 'Clicca per la guida Punti Per Tiro (PPS)' : 'Click to view Points Per Shot (PPS) guide'}
                   >
-                    <span>PPS = Points Per Shot (Expected Value)</span>
+                    <span>{language === 'it' ? 'PPS = Punti Per Tiro (Valore Atteso)' : 'PPS = Points Per Shot (Expected Value)'}</span>
                     <Info className="w-2.5 h-2.5 text-amber-400" />
                   </button>
                 </div>
@@ -2154,21 +2184,21 @@ export default function MatchReviewModal({
                 <table className="w-full text-left text-xs font-semibold">
                   <thead>
                     <tr className="border-b border-[#DDF3E9]/80 text-[#022D32]/65">
-                      <th className="py-2 px-2">ZONE</th>
-                      <th className="py-2 px-2">TYPE</th>
-                      <th className="py-2 px-2 text-[#022D32]">FGM / FGA</th>
-                      <th className="py-2 px-2">ACCURACY (FG%)</th>
-                      <th className="py-2 px-2">SHOT SHARE</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'ZONA' : 'ZONE'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'TIPO' : 'TYPE'}</th>
+                      <th className="py-2 px-2 text-[#022D32]">{language === 'it' ? 'R / T' : 'FGM / FGA'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'PRECISIONE (FG%)' : 'ACCURACY (FG%)'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'QUOTA TIRI' : 'SHOT SHARE'}</th>
                       <th 
                         onClick={() => setActiveMetricGuideKey('pps')}
                         className="py-2 px-2 text-[#022D32] font-black cursor-pointer hover:text-[#0CA17A] transition-colors"
-                        title="Click to view Points Per Shot (PPS) guide"
+                        title={language === 'it' ? 'Clicca per la guida Punti Per Tiro (PPS)' : 'Click to view Points Per Shot (PPS) guide'}
                       >
                         <span className="flex items-center gap-1">
-                          PTS / SHOT (PPS) <Info className="w-2.5 h-2.5" />
+                          {language === 'it' ? 'PTS / TIRO (PPS)' : 'PTS / SHOT (PPS)'} <Info className="w-2.5 h-2.5" />
                         </span>
                       </th>
-                      <th className="py-2 px-2 text-right">RATING</th>
+                      <th className="py-2 px-2 text-right">{language === 'it' ? 'VALUTAZIONE' : 'RATING'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2196,7 +2226,7 @@ export default function MatchReviewModal({
                             z.attempts > 0 ? 'bg-rose-100 text-rose-800 border border-rose-300' :
                             'bg-[#F8F9FA] text-[#022D32]/60 border border-[#DDF3E9]'
                           }`}>
-                            {z.ratingLabel || (z.pct >= 50 ? 'HOT' : z.pct >= 33 ? 'SOLID' : z.attempts > 0 ? 'COLD' : 'NO ATTEMPTS')}
+                            {z.ratingLabel || (z.pct >= 50 ? 'HOT' : z.pct >= 33 ? (language === 'it' ? 'SOLIDA' : 'SOLID') : z.attempts > 0 ? (language === 'it' ? 'FREDDA' : 'COLD') : (language === 'it' ? 'NESSUN TIRO' : 'NO ATTEMPTS'))}
                           </span>
                         </td>
                       </tr>
@@ -2205,7 +2235,7 @@ export default function MatchReviewModal({
                   {activeZoneStats.totalShotsCount > 0 && (
                     <tfoot>
                       <tr className="border-t-2 border-[#DDF3E9] bg-white/80 font-black text-[#022D32]">
-                        <td className="py-2.5 px-2">TOTAL (ALL 9 ZONES)</td>
+                        <td className="py-2.5 px-2">{language === 'it' ? 'TOTALE (TUTTE LE 9 ZONE)' : 'TOTAL (ALL 9 ZONES)'}</td>
                         <td className="py-2.5 px-2 text-[#022D32]/65">FG</td>
                         <td className="py-2.5 px-2 text-[#022D32] font-mono text-sm font-black">
                           {activeZoneStats.totalMadeCount} / {activeZoneStats.totalShotsCount}
@@ -2221,7 +2251,7 @@ export default function MatchReviewModal({
                         </td>
                         <td className="py-2.5 px-2 text-right">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#DDF3E9] text-[#022D32] border border-[#0CA17A]/40">
-                            ALL SHOTS
+                            {language === 'it' ? 'TUTTI I TIRI' : 'ALL SHOTS'}
                           </span>
                         </td>
                       </tr>
@@ -2253,29 +2283,33 @@ export default function MatchReviewModal({
                   <div className="flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-[#0CA17A]" />
                     <h3 className="text-xs font-black text-[#022D32] uppercase tracking-wider">
-                      {isFipOnly ? (language === 'it' ? 'TABELLINO UFFICIALE FIP' : 'OFFICIAL FIP BOX SCORE') : 'OFFICIAL FIBA BOX SCORE — SORTABLE METRICS'}
+                      {isFipOnly
+                        ? (language === 'it' ? 'TABELLINO UFFICIALE FIP' : 'OFFICIAL FIP BOX SCORE')
+                        : (language === 'it' ? 'TABELLINO UFFICIALE FIBA — METRICHE ORDINABILI' : 'OFFICIAL FIBA BOX SCORE — SORTABLE METRICS')}
                     </h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveMetricGuideKey('pir')}
                       className="text-[10px] font-bold text-emerald-700 hover:underline flex items-center gap-1 transition-colors"
-                      title="FIBA PIR Calculation Guide"
+                      title={language === 'it' ? 'Guida al calcolo FIBA PIR' : 'FIBA PIR Calculation Guide'}
                     >
-                      <span>What is PIR?</span>
+                      <span>{language === 'it' ? "Cos'è il PIR?" : 'What is PIR?'}</span>
                       <Info className="w-2.5 h-2.5" />
                     </button>
                     {!isFipOnly && (
                       <button
                         onClick={() => setActiveMetricGuideKey('gamescore')}
                         className="text-[10px] font-bold text-purple-700 hover:underline flex items-center gap-1 transition-colors"
-                        title="GameScore Guide"
+                        title={language === 'it' ? 'Guida GameScore' : 'GameScore Guide'}
                       >
-                        <span>What is GS?</span>
+                        <span>{language === 'it' ? "Cos'è GS?" : 'What is GS?'}</span>
                         <Info className="w-2.5 h-2.5" />
                       </button>
                     )}
-                    <span className="text-[10px] font-bold text-[#022D32]/60 hidden sm:inline">• Click column header to sort</span>
+                    <span className="text-[10px] font-bold text-[#022D32]/60 hidden sm:inline">
+                      {language === 'it' ? '• Clicca una colonna per ordinare' : '• Click column header to sort'}
+                    </span>
                   </div>
                 </div>
 
@@ -2283,30 +2317,30 @@ export default function MatchReviewModal({
                   <thead>
                     <tr className="border-b border-[#DDF3E9]/80 text-[#022D32]/70 font-black select-none">
                       <th onClick={() => handleSortBoxScore('number')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">N°</th>
-                      <th onClick={() => handleSortBoxScore('name')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">PLAYER</th>
+                      <th onClick={() => handleSortBoxScore('name')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? 'GIOCATORE' : 'PLAYER'}</th>
                       <th onClick={() => handleSortBoxScore('pts')} className="py-2.5 px-2 text-[#022D32] font-black cursor-pointer hover:text-[#0CA17A]">PTS</th>
-                      <th onClick={() => handleSortBoxScore('fg2m')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">2PM/A</th>
+                      <th onClick={() => handleSortBoxScore('fg2m')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? '2P R/T' : '2PM/A'}</th>
                       <th onClick={() => handleSortBoxScore('pct2p')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">2P%</th>
-                      <th onClick={() => handleSortBoxScore('fg3m')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">3PM/A</th>
+                      <th onClick={() => handleSortBoxScore('fg3m')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? '3P R/T' : '3PM/A'}</th>
                       <th onClick={() => handleSortBoxScore('pct3p')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">3P%</th>
-                      <th onClick={() => handleSortBoxScore('ftm')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">FTM/A</th>
-                      <th onClick={() => handleSortBoxScore('pctFt')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">FT%</th>
+                      <th onClick={() => handleSortBoxScore('ftm')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? 'TL R/T' : 'FTM/A'}</th>
+                      <th onClick={() => handleSortBoxScore('pctFt')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? 'TL%' : 'FT%'}</th>
                       <th onClick={() => handleSortBoxScore('reb')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">REB</th>
                       <th onClick={() => handleSortBoxScore('ast')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">AST</th>
                       <th onClick={() => handleSortBoxScore('stl')} className="py-2.5 px-2 text-[#022D32] font-black cursor-pointer hover:text-[#0CA17A]">STL</th>
                       <th onClick={() => handleSortBoxScore('tov')} className="py-2.5 px-2 text-rose-700 font-black cursor-pointer hover:text-rose-800">TOV</th>
-                      <th onClick={() => handleSortBoxScore('pf')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">PF</th>
-                      <th onClick={() => handleSortBoxScore('fd')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">FD</th>
+                      <th onClick={() => handleSortBoxScore('pf')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? 'FF' : 'PF'}</th>
+                      <th onClick={() => handleSortBoxScore('fd')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">{language === 'it' ? 'FS' : 'FD'}</th>
                       <th onClick={() => handleSortBoxScore('blk')} className="py-2.5 px-2 cursor-pointer hover:text-[#0CA17A]">BLK</th>
-                      <th onClick={() => handleSortBoxScore('pir')} className="py-2.5 px-2 text-emerald-800 font-black cursor-pointer hover:text-emerald-700" title="Sort by FIBA PIR">
+                      <th onClick={() => handleSortBoxScore('pir')} className="py-2.5 px-2 text-emerald-800 font-black cursor-pointer hover:text-emerald-700" title={language === 'it' ? 'Ordina per FIBA PIR' : 'Sort by FIBA PIR'}>
                         <span className="inline-flex items-center gap-0.5">
                           PIR <Info className="w-2.5 h-2.5 text-emerald-600 hover:text-emerald-700" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('pir'); }} />
                         </span>
                       </th>
-                      <th onClick={() => handleSortBoxScore('plusMinus')} className="py-2.5 px-2 text-[#022D32] font-black cursor-pointer hover:text-[#0CA17A]" title="Sort by Plus/Minus (+/-)">
+                      <th onClick={() => handleSortBoxScore('plusMinus')} className="py-2.5 px-2 text-[#022D32] font-black cursor-pointer hover:text-[#0CA17A]" title={language === 'it' ? 'Ordina per Plus/Minus (+/-)' : 'Sort by Plus/Minus (+/-)'}>
                         +/-
                       </th>
-                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-800 font-black cursor-pointer hover:text-purple-700" title="Sort by GameScore">
+                      <th onClick={() => handleSortBoxScore('gameScore')} className="py-2.5 px-2 text-purple-800 font-black cursor-pointer hover:text-purple-700" title={language === 'it' ? 'Ordina per GameScore' : 'Sort by GameScore'}>
                         <span className="inline-flex items-center gap-0.5">
                           GS <Info className="w-2.5 h-2.5 text-purple-600 hover:text-purple-700" onClick={(e) => { e.stopPropagation(); setActiveMetricGuideKey('gamescore'); }} />
                         </span>
@@ -2347,7 +2381,9 @@ export default function MatchReviewModal({
                   {/* Totals Row */}
                   <tfoot>
                     <tr className="bg-white border-t-2 border-[#DDF3E9] text-[#022D32] font-black">
-                      <td colSpan={2} className="py-3 px-2 text-[#022D32] uppercase tracking-wider font-black">TEAM TOTALS</td>
+                      <td colSpan={2} className="py-3 px-2 text-[#022D32] uppercase tracking-wider font-black">
+                        {language === 'it' ? 'TOTALI SQUADRA' : 'TEAM TOTALS'}
+                      </td>
                       <td className="py-3 px-2 text-[#022D32] text-base font-black">{displayedTeamScore}</td>
                       <td className="py-3 px-2">{teamOverview.fg2m != null ? `${teamOverview.fg2m}/${teamOverview.fg2a}` : '—'}</td>
                       <td className="py-3 px-2 font-mono font-black">{teamOverview.pct2p != null ? `${Number(teamOverview.pct2p).toFixed(0)}%` : '—'}</td>
@@ -2391,7 +2427,7 @@ export default function MatchReviewModal({
                     <Search className="w-3.5 h-3.5 text-[#022D32]/65 absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search player, action, zone..."
+                      placeholder={language === 'it' ? 'Cerca giocatore, azione, zona...' : 'Search player, action, zone...'}
                       value={playSearch}
                       onChange={(e) => setPlaySearch(e.target.value)}
                       className="w-full bg-white border border-[#DDF3E9] text-[#022D32] text-xs pl-8 pr-3 py-1.5 rounded-lg font-medium focus:outline-none focus:border-sky-400"
@@ -2404,11 +2440,11 @@ export default function MatchReviewModal({
                     onChange={(e) => setPlayPlayerFilter(e.target.value)}
                     className="bg-white border border-[#DDF3E9] text-[#022D32] text-xs rounded-lg px-2.5 py-1.5 font-bold focus:outline-none focus:border-sky-400"
                   >
-                    <option value="ALL">ALL PLAYERS</option>
+                    <option value="ALL">{language === 'it' ? 'TUTTI I GIOCATORI' : 'ALL PLAYERS'}</option>
                     {playerStats.map(p => (
                       <option key={p.number} value={p.number}>#{p.number} {p.name}</option>
                     ))}
-                    <option value="-">TEAM TACTICS</option>
+                    <option value="-">{language === 'it' ? 'TATTICHE SQUADRA' : 'TEAM TACTICS'}</option>
                   </select>
                 </div>
 
@@ -2416,7 +2452,7 @@ export default function MatchReviewModal({
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#DDF3E9]">
                   {/* Quarter pills */}
                   <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                    <span className="text-[10px] font-bold text-[#022D32]/50 uppercase mr-1">PERIOD:</span>
+                    <span className="text-[10px] font-bold text-[#022D32]/50 uppercase mr-1">{language === 'it' ? 'PERIODO:' : 'PERIOD:'}</span>
                     {['ALL', 'Q1', 'Q2', 'Q3', 'Q4', ...quarters.filter(q => q.quarter.startsWith('OT')).map(q => q.quarter)].map(q => (
                       <button
                         key={q}
@@ -2427,22 +2463,22 @@ export default function MatchReviewModal({
                             : 'bg-white text-[#022D32]/80 hover:bg-[#DDF3E9]/40 border border-[#DDF3E9]'
                         }`}
                       >
-                        {q}
+                        {q === 'ALL' ? (language === 'it' ? 'TUTTI' : 'ALL') : q}
                       </button>
                     ))}
                   </div>
 
                   {/* Category pills */}
                   <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                    <span className="text-[10px] font-bold text-[#022D32]/50 uppercase mr-1">TYPE:</span>
+                    <span className="text-[10px] font-bold text-[#022D32]/50 uppercase mr-1">{language === 'it' ? 'TIPO:' : 'TYPE:'}</span>
                     {[
-                      { key: 'ALL', label: 'ALL' },
-                      { key: 'SHOTS', label: 'SHOTS' },
-                      { key: 'FT', label: 'FT' },
-                      { key: 'REB', label: 'REBOUNDS' },
-                      { key: 'BALL', label: 'CONTROL' },
-                      { key: 'FOUL', label: 'FOULS' },
-                      { key: 'TACTIC', label: 'TACTICAL' }
+                      { key: 'ALL', label: language === 'it' ? 'TUTTE' : 'ALL' },
+                      { key: 'SHOTS', label: language === 'it' ? 'TIRI' : 'SHOTS' },
+                      { key: 'FT', label: language === 'it' ? 'TL' : 'FT' },
+                      { key: 'REB', label: language === 'it' ? 'RIMBALZI' : 'REBOUNDS' },
+                      { key: 'BALL', label: language === 'it' ? 'REGIA/PERSE' : 'CONTROL' },
+                      { key: 'FOUL', label: language === 'it' ? 'FALLI' : 'FOULS' },
+                      { key: 'TACTIC', label: language === 'it' ? 'TATTICHE' : 'TACTICAL' }
                     ].map(c => (
                       <button
                         key={c.key}
@@ -2463,18 +2499,20 @@ export default function MatchReviewModal({
               {/* Event Log Table */}
               <div className="glass-card p-3 border-[#DDF3E9] overflow-x-auto">
                 <div className="text-[10px] text-[#022D32]/50 font-bold mb-2">
-                  SHOWING {filteredEvents.length} OF {totalEvents} MATCH ACTIONS
+                  {language === 'it'
+                    ? `VISUALIZZATE ${filteredEvents.length} SU ${totalEvents} AZIONI DELLA PARTITA`
+                    : `SHOWING ${filteredEvents.length} OF ${totalEvents} MATCH ACTIONS`}
                 </div>
 
                 <table className="w-full text-left text-xs font-semibold">
                   <thead>
                     <tr className="border-b border-[#DDF3E9]/80 text-[#022D32]/70 font-black">
-                      <th className="py-2 px-2">QUARTER</th>
-                      <th className="py-2 px-2">TIME</th>
-                      <th className="py-2 px-2">PLAYER</th>
-                      <th className="py-2 px-2">ACTION</th>
-                      <th className="py-2 px-2">CATEGORY</th>
-                      <th className="py-2 px-2">COURT ZONE</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'QUARTO' : 'QUARTER'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'ORA' : 'TIME'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'GIOCATORE' : 'PLAYER'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'AZIONE' : 'ACTION'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'CATEGORIA' : 'CATEGORY'}</th>
+                      <th className="py-2 px-2">{language === 'it' ? 'ZONA CAMPO' : 'COURT ZONE'}</th>
                     </tr>
                   </thead>
                   <tbody>

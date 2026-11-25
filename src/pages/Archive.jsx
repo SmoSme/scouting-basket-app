@@ -491,7 +491,7 @@ export default function Archive({ showToast, onResumeMatch }) {
                     onClick={() => handleDownloadCSV(m.id, m.name, m.events)}
                     disabled={actionLoading === m.id || actionLoading === m.name}
                     className="flex items-center justify-center gap-1.5 bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
-                    title="Scarica CSV"
+                    title={language === 'it' ? 'Scarica CSV' : 'Download CSV'}
                   >
                     <Download className="w-4 h-4" />
                     CSV

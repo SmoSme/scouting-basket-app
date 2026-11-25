@@ -12,9 +12,10 @@ export default function PlayerProfileModal({
   onClose,
   teamName = 'BBA Basket Baronissi',
   language = 'it',
-  t = {},
+  t: propT = {},
   events = []
 }) {
+  const tObj = typeof propT === 'object' && propT !== null ? propT : {};
   const [selectedZoneKey, setSelectedZoneKey] = useState(null);
 
   if (!player) return null;
@@ -211,10 +212,10 @@ export default function PlayerProfileModal({
             type="button"
             onClick={onClose}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-[#0CA17A] text-slate-700 hover:text-slate-900 font-bold text-xs uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
-            aria-label={t.backToRoster || 'Torna al Roster'}
+            aria-label={tObj.backToRoster || (language === 'it' ? 'Torna al Roster' : 'Back to Roster')}
           >
             <ArrowLeft className="w-4 h-4 text-[#0CA17A]" />
-            <span>{t.backToRoster || (language === 'it' ? 'Torna al Roster' : 'Back to Roster')}</span>
+            <span>{tObj.backToRoster || (language === 'it' ? 'Torna al Roster' : 'Back to Roster')}</span>
           </button>
           <div className="h-5 w-px bg-slate-200 hidden sm:block" />
           <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
@@ -265,19 +266,19 @@ export default function PlayerProfileModal({
                 </h2>
                 {player.captain && (
                   <span className="text-[10px] font-bold uppercase bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded">
-                    CAPITANO
+                    {language === 'it' ? 'CAPITANO' : 'CAPTAIN'}
                   </span>
                 )}
                 {player.fipVerified && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    {t.fipVerifiedPill || 'FIP VERIFIED'}
+                    {tObj.fipVerifiedPill || (language === 'it' ? 'VERIFICATO FIP' : 'FIP VERIFIED')}
                   </span>
                 )}
                 {player.hasSupabaseStats && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
                     <Activity className="w-3.5 h-3.5 text-[#0CA17A]" />
-                    SCOUTING SYNCED
+                    {language === 'it' ? 'SCOUTING SINCRONIZZATO' : 'SCOUTING SYNCED'}
                   </span>
                 )}
               </div>
@@ -290,9 +291,9 @@ export default function PlayerProfileModal({
                 )}
                 <span className="text-slate-800 font-bold">{teamName}</span>
                 <span>•</span>
-                <span className="text-emerald-700 font-semibold tabular-nums">{player.games} GP</span>
+                <span className="text-emerald-700 font-semibold tabular-nums">{player.games} {language === 'it' ? 'PG' : 'GP'}</span>
                 <span>•</span>
-                <span className="text-[#0CA17A] font-semibold tabular-nums">{player.startPercentage || '0%'} START</span>
+                <span className="text-[#0CA17A] font-semibold tabular-nums">{player.startPercentage || '0%'} {language === 'it' ? 'TIT.' : 'START'}</span>
               </p>
             </div>
           </div>
@@ -312,7 +313,7 @@ export default function PlayerProfileModal({
               ))
             ) : (
               <span className="text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                Profilo Bilanciato
+                {language === 'it' ? 'Profilo Bilanciato' : 'Balanced Profile'}
               </span>
             )}
           </div>
@@ -338,7 +339,7 @@ export default function PlayerProfileModal({
             <span>
               {language === 'it' 
                 ? `Le statistiche di playmaking, rimbalzi, palle perse e le percentuali di tiro sono calcolate su ${player.gpSupabase} partite con scouting disponibile su ${player.games} presenze totali${Array.isArray(player.missingScoutingMatchNames) && player.missingScoutingMatchNames.length > 0 ? ` (Manca lo scouting per: ${player.missingScoutingMatchNames.join(', ')})` : ''}.`
-                : `Playmaking, rebounding, turnover, and shooting percentages are calculated on ${player.gpSupabase} matches with scouting available out of ${player.games} total appearances.`}
+                : `Playmaking, rebounding, turnover, and shooting percentages are calculated on ${player.gpSupabase} matches with scouting available out of ${player.games} total appearances${Array.isArray(player.missingScoutingMatchNames) && player.missingScoutingMatchNames.length > 0 ? ` (Missing scouting for: ${player.missingScoutingMatchNames.join(', ')})` : ''}.`}
             </span>
           </div>
         )}
@@ -677,10 +678,10 @@ export default function PlayerProfileModal({
             <div>
               <span className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
                 <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
-                {t.shotDistTitle || (language === 'it' ? 'DISTRIBUZIONE PUNTI / SHOT PROFILE' : 'POINT DISTRIBUTION / SHOT PROFILE')}
+                {tObj.shotDistTitle || (language === 'it' ? 'DISTRIBUZIONE PUNTI / SHOT PROFILE' : 'POINT DISTRIBUTION / SHOT PROFILE')}
               </span>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                {t.shotDistSubtitle || (language === 'it' ? 'Ripartizione percentuale dei punti segnati tra 2PT, 3PT e Tiri Liberi' : 'Percentage breakdown of total points between 2PT, 3PT and Free Throws')}
+                {tObj.shotDistSubtitle || (language === 'it' ? 'Ripartizione percentuale dei punti segnati tra 2PT, 3PT e Tiri Liberi' : 'Percentage breakdown of total points between 2PT, 3PT and Free Throws')}
                 {' • '}
                 <span className="text-[#0CA17A] font-semibold">
                   {language === 'it' ? `Stagione 2026/2027 (${profileGames} PG)` : `Season 2026/2027 (${profileGames} GP)`}
@@ -689,7 +690,7 @@ export default function PlayerProfileModal({
             </div>
             <div className="text-right">
               <span className="text-xs text-slate-600 font-medium tabular-nums block">
-                TOTALE: <strong className="text-slate-900 font-bold text-sm">{totalSeasonCalcPts} PTS</strong> ({ppgDisplay} PPG)
+                {language === 'it' ? 'TOTALE:' : 'TOTAL:'} <strong className="text-slate-900 font-bold text-sm">{totalSeasonCalcPts} PTS</strong> ({ppgDisplay} PPG)
               </span>
             </div>
           </div>
@@ -701,7 +702,7 @@ export default function PlayerProfileModal({
                   <div 
                     style={{ width: `${seasonPct2}%` }}
                     className="h-full bg-sky-500 hover:bg-sky-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-bold tabular-nums text-white px-1 overflow-hidden"
-                    title={`Punti da 2 (2PT): ${seasonPct2.toFixed(1)}% (${seasonPts2} PTS)`}
+                    title={`${language === 'it' ? 'Punti da 2 (2PT)' : '2-Point Field Goals (2PT)'}: ${seasonPct2.toFixed(1)}% (${seasonPts2} PTS)`}
                   >
                     {seasonPct2 >= 10 && `${Math.round(seasonPct2)}%`}
                   </div>
@@ -710,7 +711,7 @@ export default function PlayerProfileModal({
                   <div 
                     style={{ width: `${seasonPct3}%` }}
                     className="h-full bg-[#0CA17A] hover:bg-[#0CA17A]/90 transition-all rounded-lg flex items-center justify-center text-[11px] font-bold tabular-nums text-white px-1 overflow-hidden"
-                    title={`Punti da 3 (3PT): ${seasonPct3.toFixed(1)}% (${seasonPts3} PTS)`}
+                    title={`${language === 'it' ? 'Punti da 3 (3PT)' : '3-Point Field Goals (3PT)'}: ${seasonPct3.toFixed(1)}% (${seasonPts3} PTS)`}
                   >
                     {seasonPct3 >= 10 && `${Math.round(seasonPct3)}%`}
                   </div>
@@ -719,7 +720,7 @@ export default function PlayerProfileModal({
                   <div 
                     style={{ width: `${seasonPctFT}%` }}
                     className="h-full bg-amber-500 hover:bg-amber-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-bold tabular-nums text-white px-1 overflow-hidden"
-                    title={`Tiri Liberi (FT): ${seasonPctFT.toFixed(1)}% (${seasonPtsFT} PTS)`}
+                    title={`${language === 'it' ? 'Tiri Liberi (TL)' : 'Free Throws (FT)'}: ${seasonPctFT.toFixed(1)}% (${seasonPtsFT} PTS)`}
                   >
                     {seasonPctFT >= 10 && `${Math.round(seasonPctFT)}%`}
                   </div>
@@ -733,7 +734,7 @@ export default function PlayerProfileModal({
                     <span className="w-3.5 h-3.5 rounded-full bg-sky-500 flex-none shadow-xs" />
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">
-                        {t.ptsFrom2 || 'Punti da 2 (2PT)'}
+                        {tObj.ptsFrom2 || (language === 'it' ? 'Punti da 2 (2PT)' : '2-Point Scoring (2PT)')}
                       </span>
                       <span className="text-[11px] text-slate-600 tabular-nums font-medium">
                         {seasonPts2} PTS • {twoAvgDisplay} 2PM/G
@@ -750,7 +751,7 @@ export default function PlayerProfileModal({
                     <span className="w-3.5 h-3.5 rounded-full bg-[#0CA17A] flex-none shadow-xs" />
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">
-                        {t.ptsFrom3 || 'Punti da 3 (3PT)'}
+                        {tObj.ptsFrom3 || (language === 'it' ? 'Punti da 3 (3PT)' : '3-Point Scoring (3PT)')}
                       </span>
                       <span className="text-[11px] text-slate-600 tabular-nums font-medium">
                         {seasonPts3} PTS • {threeAvgDisplay} 3PM/G
@@ -767,10 +768,10 @@ export default function PlayerProfileModal({
                     <span className="w-3.5 h-3.5 rounded-full bg-amber-500 flex-none shadow-xs" />
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">
-                        {t.ptsFromFt || 'Tiri Liberi (TL)'}
+                        {tObj.ptsFromFt || (language === 'it' ? 'Tiri Liberi (TL)' : 'Free Throws (FT)')}
                       </span>
                       <span className="text-[11px] text-slate-600 tabular-nums font-medium">
-                        {seasonPtsFT} PTS • {ftAvgDisplay} FTM/G
+                        {seasonPtsFT} PTS • {ftAvgDisplay} {language === 'it' ? 'TLR/G' : 'FTM/G'}
                       </span>
                     </div>
                   </div>
@@ -843,7 +844,13 @@ export default function PlayerProfileModal({
                 {shootZonesList.map((z, idx) => {
                   const hasAtt = z.att > 0;
                   const isSelected = selectedZoneKey === z.key;
-                  const rating = !hasAtt ? 'NO ATTEMPTS' : z.pct >= 50 ? 'HOT' : z.pct >= 33 ? 'SOLID' : 'COLD';
+                  const rating = !hasAtt
+                    ? (language === 'it' ? 'NESSUN TIRO' : 'NO ATTEMPTS')
+                    : z.pct >= 50
+                      ? 'HOT'
+                      : z.pct >= 33
+                        ? (language === 'it' ? 'SOLIDO' : 'SOLID')
+                        : (language === 'it' ? 'FREDDO' : 'COLD');
                   const ratingBadge = !hasAtt
                     ? 'bg-slate-100 text-slate-500 border-slate-200'
                     : z.pct >= 50
@@ -944,20 +951,20 @@ export default function PlayerProfileModal({
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-3 shadow-xs">
               <span className="text-xs font-bold uppercase text-slate-900 tracking-wider flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-[#0CA17A]" />
-                {t.historyTableTitle || (language === 'it' ? 'STORICO FIP / CARRIERA' : 'FIP CAREER HISTORY')}
+                {tObj.historyTableTitle || (language === 'it' ? 'STORICO FIP / CARRIERA' : 'FIP CAREER HISTORY')}
               </span>
               <div className="overflow-x-auto rounded-xl border border-slate-200/80">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-slate-50/90 text-slate-500 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
-                      <th className="p-3">{t.colSeason || 'STAGIONE'}</th>
-                      <th className="p-3">{t.colTeam || 'SQUADRA'}</th>
-                      <th className="p-3 text-center">{t.colGp || 'PG'}</th>
-                      <th className="p-3 text-center">{t.colPpg || 'PTS/G'}</th>
-                      <th className="p-3 text-center">{t.col2pm || '2PM/G'}</th>
-                      <th className="p-3 text-center">{t.col3pm || '3PM/G'}</th>
-                      <th className="p-3 text-center">{t.colFt || 'TL%'}</th>
-                      <th className="p-3 text-center">{t.colFouls || 'FF/G'}</th>
+                      <th className="p-3">{tObj.colSeason || (language === 'it' ? 'STAGIONE' : 'SEASON')}</th>
+                      <th className="p-3">{tObj.colTeam || (language === 'it' ? 'SQUADRA' : 'TEAM')}</th>
+                      <th className="p-3 text-center">{tObj.colGp || (language === 'it' ? 'PG' : 'GP')}</th>
+                      <th className="p-3 text-center">{tObj.colPpg || 'PTS/G'}</th>
+                      <th className="p-3 text-center">{tObj.col2pm || '2PM/G'}</th>
+                      <th className="p-3 text-center">{tObj.col3pm || '3PM/G'}</th>
+                      <th className="p-3 text-center">{tObj.colFt || (language === 'it' ? 'TL%' : 'FT%')}</th>
+                      <th className="p-3 text-center">{tObj.colFouls || (language === 'it' ? 'FF/G' : 'PF/G')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">

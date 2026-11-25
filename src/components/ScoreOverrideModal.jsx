@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Edit3, Check, RotateCcw, X, AlertCircle, Shield } from 'lucide-react';
 import { IS_PUBLIC_MODE } from '../config/appMode';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ScoreOverrideModal({
   isOpen,
@@ -13,6 +14,8 @@ export default function ScoreOverrideModal({
   onSaveOverride,
   onClearOverride
 }) {
+  const { language } = useLanguage();
+  const isIt = language === 'it';
   const [teamInput, setTeamInput] = useState('');
   const [oppInput, setOppInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -44,11 +47,11 @@ export default function ScoreOverrideModal({
     const oNum = oVal === '' ? null : Number(oVal);
 
     if (tNum !== null && (isNaN(tNum) || tNum < 0)) {
-      setErrorMsg('BBA score must be a positive number');
+      setErrorMsg(isIt ? 'Il punteggio BBA deve essere un numero positivo' : 'BBA score must be a positive number');
       return;
     }
     if (oNum !== null && (isNaN(oNum) || oNum < 0)) {
-      setErrorMsg('Opponent score must be a positive number');
+      setErrorMsg(isIt ? 'Il punteggio avversario deve essere un numero positivo' : 'Opponent score must be a positive number');
       return;
     }
 
@@ -74,10 +77,12 @@ export default function ScoreOverrideModal({
             </div>
             <div>
               <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider">
-                OVERRIDE OFFICIAL SCORE
+                {isIt ? 'MODIFICA RISULTATO UFFICIALE' : 'OVERRIDE OFFICIAL SCORE'}
               </h3>
               <p className="text-[11px] text-[#022D32]/70">
-                Sincronizza il tabellone con il referto ufficiale del tavolo
+                {isIt
+                  ? 'Sincronizza il tabellone con il referto ufficiale del tavolo'
+                  : 'Sync the scoreboard with the official table scoresheet'}
               </p>
             </div>
           </div>
@@ -93,13 +98,15 @@ export default function ScoreOverrideModal({
         <div className="bg-[#DDF3E9] p-3.5 rounded-xl border border-[#C6E8DB] text-[11px] text-[#022D32] space-y-1">
           <div className="flex items-center gap-1.5 text-[#022D32] font-black uppercase tracking-wider text-[10px]">
             <Shield className="w-3.5 h-3.5 text-[#0CA17A]" />
-            <span>PLAY-BY-PLAY GROUND TRUTH PRESERVED</span>
+            <span>{isIt ? 'DETTAGLIO PLAY-BY-PLAY PRESERVATO' : 'PLAY-BY-PLAY GROUND TRUTH PRESERVED'}</span>
           </div>
           <p className="text-[#022D32]/80 leading-relaxed">
-            Questo override sincronizza il risultato finale senza modificare o cancellare il dettaglio delle singole azioni registrate.
+            {isIt
+              ? 'Questo override sincronizza il risultato finale senza modificare o cancellare il dettaglio delle singole azioni registrate.'
+              : 'This override syncs the final score without modifying or deleting individual logged play-by-play actions.'}
           </p>
           <div className="pt-1.5 text-[11px] text-[#022D32]/70 flex items-center justify-between border-t border-[#C6E8DB] mt-1.5">
-            <span>Calcolato dal campo:</span>
+            <span>{isIt ? 'Calcolato dal campo:' : 'Computed from events:'}</span>
             <span className="font-mono font-black text-[#022D32]">
               BBA {pbpTeamScore} - {pbpOppScore} OPP
             </span>
@@ -118,7 +125,7 @@ export default function ScoreOverrideModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-wider text-[#022D32] mb-1">
-                BBA SCORE (OURS)
+                {isIt ? 'PUNTEGGIO BBA (NOI)' : 'BBA SCORE (OURS)'}
               </label>
               <input
                 type="number"
@@ -134,7 +141,7 @@ export default function ScoreOverrideModal({
 
             <div>
               <label className="block text-[10px] font-black uppercase tracking-wider text-[#022D32]/70 mb-1">
-                OPPONENT SCORE
+                {isIt ? 'PUNTEGGIO AVVERSARI' : 'OPPONENT SCORE'}
               </label>
               <input
                 type="number"
@@ -156,10 +163,10 @@ export default function ScoreOverrideModal({
                 type="button"
                 onClick={handleClear}
                 className="flex items-center justify-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-2.5 px-3 rounded-xl text-xs transition-all active:scale-95 border border-rose-200 cursor-pointer"
-                title="Rimuovi override e ripristina calcolo play-by-play"
+                title={isIt ? 'Rimuovi override e ripristina calcolo play-by-play' : 'Remove override and restore play-by-play score'}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>RIPRISTINA</span>
+                <span>{isIt ? 'RIPRISTINA' : 'RESTORE'}</span>
               </button>
             )}
 
@@ -168,7 +175,7 @@ export default function ScoreOverrideModal({
               className="flex-1 flex items-center justify-center gap-1.5 bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>SALVA RISULTATO</span>
+              <span>{isIt ? 'SALVA RISULTATO' : 'SAVE SCORE'}</span>
             </button>
           </div>
         </form>

@@ -1409,7 +1409,7 @@ export const DICTIONARY = {
 // =========================================================================
 // RECHARTS CUSTOM TOOLTIPS (BBA MODERN SAAS THEME)
 // =========================================================================
-function CustomTrendTooltip({ active, payload }) {
+function CustomTrendTooltip({ active, payload, lang = 'it' }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const isWin = data.isWin;
@@ -1420,19 +1420,19 @@ function CustomTrendTooltip({ active, payload }) {
           <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full ${
             isWin ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
           }`}>
-            {isWin ? 'V' : 'P'}
+            {isWin ? (lang === 'it' ? 'V' : 'W') : (lang === 'it' ? 'P' : 'L')}
           </span>
         </div>
         <div className="flex justify-between items-center text-[#0CA17A] font-bold">
-          <span>Punti Segnati:</span>
+          <span>{lang === 'it' ? 'Punti Segnati:' : 'Points Scored:'}</span>
           <span className="font-mono font-black text-sm">{data.scored}</span>
         </div>
         <div className="flex justify-between items-center text-rose-600 font-bold">
-          <span>Punti Subiti:</span>
+          <span>{lang === 'it' ? 'Punti Subiti:' : 'Points Conceded:'}</span>
           <span className="font-mono font-black text-sm">{data.conceded}</span>
         </div>
         <div className="flex justify-between items-center text-[#022D32] pt-1.5 border-t border-slate-100 font-bold text-[11px]">
-          <span className="text-slate-500 uppercase tracking-wider">Differenziale:</span>
+          <span className="text-slate-500 uppercase tracking-wider">{lang === 'it' ? 'Differenziale:' : 'Differential:'}</span>
           <span className={`font-mono font-black ${data.diff > 0 ? 'text-[#0CA17A]' : data.diff < 0 ? 'text-rose-600' : 'text-[#022D32]'}`}>
             {data.diff > 0 ? `+${data.diff}` : data.diff}
           </span>
@@ -1443,7 +1443,7 @@ function CustomTrendTooltip({ active, payload }) {
   return null;
 }
 
-function CustomQuarterTooltip({ active, payload }) {
+function CustomQuarterTooltip({ active, payload, lang = 'it' }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const isPos = data.diff > 0;
@@ -1458,11 +1458,11 @@ function CustomQuarterTooltip({ active, payload }) {
           </span>
         </div>
         <div className="flex justify-between items-center text-[#0CA17A] font-semibold">
-          <span>Media Segnati:</span>
+          <span>{lang === 'it' ? 'Media Segnati:' : 'Avg Scored:'}</span>
           <span className="font-mono font-black">{data.scoredAvg}</span>
         </div>
         <div className="flex justify-between items-center text-rose-600 font-semibold">
-          <span>Media Subiti:</span>
+          <span>{lang === 'it' ? 'Media Subiti:' : 'Avg Conceded:'}</span>
           <span className="font-mono font-black">{data.concededAvg}</span>
         </div>
       </div>
@@ -1954,7 +1954,7 @@ export default function LeagueHub({ showToast }) {
     return sorted.map((m, idx) => {
       const scored = m.isHomeGame ? m.homeScore : m.awayScore;
       const conceded = m.isHomeGame ? m.awayScore : m.homeScore;
-      const opp = (m.isHomeGame ? m.awayTeam : m.homeTeam) || 'Avversario';
+      const opp = (m.isHomeGame ? m.awayTeam : m.homeTeam) || (lang === 'it' ? 'Avversario' : 'Opponent');
       const locPrefix = m.isHomeGame ? 'vs' : '@';
       const d = new Date(m.date);
       const dateStr = !isNaN(d) ? `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}` : '';
@@ -2344,14 +2344,14 @@ export default function LeagueHub({ showToast }) {
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-lg sm:text-xl font-extrabold text-[#022D32] truncate">
                       {standings[0]?.stats
-                        ? `${standings[0].stats.wonMatches}W - ${standings[0].stats.lostMatches}L`
-                        : `${standings[0]?.won ?? 0}W - ${standings[0]?.lost ?? 0}L`}
+                        ? `${standings[0].stats.wonMatches}${lang === 'it' ? 'V' : 'W'} - ${standings[0].stats.lostMatches}${lang === 'it' ? 'P' : 'L'}`
+                        : `${standings[0]?.won ?? 0}${lang === 'it' ? 'V' : 'W'} - ${standings[0]?.lost ?? 0}${lang === 'it' ? 'P' : 'L'}`}
                     </span>
                     <span className="font-mono text-base font-extrabold text-[#0CA17A] flex-none">
                       {(() => {
                         const won = standings[0]?.stats?.wonMatches ?? standings[0]?.won ?? 0;
                         const played = standings[0]?.stats?.playedMatches ?? standings[0]?.played ?? 0;
-                        return played > 0 ? `${Math.round((won / played) * 100)}% WIN` : '';
+                        return played > 0 ? `${Math.round((won / played) * 100)}% ${lang === 'it' ? 'VITT.' : 'WIN'}` : '';
                       })()}
                     </span>
                   </div>
@@ -2391,7 +2391,7 @@ export default function LeagueHub({ showToast }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-[#022D32] uppercase tracking-wider flex items-center gap-2">
-                      {t.standingsTitle} ({filteredStandings.length} {t.playersCount})
+                      {t.standingsTitle} ({filteredStandings.length} {lang === 'it' ? 'Squadre' : 'Teams'})
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium">
                       {t.standingsSubtitle}
@@ -2479,18 +2479,21 @@ export default function LeagueHub({ showToast }) {
                             <td className="p-3.5 text-center">
                               <div className="flex items-center justify-center gap-1.5">
                                 {Array.isArray(team.streak) && team.streak.length > 0 ? (
-                                  team.streak.slice(-5).map((res, sIdx) => (
-                                    <span
-                                      key={sIdx}
-                                      className={`w-5 h-5 rounded-full font-mono text-[10px] sm:text-xs font-black flex items-center justify-center ${
-                                        res === 'W'
-                                          ? 'bg-emerald-50 text-emerald-700'
-                                          : 'bg-rose-50 text-rose-700'
-                                      }`}
-                                    >
-                                      {res}
-                                    </span>
-                                  ))
+                                  team.streak.slice(-5).map((res, sIdx) => {
+                                    const isWinRes = res === 'W' || res === 'V';
+                                    return (
+                                      <span
+                                        key={sIdx}
+                                        className={`w-5 h-5 rounded-full font-mono text-[10px] sm:text-xs font-black flex items-center justify-center ${
+                                          isWinRes
+                                            ? 'bg-emerald-50 text-emerald-700'
+                                            : 'bg-rose-50 text-rose-700'
+                                        }`}
+                                      >
+                                        {isWinRes ? (lang === 'it' ? 'V' : 'W') : (lang === 'it' ? 'P' : 'L')}
+                                      </span>
+                                    );
+                                  })
                                 ) : (
                                   <span className="text-[#022D32]/50 font-mono text-sm">-</span>
                                 )}
@@ -2614,7 +2617,7 @@ export default function LeagueHub({ showToast }) {
                             </span>
                           )}
                           <span className="text-xs sm:text-sm bg-slate-100 text-[#022D32] font-black px-3 py-1 rounded-lg">
-                            #{rankNum} IN CLASSIFICA
+                            #{rankNum} {lang === 'it' ? 'IN CLASSIFICA' : 'IN STANDINGS'}
                           </span>
                           <span className="text-xs sm:text-sm bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded-lg">
                             {t.division}
@@ -2649,7 +2652,7 @@ export default function LeagueHub({ showToast }) {
                       <div className="bg-slate-50/70 p-4 sm:p-5 rounded-2xl text-center border border-slate-100 flex flex-col justify-between">
                         <div>
                           <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#022D32] block">
-                            {won}W - {lost}L
+                            {won}{lang === 'it' ? 'V' : 'W'} - {lost}{lang === 'it' ? 'P' : 'L'}
                           </span>
                           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">
                             {t.statRecord}
@@ -2712,7 +2715,7 @@ export default function LeagueHub({ showToast }) {
                             {continuityPct != null ? `${continuityPct}%` : '—'}
                           </span>
                           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mt-1.5">
-                            ROSTER RETENTION
+                            {lang === 'it' ? 'CONTINUITÀ ROSTER' : 'ROSTER RETENTION'}
                           </span>
                         </div>
                       </div>
@@ -2812,7 +2815,7 @@ export default function LeagueHub({ showToast }) {
                                   type="button"
                                   onClick={() => setSelectedPlayer(p)}
                                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F8F9FA] border border-[#DDF3E9] hover:border-[#0CA17A] text-[#022D32] text-xs sm:text-sm font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
-                                  title={`Apri profilo ${p.name}`}
+                                  title={lang === 'it' ? `Apri profilo ${p.name}` : `Open profile ${p.name}`}
                                 >
                                   <span className="text-[#065F46] font-mono font-black text-xs sm:text-sm">#{p.number}</span>
                                   <span className="font-bold text-[#022D32] whitespace-nowrap">{p.name}</span>
@@ -2874,7 +2877,7 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('number')}
                               className={`p-3.5 sm:p-4 w-14 text-center cursor-pointer transition-colors group ${sortConfig.key === 'number' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Numero di maglia"
+                              title={lang === 'it' ? 'Ordina per Numero di maglia' : 'Sort by Jersey Number'}
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <span>{t.colNumber || '#'}</span>
@@ -2887,10 +2890,10 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('name')}
                               className={`p-3.5 sm:p-4 min-w-[240px] text-left cursor-pointer transition-colors group ${sortConfig.key === 'name' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Nome giocatore"
+                              title={lang === 'it' ? 'Ordina per Nome giocatore' : 'Sort by Player Name'}
                             >
                               <div className="flex items-center justify-start gap-1.5">
-                                <span>{t.colNamePos || 'NOME & RUOLO'}</span>
+                                <span>{t.colNamePos || (lang === 'it' ? 'NOME & RUOLO' : 'NAME & ROLE')}</span>
                                 <span className={`inline-flex items-center ${sortConfig.key === 'name' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                   {sortConfig.key === 'name' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </span>
@@ -2900,10 +2903,10 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('games')}
                               className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'games' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Partite Giocate (GP)"
+                              title={lang === 'it' ? 'Ordina per Partite Giocate (PG)' : 'Sort by Games Played (GP)'}
                             >
                               <div className="flex items-center justify-center gap-1.5">
-                                <span>{t.colGp || 'GP'}</span>
+                                <span>{t.colGp || (lang === 'it' ? 'PG' : 'GP')}</span>
                                 <span className={`inline-flex items-center ${sortConfig.key === 'games' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                   {sortConfig.key === 'games' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </span>
@@ -2913,7 +2916,7 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('timePlayedAVG')}
                               className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'timePlayedAVG' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Media Minuti Giocati (MM:SS)"
+                              title={lang === 'it' ? 'Ordina per Media Minuti Giocati (MM:SS)' : 'Sort by Avg Minutes Played (MM:SS)'}
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <span>{t.colMin || 'MIN'}</span>
@@ -2927,7 +2930,7 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('startPercentage')}
                               className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'startPercentage' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Percentuale di Partenza in Quintetto (START %)"
+                              title={lang === 'it' ? 'Ordina per Percentuale di Partenza in Quintetto (START %)' : 'Sort by Starting Lineup Frequency (START %)'}
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <span>{t.colStartPct || 'START %'}</span>
@@ -2940,7 +2943,7 @@ export default function LeagueHub({ showToast }) {
                             <th 
                               onClick={() => handleSort('pointsPerGame')}
                               className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'pointsPerGame' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                              title="Ordina per Punti a Partita (PTS/G)"
+                              title={lang === 'it' ? 'Ordina per Punti a Partita (PTS/G)' : 'Sort by Points Per Game (PTS/G)'}
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <span>{t.colPpg || 'PTS/G'}</span>
@@ -2956,10 +2959,10 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('twoMadeAVG')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'twoMadeAVG' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Volume: 2 Punti Fatti per Partita (2PT F/P)"
+                                  title={lang === 'it' ? 'Volume: 2 Punti Fatti per Partita (2PT F/P)' : 'Volume: 2-Pointers Made Per Game (2PM/G)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
-                                    <span>2PT F/P</span>
+                                    <span>{lang === 'it' ? '2PT F/P' : '2PM/G'}</span>
                                     <span className={`inline-flex items-center ${sortConfig.key === 'twoMadeAVG' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                       {sortConfig.key === 'twoMadeAVG' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
@@ -2970,7 +2973,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('twoPct')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'twoPct' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Efficienza: Percentuale da 2 Punti (2PT %)"
+                                  title={lang === 'it' ? 'Efficienza: Percentuale da 2 Punti (2PT %)' : 'Efficiency: 2-Point Field Goal Percentage (2PT %)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>2PT %</span>
@@ -2984,10 +2987,10 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('threeMadeAVG')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'threeMadeAVG' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Volume: 3 Punti Fatti per Partita (3PT F/P)"
+                                  title={lang === 'it' ? 'Volume: 3 Punti Fatti per Partita (3PT F/P)' : 'Volume: 3-Pointers Made Per Game (3PM/G)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
-                                    <span>3PT F/P</span>
+                                    <span>{lang === 'it' ? '3PT F/P' : '3PM/G'}</span>
                                     <span className={`inline-flex items-center ${sortConfig.key === 'threeMadeAVG' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                       {sortConfig.key === 'threeMadeAVG' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
@@ -2998,7 +3001,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('threePct')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'threePct' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Efficienza: Percentuale da 3 Punti (3PT %)"
+                                  title={lang === 'it' ? 'Efficienza: Percentuale da 3 Punti (3PT %)' : 'Efficiency: 3-Point Field Goal Percentage (3PT %)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>3PT %</span>
@@ -3012,10 +3015,10 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('ftAttAvg')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'ftAttAvg' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Volume: Tiri Liberi Tentati per Partita (TL T/P)"
+                                  title={lang === 'it' ? 'Volume: Tiri Liberi Tentati per Partita (TL T/P)' : 'Volume: Free Throws Made / Attempted Per Game (FT M/A)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
-                                    <span>TL T/P</span>
+                                    <span>{lang === 'it' ? 'TL T/P' : 'FT M/A'}</span>
                                     <span className={`inline-flex items-center ${sortConfig.key === 'ftAttAvg' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                       {sortConfig.key === 'ftAttAvg' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
@@ -3026,10 +3029,10 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('ftPct')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'ftPct' || sortConfig.key === 'freeThrowsPercentage' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Realizzazione: Percentuale Tiri Liberi (TL %)"
+                                  title={lang === 'it' ? 'Realizzazione: Percentuale Tiri Liberi (TL %)' : 'Accuracy: Free Throw Percentage (FT %)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
-                                    <span>TL %</span>
+                                    <span>{lang === 'it' ? 'TL %' : 'FT %'}</span>
                                     <span className={`inline-flex items-center ${sortConfig.key === 'ftPct' || sortConfig.key === 'freeThrowsPercentage' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                       {sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
@@ -3127,7 +3130,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('twoMadePerGame')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'twoMadePerGame' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Ordina per Canestri da 2 Segnati a Partita (2PM/G)"
+                                  title={lang === 'it' ? 'Ordina per Canestri da 2 Segnati a Partita (2PM/G)' : 'Sort by 2-Pointers Made Per Game (2PM/G)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>{t.col2pm || '2PM/G'}</span>
@@ -3140,7 +3143,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('threeMadePerGame')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'threeMadePerGame' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Ordina per Triple Segnate a Partita (3PM/G)"
+                                  title={lang === 'it' ? 'Ordina per Triple Segnate a Partita (3PM/G)' : 'Sort by 3-Pointers Made Per Game (3PM/G)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>{t.col3pm || '3PM/G'}</span>
@@ -3153,7 +3156,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('freeThrowsPercentage')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'freeThrowsPercentage' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Ordina per Percentuale ai Tiri Liberi (FT%)"
+                                  title={lang === 'it' ? 'Ordina per Percentuale ai Tiri Liberi (FT%)' : 'Sort by Free Throw Percentage (FT%)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>{t.colFt || 'FT%'}</span>
@@ -3166,10 +3169,10 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('foulsAVG')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'foulsAVG' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Ordina per Falli Commessi a Partita (FF/P)"
+                                  title={lang === 'it' ? 'Ordina per Falli Commessi a Partita (FF/P)' : 'Sort by Personal Fouls Per Game (PF/G)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
-                                    <span>{t.colFouls || 'FF/P'}</span>
+                                    <span>{t.colFouls || (lang === 'it' ? 'FF/P' : 'PF/G')}</span>
                                     <span className={`inline-flex items-center ${sortConfig.key === 'foulsAVG' ? 'text-[#0CA17A]' : 'opacity-0 group-hover:opacity-40 text-slate-400'}`}>
                                       {sortConfig.key === 'foulsAVG' && sortConfig.direction === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </span>
@@ -3179,7 +3182,7 @@ export default function LeagueHub({ showToast }) {
                                 <th 
                                   onClick={() => handleSort('plusMinus')}
                                   className={`p-3.5 sm:p-4 text-center cursor-pointer transition-colors group ${sortConfig.key === 'plusMinus' ? 'text-[#022D32] font-black bg-slate-100/90' : 'text-slate-500 hover:text-[#0CA17A]'}`}
-                                  title="Ordina per Plus / Minus (+/-)"
+                                  title={lang === 'it' ? 'Ordina per Plus / Minus (+/-)' : 'Sort by Plus / Minus (+/-)'}
                                 >
                                   <div className="flex items-center justify-center gap-1.5">
                                     <span>{t.colPlusMinus || '+/-'}</span>
@@ -3345,7 +3348,7 @@ export default function LeagueHub({ showToast }) {
                                   {isSelectedBBA ? (
                                     <>
                                       {/* 2PT F/P (Volume) */}
-                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg2a ? `${p.fg2m || 0}/${p.fg2a} da 2 totali` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg2a ? `${p.fg2m || 0}/${p.fg2a} ${lang === 'it' ? 'da 2 totali' : 'total 2PT'}` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.twoAttAvg != null && p.twoAttAvg > 0
@@ -3366,7 +3369,7 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* 3PT F/P (Volume) */}
-                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg3a ? `${p.fg3m || 0}/${p.fg3a} da 3 totali` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fg3a ? `${p.fg3m || 0}/${p.fg3a} ${lang === 'it' ? 'da 3 totali' : 'total 3PT'}` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.threeAttAvg != null && p.threeAttAvg > 0
@@ -3387,7 +3390,7 @@ export default function LeagueHub({ showToast }) {
                                       </td>
 
                                       {/* TL T/P (Volume: Made / Attempted) */}
-                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fta ? `${p.ftm || 0}/${p.fta} TL totali (${formatPercentage(p.ftPct)})` : undefined}>
+                                      <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={p.fta ? `${p.ftm || 0}/${p.fta} ${lang === 'it' ? 'TL totali' : 'total FT'} (${formatPercentage(p.ftPct)})` : undefined}>
                                         <div className="flex flex-col items-center">
                                           <span>
                                             {p.ftAttAvg != null && p.ftAttAvg > 0
@@ -3607,7 +3610,7 @@ export default function LeagueHub({ showToast }) {
                             </span>
                             {streak.length > 0 && (
                               <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                                {streakWins}V - {streakLosses}P
+                                {streakWins}{lang === 'it' ? 'V' : 'W'} - {streakLosses}{lang === 'it' ? 'P' : 'L'}
                               </span>
                             )}
                           </div>
@@ -3631,9 +3634,9 @@ export default function LeagueHub({ showToast }) {
                                     className={`w-8 h-8 rounded-xl flex items-center justify-center font-mono font-black text-xs ${
                                       isWin ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                                     }`}
-                                    title={isWin ? 'Vittoria' : 'Sconfitta'}
+                                    title={isWin ? (lang === 'it' ? 'Vittoria' : 'Win') : (lang === 'it' ? 'Sconfitta' : 'Loss')}
                                   >
-                                    {isWin ? 'V' : 'P'}
+                                    {isWin ? (lang === 'it' ? 'V' : 'W') : (lang === 'it' ? 'P' : 'L')}
                                   </span>
                                 );
                               })}
@@ -3783,7 +3786,7 @@ export default function LeagueHub({ showToast }) {
                           <div className="grid grid-cols-3 gap-3 pt-1">
                             <div>
                               <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
-                                {homeStats.wins}W - {homeStats.losses}L
+                                {homeStats.wins}{lang === 'it' ? 'V' : 'W'} - {homeStats.losses}{lang === 'it' ? 'P' : 'L'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
                                 RECORD
@@ -3794,7 +3797,7 @@ export default function LeagueHub({ showToast }) {
                                 {homeStats.games > 0 ? (homeStats.pointsScored / homeStats.games).toFixed(1) : '—'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                SEGNATI/G
+                                {lang === 'it' ? 'SEGNATI/G' : 'SCORED/G'}
                               </span>
                             </div>
                             <div>
@@ -3802,7 +3805,7 @@ export default function LeagueHub({ showToast }) {
                                 {homeStats.games > 0 ? (homeStats.pointsConceded / homeStats.games).toFixed(1) : '—'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                SUBITI/G
+                                {lang === 'it' ? 'SUBITI/G' : 'ALLOWED/G'}
                               </span>
                             </div>
                           </div>
@@ -3818,7 +3821,7 @@ export default function LeagueHub({ showToast }) {
                                   ? 'bg-rose-50 text-rose-700' 
                                   : 'bg-slate-100 text-slate-700'
                             }`}>
-                              {homeDiff > 0 ? `+${homeDiff}` : homeDiff} pts
+                              {homeDiff > 0 ? `+${homeDiff}` : homeDiff} {lang === 'it' ? 'pt' : 'pts'}
                             </span>
                           </div>
                         </div>
@@ -3840,7 +3843,7 @@ export default function LeagueHub({ showToast }) {
                           <div className="grid grid-cols-3 gap-3 pt-1">
                             <div>
                               <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#022D32] block">
-                                {awayStats.wins}W - {awayStats.losses}L
+                                {awayStats.wins}{lang === 'it' ? 'V' : 'W'} - {awayStats.losses}{lang === 'it' ? 'P' : 'L'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
                                 RECORD
@@ -3851,7 +3854,7 @@ export default function LeagueHub({ showToast }) {
                                 {awayStats.games > 0 ? (awayStats.pointsScored / awayStats.games).toFixed(1) : '—'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                SEGNATI/G
+                                {lang === 'it' ? 'SEGNATI/G' : 'SCORED/G'}
                               </span>
                             </div>
                             <div>
@@ -3859,7 +3862,7 @@ export default function LeagueHub({ showToast }) {
                                 {awayStats.games > 0 ? (awayStats.pointsConceded / awayStats.games).toFixed(1) : '—'}
                               </span>
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                SUBITI/G
+                                {lang === 'it' ? 'SUBITI/G' : 'ALLOWED/G'}
                               </span>
                             </div>
                           </div>
@@ -3923,7 +3926,7 @@ export default function LeagueHub({ showToast }) {
                                     {halvesData.h1ScoredAvg}
                                   </span>
                                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                    SEGNATI / 1°T
+                                    {lang === 'it' ? 'SEGNATI / 1°T' : 'SCORED / 1H'}
                                   </span>
                                 </div>
                                 <div>
@@ -3931,7 +3934,7 @@ export default function LeagueHub({ showToast }) {
                                     {halvesData.h1ConcededAvg}
                                   </span>
                                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                    SUBITI / 1°T
+                                    {lang === 'it' ? 'SUBITI / 1°T' : 'ALLOWED / 1H'}
                                   </span>
                                 </div>
                               </div>
@@ -3963,7 +3966,7 @@ export default function LeagueHub({ showToast }) {
                                     {halvesData.h2ScoredAvg}
                                   </span>
                                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                    SEGNATI / 2°T
+                                    {lang === 'it' ? 'SEGNATI / 2°T' : 'SCORED / 2H'}
                                   </span>
                                 </div>
                                 <div>
@@ -3971,7 +3974,7 @@ export default function LeagueHub({ showToast }) {
                                     {halvesData.h2ConcededAvg}
                                   </span>
                                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mt-1">
-                                    SUBITI / 2°T
+                                    {lang === 'it' ? 'SUBITI / 2°T' : 'ALLOWED / 2H'}
                                   </span>
                                 </div>
                               </div>
@@ -4064,7 +4067,7 @@ export default function LeagueHub({ showToast }) {
                                     tick={{ fill: '#64748B', fontSize: 11, fontWeight: '600' }} 
                                     stroke="#CBD5E1" 
                                   />
-                                  <Tooltip content={<CustomTrendTooltip />} />
+                                  <Tooltip content={<CustomTrendTooltip lang={lang} />} />
                                   <Legend 
                                     iconType="circle" 
                                     wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: 'bold', color: '#022D32' }} 
@@ -4125,7 +4128,7 @@ export default function LeagueHub({ showToast }) {
                                       stroke="#CBD5E1" 
                                     />
                                     <ReferenceLine y={0} stroke="#94A3B8" strokeWidth={1} strokeDasharray="2 2" />
-                                    <Tooltip content={<CustomQuarterTooltip />} />
+                                    <Tooltip content={<CustomQuarterTooltip lang={lang} />} />
                                     <Bar dataKey="diff" radius={[6, 6, 0, 0]}>
                                       {quarterChartData.map((entry, index) => (
                                         <Cell 
@@ -4182,7 +4185,7 @@ export default function LeagueHub({ showToast }) {
                           </p>
                         </div>
                         <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                          {matchLog.length} {matchLog.length === 1 ? 'GARA' : 'GARE'}
+                          {matchLog.length} {matchLog.length === 1 ? (lang === 'it' ? 'GARA' : 'GAME') : (lang === 'it' ? 'GARE' : 'GAMES')}
                         </span>
                       </div>
 
@@ -4206,7 +4209,7 @@ export default function LeagueHub({ showToast }) {
                                       ? 'bg-emerald-50 text-emerald-700' 
                                       : 'bg-rose-50 text-rose-700'
                                   }`}>
-                                    {isWin ? 'V' : 'P'}
+                                    {isWin ? (lang === 'it' ? 'V' : 'W') : (lang === 'it' ? 'P' : 'L')}
                                   </span>
 
                                   <div>
@@ -4359,9 +4362,9 @@ export default function LeagueHub({ showToast }) {
                         )}
                         <span className="text-[#022D32] font-black">{currentTeamStanding?.name || selectedTeamFid}</span>
                         <span>•</span>
-                        <span className="text-emerald-700 font-mono font-bold">{selectedPlayer.games} GP</span>
+                        <span className="text-emerald-700 font-mono font-bold">{selectedPlayer.games} {lang === 'it' ? 'PG' : 'GP'}</span>
                         <span>•</span>
-                        <span className="text-[#0CA17A] font-mono font-bold">{selectedPlayer.startPercentage || '0%'} START</span>
+                        <span className="text-[#0CA17A] font-mono font-bold">{selectedPlayer.startPercentage || '0%'} {lang === 'it' ? 'TIT.' : 'START'}</span>
                       </p>
                     </div>
                   </div>
@@ -4381,7 +4384,7 @@ export default function LeagueHub({ showToast }) {
                       ))
                     ) : (
                       <span className="text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                        Profilo Bilanciato
+                        {lang === 'it' ? 'Profilo Bilanciato' : 'Balanced Profile'}
                       </span>
                     )}
                   </div>
@@ -4504,7 +4507,7 @@ export default function LeagueHub({ showToast }) {
                     </div>
                     <div className="text-right">
                       <span className="text-xs text-[#022D32]/70 font-mono font-bold block">
-                        TOTALE: <strong className="text-[#022D32] font-black text-sm">{profileMetrics.totalPts} PTS</strong> ({profileMetrics.ptsPerGame.toFixed(1)} PPG)
+                        {lang === 'it' ? 'TOTALE:' : 'TOTAL:'} <strong className="text-[#022D32] font-black text-sm">{profileMetrics.totalPts} PTS</strong> ({profileMetrics.ptsPerGame.toFixed(1)} PPG)
                       </span>
                     </div>
                   </div>
@@ -4517,7 +4520,7 @@ export default function LeagueHub({ showToast }) {
                           <div 
                             style={{ width: `${profileMetrics.pct2}%` }}
                             className="h-full bg-sky-500 hover:bg-sky-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                            title={`Punti da 2 (2PT): ${profileMetrics.pct2.toFixed(1)}% (${profileMetrics.twoMade * 2} PTS)`}
+                            title={`${lang === 'it' ? 'Punti da 2 (2PT)' : '2-Point Field Goals (2PT)'}: ${profileMetrics.pct2.toFixed(1)}% (${profileMetrics.twoMade * 2} PTS)`}
                           >
                             {profileMetrics.pct2 >= 10 && `${Math.round(profileMetrics.pct2)}%`}
                           </div>
@@ -4526,7 +4529,7 @@ export default function LeagueHub({ showToast }) {
                           <div 
                             style={{ width: `${profileMetrics.pct3}%` }}
                             className="h-full bg-[#0CA17A] hover:bg-[#0CA17A]/90 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                            title={`Punti da 3 (3PT): ${profileMetrics.pct3.toFixed(1)}% (${profileMetrics.threeMade * 3} PTS)`}
+                            title={`${lang === 'it' ? 'Punti da 3 (3PT)' : '3-Point Field Goals (3PT)'}: ${profileMetrics.pct3.toFixed(1)}% (${profileMetrics.threeMade * 3} PTS)`}
                           >
                             {profileMetrics.pct3 >= 10 && `${Math.round(profileMetrics.pct3)}%`}
                           </div>
@@ -4535,7 +4538,7 @@ export default function LeagueHub({ showToast }) {
                           <div 
                             style={{ width: `${profileMetrics.pctFT}%` }}
                             className="h-full bg-amber-500 hover:bg-amber-400 transition-all rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white px-1 overflow-hidden"
-                            title={`Tiri Liberi (FT): ${profileMetrics.pctFT.toFixed(1)}% (${profileMetrics.ftMade} PTS)`}
+                            title={`${lang === 'it' ? 'Tiri Liberi (TL)' : 'Free Throws (FT)'}: ${profileMetrics.pctFT.toFixed(1)}% (${profileMetrics.ftMade} PTS)`}
                           >
                             {profileMetrics.pctFT >= 10 && `${Math.round(profileMetrics.pctFT)}%`}
                           </div>
@@ -4620,7 +4623,7 @@ export default function LeagueHub({ showToast }) {
                         <span>{t.legendBtn || 'Legenda Tag'}</span>
                       </button>
                       <span className="text-[11px] font-bold text-[#022D32]/70">
-                        • {profileTags.length} {profileTags.length === 1 ? 'Tag Attivo' : 'Tag Attivi'}
+                        • {profileTags.length} {profileTags.length === 1 ? (lang === 'it' ? 'Tag Attivo' : 'Active Tag') : (lang === 'it' ? 'Tag Attivi' : 'Active Tags')}
                       </span>
                     </div>
                   </div>
@@ -4655,8 +4658,10 @@ export default function LeagueHub({ showToast }) {
                     <div className="bg-[#F8F9FA] p-4 rounded-xl border border-slate-100 text-xs text-[#022D32]/70 flex items-center gap-3">
                       <Scale className="w-5 h-5 flex-none text-slate-400" />
                       <div>
-                        <strong className="block text-[#022D32] font-bold mb-0.5">Profilo Bilanciato / Nessun Alert Estremo</strong>
-                        <span>{t.noActiveTags || 'Nessun tag tattico specifico attivato per i criteri di volume e precisione.'}</span>
+                        <strong className="block text-[#022D32] font-bold mb-0.5">
+                          {lang === 'it' ? 'Profilo Bilanciato / Nessun Alert Estremo' : 'Balanced Profile / No Extreme Alerts'}
+                        </strong>
+                        <span>{t.noActiveTags || (lang === 'it' ? 'Nessun tag tattico specifico attivato per i criteri di volume e precisione.' : 'No specific tactical tags triggered by volume and accuracy thresholds.')}</span>
                       </div>
                     </div>
                   )}
@@ -4682,7 +4687,7 @@ export default function LeagueHub({ showToast }) {
                     <div className="bg-[#F8F9FA] p-3.5 rounded-xl border border-[#DDF3E9] shadow-xs">
                       <span className="text-[10px] text-[#022D32]/60 font-bold block uppercase">{t.modalFt}</span>
                       <span className="font-mono text-xl font-black text-[#022D32] my-1 block">{selectedPlayer.ftPct}%</span>
-                      <span className="text-[11px] text-[#022D32]/70 block font-mono">Tiri Liberi</span>
+                      <span className="text-[11px] text-[#022D32]/70 block font-mono">{lang === 'it' ? 'Tiri Liberi' : 'Free Throws'}</span>
                     </div>
                   </div>
                 </div>
@@ -5437,7 +5442,7 @@ export default function LeagueHub({ showToast }) {
                 onClick={() => setShowLegendModal(false)}
                 className="px-4 py-2 rounded-xl bg-[#022D32] hover:bg-[#022D32]/90 text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
               >
-                Chiudi Legenda
+                {lang === 'it' ? 'Chiudi Legenda' : 'Close Legend'}
               </button>
             </div>
           </div>
@@ -5457,10 +5462,10 @@ export default function LeagueHub({ showToast }) {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-[#022D32] uppercase tracking-wider">
-                    IMPORT LEAGUE JSON
+                    {lang === 'it' ? 'IMPORTA JSON CAMPIONATO' : 'IMPORT LEAGUE JSON'}
                   </h3>
                   <p className="text-[11px] text-[#022D32]/70">
-                    Paste raw standings or roster JSON to update the Hub
+                    {lang === 'it' ? 'Incolla il JSON di classifica o roster per aggiornare l’Hub' : 'Paste raw standings or roster JSON to update the Hub'}
                   </p>
                 </div>
               </div>
@@ -5487,7 +5492,7 @@ export default function LeagueHub({ showToast }) {
                 onClick={handleResetToDefault}
                 className="text-xs font-bold text-[#0CA17A] hover:underline"
               >
-                Reset to Default Sample League
+                {lang === 'it' ? 'Ripristina Dati Predefiniti' : 'Reset to Default Sample League'}
               </button>
               <div className="flex gap-2">
                 <button
@@ -5495,7 +5500,7 @@ export default function LeagueHub({ showToast }) {
                   onClick={() => setShowImporter(false)}
                   className="bg-[#F8F9FA] hover:bg-[#DDF3E9] text-[#022D32] font-bold px-3 py-1.5 rounded-lg text-xs transition-colors"
                 >
-                  Cancel
+                  {lang === 'it' ? 'Annulla' : 'Cancel'}
                 </button>
                 <button
                   type="button"
@@ -5505,21 +5510,21 @@ export default function LeagueHub({ showToast }) {
                       if (Array.isArray(parsed)) {
                         setStandings(parsed);
                         localStorage.setItem('bba_fip_standings', JSON.stringify(parsed));
-                        setStatusMsg(`Imported ${parsed.length} teams into standings`);
+                        setStatusMsg(lang === 'it' ? `Importate ${parsed.length} squadre in classifica` : `Imported ${parsed.length} teams into standings`);
                         setShowImporter(false);
                       } else if (typeof parsed === 'object') {
                         setRosters(parsed);
                         localStorage.setItem('bba_fip_rosters', JSON.stringify(parsed));
-                        setStatusMsg(`Imported rosters for ${Object.keys(parsed).length} teams`);
+                        setStatusMsg(lang === 'it' ? `Importati roster per ${Object.keys(parsed).length} squadre` : `Imported rosters for ${Object.keys(parsed).length} teams`);
                         setShowImporter(false);
                       }
                     } catch (err) {
-                      setStatusMsg(`JSON Error: ${err.message}`);
+                      setStatusMsg(lang === 'it' ? `Errore JSON: ${err.message}` : `JSON Error: ${err.message}`);
                     }
                   }}
                   className="bg-[#0CA17A] hover:bg-[#0CA17A]/90 text-white font-black px-4 py-1.5 rounded-lg text-xs transition-all shadow-xs active:scale-95"
                 >
-                  LOAD
+                  {lang === 'it' ? 'CARICA' : 'LOAD'}
                 </button>
               </div>
             </div>

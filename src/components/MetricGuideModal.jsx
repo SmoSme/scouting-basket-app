@@ -262,6 +262,154 @@ export const METRIC_GUIDES = {
   }
 };
 
+export const METRIC_GUIDES_IT = {
+  pillars: {
+    shortLabel: '4 Pilastri',
+    title: 'Controllo Partita & Pilastri di Efficienza',
+    formula: '1. Tiro (eFG%) + 2. Profilo Tiri + 3. Rimbalzi & Extra Possessi + 4. Circolazione & Cura Palla',
+    description: 'I 4 pilastri pratici del controllo partita pensati per il basket senior regionale: 1) Efficienza al tiro (eFG% e split 2P/3P), 2) Equilibrio del profilo tiri (attacchi al ferro vs perimetro e conversione ai liberi), 3) Rimbalzi ed extra possessi (offensivi e difensivi), 4) Circolazione e sicurezza della palla (assist, palle perse e % canestri assistiti). Controllare 3 o più pilastri porta con costanza alla vittoria.',
+    benchmarks: [
+      { level: 'Pilastro 1: eFG% Tiro', range: '> 48% (Target > 52%)', desc: 'Qualità dei tiri e conversione perimetrale' },
+      { level: 'Pilastro 2: Area & Liberi', range: '> 35% Area / > 65% TL', desc: 'Pressione al ferro e falli subiti' },
+      { level: 'Pilastro 3: Rimbalzi', range: '≥ 10 RO o ≥ 28% Quota RO', desc: 'Seconde opportunità offensive' },
+      { level: 'Pilastro 4: Cura Palla', range: 'AST/TOV ≥ 1.3 / > 55% Assistiti', desc: 'Fluidità di gioco e protezione del possesso' }
+    ],
+    warning: 'Calcolato direttamente dai tiri dal campo registrati, coordinate sul parquet, tiri liberi, rimbalzi, assist, perse e recuperi.'
+  },
+  fg: {
+    shortLabel: 'FG%',
+    title: 'FG% — Tiri dal Campo & Conversione',
+    formula: '((2PM + 3PM) / (2PA + 3PA)) × 100',
+    description: 'Precisione grezza di squadra dal campo che combina tentativi interni (2 punti) e perimetrali (3 punti). Il dettaglio mostra entrambe le percentuali per isolare le conclusioni al ferro dal tiro da fuori.',
+    benchmarks: [
+      { level: 'Alta Conversione', range: '> 50.0%', desc: 'Esecuzione efficace sia in area che sul perimetro' },
+      { level: 'Media Competitiva', range: '42.0% – 49.9%', desc: 'Standard regionale solido in gare contese' },
+      { level: 'In Difficoltà', range: '< 42.0%', desc: 'Tiri forzati, problemi di spaziature o difficoltà al ferro' }
+    ],
+    warning: 'Calcolato direttamente da tutti i tiri da 2 e da 3 punti realizzati e tentati.'
+  },
+  efg: {
+    shortLabel: 'eFG%',
+    title: 'eFG% — Percentuale Effettiva dal Campo (Pilastro 1)',
+    formula: '((FGM + 0.5 × 3PM) / FGA) × 100',
+    description: 'Percentuale dal campo pesata per il maggior valore del tiro da 3 punti (ogni tripla vale 1.5 tiri da 2). Misura la reale efficienza realizzativa per tiro tentato.',
+    benchmarks: [
+      { level: 'Élite Regionale', range: '> 52%', desc: 'Alta qualità di tiro e ritmo perimetrale' },
+      { level: 'Solida / Media', range: '47% – 51%', desc: 'Efficienza competitiva per la categoria' },
+      { level: 'Bassa / Inefficiente', range: '< 46%', desc: 'Conversione perimetrale bassa o tiri contestati' }
+    ],
+    warning: 'Calcolata direttamente da canestri realizzati (2P/3P) e tentati pesando le triple 1.5x.'
+  },
+  shotProfile: {
+    shortLabel: 'Profilo Tiri',
+    title: 'Equilibrio Area vs Perimetro (Pilastro 2: Tiri & Liberi)',
+    formula: '% Tiri Area vs % Media Distanza vs % 3PT + TL (FTM/FTA, FT%)',
+    description: 'Distribuzione dei tiri tra attacchi al ferro (Area), tiri dalla media e triple perimetrali, insieme alla conversione ai tiri liberi. Indica se la squadra attacca il canestro o si accontenta di tiri dalla media.',
+    benchmarks: [
+      { level: 'Alta Pressione al Ferro', range: '> 40% Area / < 20% Media / > 70% TL', desc: 'Penetrazioni aggressive, falli subiti e precisione dalla lunetta' },
+      { level: 'Distribuzione Equilibrata', range: '30%–39% Area / 20%–28% Media / 60%–70% TL', desc: 'Buon equilibrio tra ferro, pull-up e spaziature da 3' },
+      { level: 'Troppa Media Distanza', range: '> 30% Media / < 30% Area / < 60% TL', desc: 'Troppe conclusioni contestate da 2 punti con pochi liberi' }
+    ],
+    warning: 'Calcolato direttamente dalle coordinate nelle 9 zone di tiro e dai tiri liberi registrati.'
+  },
+  oreb: {
+    shortLabel: 'Rimbalzi',
+    title: 'Rimbalzi & Extra Possessi (Pilastro 3)',
+    formula: 'Rimbalzi Offensivi vs Difensivi & Quota RO ((OREB / Tot REB) × 100)',
+    description: 'Misura il dominio sotto i tabelloni e la creazione di extra possessi. I rimbalzi offensivi generano secondi tiri, quelli difensivi chiudono la difesa e lanciano la transizione.',
+    benchmarks: [
+      { level: 'Dominio a Rimbalzo', range: '≥ 10 RO o Quota RO ≥ 28%', desc: 'Controllo del tabellone offensivo con 10+ extra possessi' },
+      { level: 'Presenza Solida', range: '7 – 9 RO (22% – 27%)', desc: 'Buona presenza a rimbalzo ed equilibrio in transizione difensiva' },
+      { level: 'Passività a Rimbalzo', range: '< 7 RO (< 22%)', desc: 'Un tiro per possesso; poche seconde opportunità' }
+    ],
+    warning: 'Calcolato direttamente dai rimbalzi offensivi e difensivi registrati.'
+  },
+  ballControl: {
+    shortLabel: 'Cura Palla',
+    title: 'Circolazione & Sicurezza Palla (Pilastro 4)',
+    formula: 'Assist (AST) vs Palle Perse (TOV), Rapporto AST/TOV, % Assistiti',
+    description: 'Valutazione diretta della fluidità di squadra e della protezione del possesso. Premia i canestri assistiti e il rapporto AST/TOV >= 1.3 contenendo le palle perse gratuite.',
+    benchmarks: [
+      { level: 'Ottimo Flusso', range: 'AST/TOV ≥ 1.3 / > 60% Assistiti', desc: 'Passaggi puliti, altruismo ed eccellente gestione palla' },
+      { level: 'Equilibrato', range: 'AST/TOV 0.9–1.29 / 45%–59% Assistiti', desc: 'Regia competitiva standard e controllo errori' },
+      { level: 'Troppe Perse', range: 'AST/TOV < 0.9', desc: 'Attacco statico o palle perse evitabili in transizione' }
+    ],
+    warning: 'Calcolato direttamente da assist, palle perse e canestri dal campo registrati.'
+  },
+  pir: {
+    shortLabel: 'PIR',
+    title: 'Valutazione FIBA PIR (Performance Index Rating)',
+    formula: '(PTS + REB + AST + STL + BLK + FD) - (FG_Miss + FT_Miss + TOV + PF + BLKA)',
+    description: 'Indice ufficiale FIBA/EuroLeague: assegna +1 per ogni contributo positivo e -1 per ogni errore (tiri sbagliati, perse, falli fatti, stoppate subite).',
+    benchmarks: [
+      { level: 'Dominio di Squadra', range: '> 90 PIR', desc: 'Esecuzione pulita con pochissimi errori nel roster' },
+      { level: 'Solida / Competitiva', range: '65 – 89 PIR', desc: 'Buona produzione complessiva nelle categorie principali' },
+      { level: 'Sotto Media', range: '< 60 PIR', desc: 'Troppi errori al tiro, falli o palle perse' }
+    ],
+    warning: 'Valutazione FIBA calcolata su punti, rimbalzi, assist, recuperi, stoppate, falli fatti/subiti e perse.'
+  },
+  gamescore: {
+    shortLabel: 'GameScore',
+    title: 'GameScore (GS)',
+    formula: 'PTS + 0.4×FGM - 0.7×FGA - 0.4×(FTA-FTM) + 0.7×OREB + 0.3×DREB + STL + 0.7×AST + 0.7×BLK - 0.4×PF - TOV',
+    description: 'Indice sintetico di produttività individuale in una singola partita, pesato statisticamente per riflettere il reale impatto sul punteggio finale.',
+    benchmarks: [
+      { level: 'Prestazione MVP', range: '> 18', desc: 'Impatto dominante su entrambe le metà campo' },
+      { level: 'Ottima Partita', range: '12 – 17', desc: 'Contributo individuale decisivo ad alta efficienza' },
+      { level: 'Opaca / Inefficiente', range: '< 8', desc: 'Impatto limitato o basse percentuali al tiro' }
+    ],
+    warning: 'Indice completo di produttività individuale basato su tutte le voci statistiche registrate.'
+  },
+  pps: {
+    shortLabel: 'PPS',
+    title: 'PPS — Punti Per Tiro (Valore Atteso per Zona)',
+    formula: '(FGM × Valore 2 o 3) / FGA',
+    description: 'Punti medi prodotti per ogni tiro tentato da una specifica zona del parquet. Isola le zone ad alto valore (area, angoli) da quelle a bassa efficienza.',
+    benchmarks: [
+      { level: 'Alto Valore (HOT)', range: '≥ 1.15 PPS', desc: 'Zona ad alta efficienza: area pitturata o triple aperte' },
+      { level: 'Nella Media', range: '0.95 – 1.14 PPS', desc: 'Efficienza standard di campionato' },
+      { level: 'Basso Valore (COLD)', range: '< 0.85 PPS', desc: 'Zona a bassa resa (es. tiri contestati dalla media)' }
+    ],
+    warning: 'Calcolato direttamente dai canestri realizzati ed errori nelle 9 zone del campo.'
+  },
+  drb: {
+    shortLabel: 'DRB%',
+    title: 'DRB% — Percentuale Rimbalzi Difensivi',
+    formula: '(Rimbalzi Difensivi BBA / (DRB BBA + OREB Avversari)) × 100',
+    description: 'Misura definitiva della tenuta a rimbalzo difensivo: indica la quota di rimbalzi difensivi disponibili catturati evitando seconde opportunità agli avversari.',
+    benchmarks: [
+      { level: 'Tabellone Blindato', range: '> 72.0%', desc: 'Controllo difensivo totale; pochissimi extra possessi concessi' },
+      { level: 'Solida / Media', range: '65.0% – 72.0%', desc: 'Tenuta competitiva a rimbalzo' },
+      { level: 'Vulnerabile', range: '< 65.0%', desc: 'Troppi rimbalzi offensivi concessi agli avversari' }
+    ],
+    warning: 'Calcolato direttamente dai rimbalzi difensivi BBA e offensivi avversari registrati.'
+  },
+  oppEfg: {
+    shortLabel: 'Opp eFG%',
+    title: 'eFG% Avversari — Qualità di Tiro Concessa',
+    formula: '((Opp 2PM + Opp 3PM + 0.5 × Opp 3PM) / Opp FGA) × 100',
+    description: 'Percentuale effettiva concessa alla squadra avversaria, pesando le triple avversarie 1.5x. Misura l’efficacia della contestazione difensiva.',
+    benchmarks: [
+      { level: 'Difesa Ermetica', range: '< 46.0%', desc: 'Tiri ben contestati sia al ferro che sul perimetro' },
+      { level: 'Tenuta Media', range: '46.0% – 52.0%', desc: 'Contestazione difensiva nella media' },
+      { level: 'Difesa Permissiva', range: '> 52.0%', desc: 'Troppi appoggi facili o triple in ritmo concesse' }
+    ],
+    warning: 'Calcolato direttamente dai tiri da 2 e da 3 punti degli avversari.'
+  },
+  transitionPpp: {
+    shortLabel: 'PPP Transizione',
+    title: 'PPP Transizione — Punti Per Possesso in Contropiede',
+    formula: 'Punti Transizione / (FGA Transizione + TOV Transizione + 0.44 × FTA Transizione)',
+    description: 'Produttività realizzativa per possesso in contropiede/transizione. Confrontata con la metà campo schierata rivela quanto rende alzare il ritmo.',
+    benchmarks: [
+      { level: 'Contropiede Letale', range: '≥ 1.15 PPP', desc: 'Ottima lettura in campo aperto e vantaggi convertiti' },
+      { level: 'Ritmo Solido', range: '0.95 – 1.14 PPP', desc: 'Buone decisioni e attacchi al ferro in transizione' },
+      { level: 'Bassa Resa / Perse', range: '< 0.95 PPP', desc: 'Palle perse o tiri affrettati in contropiede' }
+    ],
+    warning: 'Derivato direttamente dalle azioni contrassegnate con il toggle TRANSITION in scouting.'
+  }
+};
+
 export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSelectMetric }) {
   const { t, language } = useLanguage();
   const [currentKey, setCurrentKey] = useState(activeKey || 'pillars');
@@ -272,7 +420,18 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
     }
   }, [activeKey]);
 
-  const guide = METRIC_GUIDES[currentKey] || METRIC_GUIDES.pillars;
+  const baseGuide = METRIC_GUIDES[currentKey] || METRIC_GUIDES.pillars;
+  const itGuide = language === 'it' ? METRIC_GUIDES_IT[baseGuide.key] : null;
+  const guide = itGuide
+    ? {
+        ...baseGuide,
+        ...itGuide,
+        benchmarks: baseGuide.benchmarks.map((b, idx) => ({
+          ...b,
+          ...(itGuide.benchmarks?.[idx] || {})
+        }))
+      }
+    : baseGuide;
 
   const handleSelect = (k) => {
     setCurrentKey(k);
@@ -323,7 +482,7 @@ export default function MetricGuideModal({ activeKey = 'pillars', onClose, onSel
                     : 'bg-white text-[#022D32]/70 border-[#DDF3E9] hover:text-[#022D32] hover:bg-[#DDF3E9]/40'
                 }`}
               >
-                <span>{m.shortLabel || m.key.toUpperCase()}</span>
+                <span>{(language === 'it' ? METRIC_GUIDES_IT[m.key]?.shortLabel : null) || m.shortLabel || m.key.toUpperCase()}</span>
               </button>
             );
           })}

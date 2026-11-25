@@ -154,7 +154,7 @@ export default function Navbar({
             <button
               onClick={onManualSync}
               className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-1 rounded-lg hover:bg-amber-300 transition-colors flex items-center gap-1.5 shadow-sm"
-              title="Sync offline queue"
+              title={language === 'it' ? 'Sincronizza coda offline' : 'Sync offline queue'}
             >
               <Upload className="w-3 h-3 flex-none" />
               <span>{offlineQueueCount} SYNC</span>
@@ -167,7 +167,7 @@ export default function Navbar({
               <button
                 onClick={onEditGameSession}
                 className="flex items-center gap-1.5 bg-[#011C20] border border-[#0CA17A]/40 hover:border-[#0CA17A] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                title="Edit Game Session Name"
+                title={language === 'it' ? 'Modifica Nome Sessione Partita' : 'Edit Game Session Name'}
               >
                 <span className="text-[10px] text-[#A7F3D0] uppercase font-black hidden sm:inline">{t('match')}</span>
                 <span className="truncate max-w-[80px] sm:max-w-[120px] text-white font-medium">{gameSession}</span>
@@ -190,7 +190,7 @@ export default function Navbar({
             <button
               onClick={onToggleRosterModal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-lg bg-[#011C20] text-emerald-100 hover:text-white hover:bg-white/10 transition-colors border border-[#0CA17A]/40"
-              title="Manage Match Roster"
+              title={language === 'it' ? 'Gestisci Roster Partita' : 'Manage Match Roster'}
             >
               <Settings className="w-3.5 h-3.5 text-[#0CA17A] flex-none" />
               <span className="hidden sm:inline">{t('roster')}</span>

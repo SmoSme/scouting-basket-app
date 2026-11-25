@@ -368,7 +368,7 @@ export default function SeasonTrends({ showToast }) {
     return list.map((m, idx) => {
       const scored = Number(m.pts) || 0;
       const conceded = Number(m.oppPts) || 0;
-      const opp = m.opponent || 'Avversario';
+      const opp = m.opponent || (language === 'it' ? 'Avversario' : 'Opponent');
       const locPrefix = (m.isHomeGame ?? (m.location === 'Casa')) ? 'vs' : '@';
       const d = new Date(m.matchDate || m.createdAt);
       const dateStr = !isNaN(d) ? `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}` : '';
@@ -402,13 +402,13 @@ export default function SeasonTrends({ showToast }) {
     return missingScoutMatches
       .filter(Boolean)
       .map(m => {
-        const opp = m?.opponent ? `${m.isHomeGame ? 'vs' : '@'} ${m.opponent}` : (m?.name || 'Partita');
+        const opp = m?.opponent ? `${m.isHomeGame ? 'vs' : '@'} ${m.opponent}` : (m?.name || (language === 'it' ? 'Partita' : 'Match'));
         const d = m?.date && m.date !== 'n.a.' ? ` (${m.date})` : '';
         return `${opp}${d}`;
       })
       .filter(Boolean)
       .join(', ');
-  }, [missingScoutMatches]);
+  }, [missingScoutMatches, language]);
 
   // Supercharged BBA Roster List (FIP Volume + Supabase Efficiency & Playmaking, dynamically filtered)
   const bbaRosterList = useMemo(() => {
@@ -559,7 +559,7 @@ export default function SeasonTrends({ showToast }) {
           </span>
         </div>
         <div className="text-[11px] text-slate-500 flex items-center justify-between">
-          <span>Data:</span>
+          <span>{language === 'it' ? 'Data:' : 'Date:'}</span>
           <span className="font-semibold text-slate-700">{dataPoint.date}</span>
         </div>
         <div className="space-y-1 pt-1">
@@ -592,7 +592,7 @@ export default function SeasonTrends({ showToast }) {
           <span className={`text-[10px] tabular-nums font-bold px-2 py-0.5 rounded-full ${
             isWin ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-rose-50 text-rose-700 border border-rose-300'
           }`}>
-            {isWin ? 'V' : 'P'}
+            {isWin ? (language === 'it' ? 'V' : 'W') : (language === 'it' ? 'S' : 'L')}
           </span>
         </div>
         <div className="flex justify-between items-center text-[#0CA17A] font-semibold">
@@ -779,13 +779,13 @@ export default function SeasonTrends({ showToast }) {
                         ? 'bg-amber-500/30 text-amber-300 border-amber-400'
                         : 'bg-rose-500/30 text-rose-300 border-rose-400'
                   }`}>
-                    {record.winRate}% WIN
+                    {record.winRate}% {language === 'it' ? 'VITT.' : 'WIN'}
                   </span>
                 </div>
                 <div className="my-1">
                   <div className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight flex items-baseline gap-2">
-                    <span>{record.wins}W - {record.losses}L</span>
-                    {record.ties > 0 && <span className="text-sm text-white/50">({record.ties}T)</span>}
+                    <span>{record.wins}{language === 'it' ? 'V' : 'W'} - {record.losses}{language === 'it' ? 'S' : 'L'}</span>
+                    {record.ties > 0 && <span className="text-sm text-white/50">({record.ties}{language === 'it' ? 'P' : 'T'})</span>}
                   </div>
                 </div>
                 <div className="text-[11px] font-medium text-[#A7F3D0] border-t border-[#0CA17A]/30 pt-2 flex items-center justify-between flex-wrap gap-1">
@@ -869,7 +869,7 @@ export default function SeasonTrends({ showToast }) {
                         ? 'bg-amber-500/30 text-amber-300 border-amber-400'
                         : 'bg-rose-500/30 text-rose-300 border-rose-400'
                   }`}>
-                    {ballControl.astTovRatio >= 1.0 ? 'POSITIVO' : 'NEGATIVO'}
+                    {ballControl.astTovRatio >= 1.0 ? (language === 'it' ? 'POSITIVO' : 'POSITIVE') : (language === 'it' ? 'NEGATIVO' : 'NEGATIVE')}
                   </span>
                 </div>
                 <div className="my-1">
@@ -919,7 +919,7 @@ export default function SeasonTrends({ showToast }) {
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div>
                       <span className="text-2xl sm:text-3xl font-bold tabular-nums text-slate-900 block">
-                        {homeAwaySplits.home.wins}W - {homeAwaySplits.home.losses}L
+                        {homeAwaySplits.home.wins}{language === 'it' ? 'V' : 'W'} - {homeAwaySplits.home.losses}{language === 'it' ? 'S' : 'L'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
                         Record
@@ -930,7 +930,7 @@ export default function SeasonTrends({ showToast }) {
                         {homeAwaySplits.home.games > 0 ? (homeAwaySplits.home.pointsScored / homeAwaySplits.home.games).toFixed(1) : '—'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
-                        Segnati/G
+                        {language === 'it' ? 'Segnati/G' : 'Scored/G'}
                       </span>
                     </div>
                     <div>
@@ -938,7 +938,7 @@ export default function SeasonTrends({ showToast }) {
                         {homeAwaySplits.home.games > 0 ? (homeAwaySplits.home.pointsConceded / homeAwaySplits.home.games).toFixed(1) : '—'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
-                        Subiti/G
+                        {language === 'it' ? 'Subiti/G' : 'Allowed/G'}
                       </span>
                     </div>
                   </div>
@@ -954,7 +954,7 @@ export default function SeasonTrends({ showToast }) {
                           ? 'bg-rose-50 text-rose-700' 
                           : 'bg-slate-100 text-slate-700'
                     }`}>
-                      {homeAwaySplits.homeDiff > 0 ? `+${homeAwaySplits.homeDiff}` : homeAwaySplits.homeDiff} pts
+                      {homeAwaySplits.homeDiff > 0 ? `+${homeAwaySplits.homeDiff}` : homeAwaySplits.homeDiff} {language === 'it' ? 'pt' : 'pts'}
                     </span>
                   </div>
                 </div>
@@ -976,7 +976,7 @@ export default function SeasonTrends({ showToast }) {
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div>
                       <span className="text-2xl sm:text-3xl font-bold tabular-nums text-slate-900 block">
-                        {homeAwaySplits.away.wins}W - {homeAwaySplits.away.losses}L
+                        {homeAwaySplits.away.wins}{language === 'it' ? 'V' : 'W'} - {homeAwaySplits.away.losses}{language === 'it' ? 'S' : 'L'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
                         Record
@@ -987,7 +987,7 @@ export default function SeasonTrends({ showToast }) {
                         {homeAwaySplits.away.games > 0 ? (homeAwaySplits.away.pointsScored / homeAwaySplits.away.games).toFixed(1) : '—'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
-                        Segnati/G
+                        {language === 'it' ? 'Segnati/G' : 'Scored/G'}
                       </span>
                     </div>
                     <div>
@@ -995,7 +995,7 @@ export default function SeasonTrends({ showToast }) {
                         {homeAwaySplits.away.games > 0 ? (homeAwaySplits.away.pointsConceded / homeAwaySplits.away.games).toFixed(1) : '—'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mt-1">
-                        Subiti/G
+                        {language === 'it' ? 'Subiti/G' : 'Allowed/G'}
                       </span>
                     </div>
                   </div>
@@ -1011,7 +1011,7 @@ export default function SeasonTrends({ showToast }) {
                           ? 'bg-rose-50 text-rose-700' 
                           : 'bg-slate-100 text-slate-700'
                     }`}>
-                      {homeAwaySplits.awayDiff > 0 ? `+${homeAwaySplits.awayDiff}` : homeAwaySplits.awayDiff} pts
+                      {homeAwaySplits.awayDiff > 0 ? `+${homeAwaySplits.awayDiff}` : homeAwaySplits.awayDiff} {language === 'it' ? 'pt' : 'pts'}
                     </span>
                   </div>
                 </div>
@@ -1108,7 +1108,7 @@ export default function SeasonTrends({ showToast }) {
 
                   <div>
                     <div className="tabular-nums text-3xl sm:text-4xl font-bold text-slate-900">
-                      ±{sigma} <span className="text-xs font-semibold text-slate-500">PUNTI / GARA</span>
+                      ±{sigma} <span className="text-xs font-semibold text-slate-500">{language === 'it' ? 'PUNTI / GARA' : 'PTS / GAME'}</span>
                     </div>
                     <span className="text-xs text-slate-500 uppercase tracking-wider font-medium block mt-1">
                       {language === 'it' ? 'Deviazione standard produzione offensiva' : 'Standard deviation of points scored'}
@@ -1216,10 +1216,10 @@ export default function SeasonTrends({ showToast }) {
                     </span>
                     <div className="flex items-center gap-2 text-[10px] font-bold">
                       <span className="flex items-center gap-1 text-emerald-700">
-                        <span className="w-2 h-2 rounded bg-[#0CA17A] inline-block" /> + Vantaggio
+                        <span className="w-2 h-2 rounded bg-[#0CA17A] inline-block" /> {language === 'it' ? '+ Vantaggio' : '+ Advantage'}
                       </span>
                       <span className="flex items-center gap-1 text-rose-700">
-                        <span className="w-2 h-2 rounded bg-rose-500 inline-block" /> - Passivo
+                        <span className="w-2 h-2 rounded bg-rose-500 inline-block" /> {language === 'it' ? '- Passivo' : '- Deficit'}
                       </span>
                     </div>
                   </div>
@@ -1232,12 +1232,12 @@ export default function SeasonTrends({ showToast }) {
                         <YAxis stroke="#64748B" tick={{ fill: '#64748B', fontSize: 11 }} />
                         <Tooltip 
                           formatter={(val, name, item) => [
-                            `${val > 0 ? `+${val}` : val} net (Segnati: ${item.payload.scored}, Subiti: ${item.payload.conceded})`,
-                            'Differenziale'
+                            `${val > 0 ? `+${val}` : val} net (${language === 'it' ? 'Segnati' : 'Scored'}: ${item.payload.scored}, ${language === 'it' ? 'Subiti' : 'Allowed'}: ${item.payload.conceded})`,
+                            language === 'it' ? 'Differenziale' : 'Differential'
                           ]}
                         />
                         <ReferenceLine y={0} stroke="#94A3B8" strokeWidth={1.5} />
-                        <Bar dataKey="diff" name="Diff (+/-)" radius={[4, 4, 0, 0]}>
+                        <Bar dataKey="diff" name={language === 'it' ? 'Diff (+/-)' : 'Net (+/-)'} radius={[4, 4, 0, 0]}>
                           {quarterBarData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.diff >= 0 ? '#0CA17A' : '#F43F5E'} />
                           ))}
@@ -1261,10 +1261,12 @@ export default function SeasonTrends({ showToast }) {
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                     <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                    <span>Efficienza Offensiva & Flusso Punti</span>
+                    <span>{language === 'it' ? 'Efficienza Offensiva & Flusso Punti' : 'Offensive Efficiency & Scoring Flow'}</span>
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Punti segnati (asse sinistro) vs. Percentuale effettiva eFG% (asse destro)
+                    {language === 'it'
+                      ? 'Punti segnati (asse sinistro) vs. Percentuale effettiva eFG% (asse destro)'
+                      : 'Points scored (left axis) vs. Effective FG% (right axis)'}
                   </p>
                 </div>
               </div>
@@ -1272,7 +1274,7 @@ export default function SeasonTrends({ showToast }) {
               <div className="flex items-center gap-3 text-xs">
                 <div className="flex items-center gap-1.5 text-slate-800 font-semibold">
                   <span className="w-3 h-0.5 bg-slate-800 inline-block" />
-                  <span>Punti Segnati</span>
+                  <span>{language === 'it' ? 'Punti Segnati' : 'Points Scored'}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[#0CA17A] font-semibold">
                   <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" />
@@ -1280,7 +1282,7 @@ export default function SeasonTrends({ showToast }) {
                 </div>
                 <div className="flex items-center gap-1.5 text-amber-600 font-semibold hidden sm:flex">
                   <span className="w-3 h-0.5 border-b border-dashed border-amber-500 inline-block" />
-                  <span>50% Target Benchmark</span>
+                  <span>{language === 'it' ? 'Target 50%' : '50% Target Benchmark'}</span>
                 </div>
               </div>
             </div>
@@ -1321,7 +1323,7 @@ export default function SeasonTrends({ showToast }) {
                     yAxisId="left"
                     type="monotone" 
                     dataKey="pts" 
-                    name="Punti Segnati"
+                    name={language === 'it' ? 'Punti Segnati' : 'Points Scored'}
                     stroke="#022D32" 
                     strokeWidth={3}
                     dot={{ fill: '#022D32', r: 4, stroke: '#0CA17A', strokeWidth: 1.5 }}
@@ -1331,7 +1333,7 @@ export default function SeasonTrends({ showToast }) {
                     yAxisId="right"
                     type="monotone" 
                     dataKey="efgPct" 
-                    name="Effective FG%"
+                    name={language === 'it' ? 'eFG% Effettiva' : 'Effective FG%'}
                     stroke="#0CA17A" 
                     strokeWidth={2.5}
                     dot={{ fill: '#0CA17A', r: 4, stroke: '#022D32', strokeWidth: 1.5 }}
@@ -1356,10 +1358,12 @@ export default function SeasonTrends({ showToast }) {
                   <div>
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                       <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                      <span>Controllo Palla: Assist vs. Perse</span>
+                      <span>{language === 'it' ? 'Controllo Palla: Assist vs. Perse' : 'Ball Security: Assists vs. Turnovers'}</span>
                     </h3>
                     <p className="text-[11px] text-slate-500">
-                      Assist (AST), Palle Perse (TOV) e rapporto AST/TOV
+                      {language === 'it'
+                        ? 'Assist (AST), Palle Perse (TOV) e rapporto AST/TOV'
+                        : 'Assists (AST), Turnovers (TOV) and AST/TOV ratio'}
                     </p>
                   </div>
                 </div>
@@ -1372,7 +1376,7 @@ export default function SeasonTrends({ showToast }) {
                     <span className="w-2.5 h-2.5 rounded bg-rose-600 inline-block" /> TOV
                   </span>
                   <span className="flex items-center gap-1 text-[#0CA17A] font-semibold">
-                    <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" /> Ratio
+                    <span className="w-3 h-0.5 bg-[#0CA17A] inline-block" /> {language === 'it' ? 'Rapporto' : 'Ratio'}
                   </span>
                 </div>
               </div>
@@ -1399,13 +1403,13 @@ export default function SeasonTrends({ showToast }) {
                       domain={[0, 'auto']}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar yAxisId="left" dataKey="ast" name="Assist" fill="#022D32" radius={[4, 4, 0, 0]} />
-                    <Bar yAxisId="left" dataKey="tov" name="Palle Perse" fill="#F43F5E" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="ast" name={language === 'it' ? 'Assist' : 'Assists'} fill="#022D32" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="tov" name={language === 'it' ? 'Palle Perse' : 'Turnovers'} fill="#F43F5E" radius={[4, 4, 0, 0]} />
                     <Line 
                       yAxisId="right" 
                       type="monotone" 
                       dataKey="astTovRatio" 
-                      name="AST/TOV Ratio" 
+                      name={language === 'it' ? 'Rapporto AST/TOV' : 'AST/TOV Ratio'}
                       stroke="#0CA17A" 
                       strokeWidth={2.5}
                       dot={{ fill: '#0CA17A', r: 3 }}
@@ -1425,10 +1429,12 @@ export default function SeasonTrends({ showToast }) {
                   <div>
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                       <span className="w-1.5 h-4 bg-[#0CA17A] rounded-full inline-block" />
-                      <span>Dominio a Rimbalzo (DRB%)</span>
+                      <span>{language === 'it' ? 'Dominio a Rimbalzo (DRB%)' : 'Rebounding Control (DRB%)'}</span>
                     </h3>
                     <p className="text-[11px] text-slate-500">
-                      Percentuale rimbalzi difensivi vs. target benchmark 70%
+                      {language === 'it'
+                        ? 'Percentuale rimbalzi difensivi vs. target benchmark 70%'
+                        : 'Defensive rebound percentage vs. 70% benchmark target'}
                     </p>
                   </div>
                 </div>
@@ -1475,7 +1481,7 @@ export default function SeasonTrends({ showToast }) {
                     <Area 
                       type="monotone" 
                       dataKey="drbPct" 
-                      name="Defensive Rebound %"
+                      name={language === 'it' ? 'Rimbalzi Difensivi (DRB%)' : 'Defensive Rebound %'}
                       stroke="#0CA17A" 
                       strokeWidth={3}
                       fillOpacity={1} 
@@ -1506,7 +1512,7 @@ export default function SeasonTrends({ showToast }) {
               <div className="flex items-center gap-2">
                 <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-semibold px-2 py-0.5 rounded inline-flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-[#0CA17A]" />
-                  FIP KING (PUNTEGGI & REGOLE)
+                  {language === 'it' ? 'FIP KING (PUNTEGGI & REGOLE)' : 'FIP KING (SCORES & STANDINGS)'}
                 </span>
                 <span className="text-[10px] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded">
                   SUPABASE (PLAYMAKING & HUSTLE)
@@ -1587,7 +1593,7 @@ export default function SeasonTrends({ showToast }) {
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                             : 'bg-rose-50 text-rose-800 border-rose-300'
                         }`}>
-                          {item.resultText}
+                          {item.isWin ? (language === 'it' ? 'V' : 'W') : (item.pts === item.oppPts ? (language === 'it' ? 'P' : 'D') : (language === 'it' ? 'S' : 'L'))}
                         </span>
                       </div>
                     </div>
@@ -1691,7 +1697,7 @@ export default function SeasonTrends({ showToast }) {
                             title={language === 'it' ? 'Apri analisi approfondita del match' : 'Open deep match analytics'}
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>ANALISI</span>
+                            <span>{language === 'it' ? 'ANALISI' : 'ANALYTICS'}</span>
                           </button>
                         ) : (
                           <span className="text-xs font-semibold text-slate-300 select-none px-3">—</span>
@@ -1768,7 +1774,7 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('number')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Ordina per Numero di Maglia"
+                    title={language === 'it' ? 'Ordina per Numero di Maglia' : 'Sort by Jersey Number'}
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>#</span>
@@ -1780,7 +1786,7 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('name')}
                     className="p-3.5 cursor-pointer hover:text-[#0CA17A] transition-colors min-w-[220px]"
-                    title="Ordina per Nome"
+                    title={language === 'it' ? 'Ordina per Nome' : 'Sort by Player Name'}
                   >
                     <div className="flex items-center gap-1">
                       <span>{language === 'it' ? 'GIOCATORE' : 'PLAYER'}</span>
@@ -1792,10 +1798,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('games')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Partite Giocate Dinamiche (PG)"
+                    title={language === 'it' ? 'Partite Giocate Dinamiche (PG)' : 'Dynamic Games Played (GP)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>PG</span>
+                      <span>{language === 'it' ? 'PG' : 'GP'}</span>
                       {sortConfig.key === 'games' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1804,7 +1810,7 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('timePlayedAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="FIP Official: Minuti Medi a Partita"
+                    title={language === 'it' ? 'FIP Official: Minuti Medi a Partita' : 'FIP Official: Average Minutes Played'}
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>MIN</span>
@@ -1816,7 +1822,7 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('startPercentage')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Frequenza di Partenza in Quintetto (team_starters.json)"
+                    title={language === 'it' ? 'Frequenza di Partenza in Quintetto' : 'Starting Lineup Frequency (%)'}
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>START %</span>
@@ -1828,10 +1834,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('pointsAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Punti Medi a Partita"
+                    title={language === 'it' ? 'Punti Medi a Partita' : 'Points Per Game (PTS/G)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>PUNTI/P</span>
+                      <span>{language === 'it' ? 'PUNTI/P' : 'PTS/G'}</span>
                       {sortConfig.key === 'pointsAVG' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1840,10 +1846,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('twoMadeAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Volume: 2 Punti Fatti per Partita (2PT F/P)"
+                    title={language === 'it' ? 'Volume: 2 Punti Fatti per Partita (2PT F/P)' : 'Volume: 2-Pointers Made Per Game (2PM/G)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>2PT F/P</span>
+                      <span>{language === 'it' ? '2PT F/P' : '2PM/G'}</span>
                       {sortConfig.key === 'twoMadeAVG' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1852,10 +1858,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('twoPct')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Efficienza: Percentuale da 2 Punti (2PT %)"
+                    title={language === 'it' ? 'Efficienza: Percentuale da 2 Punti (2PT %)' : 'Efficiency: 2-Point Field Goal Percentage (2PT %)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>2PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>2PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'twoPct' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1864,10 +1870,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('threeMadeAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Volume: 3 Punti Fatti per Partita (3PT F/P)"
+                    title={language === 'it' ? 'Volume: 3 Punti Fatti per Partita (3PT F/P)' : 'Volume: 3-Pointers Made Per Game (3PM/G)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>3PT F/P</span>
+                      <span>{language === 'it' ? '3PT F/P' : '3PM/G'}</span>
                       {sortConfig.key === 'threeMadeAVG' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1876,10 +1882,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('threePct')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Efficienza: Percentuale da 3 Punti (3PT %)"
+                    title={language === 'it' ? 'Efficienza: Percentuale da 3 Punti (3PT %)' : 'Efficiency: 3-Point Field Goal Percentage (3PT %)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>3PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>3PT %{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'threePct' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1888,10 +1894,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('ftAttAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Volume: Tiri Liberi Fatti / Tentati per Partita (TL T/P)"
+                    title={language === 'it' ? 'Volume: Tiri Liberi Fatti / Tentati per Partita (TL T/P)' : 'Volume: Free Throws Made / Attempted Per Game (FT M/A)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>TL T/P</span>
+                      <span>{language === 'it' ? 'TL T/P' : 'FT M/A'}</span>
                       {sortConfig.key === 'ftAttAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1900,10 +1906,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('ftPct')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Realizzazione: Percentuale Tiri Liberi (TL %)"
+                    title={language === 'it' ? 'Realizzazione: Percentuale Tiri Liberi (TL %)' : 'Accuracy: Free Throw Percentage (FT %)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>TL %</span>
+                      <span>{language === 'it' ? 'TL %' : 'FT %'}</span>
                       {sortConfig.key === 'ftPct' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1912,10 +1918,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('rebAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Supabase: Media Rimbalzi a Partita"
+                    title={language === 'it' ? 'Supabase: Media Rimbalzi a Partita' : 'Supabase: Rebounds Per Game'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>REB/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>{language === 'it' ? 'REB/P' : 'REB/G'}{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'rebAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1924,10 +1930,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('astAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Supabase: Media Assist a Partita"
+                    title={language === 'it' ? 'Supabase: Media Assist a Partita' : 'Supabase: Assists Per Game'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>AST/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>{language === 'it' ? 'AST/P' : 'AST/G'}{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'astAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1936,10 +1942,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('tovAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Supabase: Media Palle Perse a Partita"
+                    title={language === 'it' ? 'Supabase: Media Palle Perse a Partita' : 'Supabase: Turnovers Per Game'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>TOV/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>{language === 'it' ? 'TOV/P' : 'TOV/G'}{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'tovAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1948,10 +1954,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('stlAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Supabase: Media Palle Recuperate a Partita"
+                    title={language === 'it' ? 'Supabase: Media Palle Recuperate a Partita' : 'Supabase: Steals Per Game'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>STL/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>{language === 'it' ? 'STL/P' : 'STL/G'}{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'stlAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1960,10 +1966,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('blkAvg')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Supabase: Media Stoppate a Partita"
+                    title={language === 'it' ? 'Supabase: Media Stoppate a Partita' : 'Supabase: Blocks Per Game'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>BLK/P{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title="Calcolato su partite con scouting disponibile">*</sup>}</span>
+                      <span>{language === 'it' ? 'BLK/P' : 'BLK/G'}{missingScoutMatches.length > 0 && <sup className="text-amber-600 font-black ml-0.5" title={language === 'it' ? 'Calcolato su partite con scouting disponibile' : 'Calculated on matches with scouting available'}>*</sup>}</span>
                       {sortConfig.key === 'blkAvg' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -1972,10 +1978,10 @@ export default function SeasonTrends({ showToast }) {
                   <th 
                     onClick={() => handleSort('foulsAVG')}
                     className="p-3.5 text-center cursor-pointer hover:text-[#0CA17A] transition-colors"
-                    title="Media Falli Commessi a Partita"
+                    title={language === 'it' ? 'Media Falli Commessi a Partita' : 'Personal Fouls Per Game (PF/G)'}
                   >
                     <div className="flex items-center justify-center gap-1">
-                      <span>FALLI/P</span>
+                      <span>{language === 'it' ? 'FALLI/P' : 'PF/G'}</span>
                       {sortConfig.key === 'foulsAVG' && (
                         sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 text-[#0CA17A]" /> : <ChevronDown className="w-3 h-3 text-[#0CA17A]" />
                       )}
@@ -2049,7 +2055,7 @@ export default function SeasonTrends({ showToast }) {
                           <span>{typeof player.pointsAVG === 'number' && !isNaN(player.pointsAVG) ? player.pointsAVG.toFixed(1) : (player.pointsAVG || '0.0')}</span>
                         </td>
                         {/* 2PT F/P (Solo realizzati: media + totale) */}
-                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg2a ? `${player.fg2m || 0}/${player.fg2a} da 2 totali` : undefined}>
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg2a ? `${player.fg2m || 0}/${player.fg2a} ${language === 'it' ? 'da 2 totali' : 'total 2PT'}` : undefined}>
                           <div className="flex flex-col items-center">
                             <span>{formatAverage(player.twoMadeAVG)}</span>
                             <span className="text-[10px] text-slate-400 font-normal">
@@ -2064,7 +2070,7 @@ export default function SeasonTrends({ showToast }) {
                         </td>
 
                         {/* 3PT F/P (Solo realizzati: media + totale) */}
-                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg3a ? `${player.fg3m || 0}/${player.fg3a} da 3 totali` : undefined}>
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fg3a ? `${player.fg3m || 0}/${player.fg3a} ${language === 'it' ? 'da 3 totali' : 'total 3PT'}` : undefined}>
                           <div className="flex flex-col items-center">
                             <span>{formatAverage(player.threeMadeAVG)}</span>
                             <span className="text-[10px] text-slate-400 font-normal">
@@ -2078,7 +2084,7 @@ export default function SeasonTrends({ showToast }) {
                           <span>{formatPercentage(player.threePct)}</span>
                         </td>
                         {/* TL T/P (Volume: Made / Attempted) */}
-                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fta ? `${player.ftm || 0}/${player.fta} TL totali (${formatPercentage(player.ftPct)})` : undefined}>
+                        <td className="py-3 px-3.5 whitespace-nowrap text-sm text-slate-900 text-center font-medium tabular-nums" title={player.fta ? `${player.ftm || 0}/${player.fta} ${language === 'it' ? 'TL totali' : 'total FT'} (${formatPercentage(player.ftPct)})` : undefined}>
                           <div className="flex flex-col items-center">
                             <span>
                               {player.ftAttAvg != null && Number(player.ftAttAvg) > 0

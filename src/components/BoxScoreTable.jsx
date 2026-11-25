@@ -2,13 +2,19 @@ import React from 'react';
 import { Trophy, BarChart2, Sparkles, Layers, Ghost } from 'lucide-react';
 import { COURT_ZONES } from '../data/roster.js';
 import { calculatePlusMinus, computeZoneStats } from '../utils/basketballAnalytics.js';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
+  const { language } = useLanguage();
+  const isIt = language === 'it';
+
   if (!events || events.length === 0) {
     return (
       <div className="bg-white p-8 text-center border border-slate-200/80 rounded-2xl shadow-xs text-slate-900">
         <p className="text-slate-500 font-medium text-sm">
-          No play events logged in the match yet. Use the Live Tracking Dashboard to record match plays.
+          {isIt
+            ? 'Nessun evento di gioco registrato nella partita. Usa il Live Tracking per registrare le azioni.'
+            : 'No play events logged in the match yet. Use the Live Tracking Dashboard to record match plays.'}
         </p>
       </div>
     );
@@ -107,7 +113,7 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
           <Trophy className="w-4 h-4 text-[#0CA17A]" />
           <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            OFFICIAL FIBA BOX SCORE
+            {isIt ? 'TABELLINO UFFICIALE FIBA' : 'OFFICIAL FIBA BOX SCORE'}
           </h2>
         </div>
         
@@ -115,19 +121,19 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
           <thead>
             <tr className="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
               <th className="py-2.5 px-2">N°</th>
-              <th className="py-2.5 px-2">PLAYER</th>
+              <th className="py-2.5 px-2">{isIt ? 'GIOCATORE' : 'PLAYER'}</th>
               <th className="py-2.5 px-2 text-slate-900 font-bold">PTS</th>
-              <th className="py-2.5 px-2">2PM/A</th>
+              <th className="py-2.5 px-2">{isIt ? '2P R/T' : '2PM/A'}</th>
               <th className="py-2.5 px-2">2P%</th>
-              <th className="py-2.5 px-2">3PM/A</th>
+              <th className="py-2.5 px-2">{isIt ? '3P R/T' : '3PM/A'}</th>
               <th className="py-2.5 px-2">3P%</th>
-              <th className="py-2.5 px-2">FTM/A</th>
-              <th className="py-2.5 px-2">FT%</th>
+              <th className="py-2.5 px-2">{isIt ? 'TL R/T' : 'FTM/A'}</th>
+              <th className="py-2.5 px-2">{isIt ? 'TL%' : 'FT%'}</th>
               <th className="py-2.5 px-2">REB</th>
               <th className="py-2.5 px-2">AST</th>
               <th className="py-2.5 px-2 text-slate-900 font-bold">STL</th>
               <th className="py-2.5 px-2 text-rose-700 font-bold">TOV</th>
-              <th className="py-2.5 px-2">PF</th>
+              <th className="py-2.5 px-2">{isIt ? 'FF' : 'PF'}</th>
               <th className="py-2.5 px-2 text-emerald-800 font-bold">PIR</th>
               <th className="py-2.5 px-2 text-slate-900 font-bold">+/-</th>
             </tr>
@@ -171,11 +177,11 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#0CA17A]" />
               <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                TEAM TACTICAL METRICS
+                {isIt ? 'METRICHE TATTICHE SQUADRA' : 'TEAM TACTICAL METRICS'}
               </h2>
             </div>
             <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full font-semibold tabular-nums">
-              TOTAL: {totalTactics}
+              {isIt ? 'TOTALE' : 'TOTAL'}: {totalTactics}
             </span>
           </div>
 
@@ -202,10 +208,10 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
             <table className="w-full text-left text-xs font-medium">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500 text-[11px] font-semibold bg-slate-50">
-                  <th className="py-1.5 px-2">PERIOD</th>
+                  <th className="py-1.5 px-2">{isIt ? 'PERIODO' : 'PERIOD'}</th>
                   <th className="py-1.5 px-2 text-purple-800 font-semibold">STAGGER</th>
                   <th className="py-1.5 px-2 text-teal-800 font-semibold">GHOST</th>
-                  <th className="py-1.5 px-2 text-right text-slate-900 font-semibold">TOTAL</th>
+                  <th className="py-1.5 px-2 text-right text-slate-900 font-semibold">{isIt ? 'TOTALE' : 'TOTAL'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -227,15 +233,15 @@ export default function BoxScoreTable({ roster, events, plusMinusMap = null }) {
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
             <BarChart2 className="w-4 h-4 text-[#0CA17A]" />
             <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              SHOT ZONE EFFICIENCY CHART
+              {isIt ? 'EFFICIENZA PER ZONA DI TIRO' : 'SHOT ZONE EFFICIENCY CHART'}
             </h2>
           </div>
           
           <table className="w-full text-left text-xs font-medium">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50">
-                <th className="py-2.5 px-2">COURT ZONE</th>
-                <th className="py-2.5 px-2">MADE / ATT</th>
+                <th className="py-2.5 px-2">{isIt ? 'ZONA CAMPO' : 'COURT ZONE'}</th>
+                <th className="py-2.5 px-2">{isIt ? 'REAL. / TENT.' : 'MADE / ATT'}</th>
                 <th className="py-2.5 px-2 text-slate-900 font-bold">FG %</th>
               </tr>
             </thead>
