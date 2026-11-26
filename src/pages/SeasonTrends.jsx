@@ -9,7 +9,7 @@ import {
   Zap, BarChart3, ChevronRight, Layers, Flame, ShieldCheck, Clock,
   Users, Search, ChevronUp, ChevronDown, Home, Navigation, Info, AlertTriangle
 } from 'lucide-react';
-import { supabase } from '../services/supabase';
+import { supabase, fetchAllScoutingLogs } from '../services/supabase';
 import { aggregateSeasonStats } from '../utils/seasonAggregator';
 import { 
   calculateStandardDeviation, 
@@ -116,13 +116,8 @@ export default function SeasonTrends({ showToast }) {
       // 1. Query normalized matches from scouting_matches
       const normalizedMatches = await fetchScoutingMatches();
 
-      // 2. Query all events from Supabase scouting_log
-      const { data, error } = await supabase
-        .from('scouting_log')
-        .select('*')
-        .order('id', { ascending: false });
-
-      const rawLogs = data || [];
+      // 2. Query ALL events from Supabase scouting_log (paginated past 1,000-row limit)
+      const rawLogs = await fetchAllScoutingLogs('*', 'id', false);
       setRawSupabaseLogs(rawLogs);
 
       // Extract Match Metadata map directly from Supabase logs (Single Source of Truth)

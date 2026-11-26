@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabase';
+import { supabase, fetchAllScoutingLogs } from '../services/supabase';
 import { 
   Archive as ArchiveIcon, Download, Trash2, RefreshCw, Calendar, 
   Hash, FileSpreadsheet, Eye, Pencil, Loader2, Play
@@ -51,14 +51,12 @@ export default function Archive({ showToast, onResumeMatch }) {
       // 1. Primary Source of Truth: Fetch normalized matches directly from scouting_matches
       const normalizedMatches = await fetchScoutingMatches();
 
-      // 2. Fetch event counts per match_id via lightweight relational query
+      // 2. Fetch event counts per match_id via paginated lightweight relational query
       const countMap = {};
       try {
-        const { data: countData, error: countErr } = await supabase
-          .from('scouting_log')
-          .select('match_id');
+        const countData = await fetchAllScoutingLogs('match_id', 'id', true);
 
-        if (!countErr && Array.isArray(countData)) {
+        if (Array.isArray(countData)) {
           countData.forEach(r => {
             if (r.match_id) {
               countMap[r.match_id] = (countMap[r.match_id] || 0) + 1;
@@ -103,10 +101,7 @@ export default function Archive({ showToast, onResumeMatch }) {
         });
       } else {
         // Fallback if scouting_matches is not yet populated
-        const { data: rawLogs } = await supabase
-          .from('scouting_log')
-          .select('*')
-          .order('id', { ascending: false });
+        const rawLogs = await fetchAllScoutingLogs('*', 'id', false);
 
         const eventsByName = {};
         (rawLogs || []).forEach(item => {

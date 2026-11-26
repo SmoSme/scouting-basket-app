@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js';
+import { supabase, fetchAllScoutingLogs } from './supabase.js';
 import { IS_PUBLIC_MODE } from '../config/appMode.js';
 
 /**
@@ -106,18 +106,7 @@ export async function getMatchEvents(matchId) {
   if (!matchId) return [];
 
   try {
-    const { data, error } = await supabase
-      .from('scouting_log')
-      .select('*')
-      .eq('match_id', matchId)
-      .order('id', { ascending: true });
-
-    if (error) {
-      console.error('[Supabase] getMatchEvents query error for matchId:', matchId, error);
-      return [];
-    }
-
-    return data || [];
+    return await fetchAllScoutingLogs('*', 'id', true, matchId);
   } catch (err) {
     console.error('[Supabase] getMatchEvents exception for matchId:', matchId, err);
     return [];

@@ -12,7 +12,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine 
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
-import { supabase } from '../services/supabase';
+import { supabase, fetchAllScoutingLogs } from '../services/supabase';
 import { IS_PUBLIC_MODE, IS_ADMIN_MODE } from '../config/appMode';
 import { 
   buildSuperchargedBbaRoster, 
@@ -1557,8 +1557,8 @@ export default function LeagueHub({ showToast }) {
   useEffect(() => {
     async function loadSupabase() {
       try {
-        const { data, error } = await supabase.from('scouting_log').select('*');
-        if (!error && Array.isArray(data)) {
+        const data = await fetchAllScoutingLogs('*', 'id', true);
+        if (Array.isArray(data)) {
           setSupabaseLogs(data);
         }
       } catch (e) {

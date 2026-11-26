@@ -363,15 +363,63 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
     plusMinusByMatch[mId] = calculatePlusMinus(mLogs);
   }
 
-  const getOrCreatePlayerStat = (num, name) => {
+  const isIgnoredEntity = (num, name, action = '') => {
+    const uNum = String(num || '').trim().toUpperCase();
+    const uName = String(name || '').trim().toUpperCase();
+    return (
+      uName === 'METADATA' ||
+      action === 'MATCH_METADATA' ||
+      uName === 'OPPONENT' ||
+      uName === 'TEAM' ||
+      uNum === 'OPP' ||
+      uNum === 'SUB' ||
+      uNum === '-'
+    );
+  };
+
+  // Build per-match and global jersey -> player name maps so shared/swapped jersey numbers never collide
+  const matchNumToNames = {};
+  const globalNumToNames = {};
+  safeLogs.forEach(row => {
+    const num = String(row.Number ?? row.number ?? '').trim();
+    const name = String(row.Player ?? row.player ?? '').trim();
+    if (!num || !name || isIgnoredEntity(num, name, row.Action)) return;
+    const mId = getCanonicalMatchId(row);
+    if (!matchNumToNames[mId]) matchNumToNames[mId] = {};
+    if (!matchNumToNames[mId][num]) matchNumToNames[mId][num] = new Map();
+    matchNumToNames[mId][num].set(name.toLowerCase(), name);
+
+    if (!globalNumToNames[num]) globalNumToNames[num] = new Map();
+    globalNumToNames[num].set(name.toLowerCase(), name);
+  });
+
+  const resolvePlayerNameForNumber = (mId, num) => {
     const cleanNum = String(num || '').trim();
-    const cleanName = String(name || '').trim();
-    const key = cleanNum || cleanName;
+    if (!cleanNum) return '';
+    const perMatch = mId ? matchNumToNames[mId]?.[cleanNum] : null;
+    if (perMatch && perMatch.size === 1) {
+      return Array.from(perMatch.values())[0];
+    }
+    const global = globalNumToNames[cleanNum];
+    if (global && global.size === 1) {
+      return Array.from(global.values())[0];
+    }
+    return '';
+  };
+
+  const getOrCreatePlayerStat = (num, name, mId = null) => {
+    const cleanNum = String(num || '').trim();
+    let cleanName = String(name || '').trim();
+    if (!cleanName && cleanNum) {
+      cleanName = resolvePlayerNameForNumber(mId, cleanNum);
+    }
+    const key = cleanName ? `name_${cleanName.toLowerCase()}` : `num_${cleanNum}`;
     if (!playerStatsMap[key]) {
       playerStatsMap[key] = {
         number: cleanNum,
         name: cleanName,
         matches: new Set(),
+        matchNumbers: {},
         byMatch: {},
         ast: 0,
         tov: 0,
@@ -394,8 +442,16 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
         },
         detailedZones: {}
       };
-    } else if (cleanName && !playerStatsMap[key].name) {
-      playerStatsMap[key].name = cleanName;
+    } else {
+      if (cleanName && !playerStatsMap[key].name) {
+        playerStatsMap[key].name = cleanName;
+      }
+      if (cleanNum && !playerStatsMap[key].number) {
+        playerStatsMap[key].number = cleanNum;
+      }
+    }
+    if (mId && cleanNum) {
+      playerStatsMap[key].matchNumbers[mId] = cleanNum;
     }
     return playerStatsMap[key];
   };
@@ -414,13 +470,13 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
   };
 
   safeLogs.forEach(row => {
-    const num = String(row.Number || '').trim();
-    const name = (row.Player || '').trim();
+    const num = String(row.Number ?? row.number ?? '').trim();
+    const name = String(row.Player ?? row.player ?? '').trim();
     if (!num && !name) return;
-    if (name === 'METADATA' || row.Action === 'MATCH_METADATA' || name === 'OPPONENT' || num === 'OPP') return;
+    if (isIgnoredEntity(num, name, row.Action)) return;
 
-    const pStat = getOrCreatePlayerStat(num, name);
     const matchIdentifier = getCanonicalMatchId(row);
+    const pStat = getOrCreatePlayerStat(num, name, matchIdentifier);
     if (matchIdentifier) {
       pStat.matches.add(matchIdentifier);
     }
@@ -483,13 +539,19 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
   });
 
   safeLogs.forEach(row => {
-    const oc = row.on_court || row.onCourtPlayerIds || row.onCourtNums;
+    const rawOc = row.on_court || row.onCourtPlayerIds || row.onCourtNums;
     const matchId = getCanonicalMatchId(row);
-    if (matchId && Array.isArray(oc)) {
+    let oc = [];
+    if (Array.isArray(rawOc)) {
+      oc = rawOc;
+    } else if (typeof rawOc === 'string' && rawOc.startsWith('{') && rawOc.endsWith('}')) {
+      oc = rawOc.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+    }
+    if (matchId && oc.length > 0) {
       oc.forEach(num => {
         const s = String(num).trim();
-        if (s && s !== 'OPP' && s !== '-') {
-          const pStat = getOrCreatePlayerStat(s, '');
+        if (s && s !== 'OPP' && s !== '-' && s !== 'SUB' && s !== 'TEAM') {
+          const pStat = getOrCreatePlayerStat(s, '', matchId);
           pStat.matches.add(matchId);
           ensureMatchBucket(pStat, matchId);
         }
@@ -524,16 +586,26 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
     if (isMade) pStat.detailedZones[zName].made++;
   }
 
+  const numberClaimCount = {};
+  for (const p of Object.values(playerStatsMap)) {
+    if (p.number) {
+      numberClaimCount[p.number] = (numberClaimCount[p.number] || 0) + 1;
+    }
+  }
+
   const aggregatedMap = {};
   for (const [key, p] of Object.entries(playerStatsMap)) {
     const gp = p.matches.size || 1;
     const totalPts = p.fg2m * 2 + p.fg3m * 3 + p.ftm;
     const totalReb = p.dreb + p.oreb;
-    const pmTotal = plusMinusMap[p.number] || 0;
+    let pmTotal = 0;
 
     for (const mId of p.matches) {
+      const mNum = p.matchNumbers?.[mId] || p.number;
+      const mPm = plusMinusByMatch[mId]?.[mNum] ?? 0;
+      pmTotal += mPm;
       if (p.byMatch[mId]) {
-        p.byMatch[mId].plusMinus = plusMinusByMatch[mId]?.[p.number] || 0;
+        p.byMatch[mId].plusMinus = mPm;
       }
     }
 
@@ -648,8 +720,11 @@ export function aggregateSupabasePlayerStats(scoutingLogs = []) {
     };
 
     aggregatedMap[key] = dataObj;
-    if (p.number) aggregatedMap[`num_${p.number}`] = dataObj;
     if (p.name) aggregatedMap[`name_${p.name.toLowerCase()}`] = dataObj;
+    if (p.number && numberClaimCount[p.number] === 1) {
+      aggregatedMap[p.number] = dataObj;
+      aggregatedMap[`num_${p.number}`] = dataObj;
+    }
   }
 
   return aggregatedMap;
@@ -717,15 +792,33 @@ export function buildSuperchargedBbaRoster(
     m => m.name || (m.opponent ? `vs ${m.opponent}` : 'Partita FIP')
   );
 
-  return baseList.filter(Boolean).map((player, idx) => {
+  const validBaseList = baseList.filter(Boolean);
+  const rosterNumCounts = {};
+  validBaseList.forEach((p, idx) => {
+    const pNum = String(p.number || (idx + 1)).trim();
+    if (pNum) rosterNumCounts[pNum] = (rosterNumCounts[pNum] || 0) + 1;
+  });
+  const sharedNumbers = new Set(
+    Object.entries(rosterNumCounts)
+      .filter(([, count]) => count > 1)
+      .map(([n]) => n)
+  );
+
+  return validBaseList.map((player, idx) => {
     if (!player) return null;
     const num = String(player.number || (idx + 1)).trim();
     const cleanName = formatPlayerFullName(player.name, player.lastName) || `Giocatore #${num}`;
+    const cleanNameLower = cleanName.toLowerCase();
 
-    const supaData = supabaseMap[num] || 
-                     supabaseMap[`num_${num}`] || 
-                     supabaseMap[`name_${cleanName.toLowerCase()}`] || 
-                     null;
+    const byNameSupa = supabaseMap[`name_${cleanNameLower}`] || null;
+    let byNumSupa = null;
+    if (!byNameSupa && !sharedNumbers.has(num)) {
+      const candidate = supabaseMap[`num_${num}`] || supabaseMap[num] || null;
+      if (candidate && (!candidate.name || candidate.name.toLowerCase() === cleanNameLower)) {
+        byNumSupa = candidate;
+      }
+    }
+    const supaData = byNameSupa || byNumSupa || null;
 
     // STRICT TEAM SCOPE: Only use player.stats (never uniquePlayer.seasonStats!)
     const fipStats = player.stats || {};
@@ -733,9 +826,9 @@ export function buildSuperchargedBbaRoster(
     let starterEntry = null;
     if (player.fid && startersByFid.has(String(player.fid))) {
       starterEntry = startersByFid.get(String(player.fid));
-    } else if (startersByName.has(cleanName.toLowerCase())) {
-      starterEntry = startersByName.get(cleanName.toLowerCase());
-    } else if (startersByNum.has(num)) {
+    } else if (startersByName.has(cleanNameLower)) {
+      starterEntry = startersByName.get(cleanNameLower);
+    } else if (!sharedNumbers.has(num) && startersByNum.has(num)) {
       const candidate = startersByNum.get(num);
       if (!candidate.fid || !player.fid || String(candidate.fid) === String(player.fid)) {
         starterEntry = candidate;
@@ -745,8 +838,13 @@ export function buildSuperchargedBbaRoster(
     const playerShotEvents = activeLogs.filter(e => {
       if (!e) return false;
       const eNum = String(e?.Number ?? e?.number ?? e?.Numero ?? e?.numero ?? '').trim();
-      const eName = String(e?.Player ?? e?.player ?? '').toLowerCase();
-      const isThisPlayer = (eNum && eNum === num) || (cleanName && eName.includes(cleanName.toLowerCase()));
+      const eName = String(e?.Player ?? e?.player ?? '').trim().toLowerCase();
+      let isThisPlayer = false;
+      if (eName) {
+        isThisPlayer = eName === cleanNameLower || eName.includes(cleanNameLower) || (cleanNameLower.includes(eName) && eName.length > 3);
+      } else {
+        isThisPlayer = !sharedNumbers.has(num) && Boolean(eNum) && eNum === num;
+      }
       if (!isThisPlayer) return false;
       const act = String(e?.Action ?? e?.action ?? '');
       return act.includes('2PT') || act.includes('3PT') || act.includes('Tiro') || act.includes('Shot');
@@ -813,7 +911,13 @@ export function buildSuperchargedBbaRoster(
             const pFid = p?.fid ? String(p.fid) : '';
             const pNum = String(p?.number ?? p?.Number ?? '').trim();
             const pName = formatPlayerFullName(p?.name, p?.lastName).toLowerCase();
-            return (player.fid && pFid === String(player.fid)) || (pNum && pNum === num) || (cleanName && pName === cleanName.toLowerCase());
+            if (player.fid && pFid) {
+              return pFid === String(player.fid);
+            }
+            if (cleanName && pName) {
+              return pName === cleanNameLower;
+            }
+            return !sharedNumbers.has(num) && Boolean(pNum) && pNum === num;
           });
           if (pEntry) {
             directFipOnlyGames++;
